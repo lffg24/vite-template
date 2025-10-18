@@ -29,12 +29,14 @@ export default function ReportesPsico() {
     nivel: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canQuery = evalIds.length > 0;
 
   async function refresh() {
     if (!canQuery) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await getNivelesDimensiones(evalIds);
       setData(res.items || []);
@@ -43,8 +45,9 @@ export default function ReportesPsico() {
         n: res.total_n,
         nivel: res.total_nivel,
       });
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("Error:", e);
+      setError("No se pudo obtener la información del reporte.");
       setData([]);
       setTotal(null);
     } finally {
@@ -52,22 +55,21 @@ export default function ReportesPsico() {
     }
   }
 
-  useEffect(() => {
-    // Si quieres auto-refrescar al cambiar selección:
-    // refresh();
-  }, [evalIds]);
-
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader>
-          <CardTitle>Reporte Psicosocial – Dimensiones</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            Reporte Psicosocial – Dimensiones
+          </CardTitle>
           <CardDescription>
             Selecciona evaluaciones y visualiza el promedio 0–100 y nivel por
             dimensión.
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
+          {/* Filtros y acciones */}
           <div className="grid md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
               <MultiSelectEvaluaciones value={evalIds} onChange={setEvalIds} />
@@ -88,6 +90,9 @@ export default function ReportesPsico() {
             </div>
           </div>
 
+          {/* Estado de carga o error */}
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-6 w-56" />
@@ -101,28 +106,20 @@ export default function ReportesPsico() {
             </div>
           ) : (
             <>
+              {/* Resumen general */}
               {total && (
-                <div className="text-sm">
+                <div className="text-sm text-gray-700">
                   <b>Total:</b> {total.avg} (nivel <b>{total.nivel}</b>) · n=
                   {total.n}
                 </div>
               )}
-              <DimensionesBar data={data} />
-            </>
-          )}
 
-          {!loading && data.length > 0 && (
-            <>
-              {total && (
-                <div className="text-sm mb-2">
-                  <b>Total:</b> {total.avg} (nivel <b>{total.nivel}</b>) · n=
-                  {total.n}
-                </div>
-              )}
+              {/* Gráfico principal */}
               <DimensionesBar data={data} />
 
+              {/* Tabla resumen */}
               <div className="mt-8">
-                <h3 className="font-medium mb-2">
+                <h3 className="font-medium mb-2 text-gray-800">
                   Tabla por dominio y dimensiones
                 </h3>
                 <TablaDominios evaluacionIds={evalIds} />
