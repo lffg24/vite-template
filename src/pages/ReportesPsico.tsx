@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   BarChart3,
@@ -18,6 +19,7 @@ import {
   Table2,
   Target,
   Users,
+  X,
 } from "lucide-react";
 import {
   Bar,
@@ -44,13 +46,16 @@ import { cn } from "@/lib/utils";
 import {
   listarAplicacionesPsicoDashboard,
   obtenerDashboardPsicoAplicacion,
+  obtenerDetalleDimensionPsicoAplicacion,
 } from "@/services/reportesPsicoDashboardService";
 import type {
+  DimensionDetalleResponse,
   DimensionPsico,
   DistribucionTotal,
   DominioPsico,
   PsicoAplicacionItem,
   PsicoDashboardResponse,
+  ParticipantePsico,
   SegmentacionItem,
   SocioDistribucionItem,
   TotalPsico,
@@ -85,6 +90,32 @@ function fmtNum(value?: number) {
   return Number(value ?? 0).toLocaleString("es-CO", { maximumFractionDigits: 1 });
 }
 
+function shortText(value?: string | null, max = 34) {
+  const text = String(value ?? "—").trim() || "—";
+  return text.length > max ? `${text.slice(0, Math.max(0, max - 1)).trim()}…` : text;
+}
+
+function nivelLabel(nivel?: string | null) {
+  const map: Record<string, string> = {
+    MUY_BAJO: "Muy bajo",
+    SIN_RIESGO: "Sin riesgo",
+    BAJO: "Bajo",
+    MEDIO: "Medio",
+    ALTO: "Alto",
+    MUY_ALTO: "Muy alto",
+    SIN_NIVEL: "Sin nivel",
+  };
+  return map[String(nivel || "SIN_NIVEL")] ?? String(nivel || "Sin nivel");
+}
+
+function riesgoLabel(value?: number) {
+  const v = Number(value ?? 0);
+  if (v >= 35) return "Crítico";
+  if (v >= 15) return "Prioritario";
+  if (v > 0) return "Vigilancia";
+  return "Controlado";
+}
+
 function riesgoTone(pct?: number) {
   const v = Number(pct ?? 0);
   if (v >= 35) return "text-red-600 bg-red-50 border-red-100";
@@ -102,7 +133,7 @@ function estadoBadge(estado?: string) {
   );
 }
 
-function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet" }: any) {
+function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet", compact = false, valueTitle }: any) {
   const tones: Record<string, string> = {
     violet: "bg-violet-50 text-violet-700 border-violet-100",
     green: "bg-emerald-50 text-emerald-700 border-emerald-100",
@@ -112,18 +143,24 @@ function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet" }: any) {
     yellow: "bg-amber-50 text-amber-700 border-amber-100",
   };
   return (
-    <Card className="h-full min-h-[138px] overflow-hidden border-slate-200 bg-white/90 shadow-sm">
-      <CardContent className="h-full p-5">
-        <div className="flex h-full items-start gap-4">
-          <div className={cn("shrink-0 rounded-2xl border p-3", tones[tone])}>
-            <Icon className="h-5 w-5" />
+    <Card className={cn("h-full overflow-hidden border-slate-200 bg-white/90 shadow-sm", compact ? "min-h-[112px]" : "min-h-[124px]")}> 
+      <CardContent className={cn("h-full", compact ? "p-4" : "p-5")}>
+        <div className="flex h-full min-w-0 items-start gap-3">
+          <div className={cn("shrink-0 rounded-2xl border", compact ? "p-2.5" : "p-3", tones[tone])}>
+            <Icon className={cn(compact ? "h-4 w-4" : "h-5 w-5")} />
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
-            <div className="text-sm font-medium leading-snug text-slate-600">{title}</div>
-            <div className="mt-1 break-words text-[clamp(1.35rem,1.55vw,1.85rem)] font-bold leading-[1.15] tracking-tight text-slate-950 [overflow-wrap:anywhere]">
+            <div className="truncate text-xs font-semibold uppercase tracking-wide text-slate-500" title={title}>{title}</div>
+            <div
+              className={cn(
+                "mt-1 font-bold leading-[1.12] tracking-tight text-slate-950 [overflow-wrap:anywhere]",
+                compact ? "line-clamp-2 text-[clamp(1.15rem,1.25vw,1.55rem)]" : "line-clamp-2 text-[clamp(1.25rem,1.45vw,1.75rem)]"
+              )}
+              title={valueTitle ?? (typeof value === "string" ? value : undefined)}
+            >
               {value}
             </div>
-            {subtitle && <div className="mt-2 break-words text-xs leading-snug text-slate-500 [overflow-wrap:anywhere]">{subtitle}</div>}
+            {subtitle && <div className="mt-2 line-clamp-2 text-xs leading-snug text-slate-500" title={subtitle}>{subtitle}</div>}
           </div>
         </div>
       </CardContent>
@@ -161,7 +198,7 @@ function DistributionBars({ data }: { data: DistribucionTotal[] }) {
   const labels = Array.from(new Set(rows.map((r) => r.nivel)));
 
   return (
-    <ResponsiveContainer width="100%" height={310}>
+    <ResponsiveContainer width="100%" height={280}>
       <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, left: 70, bottom: 10 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
@@ -190,7 +227,7 @@ function DonutGlobal({ data }: { data: DistribucionTotal[] }) {
   const chartData = Array.from(merged.values()).filter((x) => x.cantidad > 0);
   const total = chartData.reduce((acc, it) => acc + it.cantidad, 0);
   return (
-    <div className="relative h-[310px]">
+    <div className="relative h-[270px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie data={chartData} dataKey="cantidad" nameKey="label" innerRadius={72} outerRadius={112} paddingAngle={3}>
@@ -203,7 +240,7 @@ function DonutGlobal({ data }: { data: DistribucionTotal[] }) {
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="text-center">
           <div className="text-3xl font-bold text-slate-950">{total}</div>
-          <div className="text-xs text-slate-500">registros</div>
+          <div className="text-xs text-slate-500">scores total</div>
         </div>
       </div>
     </div>
@@ -218,7 +255,7 @@ function RankingList({ items }: { items: DimensionPsico[] }) {
       {items.slice(0, 8).map((item) => (
         <div key={`${item.evaluacion_id}-${item.dimension_code}`} className="space-y-1.5">
           <div className="flex items-center justify-between gap-4 text-sm">
-            <div className="truncate font-medium text-slate-700" title={item.dimension_label}>{item.dimension_label}</div>
+            <div className="line-clamp-2 min-w-0 font-medium leading-snug text-slate-700" title={item.dimension_label}>{item.dimension_label}</div>
             <div className={cn("rounded-full border px-2 py-0.5 text-xs font-semibold", riesgoTone(item.pct_alto_muy_alto))}>{fmtPct(item.pct_alto_muy_alto)}</div>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-100">
@@ -236,15 +273,15 @@ function DominioCards({ dominios }: { dominios: DominioPsico[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {dominios.slice(0, 8).map((dom) => (
-        <div key={`${dom.evaluacion_id}-${dom.dominio_code}`} className="rounded-2xl border bg-white p-4 shadow-sm">
+        <div key={`${dom.evaluacion_id}-${dom.dominio_code}`} className="rounded-2xl border bg-white p-3 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-slate-900">{dom.dominio_label}</div>
+              <div className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900" title={dom.dominio_label}>{dom.dominio_label}</div>
               <div className="mt-1 text-xs text-slate-500">{dom.instrument_label}</div>
             </div>
             <Badge className={cn("rounded-full border", riesgoTone(dom.pct_alto_muy_alto))}>{fmtPct(dom.pct_alto_muy_alto)}</Badge>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
               <div className="text-xs text-slate-500">Promedio</div>
               <div className="text-xl font-bold text-slate-950">{fmtNum(dom.promedio_transformado)}</div>
@@ -297,7 +334,230 @@ function TotalesTable({ items }: { items: TotalPsico[] }) {
   );
 }
 
-function DimensionsTable({ items }: { items: DimensionPsico[] }) {
+function nivelBadge(nivel?: string | null) {
+  const n = nivel || "SIN_NIVEL";
+  const color = NIVEL_COLORS[n] || "#94a3b8";
+  return (
+    <span className="inline-flex rounded-full border px-2 py-1 text-xs font-semibold" style={{ color, borderColor: `${color}33`, backgroundColor: `${color}14` }}>
+      {nivelLabel(n)}
+    </span>
+  );
+}
+
+function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const [riesgo, setRiesgo] = useState("ALL");
+  const [estado, setEstado] = useState("ALL");
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return items.filter((it) => {
+      const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
+      const matchesRiesgo = riesgo === "ALL" || it.nivel_critico === riesgo;
+      const matchesEstado = estado === "ALL" || (estado === "COMPLETA" ? it.bateria_completa : !it.bateria_completa);
+      return matchesQ && matchesRiesgo && matchesEstado;
+    });
+  }, [items, q, riesgo, estado]);
+
+  if (!items.length) return <EmptyState text="Aún no hay participantes con scoring para esta aplicación." />;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_220px]">
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por cédula, nombre, área, cargo..." />
+        <Select value={riesgo} onValueChange={setRiesgo}>
+          <SelectTrigger><SelectValue placeholder="Riesgo" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Todos los riesgos</SelectItem>
+            {["SIN_RIESGO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"].map((n) => <SelectItem key={n} value={n}>{nivelLabel(n)}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={estado} onValueChange={setEstado}>
+          <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Todos los estados</SelectItem>
+            <SelectItem value="COMPLETA">Batería completa</SelectItem>
+            <SelectItem value="INCOMPLETA">Incompleta</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="overflow-x-auto rounded-2xl border bg-white">
+        <table className="w-full min-w-[1120px] text-sm">
+          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-4 py-3">Participante</th>
+              <th className="px-4 py-3">Área / cargo</th>
+              <th className="px-4 py-3 text-center">Intra</th>
+              <th className="px-4 py-3 text-center">Intralaboral</th>
+              <th className="px-4 py-3 text-center">Extra</th>
+              <th className="px-4 py-3 text-center">Estrés</th>
+              <th className="px-4 py-3 text-center">Riesgo más alto</th>
+              <th className="px-4 py-3 text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {filtered.map((it) => {
+              const nivelIntra = it.intra === "A" ? it.niveles?.a : it.niveles?.b;
+              const puntajeIntra = it.intra === "A" ? it.puntajes?.a : it.puntajes?.b;
+              return (
+                <tr key={it.empleado_id} className="hover:bg-slate-50/70">
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/psicosocial/empleados/" + it.empleado_id)}
+                      className="rounded text-left font-semibold text-slate-900 transition hover:text-violet-700 hover:underline focus:outline-none focus:ring-2 focus:ring-violet-200"
+                      title="Abrir perfil del colaborador"
+                    >
+                      {it.nombre || "Colaborador " + String(it.cedula || "").slice(-4) + " Demo"}
+                    </button>
+                    <div className="text-xs text-slate-500">CC {it.cedula || "—"} · {it.sexo || "Sin dato"}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-slate-700">{it.area || "Sin área"}</div>
+                    <div className="text-xs text-slate-500">{it.cargo || "Sin cargo"}</div>
+                  </td>
+                  <td className="px-4 py-3 text-center font-semibold">{it.intra}</td>
+                  <td className="px-4 py-3 text-center"><div>{nivelBadge(nivelIntra)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(puntajeIntra ?? undefined)}</div></td>
+                  <td className="px-4 py-3 text-center"><div>{nivelBadge(it.niveles?.extra)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.extra ?? undefined)}</div></td>
+                  <td className="px-4 py-3 text-center"><div>{nivelBadge(it.niveles?.estres)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.estres ?? undefined)}</div></td>
+                  <td className="px-4 py-3 text-center">{nivelBadge(it.nivel_critico)}</td>
+                  <td className="px-4 py-3 text-center">{it.bateria_completa ? <span className="text-emerald-700 font-semibold">Completa</span> : <span className="text-red-600 font-semibold">Revisar</span>}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-slate-500">Mostrando {filtered.length} de {items.length} participantes. El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
+    </div>
+  );
+}
+
+
+function DimensionDetailPanel({
+  open,
+  loading,
+  detail,
+  error,
+  onClose,
+}: {
+  open: boolean;
+  loading: boolean;
+  detail: DimensionDetalleResponse | null;
+  error: string | null;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+  const dim = detail?.dimension;
+  const responseCols = [
+    ["Siempre", "respuesta_siempre", "pct_respuesta_siempre"],
+    ["Casi siempre", "respuesta_casi_siempre", "pct_respuesta_casi_siempre"],
+    ["Algunas veces", "respuesta_algunas_veces", "pct_respuesta_algunas_veces"],
+    ["Casi nunca", "respuesta_casi_nunca", "pct_respuesta_casi_nunca"],
+    ["Nunca", "respuesta_nunca", "pct_respuesta_nunca"],
+  ] as const;
+
+  return (
+    <div className="fixed inset-0 z-[100]">
+      <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/30" onClick={onClose} />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-5xl overflow-y-auto border-l bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 border-b bg-white/95 p-5 backdrop-blur">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle por dimensión</div>
+              <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
+              {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
+            </div>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+          </div>
+        </div>
+
+        <div className="space-y-5 p-5">
+          {loading ? (
+            <div className="space-y-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-72 w-full" /></div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{error}</div>
+          ) : !detail || !dim ? (
+            <EmptyState />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                <KpiCard title="N dimensión" value={dim.n} icon={Users} tone="violet" compact />
+                <KpiCard title="Promedio transformado" value={fmtNum(dim.promedio_transformado)} subtitle="Escala oficial 0–100" icon={Gauge} tone="blue" compact />
+                <KpiCard title="% Alto/Muy alto" value={fmtPct(dim.pct_alto_muy_alto)} icon={AlertTriangle} tone={dim.pct_alto_muy_alto > 0 ? "orange" : "green"} compact />
+                <KpiCard title="Rango observado" value={`${fmtNum(dim.min_transformado)}–${fmtNum(dim.max_transformado)}`} icon={LineChart} tone="yellow" compact />
+                <KpiCard title="Calidad" value={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "OK" : "Revisar"} subtitle={`${dim.sin_nivel} sin nivel · ${dim.fuera_rango_0_100} fuera de rango`} icon={ShieldCheck} tone={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "green" : "red"} compact />
+              </div>
+
+              <Card className="border-slate-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base">Distribución por nivel de riesgo</CardTitle>
+                  <CardDescription>Clasificación normativa de la dimensión según baremos.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {detail.distribucion_niveles.map((n) => (
+                    <div key={String(n.nivel)} className="grid grid-cols-[120px_1fr_70px] items-center gap-3 text-sm">
+                      <div className="font-medium text-slate-700">{n.label}</div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full" style={{ width: `${n.porcentaje}%`, background: NIVEL_COLORS[String(n.nivel)] ?? "#64748b" }} /></div>
+                      <div className="text-right text-xs text-slate-500">{n.cantidad} · {fmtPct(n.porcentaje)}</div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base">Ítems que componen la dimensión</CardTitle>
+                  <CardDescription>Conteo textual por pregunta y promedio numérico usado como trazabilidad. La lectura oficial sigue siendo el puntaje transformado.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden rounded-2xl border">
+                    <div className="max-h-[620px] overflow-auto">
+                      <table className="min-w-[1180px] w-full text-sm">
+                        <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-sm">
+                          <tr>
+                            <th className="px-4 py-3">Pregunta</th>
+                            <th className="px-4 py-3">Instrumento</th>
+                            <th className="px-4 py-3 text-right">Prom. valor</th>
+                            <th className="px-4 py-3 text-center">Invertida</th>
+                            {responseCols.map(([label]) => <th key={label} className="px-4 py-3 text-right">{label}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {detail.items.map((item) => (
+                            <tr key={`${item.evaluacion_id}-${item.pregunta_id}`} className="hover:bg-slate-50/70">
+                              <td className="max-w-[420px] px-4 py-3">
+                                <div className="font-semibold text-slate-900">P{item.pregunta_orden}</div>
+                                <div className="mt-1 leading-snug text-slate-600">{item.texto}</div>
+                              </td>
+                              <td className="whitespace-nowrap px-4 py-3 text-slate-600">{item.instrument_label}</td>
+                              <td className="px-4 py-3 text-right font-semibold">{fmtNum(item.promedio_valor_num)}</td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={cn("rounded-full border px-2 py-1 text-xs font-semibold", item.invertida ? "border-amber-100 bg-amber-50 text-amber-700" : "border-slate-200 bg-slate-50 text-slate-600")}>{item.invertida ? "Sí" : "No"}</span>
+                              </td>
+                              {responseCols.map(([label, countKey, pctKey]) => (
+                                <td key={label} className="px-4 py-3 text-right">
+                                  <div className="font-semibold text-slate-900">{Number((item as any)[countKey] ?? 0).toLocaleString("es-CO")}</div>
+                                  <div className="text-[11px] text-slate-400">{fmtPct(Number((item as any)[pctKey] ?? 0))}</div>
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onOpenDetail: (item: DimensionPsico) => void }) {
   type SortKey =
     | "dimension_label"
     | "dominio_label"
@@ -415,7 +675,19 @@ function DimensionsTable({ items }: { items: DimensionPsico[] }) {
             <tbody className="divide-y">
               {filtered.map((it) => (
                 <tr key={`${it.evaluacion_id}-${it.dimension_code}`} className="hover:bg-slate-50/70">
-                  <td className="max-w-[360px] px-4 py-3 font-medium text-slate-900"><div className="break-words leading-snug">{it.dimension_label}</div></td>
+                  <td className="max-w-[360px] px-4 py-3 font-medium text-slate-900">
+                    <button
+                      type="button"
+                      onClick={() => onOpenDetail(it)}
+                      className="group block max-w-full text-left leading-snug text-slate-900 transition hover:text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2"
+                      title="Abrir detalle estadístico de la dimensión"
+                    >
+                      <span className="break-words underline decoration-slate-300 underline-offset-4 group-hover:decoration-violet-500">
+                        {it.dimension_label}
+                      </span>
+                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-violet-500">Ver detalle</span>
+                    </button>
+                  </td>
                   <td className="max-w-[260px] px-4 py-3 text-slate-600"><div className="break-words leading-snug">{it.dominio_label || "—"}</div></td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-600">{it.instrument_label}</td>
                   <td className="px-4 py-3 text-right">{it.n}</td>
@@ -503,6 +775,10 @@ export default function ReportesPsico() {
   const [tab, setTab] = useState<TabKey>("resumen");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDimension, setSelectedDimension] = useState<DimensionPsico | null>(null);
+  const [dimensionDetail, setDimensionDetail] = useState<DimensionDetalleResponse | null>(null);
+  const [dimensionDetailLoading, setDimensionDetailLoading] = useState(false);
+  const [dimensionDetailError, setDimensionDetailError] = useState<string | null>(null);
 
   async function loadApps() {
     const items = await listarAplicacionesPsicoDashboard();
@@ -525,6 +801,29 @@ export default function ReportesPsico() {
     }
   }
 
+  async function openDimensionDetail(item: DimensionPsico) {
+    if (!aplicacionId) return;
+    setSelectedDimension(item);
+    setDimensionDetail(null);
+    setDimensionDetailError(null);
+    setDimensionDetailLoading(true);
+    try {
+      const res = await obtenerDetalleDimensionPsicoAplicacion(aplicacionId, item.dimension_code, item.evaluacion_id);
+      setDimensionDetail(res);
+    } catch (e) {
+      console.error(e);
+      setDimensionDetailError("No fue posible cargar el detalle de la dimensión.");
+    } finally {
+      setDimensionDetailLoading(false);
+    }
+  }
+
+  function closeDimensionDetail() {
+    setSelectedDimension(null);
+    setDimensionDetail(null);
+    setDimensionDetailError(null);
+  }
+
   useEffect(() => {
     loadApps().catch(() => setApps([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -545,6 +844,11 @@ export default function ReportesPsico() {
     const all = data?.distribucion_totales.flatMap((d) => d.niveles.map((n) => ({ ...n, instrumento: d.instrument_label }))) ?? [];
     return all.sort((a, b) => b.cantidad - a.cantidad)[0];
   }, [data]);
+
+
+  const dominioCritico = data?.kpis.dominio_mas_critico;
+  const dimensionCritica = data?.kpis.dimension_mas_critica;
+  const periodicidad = Number(data?.kpis.pct_global_alto_muy_alto ?? 0) >= 15 ? "12 meses" : "12-24 meses";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -630,26 +934,42 @@ export default function ReportesPsico() {
           <>
             {tab === "resumen" && (
               <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-                  <KpiCard title="Participación" value={`${calidad?.bateria_completa_correcta ?? 0}/${calidad?.personas_unicas ?? 0}`} subtitle={`${fmtPct(calidad?.porcentaje_completitud)} batería completa`} icon={Users} tone="violet" />
-                  <KpiCard title="Riesgo predominante" value={predominantTotal?.label ?? "—"} subtitle="Nivel más frecuente en totales" icon={ShieldCheck} tone="yellow" />
-                  <KpiCard title="% Alto/Muy alto" value={fmtPct(data.kpis.pct_global_alto_muy_alto)} subtitle="Promedio en totales oficiales" icon={Gauge} tone={data.kpis.pct_global_alto_muy_alto > 0 ? "red" : "green"} />
-                  <KpiCard title="Dominio más crítico" value={data.kpis.dominio_mas_critico?.dominio_label ?? "—"} subtitle={`% Alto/Muy alto ${fmtPct(data.kpis.dominio_mas_critico?.pct_alto_muy_alto)}`} icon={Target} tone="orange" />
-                  <KpiCard title="Dimensión más crítica" value={data.kpis.dimension_mas_critica?.dimension_label ?? "—"} subtitle={`Promedio ${fmtNum(data.kpis.dimension_mas_critica?.promedio_transformado)}`} icon={Brain} tone="red" />
-                  <KpiCard title="Próxima evaluación" value="12-24 meses" subtitle="Según nivel de riesgo final" icon={CalendarClock} tone="green" />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Participación" value={`${calidad?.bateria_completa_correcta ?? 0}/${calidad?.personas_unicas ?? 0}`} subtitle={`${fmtPct(calidad?.porcentaje_completitud)} batería completa`} icon={Users} tone="violet" />
+                  </div>
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Riesgo predominante" value={predominantTotal?.label ?? "—"} subtitle="Nivel más frecuente en scores totales" icon={ShieldCheck} tone={data.kpis.pct_global_alto_muy_alto > 0 ? "yellow" : "green"} />
+                  </div>
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Alto/Muy alto" value={fmtPct(data.kpis.pct_global_alto_muy_alto)} subtitle={`${riesgoLabel(data.kpis.pct_global_alto_muy_alto)} · ponderado por scores`} icon={Gauge} tone={data.kpis.pct_global_alto_muy_alto > 0 ? "red" : "green"} />
+                  </div>
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Próxima evaluación" value={periodicidad} subtitle="Periodicidad sugerida según exposición" icon={CalendarClock} tone="green" />
+                  </div>
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Dominio crítico" value={shortText(dominioCritico?.dominio_label, 24)} valueTitle={dominioCritico?.dominio_label} subtitle={`Alto/Muy alto ${fmtPct(dominioCritico?.pct_alto_muy_alto)}`} icon={Target} tone="orange" />
+                  </div>
+                  <div className="xl:col-span-2">
+                    <KpiCard compact title="Dimensión crítica" value={shortText(dimensionCritica?.dimension_label, 24)} valueTitle={dimensionCritica?.dimension_label} subtitle={`Promedio ${fmtNum(dimensionCritica?.promedio_transformado)}`} icon={Brain} tone="red" />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-sky-100 bg-sky-50/60 px-4 py-3 text-xs leading-relaxed text-sky-900">
+                  <b>Lectura para el psicólogo:</b> los resultados se interpretan con puntajes transformados de 0 a 100 y niveles de riesgo oficiales. Las frecuencias de respuesta ayudan a reconocer patrones de exposición por ítem, pero la clasificación normativa se mantiene en los baremos del instrumento.
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
                   <Card className="border-slate-200 shadow-sm xl:col-span-4">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <CardTitle className="text-base">Distribución global por nivel</CardTitle>
-                      <CardDescription>Consolidado visual de los totales oficiales.</CardDescription>
+                      <CardDescription>Distribución de niveles en scores totales oficiales.</CardDescription>
                     </CardHeader>
                     <CardContent><DonutGlobal data={data.distribucion_totales} /></CardContent>
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm xl:col-span-4">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <CardTitle className="text-base">Top dimensiones críticas</CardTitle>
                       <CardDescription>Ordenadas por % Alto/Muy alto.</CardDescription>
                     </CardHeader>
@@ -657,9 +977,9 @@ export default function ReportesPsico() {
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm xl:col-span-4">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <CardTitle className="text-base">Mapa ejecutivo de dominios</CardTitle>
-                      <CardDescription>Promedio y exposición por dominio intralaboral.</CardDescription>
+                      <CardDescription>Promedio y exposición por dominio/dimensión agrupada.</CardDescription>
                     </CardHeader>
                     <CardContent><DominioCards dominios={data.ranking_dominios} /></CardContent>
                   </Card>
@@ -667,7 +987,7 @@ export default function ReportesPsico() {
 
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
                   <Card className="border-slate-200 shadow-sm xl:col-span-8">
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <CardTitle className="text-base">Distribución por instrumento</CardTitle>
                       <CardDescription>Barras apiladas por nivel de riesgo.</CardDescription>
                     </CardHeader>
@@ -740,7 +1060,7 @@ export default function ReportesPsico() {
                 </div>
                 <Card className="border-slate-200 shadow-sm">
                   <CardHeader><CardTitle>Tabla detallada de dimensiones</CardTitle><CardDescription>Base analítica para psicólogo evaluador y plan de acción.</CardDescription></CardHeader>
-                  <CardContent><DimensionsTable items={data.dimensiones} /></CardContent>
+                  <CardContent><DimensionsTable items={data.dimensiones} onOpenDetail={openDimensionDetail} /></CardContent>
                 </Card>
               </div>
             )}
@@ -776,7 +1096,6 @@ export default function ReportesPsico() {
                   <SocioChart title="Nivel educativo" items={data.sociodemografia?.variables?.nivel_educativo} />
                   <SocioChart title="Estado civil" items={data.sociodemografia?.variables?.estado_civil} />
                   <SocioChart title="Estrato" items={data.sociodemografia?.variables?.estrato} />
-                  <SocioChart title="Tipo de vivienda" items={data.sociodemografia?.variables?.tipo_vivienda} />
                   <SocioChart title="Tipo de contrato" items={data.sociodemografia?.variables?.tipo_contrato} />
                   <SocioChart title="Tipo de salario" items={data.sociodemografia?.variables?.tipo_salario} />
                   <SocioChart title="Antigüedad en la empresa" items={data.sociodemografia?.variables?.antiguedad_empresa} />
@@ -790,16 +1109,23 @@ export default function ReportesPsico() {
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
                   <CardTitle>Participantes e informes individuales</CardTitle>
-                  <CardDescription>Esta pestaña queda preparada para enlazar el listado individual y generación de PDF por empleado.</CardDescription>
+                  <CardDescription>Listado por colaborador con estado de batería, niveles por instrumento y base para informe individual.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <EmptyState text="Siguiente subpaso: endpoint de participantes por aplicación + acceso a informe individual." />
+                  <ParticipantesTable items={data.participantes?.items ?? []} />
                 </CardContent>
               </Card>
             )}
           </>
         )}
       </div>
+      <DimensionDetailPanel
+        open={Boolean(selectedDimension)}
+        loading={dimensionDetailLoading}
+        detail={dimensionDetail}
+        error={dimensionDetailError}
+        onClose={closeDimensionDetail}
+      />
     </div>
   );
 }

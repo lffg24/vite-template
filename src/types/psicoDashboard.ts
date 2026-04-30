@@ -129,6 +129,32 @@ export interface SociodemografiaPsico {
   variables: Record<string, SocioDistribucionItem[]>;
 }
 
+export interface ParticipantePsico {
+  empleado_id: number;
+  cedula?: string | null;
+  nombre: string;
+  email?: string | null;
+  area?: string | null;
+  cargo?: string | null;
+  tipo_cargo?: string | null;
+  sexo?: string | null;
+  intra: "A" | "B" | "Sin intra" | string;
+  bateria_completa: boolean;
+  nivel_critico: NivelRiesgo | string;
+  niveles: { a?: string | null; b?: string | null; extra?: string | null; estres?: string | null };
+  puntajes: { a?: number | null; b?: number | null; extra?: number | null; estres?: number | null };
+}
+
+export interface ParticipantesPsico {
+  ok: boolean;
+  aplicacion_id: number;
+  total: number;
+  completos: number;
+  incompletos: number;
+  items: ParticipantePsico[];
+}
+
+
 export interface SegmentacionItem {
   tipo: string;
   nombre: string;
@@ -157,5 +183,67 @@ export interface PsicoDashboardResponse {
   ranking_dominios: DominioPsico[];
   segmentacion: Record<string, SegmentacionItem[]>;
   sociodemografia?: SociodemografiaPsico;
+  participantes?: ParticipantesPsico;
   alertas: { tipo: string; nivel: string; mensaje: string }[];
+}
+
+
+export interface DimensionDetalleNivel {
+  nivel: NivelRiesgo | string;
+  label: string;
+  cantidad: number;
+  porcentaje: number;
+  orden?: number;
+}
+
+export interface DimensionDetalleResumen {
+  evaluacion_id?: number;
+  dimension_code: string;
+  dimension_label: string;
+  dominio_code?: string | null;
+  dominio_label?: string | null;
+  instrument_codes: string[];
+  instrument_labels: string[];
+  n: number;
+  promedio_bruto: number;
+  promedio_transformado: number;
+  min_transformado: number;
+  max_transformado: number;
+  alto_muy_alto: number;
+  pct_alto_muy_alto: number;
+  sin_nivel: number;
+  fuera_rango_0_100: number;
+}
+
+export interface DimensionDetalleItem {
+  evaluacion_id: number;
+  instrument_code: string;
+  instrument_label: string;
+  pregunta_id: number;
+  pregunta_orden: number;
+  texto: string;
+  dominio_code?: string | null;
+  dominio_label?: string | null;
+  invertida: boolean;
+  respuestas_total: number;
+  respuesta_siempre: number;
+  respuesta_casi_siempre: number;
+  respuesta_algunas_veces: number;
+  respuesta_casi_nunca: number;
+  respuesta_nunca: number;
+  pct_respuesta_siempre: number;
+  pct_respuesta_casi_siempre: number;
+  pct_respuesta_algunas_veces: number;
+  pct_respuesta_casi_nunca: number;
+  pct_respuesta_nunca: number;
+  promedio_valor_num: number;
+}
+
+export interface DimensionDetalleResponse {
+  ok: boolean;
+  aplicacion_id: number;
+  dimension: DimensionDetalleResumen;
+  distribucion_niveles: DimensionDetalleNivel[];
+  items: DimensionDetalleItem[];
+  meta?: Record<string, any>;
 }

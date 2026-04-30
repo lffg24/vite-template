@@ -17,6 +17,10 @@ import Logout from "@/pages/Logout";
 import Login from "@/pages/Login";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 
+import PsicoEmpleadoPerfilPage from "./pages/psicosocial/PsicoEmpleadoPerfilPage";
+import PsicoEmpleadoRespuestasPage from "./pages/psicosocial/PsicoEmpleadoRespuestasPage";
+import PsicoEmpleadoResultadosPage from "./pages/psicosocial/PsicoEmpleadoResultadosPage";
+
 import ReportesPsico from "@/pages/ReportesPsico";
 
 function App() {
