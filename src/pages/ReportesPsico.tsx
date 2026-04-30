@@ -349,15 +349,40 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
   const [q, setQ] = useState("");
   const [riesgo, setRiesgo] = useState("ALL");
   const [estado, setEstado] = useState("ALL");
+  const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico" | "estado"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
+  const riskOrder: Record<string, number> = { MUY_ALTO: 5, ALTO: 4, MEDIO: 3, BAJO: 2, SIN_RIESGO: 1, MUY_BAJO: 1, SIN_NIVEL: 0 };
+
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
-    return items.filter((it) => {
-      const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
-      const matchesRiesgo = riesgo === "ALL" || it.nivel_critico === riesgo;
-      const matchesEstado = estado === "ALL" || (estado === "COMPLETA" ? it.bateria_completa : !it.bateria_completa);
-      return matchesQ && matchesRiesgo && matchesEstado;
-    });
-  }, [items, q, riesgo, estado]);
+    return items
+      .filter((it) => {
+        const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
+        const matchesRiesgo = riesgo === "ALL" || it.nivel_critico === riesgo;
+        const matchesEstado = estado === "ALL" || (estado === "COMPLETA" ? it.bateria_completa : !it.bateria_completa);
+        return matchesQ && matchesRiesgo && matchesEstado;
+      })
+      .sort((a, b) => {
+        let cmp = 0;
+        if (sort.key === "nivel_critico") cmp = (riskOrder[a.nivel_critico || "SIN_NIVEL"] ?? 0) - (riskOrder[b.nivel_critico || "SIN_NIVEL"] ?? 0);
+        else if (sort.key === "estado") cmp = Number(a.bateria_completa) - Number(b.bateria_completa);
+        else cmp = String((a as any)[sort.key] || "").localeCompare(String((b as any)[sort.key] || ""), "es");
+        return sort.dir === "asc" ? cmp : -cmp;
+      });
+  }, [items, q, riesgo, estado, sort]);
+
+  const setSortKey = (key: typeof sort.key) => {
+    setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
+  };
+
+  const SortButton = ({ label, sortKey, align = "left" }: { label: string; sortKey: typeof sort.key; align?: "left" | "center" }) => (
+    <button
+      type="button"
+      onClick={() => setSortKey(sortKey)}
+      className={cn("inline-flex items-center gap-1 font-semibold hover:text-violet-700", align === "center" && "justify-center")}
+    >
+      {label}<span className="text-[10px] text-slate-400">{sort.key === sortKey ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span>
+    </button>
+  );
 
   if (!items.length) return <EmptyState text="Aún no hay participantes con scoring para esta aplicación." />;
 
@@ -385,14 +410,14 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
         <table className="w-full min-w-[1120px] text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3">Participante</th>
-              <th className="px-4 py-3">Área / cargo</th>
-              <th className="px-4 py-3 text-center">Intra</th>
+              <th className="px-4 py-3"><SortButton label="Participante" sortKey="nombre" /></th>
+              <th className="px-4 py-3"><SortButton label="Área / cargo" sortKey="area" /></th>
+              <th className="px-4 py-3 text-center"><SortButton label="Intra" sortKey="intra" align="center" /></th>
               <th className="px-4 py-3 text-center">Intralaboral</th>
               <th className="px-4 py-3 text-center">Extra</th>
               <th className="px-4 py-3 text-center">Estrés</th>
-              <th className="px-4 py-3 text-center">Riesgo más alto</th>
-              <th className="px-4 py-3 text-center">Estado</th>
+              <th className="px-4 py-3 text-center"><SortButton label="Riesgo más alto" sortKey="nivel_critico" align="center" /></th>
+              <th className="px-4 py-3 text-center"><SortButton label="Estado" sortKey="estado" align="center" /></th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -400,17 +425,20 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
               const nivelIntra = it.intra === "A" ? it.niveles?.a : it.niveles?.b;
               const puntajeIntra = it.intra === "A" ? it.puntajes?.a : it.puntajes?.b;
               return (
-                <tr key={it.empleado_id} className="hover:bg-slate-50/70">
+                <tr key={String(it.empleado_id)} className="hover:bg-slate-50/70">
                   <td className="px-4 py-3">
                     <button
                       type="button"
                       onClick={() => navigate("/psicosocial/empleados/" + it.empleado_id)}
-                      className="rounded text-left font-semibold text-slate-900 transition hover:text-violet-700 hover:underline focus:outline-none focus:ring-2 focus:ring-violet-200"
+                      className="group block max-w-[260px] rounded text-left leading-snug text-slate-900 transition hover:text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2"
                       title="Abrir perfil del colaborador"
                     >
-                      {it.nombre || "Colaborador " + String(it.cedula || "").slice(-4) + " Demo"}
+                      <span className="font-semibold underline decoration-slate-300 underline-offset-4 group-hover:decoration-violet-500">
+                        {it.nombre || "Colaborador " + String(it.cedula || "").slice(-4) + " Demo"}
+                      </span>
+                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-violet-500">Ver perfil</span>
                     </button>
-                    <div className="text-xs text-slate-500">CC {it.cedula || "—"} · {it.sexo || "Sin dato"}</div>
+                    <div className="mt-1 text-xs text-slate-500">CC {it.cedula || "—"} · {it.sexo || "Sin dato"}</div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-slate-700">{it.area || "Sin área"}</div>
@@ -458,13 +486,17 @@ function DimensionDetailPanel({
   ] as const;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/30" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-5xl overflow-y-auto border-l bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 border-b bg-white/95 p-5 backdrop-blur">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+      <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" onClick={onClose} />
+      <section
+        role="dialog"
+        aria-modal="true"
+        className="relative flex h-[88vh] w-full max-w-[1440px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
+      >
+        <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-5 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle por dimensión</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico de dimensión</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
               {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
             </div>
@@ -472,7 +504,7 @@ function DimensionDetailPanel({
           </div>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="space-y-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-72 w-full" /></div>
           ) : error ? (
@@ -480,39 +512,51 @@ function DimensionDetailPanel({
           ) : !detail || !dim ? (
             <EmptyState />
           ) : (
-            <>
+            <div className="space-y-5">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <KpiCard title="N dimensión" value={dim.n} icon={Users} tone="violet" compact />
                 <KpiCard title="Promedio transformado" value={fmtNum(dim.promedio_transformado)} subtitle="Escala oficial 0–100" icon={Gauge} tone="blue" compact />
                 <KpiCard title="% Alto/Muy alto" value={fmtPct(dim.pct_alto_muy_alto)} icon={AlertTriangle} tone={dim.pct_alto_muy_alto > 0 ? "orange" : "green"} compact />
-                <KpiCard title="Rango observado" value={`${fmtNum(dim.min_transformado)}–${fmtNum(dim.max_transformado)}`} icon={LineChart} tone="yellow" compact />
-                <KpiCard title="Calidad" value={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "OK" : "Revisar"} subtitle={`${dim.sin_nivel} sin nivel · ${dim.fuera_rango_0_100} fuera de rango`} icon={ShieldCheck} tone={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "green" : "red"} compact />
+                <KpiCard title="Rango observado" value={String(fmtNum(dim.min_transformado)) + "–" + String(fmtNum(dim.max_transformado))} icon={LineChart} tone="yellow" compact />
+                <KpiCard title="Calidad" value={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "OK" : "Revisar"} subtitle={String(dim.sin_nivel) + " sin nivel · " + String(dim.fuera_rango_0_100) + " fuera de rango"} icon={ShieldCheck} tone={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "green" : "red"} compact />
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 xl:grid-cols-[.9fr_1.1fr]">
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-base">Distribución por nivel de riesgo</CardTitle>
+                    <CardDescription>Clasificación normativa de la dimensión según baremos.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {detail.distribucion_niveles.map((n) => (
+                      <div key={String(n.nivel)} className="grid grid-cols-[120px_1fr_70px] items-center gap-3 text-sm">
+                        <div className="font-medium text-slate-700">{n.label}</div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full" style={{ width: String(n.porcentaje) + "%", background: NIVEL_COLORS[String(n.nivel)] ?? "#64748b" }} /></div>
+                        <div className="text-right text-xs text-slate-500">{n.cantidad} · {fmtPct(n.porcentaje)}</div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-base">Lectura psicométrica</CardTitle>
+                    <CardDescription>Guía rápida para interpretar el detalle sin perder la lectura normativa.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm leading-relaxed text-sky-900">
+                    El nivel de riesgo se interpreta con el puntaje transformado y el baremo aplicable al instrumento. Los conteos por respuesta ayudan a identificar patrones de exposición por ítem, pero no reemplazan la clasificación normativa de la dimensión.
+                  </CardContent>
+                </Card>
               </div>
 
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-base">Distribución por nivel de riesgo</CardTitle>
-                  <CardDescription>Clasificación normativa de la dimensión según baremos.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {detail.distribucion_niveles.map((n) => (
-                    <div key={String(n.nivel)} className="grid grid-cols-[120px_1fr_70px] items-center gap-3 text-sm">
-                      <div className="font-medium text-slate-700">{n.label}</div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full" style={{ width: `${n.porcentaje}%`, background: NIVEL_COLORS[String(n.nivel)] ?? "#64748b" }} /></div>
-                      <div className="text-right text-xs text-slate-500">{n.cantidad} · {fmtPct(n.porcentaje)}</div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="border-slate-200 shadow-sm">
-                <CardHeader>
                   <CardTitle className="text-base">Ítems que componen la dimensión</CardTitle>
-                  <CardDescription>Conteo textual por pregunta y promedio numérico usado como trazabilidad. La lectura oficial sigue siendo el puntaje transformado.</CardDescription>
+                  <CardDescription>Conteo textual por pregunta y promedio numérico usado como trazabilidad descriptiva.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-hidden rounded-2xl border">
-                    <div className="max-h-[620px] overflow-auto">
+                    <div className="max-h-[520px] overflow-auto">
                       <table className="min-w-[1180px] w-full text-sm">
                         <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-sm">
                           <tr>
@@ -525,7 +569,7 @@ function DimensionDetailPanel({
                         </thead>
                         <tbody className="divide-y">
                           {detail.items.map((item) => (
-                            <tr key={`${item.evaluacion_id}-${item.pregunta_id}`} className="hover:bg-slate-50/70">
+                            <tr key={String(item.evaluacion_id) + "-" + String(item.pregunta_id)} className="hover:bg-slate-50/70">
                               <td className="max-w-[420px] px-4 py-3">
                                 <div className="font-semibold text-slate-900">P{item.pregunta_orden}</div>
                                 <div className="mt-1 leading-snug text-slate-600">{item.texto}</div>
@@ -549,13 +593,14 @@ function DimensionDetailPanel({
                   </div>
                 </CardContent>
               </Card>
-            </>
+            </div>
           )}
         </div>
-      </aside>
+      </section>
     </div>
   );
 }
+
 
 function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onOpenDetail: (item: DimensionPsico) => void }) {
   type SortKey =
@@ -737,27 +782,119 @@ function SegmentacionChart({ title, items }: { title: string; items?: Segmentaci
   );
 }
 
+type SocioChartMode = "bar" | "horizontal" | "donut" | "pie" | "table";
+
 function SocioChart({ title, items }: { title: string; items?: SocioDistribucionItem[] }) {
-  const data = (items ?? []).slice(0, 10);
+  const storageKey = "eva360:socio-chart:" + title;
+  const [mode, setMode] = useState<SocioChartMode>(() => {
+    try {
+      return (localStorage.getItem(storageKey) as SocioChartMode) || "horizontal";
+    } catch {
+      return "horizontal";
+    }
+  });
+  const data = useMemo(() => (items ?? []).slice(0, 10), [items]);
   const hasOnlyMissing = data.length === 1 && String(data[0]?.nombre).toLowerCase() === "sin dato";
+
+  const changeMode = (value: string) => {
+    const next = value as SocioChartMode;
+    setMode(next);
+    try {
+      localStorage.setItem(storageKey, next);
+    } catch {
+      // localStorage puede no estar disponible en algunos entornos de prueba.
+    }
+  };
+
+  const chartData = data.map((item) => ({
+    ...item,
+    porcentaje: Number(item.porcentaje ?? 0),
+    cantidad: Number(item.cantidad ?? 0),
+  }));
+
   return (
     <Card className="border-slate-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>Distribución porcentual de la ficha de datos generales.</CardDescription>
+      <CardHeader className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <CardTitle className="text-base">{title}</CardTitle>
+          <CardDescription>Distribución porcentual de la ficha de datos generales.</CardDescription>
+        </div>
+        <Select value={mode} onValueChange={changeMode}>
+          <SelectTrigger className="h-9 w-full bg-white text-xs sm:w-[150px]"><SelectValue placeholder="Vista" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="horizontal">Barras H.</SelectItem>
+            <SelectItem value="bar">Barras</SelectItem>
+            <SelectItem value="donut">Dona</SelectItem>
+            <SelectItem value="pie">Torta</SelectItem>
+            <SelectItem value="table">Tabla</SelectItem>
+          </SelectContent>
+        </Select>
       </CardHeader>
       <CardContent>
-        {!data.length ? (
+        {!chartData.length ? (
           <EmptyState text="No hay datos sociodemográficos disponibles para esta variable." />
         ) : hasOnlyMissing ? (
           <EmptyState text="La variable existe, pero los participantes no tienen este dato cargado." />
+        ) : mode === "table" ? (
+          <div className="overflow-hidden rounded-2xl border">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Categoría</th>
+                  <th className="px-4 py-3 text-right">N</th>
+                  <th className="px-4 py-3 text-right">%</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {chartData
+                  .slice()
+                  .sort((a, b) => b.cantidad - a.cantidad)
+                  .map((item) => (
+                    <tr key={String(item.nombre)}>
+                      <td className="px-4 py-3 font-medium text-slate-800">{item.nombre}</td>
+                      <td className="px-4 py-3 text-right font-semibold">{item.cantidad.toLocaleString("es-CO")}</td>
+                      <td className="px-4 py-3 text-right text-slate-600">{fmtPct(item.porcentaje)}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        ) : mode === "donut" || mode === "pie" ? (
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="cantidad"
+                nameKey="nombre"
+                innerRadius={mode === "donut" ? 68 : 0}
+                outerRadius={104}
+                paddingAngle={mode === "donut" ? 3 : 1}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={"socio-" + title + "-" + String(entry.nombre) + "-" + String(index)} fill={["#7c3aed", "#22c55e", "#f97316", "#0ea5e9", "#eab308", "#ef4444", "#64748b", "#14b8a6"][index % 8]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: any, name: any) => [Number(value).toLocaleString("es-CO") + " participantes", name]} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : mode === "bar" ? (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="nombre" interval={0} angle={-25} textAnchor="end" height={70} tick={{ fontSize: 11 }} />
+              <YAxis tickFormatter={(v) => String(v) + "%"} domain={[0, 100]} />
+              <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
+              <Bar dataKey="porcentaje" fill="#7c3aed" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, left: 110, bottom: 10 }}>
+            <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, left: 110, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => String(v) + "%"} />
               <YAxis type="category" dataKey="nombre" width={160} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(value: any, name: any, props: any) => [`${Number(value).toFixed(1)}% (${props?.payload?.cantidad ?? 0})`, "Participación"]} />
+              <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
               <Bar dataKey="porcentaje" fill="#7c3aed" radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -882,7 +1019,7 @@ export default function ReportesPsico() {
                   <SelectValue placeholder="Selecciona una aplicación" />
                 </SelectTrigger>
                 <SelectContent>
-                  {apps.map((a) => <SelectItem key={a.id} value={String(a.id)}>{a.nombre} · #{a.id}</SelectItem>)}
+                  {apps.map((a) => <SelectItem key={String(a.id)} value={String(a.id)}>{a.nombre} · #{a.id}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={() => aplicacionId && loadDashboard(aplicacionId)} disabled={!aplicacionId || loading}>
@@ -924,7 +1061,7 @@ export default function ReportesPsico() {
         {loading ? (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={"dashboard-skeleton-" + String(i)} className="h-32 rounded-2xl" />)}
             </div>
             <Skeleton className="h-[420px] rounded-2xl" />
           </div>
@@ -1002,7 +1139,7 @@ export default function ReportesPsico() {
                       {!data.alertas.length ? (
                         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" />Sin alertas críticas con los datos actuales.</div>
                       ) : data.alertas.map((a, i) => (
-                        <div key={i} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
+                        <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
                       ))}
                     </CardContent>
                   </Card>
