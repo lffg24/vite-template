@@ -1,0 +1,161 @@
+export type NivelRiesgo = "MUY_BAJO" | "SIN_RIESGO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | "SIN_NIVEL";
+
+export interface PsicoAplicacionItem {
+  id: number;
+  nombre: string;
+  descripcion?: string | null;
+  estado?: string | null;
+  fecha_aplicacion?: string | null;
+  created_at?: string | null;
+  evaluaciones?: number;
+}
+
+export interface CalidadBateria {
+  personas_unicas: number;
+  con_a: number;
+  con_b: number;
+  con_extra: number;
+  con_estres: number;
+  bateria_completa_correcta: number;
+  error_con_a_y_b: number;
+  error_sin_intra: number;
+  error_sin_extra: number;
+  error_sin_estres: number;
+  porcentaje_completitud: number;
+  errores: number;
+  estado: "OK" | "REVISAR" | string;
+}
+
+export interface TotalPsico {
+  evaluacion_id: number;
+  instrument_code: string;
+  instrument_label: string;
+  total_code: string;
+  total_label: string;
+  n: number;
+  promedio_transformado: number;
+  min_transformado: number;
+  max_transformado: number;
+  alto_muy_alto: number;
+  pct_alto_muy_alto: number;
+  sin_nivel: number;
+  sin_transformado: number;
+  fuera_rango_0_100: number;
+  respuestas_total?: number;
+  respuesta_siempre?: number;
+  respuesta_casi_siempre?: number;
+  respuesta_algunas_veces?: number;
+  respuesta_casi_nunca?: number;
+  respuesta_nunca?: number;
+  pct_respuesta_siempre?: number;
+  pct_respuesta_casi_siempre?: number;
+  pct_respuesta_algunas_veces?: number;
+  pct_respuesta_casi_nunca?: number;
+  pct_respuesta_nunca?: number;
+}
+
+export interface NivelDistribucion {
+  nivel: NivelRiesgo | string;
+  label: string;
+  cantidad: number;
+  porcentaje: number;
+  orden?: number;
+}
+
+export interface DistribucionTotal {
+  evaluacion_id: number;
+  instrument_code: string;
+  instrument_label: string;
+  total_code: string;
+  total_label: string;
+  total: number;
+  niveles: NivelDistribucion[];
+}
+
+export interface DominioPsico {
+  evaluacion_id: number;
+  instrument_code: string;
+  instrument_label: string;
+  dominio_code: string;
+  dominio_label: string;
+  n: number;
+  promedio_transformado: number;
+  alto_muy_alto: number;
+  pct_alto_muy_alto: number;
+  sin_nivel: number;
+  fuera_rango_0_100: number;
+}
+
+export interface DimensionPsico {
+  evaluacion_id: number;
+  instrument_code: string;
+  instrument_label: string;
+  dominio_code?: string | null;
+  dominio_label?: string | null;
+  dimension_code: string;
+  dimension_label: string;
+  n: number;
+  promedio_transformado: number;
+  min_transformado: number;
+  max_transformado: number;
+  alto_muy_alto: number;
+  pct_alto_muy_alto: number;
+  sin_nivel: number;
+  fuera_rango_0_100: number;
+  respuestas_total?: number;
+  respuesta_siempre?: number;
+  respuesta_casi_siempre?: number;
+  respuesta_algunas_veces?: number;
+  respuesta_casi_nunca?: number;
+  respuesta_nunca?: number;
+  pct_respuesta_siempre?: number;
+  pct_respuesta_casi_siempre?: number;
+  pct_respuesta_algunas_veces?: number;
+  pct_respuesta_casi_nunca?: number;
+  pct_respuesta_nunca?: number;
+}
+
+
+export interface SocioDistribucionItem {
+  tipo: string;
+  nombre: string;
+  cantidad: number;
+  porcentaje: number;
+}
+
+export interface SociodemografiaPsico {
+  total_participantes: number;
+  completitud: Record<string, number>;
+  variables: Record<string, SocioDistribucionItem[]>;
+}
+
+export interface SegmentacionItem {
+  tipo: string;
+  nombre: string;
+  n: number;
+  alto_muy_alto: number;
+  pct_alto_muy_alto: number;
+  promedio_transformado: number;
+}
+
+export interface PsicoDashboardResponse {
+  ok: boolean;
+  aplicacion: PsicoAplicacionItem & { evaluaciones?: any[] };
+  calidad: CalidadBateria;
+  kpis: {
+    total_evaluados: number;
+    pct_completitud: number;
+    pct_global_alto_muy_alto: number;
+    dominio_mas_critico?: DominioPsico | null;
+    dimension_mas_critica?: DimensionPsico | null;
+  };
+  totales: TotalPsico[];
+  distribucion_totales: DistribucionTotal[];
+  dominios: DominioPsico[];
+  dimensiones: DimensionPsico[];
+  ranking_dimensiones: DimensionPsico[];
+  ranking_dominios: DominioPsico[];
+  segmentacion: Record<string, SegmentacionItem[]>;
+  sociodemografia?: SociodemografiaPsico;
+  alertas: { tipo: string; nivel: string; mensaje: string }[];
+}
