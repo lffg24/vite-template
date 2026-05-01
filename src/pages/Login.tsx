@@ -1,5 +1,6 @@
+// src/pages/Login.tsx
 import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,32 +8,79 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff } from "lucide-react"; // 👈 iconos
+import { Eye, EyeOff } from "lucide-react";
 
 type FieldErrors = { email?: string; password?: string };
+type LoginLocationState = { from?: string } | null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function routeByAccess(roles: string[], permissions: string[]) {
+  if (
+    roles.includes("PSICOLOGO_EVALUADOR") ||
+    permissions.includes("psico.dashboard.view")
+  ) {
+    return "/psicosocial/dashboard";
+  }
+
+  if (
+    roles.includes("ADMIN_EMPRESA") ||
+    roles.includes("admin_empresa") ||
+    permissions.includes("evaluaciones.view")
+  ) {
+    return "/evaluaciones";
+  }
+
+  return "/mis-evaluaciones";
+}
+
+function safeRedirectPath(path: unknown, roles: string[], permissions: string[]) {
+  if (typeof path !== "string" || !path.startsWith("/")) {
+    return routeByAccess(roles, permissions);
+  }
+
+  if (path === "/login" || path === "/logout") {
+    return routeByAccess(roles, permissions);
+  }
+
+  if (
+    path.startsWith("/psicosocial") &&
+    !permissions.includes("psico.dashboard.view") &&
+    !roles.includes("PSICOLOGO_EVALUADOR")
+  ) {
+    return routeByAccess(roles, permissions);
+  }
+
+  return path;
+}
+
 export default function Login() {
-  const { isAuthenticated, roles, login } = useAuth();
+  const { initialized, isAuthenticated, roles, permissions, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  const from = (location.state as LoginLocationState)?.from;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // 👈 estado del ojo
+  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
 
+  if (!initialized) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background px-4 text-sm text-muted-foreground">
+        Validando sesión...
+      </div>
+    );
+  }
+
   if (isAuthenticated) {
     return (
       <Navigate
-        to={
-          roles.includes("admin_empresa")
-            ? "/evaluaciones"
-            : "/mis-evaluaciones"
-        }
+        to={safeRedirectPath(from, roles, permissions)}
         replace
       />
     );
@@ -41,8 +89,9 @@ export default function Login() {
   const validate = (): boolean => {
     const e: FieldErrors = {};
     if (!email.trim()) e.email = "El email es obligatorio.";
-    else if (!emailRegex.test(email.trim()))
+    else if (!emailRegex.test(email.trim())) {
       e.email = "Ingresa un email válido.";
+    }
     if (!password) e.password = "La contraseña es obligatoria.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -54,10 +103,8 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const rolesFromLogin = await login(email.trim(), password, { remember });
-      const to = rolesFromLogin.includes("admin_empresa")
-        ? "/evaluaciones"
-        : "/mis-evaluaciones";
+      const result = await login(email.trim(), password, { remember });
+      const to = safeRedirectPath(from, result.roles, result.permissions);
       navigate(to, { replace: true });
     } catch (err: any) {
       const status = err?.status as number | undefined;
@@ -65,6 +112,7 @@ export default function Login() {
         typeof err?.message === "string"
           ? err.message
           : "No pudimos iniciar sesión.";
+
       if (status === 401) {
         setErrors((prev) => ({
           ...prev,
@@ -129,30 +177,25 @@ export default function Login() {
             <div className="relative">
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"} // 👈 toggle
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
-                className="pr-10" // deja espacio para el botón del ojo
+                className="pr-10"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (errors.password) validate();
                 }}
                 aria-invalid={!!errors.password}
-                aria-describedby={
-                  errors.password ? "password-error" : undefined
-                }
+                aria-describedby={errors.password ? "password-error" : undefined}
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-                aria-label={
-                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                }
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 aria-pressed={showPassword}
-                tabIndex={0}
                 disabled={loading}
               >
                 {showPassword ? (

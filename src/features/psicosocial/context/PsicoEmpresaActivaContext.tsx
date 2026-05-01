@@ -2,7 +2,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   EmpresaAsignada,
-  getEmpresasAsignadas,
+  CrearEmpresaPsicoPayload,
+  crearEmpresaPsicologo,
+  clearEmpresaActivaId,
+  getEmpresasAsignadasResponse,
   getEmpresaActivaId,
   setEmpresaActivaId,
 } from "@/features/psicosocial/api/psicoAccessService";
@@ -13,8 +16,12 @@ type PsicoEmpresaContextValue = {
   empresaActivaId?: string;
   loading: boolean;
   error?: string;
+  errorStatus?: number;
+  onboardingRequired: boolean;
+  message?: string | null;
   cambiarEmpresa: (empresaId: string) => void;
   recargarEmpresas: () => Promise<void>;
+  crearEmpresa: (payload: CrearEmpresaPsicoPayload) => Promise<EmpresaAsignada>;
 };
 
 const PsicoEmpresaActivaContext = createContext<PsicoEmpresaContextValue | null>(null);
@@ -26,24 +33,38 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
+  const [errorStatus, setErrorStatus] = useState<number | undefined>();
+  const [onboardingRequired, setOnboardingRequired] = useState(false);
+  const [message, setMessage] = useState<string | null | undefined>();
 
   const recargarEmpresas = async () => {
     setLoading(true);
     setError(undefined);
+    setErrorStatus(undefined);
     try {
-      const list = await getEmpresasAsignadas();
+      const response = await getEmpresasAsignadasResponse();
+      const list = response.empresas ?? [];
       setEmpresas(list);
+      setOnboardingRequired(Boolean(response.onboarding_required));
+      setMessage(response.message ?? null);
 
       const current = getEmpresaActivaId();
       const currentIsAllowed = current && list.some((e) => e.empresa_id === current);
-      const next = currentIsAllowed ? current! : list[0]?.empresa_id;
+      const next = currentIsAllowed ? current! : response.empresa_activa_id ?? list[0]?.empresa_id;
 
       if (next) {
         setEmpresaActivaId(next);
         setEmpresaActivaIdState(next);
+      } else {
+        clearEmpresaActivaId();
+        setEmpresaActivaIdState(undefined);
       }
     } catch (err) {
+      const status = (err as Error & { status?: number })?.status;
+      setErrorStatus(status);
       setError(err instanceof Error ? err.message : "Error cargando empresas asignadas");
+      setEmpresas([]);
+      setOnboardingRequired(status !== 401);
     } finally {
       setLoading(false);
     }
@@ -60,14 +81,49 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
     window.dispatchEvent(new CustomEvent("eva360:empresa-activa-change", { detail: { empresaId } }));
   };
 
+  const crearEmpresa = async (payload: CrearEmpresaPsicoPayload) => {
+    const result = await crearEmpresaPsicologo(payload);
+    await recargarEmpresas();
+    if (result.empresa_id) {
+      setEmpresaActivaId(result.empresa_id);
+      setEmpresaActivaIdState(result.empresa_id);
+      window.dispatchEvent(
+        new CustomEvent("eva360:empresa-activa-change", { detail: { empresaId: result.empresa_id } })
+      );
+    }
+    return {
+      empresa_id: result.empresa_id,
+      id: result.empresa_id,
+      nombre: payload.nombre,
+      nit: payload.nit ?? null,
+      estado: "Activa",
+      rol_en_empresa: "PSICOLOGO_EVALUADOR",
+      puede_ver_individuales: true,
+      puede_cargar_respuestas: true,
+      puede_crear_aplicaciones: true,
+    };
+  };
+
   const empresaActiva = useMemo(
     () => empresas.find((e) => e.empresa_id === empresaActivaId),
     [empresas, empresaActivaId]
   );
 
   const value = useMemo(
-    () => ({ empresas, empresaActiva, empresaActivaId, loading, error, cambiarEmpresa, recargarEmpresas }),
-    [empresas, empresaActiva, empresaActivaId, loading, error]
+    () => ({
+      empresas,
+      empresaActiva,
+      empresaActivaId,
+      loading,
+      error,
+      errorStatus,
+      onboardingRequired,
+      message,
+      cambiarEmpresa,
+      recargarEmpresas,
+      crearEmpresa,
+    }),
+    [empresas, empresaActiva, empresaActivaId, loading, error, errorStatus, onboardingRequired, message]
   );
 
   return <PsicoEmpresaActivaContext.Provider value={value}>{children}</PsicoEmpresaActivaContext.Provider>;

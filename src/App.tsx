@@ -1,3 +1,4 @@
+// src/App.tsx
 import {
   BrowserRouter as Router,
   Routes,
@@ -64,14 +65,14 @@ function App() {
               path="evaluaciones-asignadas"
               element={<EvaluacionesAsignadas />}
             />
-
-            {/* Compatibilidad con dashboard anterior */}
             <Route path="reportes/psico" element={<ReportesPsico />} />
           </Route>
         </Route>
 
         {/* Privadas con layout nuevo de psicólogo */}
-        <Route element={<ProtectedRoute />}>
+        <Route
+          element={<ProtectedRoute requirePermission="psico.dashboard.view" />}
+        >
           <Route path="/psicosocial" element={<PsicologoLayout />}>
             <Route
               index
@@ -109,7 +110,6 @@ function App() {
               element={<PsicoEmpleadoResultadosPage />}
             />
 
-            {/* Reutilizamos dashboard actual dentro del layout de psicólogo */}
             <Route path="resultados" element={<ReportesPsico />} />
             <Route path="reportes" element={<ReportesPsico />} />
           </Route>
@@ -135,7 +135,6 @@ function App() {
           />
         </Route>
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 

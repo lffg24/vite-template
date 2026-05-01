@@ -13,21 +13,46 @@ function hasAny(values: string[], required?: string | string[]) {
   return list.some((item) => values.includes(item));
 }
 
+function defaultRoute(roles: string[], permissions: string[]) {
+  if (
+    roles.includes("PSICOLOGO_EVALUADOR") ||
+    permissions.includes("psico.dashboard.view")
+  ) {
+    return "/psicosocial/dashboard";
+  }
+
+  if (
+    roles.includes("ADMIN_EMPRESA") ||
+    roles.includes("admin_empresa") ||
+    permissions.includes("evaluaciones.view")
+  ) {
+    return "/evaluaciones";
+  }
+
+  return "/mis-evaluaciones";
+}
+
 export default function ProtectedRoute({ requireRole, requirePermission }: Props) {
-  const { isAuthenticated, roles } = useAuth();
+  const { initialized, isAuthenticated, roles, permissions } = useAuth();
   const location = useLocation();
+
+  if (!initialized) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-slate-50 text-sm text-slate-500">
+        Validando sesión...
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   const okRole = hasAny(roles, requireRole);
-  // Compatibilidad: AuthContext actual aún no expone permissions; si luego lo agregas,
-  // cambia esta línea por const { roles, permissions } = useAuth();
-  const okPermission = requirePermission ? true : true;
+  const okPermission = hasAny(permissions, requirePermission);
 
   if (!okRole || !okPermission) {
-    return <Navigate to="/mis-evaluaciones" replace />;
+    return <Navigate to={defaultRoute(roles, permissions)} replace />;
   }
 
   return <Outlet />;
