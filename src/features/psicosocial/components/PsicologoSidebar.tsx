@@ -1,5 +1,5 @@
 // src/features/psicosocial/components/PsicologoSidebar.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Building2,
@@ -18,7 +18,6 @@ import {
   Users,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { usePsicoEmpresaActiva } from "@/features/psicosocial/context/PsicoEmpresaActivaContext";
 
 const items = [
   { label: "Dashboard", to: "/psicosocial/dashboard", icon: Home },
@@ -37,7 +36,6 @@ const items = [
 const COLLAPSED_KEY = "eva360.psico.sidebar.collapsed";
 
 export default function PsicologoSidebar() {
-  const { empresas, empresaActiva, empresaActivaId, cambiarEmpresa, loading } = usePsicoEmpresaActiva();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1");
 
   useEffect(() => {
@@ -45,7 +43,6 @@ export default function PsicologoSidebar() {
   }, [collapsed]);
 
   const width = collapsed ? "w-[84px]" : "w-[292px]";
-  const activeName = useMemo(() => empresaActiva?.nombre ?? "Sin empresas asignadas", [empresaActiva]);
 
   return (
     <aside className={`${width} min-h-screen shrink-0 bg-[#071329] text-white shadow-2xl transition-all duration-300`}>
@@ -75,40 +72,8 @@ export default function PsicologoSidebar() {
           {!collapsed && (
             <div className="min-w-0">
               <div className="truncate font-bold">Psicólogo evaluador</div>
-              <div className="truncate text-sm text-violet-200">Perfil multiempresa</div>
+              <div className="truncate text-sm text-violet-200">Gestión psicosocial</div>
             </div>
-          )}
-        </div>
-
-        <div className="mb-5">
-          {!collapsed && <div className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-400">Empresa activa</div>}
-          {collapsed ? (
-            <div
-              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-[#111d35] text-xs font-black text-violet-200"
-              title={activeName}
-            >
-              {empresaActiva?.nombre?.slice(0, 2).toUpperCase() ?? "—"}
-            </div>
-          ) : (
-            <>
-              <select
-                className="w-full rounded-2xl border border-white/10 bg-[#111d35] px-3 py-3 text-sm font-semibold text-white outline-none focus:border-violet-400"
-                value={empresaActivaId ?? ""}
-                onChange={(e) => cambiarEmpresa(e.target.value)}
-                disabled={loading || empresas.length === 0}
-              >
-                {empresas.length === 0 ? (
-                  <option value="">Sin empresas asignadas</option>
-                ) : (
-                  empresas.map((empresa) => (
-                    <option key={empresa.empresa_id} value={empresa.empresa_id}>
-                      {empresa.nombre}
-                    </option>
-                  ))
-                )}
-              </select>
-              {empresaActiva && <div className="mt-2 truncate text-xs text-slate-400">{empresaActiva.nit ?? "Sin NIT"}</div>}
-            </>
           )}
         </div>
 

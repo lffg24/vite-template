@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   BarChart3,
@@ -906,8 +906,10 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
 
 
 export default function ReportesPsico() {
+  const [searchParams] = useSearchParams();
+  const initialAplicacionId = Number(searchParams.get("aplicacionId") || searchParams.get("aplicacion_id") || 0) || null;
   const [apps, setApps] = useState<PsicoAplicacionItem[]>([]);
-  const [aplicacionId, setAplicacionId] = useState<number | null>(null);
+  const [aplicacionId, setAplicacionId] = useState<number | null>(initialAplicacionId);
   const [data, setData] = useState<PsicoDashboardResponse | null>(null);
   const [tab, setTab] = useState<TabKey>("resumen");
   const [loading, setLoading] = useState(true);
@@ -929,6 +931,9 @@ export default function ReportesPsico() {
     try {
       const res = await obtenerDashboardPsicoAplicacion(id);
       setData(res);
+      if (res?.aplicacion?.nombre) {
+        setApps((prev) => prev.some((a) => Number(a.id) === Number(id)) ? prev : [{ id, nombre: res.aplicacion.nombre } as PsicoAplicacionItem, ...prev]);
+      }
     } catch (e) {
       console.error(e);
       setError("No se pudo cargar el dashboard psicosocial.");
@@ -962,6 +967,10 @@ export default function ReportesPsico() {
   }
 
   useEffect(() => {
+    if (initialAplicacionId) {
+      setApps([{ id: initialAplicacionId, nombre: `Aplicación #${initialAplicacionId}` } as PsicoAplicacionItem]);
+      return;
+    }
     loadApps().catch(() => setApps([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1007,7 +1016,7 @@ export default function ReportesPsico() {
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                   <span>Aplicación: <b>{app?.nombre ?? "—"}</b></span>
                   <span>·</span>
-                  <span>Empresa actual por X-Empresa-Id</span>
+                  <span>Aplicación precargada por URL cuando aplica</span>
                   <span>·</span>
                   <span>Estado: <b>{app?.estado ?? calidad?.estado ?? "—"}</b></span>
                 </div>

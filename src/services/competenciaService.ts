@@ -5,14 +5,7 @@ const BASE =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ??
   "http://localhost:8000";
 
-// Construye headers válidos para HeadersInit (sin valores undefined)
-const buildHeaders = (): HeadersInit => {
-  const token = localStorage.getItem("jwt");
-  const h: Record<string, string> = {};
-  if (token) h.Authorization = `Bearer ${token}`;
-  return h;
-};
-
+const buildHeaders = (): HeadersInit => ({});
 /**
  * Intenta primero /evaluaciones/:id/competencias
  * y si no existe, cae a /competencias?evaluacion_id=:id
@@ -22,13 +15,15 @@ export async function listarCompetenciasPorEvaluacion(
 ): Promise<Competencia[]> {
   // Ruta anidada
   let res = await fetch(`${BASE}/evaluaciones/${evaluacionId}/competencias`, {
+    credentials: "include",
     headers: buildHeaders(),
   });
 
   // Fallback: query param
   if (!res.ok) {
     res = await fetch(`${BASE}/competencias?evaluacion_id=${evaluacionId}`, {
-      headers: buildHeaders(),
+      credentials: "include",
+    headers: buildHeaders(),
     });
   }
 

@@ -1,26 +1,9 @@
 // src/context/AuthContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { API_URL } from "@/lib/config";
-import { setAuthToken } from "@/lib/apiClient";
-
-type JwtPayload = {
-  sub?: string;
-  tenant_id?: string;
-  roles?: string[] | string;
-  permissions?: string[] | string;
-  scope?: string;
-  exp?: number;
-  [k: string]: unknown;
-};
 
 export type AuthState = {
-  token: string | null;
+  token: null;
   userId: string | null;
   tenantId: string | null;
   roles: string[];
@@ -39,99 +22,51 @@ type LoginResult = {
 };
 
 type AuthContextType = AuthState & {
-  login: (
-    email: string,
-    password: string,
-    options?: LoginOptions
-  ) => Promise<LoginResult>;
-  logout: () => void;
+  login: (email: string, password: string, options?: LoginOptions) => Promise<LoginResult>;
+  logout: () => Promise<void>;
   hasRole: (required?: string | string[]) => boolean;
   hasPermission: (required?: string | string[]) => boolean;
 };
 
+type MeResponse = {
+  id: number | string;
+  nombre: string;
+  email: string;
+  empresa_id: string;
+  roles?: string[];
+  permissions?: string[];
+};
+
 const AuthContext = createContext<AuthContextType | null>(null);
-const STORAGE_KEY = "auth";
 
-function normalizeList(value?: string[] | string | null): string[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.filter(Boolean).map(String);
-  return String(value)
-    .split(/[\s,]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function unique(values: string[]) {
-  return Array.from(new Set(values));
-}
-
-function parseJwt(token: string): JwtPayload | null {
-  try {
-    const base64Url = token.split(".")[1];
-    if (!base64Url) return null;
-    const json = atob(base64Url.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-function buildAuthState(token: string | null, initialized = true): AuthState {
-  if (!token) {
-    return {
-      token: null,
-      userId: null,
-      tenantId: null,
-      roles: [],
-      permissions: [],
-      isAuthenticated: false,
-      initialized,
-    };
-  }
-
-  const payload = parseJwt(token);
-  const now = Math.floor(Date.now() / 1000);
-
-  if (!payload || (typeof payload.exp === "number" && payload.exp <= now)) {
-    return buildAuthState(null, initialized);
-  }
-
-  const roles = unique(normalizeList(payload.roles));
-  const permissions = unique([
-    ...normalizeList(payload.permissions),
-    ...normalizeList(payload.scope).filter((item) => !roles.includes(item)),
-  ]);
-
+function emptyState(initialized = true): AuthState {
   return {
-    token,
-    userId: payload.sub ?? null,
-    tenantId: payload.tenant_id ?? null,
-    roles,
-    permissions,
-    isAuthenticated: true,
+    token: null,
+    userId: null,
+    tenantId: null,
+    roles: [],
+    permissions: [],
+    isAuthenticated: false,
     initialized,
   };
 }
 
-function readStoredToken(): string | null {
-  const raw = sessionStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
-
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed?.token ?? parsed?.access_token ?? parsed?.accessToken ?? null;
-  } catch {
-    return raw;
-  }
+function normalizeList(value?: string[] | string | null): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return Array.from(new Set(value.filter(Boolean).map(String)));
+  return Array.from(new Set(String(value).split(/[\s,]+/).map((item) => item.trim()).filter(Boolean)));
 }
 
-function removeStoredAuth() {
-  try {
-    sessionStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // noop
-  }
+function stateFromMe(me: MeResponse): AuthState {
+  return {
+    token: null,
+    userId: String(me.id),
+    tenantId: me.empresa_id,
+    roles: normalizeList(me.roles),
+    permissions: normalizeList(me.permissions),
+    isAuthenticated: true,
+    initialized: true,
+  };
 }
 
 function hasAny(values: string[], required?: string | string[]) {
@@ -140,34 +75,57 @@ function hasAny(values: string[], required?: string | string[]) {
   return list.some((item) => values.includes(item));
 }
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [state, setState] = useState<AuthState>(() => ({
-    token: null,
-    userId: null,
-    tenantId: null,
-    roles: [],
-    permissions: [],
-    isAuthenticated: false,
-    initialized: false,
-  }));
+async function parseError(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    if (typeof data?.detail === "string") return data.detail;
+    if (Array.isArray(data?.detail)) return data.detail[0]?.msg ?? fallback;
+    if (typeof data?.message === "string") return data.message;
+  } catch {
+    try {
+      const text = await res.text();
+      if (text) return text;
+    } catch {
+      // noop
+    }
+  }
+  return fallback;
+}
+
+async function fetchMe(): Promise<AuthState> {
+  const res = await fetch(`${API_URL}/auth/me`, {
+    method: "GET",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+
+  if (res.status === 401) return emptyState(true);
+  if (!res.ok) {
+    const detail = await parseError(res, `No fue posible validar la sesión (${res.status})`);
+    throw new Error(detail);
+  }
+
+  return stateFromMe((await res.json()) as MeResponse);
+}
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, setState] = useState<AuthState>(() => emptyState(false));
 
   useEffect(() => {
-    const token = readStoredToken();
-    const next = buildAuthState(token, true);
-
-    if (!next.isAuthenticated) removeStoredAuth();
-
-    setAuthToken(next.token);
-    setState(next);
+    let alive = true;
+    fetchMe()
+      .then((next) => {
+        if (alive) setState(next);
+      })
+      .catch(() => {
+        if (alive) setState(emptyState(true));
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const login = async (
-    email: string,
-    password: string,
-    options?: LoginOptions
-  ): Promise<LoginResult> => {
+  const login = useCallback(async (email: string, password: string, options?: LoginOptions): Promise<LoginResult> => {
     const body = new URLSearchParams();
     body.append("username", email);
     body.append("password", password);
@@ -175,65 +133,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      credentials: "include",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
       body,
     });
 
     if (!res.ok) {
-      let message = `Error de autenticación (${res.status})`;
-      try {
-        const data = await res.json();
-        if (typeof data?.detail === "string") message = data.detail;
-        else if (Array.isArray(data?.detail)) {
-          message = data.detail[0]?.msg ?? message;
-        }
-      } catch {
-        try {
-          const text = await res.text();
-          if (text) message = text;
-        } catch {
-          // noop
-        }
-      }
-
+      const message = await parseError(res, `Error de autenticación (${res.status})`);
       const err = new Error(message) as Error & { status?: number };
       err.status = res.status;
       throw err;
     }
 
-    const data = await res.json();
-    const token: string | undefined = data?.access_token ?? data?.token;
-    if (!token) {
-      throw new Error("Respuesta inválida del servidor: no llegó access_token.");
-    }
-
-    const auth = buildAuthState(token, true);
-    if (!auth.isAuthenticated) {
-      throw new Error("Token inválido o expirado recibido desde el servidor.");
-    }
-
-    setState(auth);
-    setAuthToken(token);
-
-    const save = JSON.stringify({ token });
-    removeStoredAuth();
-    if (options?.remember) localStorage.setItem(STORAGE_KEY, save);
-    else sessionStorage.setItem(STORAGE_KEY, save);
+    const data = (await res.json()) as MeResponse;
+    const next = stateFromMe(data);
+    setState(next);
 
     return {
-      roles: auth.roles,
-      permissions: auth.permissions,
-      userId: auth.userId,
-      tenantId: auth.tenantId,
+      roles: next.roles,
+      permissions: next.permissions,
+      userId: next.userId,
+      tenantId: next.tenantId,
     };
-  };
+  }, []);
 
-  const logout = () => {
-    const empty = buildAuthState(null, true);
-    setState(empty);
-    setAuthToken(null);
-    removeStoredAuth();
-  };
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+    } finally {
+      setState(emptyState(true));
+    }
+  }, []);
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -241,17 +175,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       login,
       logout,
       hasRole: (required?: string | string[]) => hasAny(state.roles, required),
-      hasPermission: (required?: string | string[]) =>
-        hasAny(state.permissions, required),
+      hasPermission: (required?: string | string[]) => hasAny(state.permissions, required),
     }),
-    [state]
+    [state, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth debe usarse dentro de <AuthProvider>");
+  if (!ctx) throw new Error("useAuth debe usarse dentro de AuthProvider");
   return ctx;
-};
+}

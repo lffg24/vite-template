@@ -1,30 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-function getEmpresaId(): string | null {
-  return localStorage.getItem("empresa_id") || localStorage.getItem("empresaId") || null;
-}
-
-function getToken(): string | null {
-  return localStorage.getItem("token") || localStorage.getItem("access_token") || null;
-}
-
-async function http<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getToken();
-  const empresaId = getEmpresaId();
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(empresaId ? { "X-Empresa-Id": empresaId } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(init.headers || {}),
-  };
-
-  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return res.json() as Promise<T>;
-}
+import { requestJson } from "./httpClient";
 
 export type EmpresaPsico = {
   id: string;
@@ -41,6 +15,9 @@ export type EmpresaPsico = {
   evaluaciones_calculadas?: number;
 };
 
+export type AreaEmpresa = { id: number; nombre: string; descripcion?: string };
+export type CargoEmpresa = { id: number; nombre: string; area_id?: number | null; area_nombre?: string; nivel?: string };
+
 export type EmpleadoEmpresa = {
   id: number;
   cedula: string;
@@ -52,45 +29,148 @@ export type EmpleadoEmpresa = {
   activo?: boolean;
 };
 
+export type CrearEmpleadoPayload = {
+  nombres: string;
+  apellidos: string;
+  cedula: string;
+  area_id?: number | null;
+  cargo_id?: number | null;
+  area?: string;
+  cargo?: string;
+  email?: string;
+  telefono?: string;
+  identificador_externo?: string;
+};
+
 export type AplicacionEmpresa = {
   id: number;
   nombre: string;
   estado: string;
+  created_at?: string;
   creado_en?: string;
+  fecha_aplicacion?: string;
+  participantes?: number;
   participantes_calculados?: number;
   evaluaciones?: Array<{ evaluacion_id: number; instrument_code: string }>;
 };
 
+export type CrearBateriaPayload = {
+  nombre: string;
+  fecha_aplicacion?: string;
+  include_intra_a?: boolean;
+  include_intra_b?: boolean;
+  include_extra?: boolean;
+  include_estres?: boolean;
+};
+
+export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
+  registrado: boolean;
+  completo?: boolean;
+  instrumentos_registrados: string[];
+  instrumentos_pendientes: string[];
+  total_instrumentos: number;
+  completados: number;
+  avance_porcentaje?: number;
+};
+
+export type AplicacionDetalle = {
+  ok: boolean;
+  empresa: EmpresaPsico;
+  aplicacion: AplicacionEmpresa;
+  instrumentos: Array<{ evaluacion_id: number; instrument_code: string; nombre?: string; total_preguntas?: number }>;
+  resumen: {
+    empleados_total: number;
+    participantes_registrados: number;
+    participantes_completos?: number;
+    pendientes: number;
+    instrumentos_total: number;
+    creditos_consumidos: number;
+    creditos_estimados: number;
+  };
+  empleados: AplicacionDetalleEmpleado[];
+};
+
 export const psicoAdminService = {
   listarEmpresas: (todas = true) =>
-    http<{ ok: boolean; items: EmpresaPsico[] }>(`/psicosocial/admin/empresas?todas=${todas}`),
+    requestJson<{ ok: boolean; items: EmpresaPsico[] }>(`/psicosocial/admin/empresas?todas=${todas}`),
 
   perfilEmpresa: (empresaId: string) =>
-    http<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(
+    requestJson<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(
       `/psicosocial/admin/empresas/${empresaId}`,
-      { headers: { "X-Empresa-Id": empresaId } }
+      { headers: { "X-Empresa-Id": empresaId } },
     ),
 
-  empleadosEmpresa: (empresaId: string, q = "") =>
-    http<{ ok: boolean; items: EmpleadoEmpresa[] }>(
-      `/psicosocial/admin/empresas/${empresaId}/empleados?q=${encodeURIComponent(q)}`,
-      { headers: { "X-Empresa-Id": empresaId } }
-    ),
-
-  aplicacionesEmpresa: (empresaId: string) =>
-    http<{ ok: boolean; items: AplicacionEmpresa[] }>(
-      `/psicosocial/admin/empresas/${empresaId}/aplicaciones`,
-      { headers: { "X-Empresa-Id": empresaId } }
-    ),
-
-  crearBateria: (empresaId: string, nombre: string) =>
-    http<any>(
-      `/psicosocial/bateria/crear?nombre=${encodeURIComponent(nombre)}&include_intra_a=true&include_intra_b=true&include_extra=true&include_estres=true`,
-      { method: "POST", headers: { "X-Empresa-Id": empresaId } }
-    ),
-
-  resultadoAplicacion: (empresaId: string, aplicacionId: number) =>
-    http<any>(`/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/resultados`, {
+  listarAreas: (empresaId: string) =>
+    requestJson<{ ok: boolean; items: AreaEmpresa[] }>(`/psicosocial/admin/empresas/${empresaId}/areas`, {
       headers: { "X-Empresa-Id": empresaId },
     }),
+
+  crearArea: (empresaId: string, payload: { nombre: string; descripcion?: string }) =>
+    requestJson<{ ok: boolean; item: AreaEmpresa }>(`/psicosocial/admin/empresas/${empresaId}/areas`, {
+      method: "POST",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify(payload),
+    }),
+
+  listarCargos: (empresaId: string, areaId?: number | null) => {
+    const query = areaId ? `?area_id=${areaId}` : "";
+    return requestJson<{ ok: boolean; items: CargoEmpresa[] }>(`/psicosocial/admin/empresas/${empresaId}/cargos${query}`, {
+      headers: { "X-Empresa-Id": empresaId },
+    });
+  },
+
+  crearCargo: (empresaId: string, payload: { nombre: string; area_id?: number | null; nivel?: string }) =>
+    requestJson<{ ok: boolean; item: CargoEmpresa }>(`/psicosocial/admin/empresas/${empresaId}/cargos`, {
+      method: "POST",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify(payload),
+    }),
+
+  empleadosEmpresa: (empresaId: string, q = "") =>
+    requestJson<{ ok: boolean; items: EmpleadoEmpresa[] }>(
+      `/psicosocial/admin/empresas/${empresaId}/empleados?q=${encodeURIComponent(q)}`,
+      { headers: { "X-Empresa-Id": empresaId } },
+    ),
+
+  crearEmpleado: (empresaId: string, payload: CrearEmpleadoPayload) =>
+    requestJson<{ ok: boolean; empleado_id: number; item?: EmpleadoEmpresa }>(`/psicosocial/admin/empresas/${empresaId}/empleados`, {
+      method: "POST",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify(payload),
+    }),
+
+  aplicacionesEmpresa: (empresaId: string) =>
+    requestJson<{ ok: boolean; items: AplicacionEmpresa[] }>(
+      `/psicosocial/admin/empresas/${empresaId}/aplicaciones`,
+      { headers: { "X-Empresa-Id": empresaId } },
+    ),
+
+  crearBateria: (empresaId: string, payload: CrearBateriaPayload) =>
+    requestJson<any>(`/psicosocial/admin/empresas/${empresaId}/aplicaciones/crear-bateria`, {
+      method: "POST",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify({
+        include_intra_a: true,
+        include_intra_b: true,
+        include_extra: true,
+        include_estres: true,
+        ...payload,
+      }),
+    }),
+
+  detalleAplicacion: (empresaId: string, aplicacionId: number) =>
+    requestJson<AplicacionDetalle>(`/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  resultadoAplicacion: (empresaId: string, aplicacionId: number) =>
+    requestJson<any>(`/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/resultados`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  cerrarAplicacion: (empresaId: string, aplicacionId: number, minParticipantes = 1) =>
+    requestJson<{ ok: boolean; estado: string; participantes: number; evaluacion_ids: number[] }>(
+      `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/cerrar?min_participantes=${minParticipantes}`,
+      { method: "POST", headers: { "X-Empresa-Id": empresaId } },
+    ),
 };

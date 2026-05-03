@@ -154,12 +154,8 @@ function prettyCode(code?: string | null): string {
 }
 
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem("token") || localStorage.getItem("access_token") || "";
-  const empresaId = localStorage.getItem("empresa_id") || localStorage.getItem("X-Empresa-Id") || "46fa152f-cafc-4a1a-bee8-3831403ae1db";
   return {
     "Content-Type": "application/json",
-    "X-Empresa-Id": empresaId,
-    ...(token ? { Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}` } : {}),
   };
 }
 
@@ -434,9 +430,9 @@ export default function PsicoEmpleadoResultadosPage() {
       const legacyUrl = `${API_URL}/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/resultados`;
 
       try {
-        let response = await fetch(detalleUrl, { headers });
+        let response = await fetch(detalleUrl, { credentials: "include", headers });
         if (response.status === 404) {
-          response = await fetch(legacyUrl, { headers });
+          response = await fetch(legacyUrl, { credentials: "include", headers });
         }
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = (await response.json()) as ResultadoIndividual;

@@ -1,7 +1,9 @@
+import { requestJson } from "./httpClient";
+
 export type NivelRiesgo = "SIN_RIESGO" | "MUY_BAJO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | string;
 
 export type PsicoEvaluacionEmpleado = {
-  aplicacion_id: number;
+  aplicacion_id?: number;
   evaluacion_id: number;
   instrument_code: string;
   nombre?: string | null;
@@ -11,7 +13,7 @@ export type PsicoEvaluacionEmpleado = {
   score_count: number;
   puntaje_transformado?: number | null;
   nivel_riesgo?: NivelRiesgo | null;
-  estado_respuestas: "sin_iniciar" | "borrador" | "completa" | "calculada" | string;
+  estado_respuestas: "sin_iniciar" | "borrador" | "completa" | "calculada" | "finalizada" | string;
   editable: boolean;
 };
 
@@ -66,21 +68,36 @@ export type PsicoEmpleadoPerfil = {
   ultima_actualizacion?: string | null;
   completitud_perfil?: number | null;
   aplicaciones?: PsicoAplicacionEmpleado[];
-  resumen_aplicaciones?: {
-    total: number;
-    completas: number;
-    activas: number;
-  };
+  resumen_aplicaciones?: { total: number; completas: number; activas: number };
 };
 
 export type PsicoAplicacionesEmpleadoResponse = {
   empleado_id: number;
   aplicaciones: PsicoAplicacionEmpleado[];
-  resumen: {
-    total: number;
-    completas: number;
-    activas: number;
-  };
+  resumen: { total: number; completas: number; activas: number };
+};
+
+export type PreguntaRespuesta = {
+  pregunta_id: number;
+  orden: number;
+  texto: string;
+  parametros?: any;
+  respuesta?: string | null;
+  dimension_label?: string | null;
+  dimension_code?: string | null;
+  dominio_label?: string | null;
+  dominio_code?: string | null;
+};
+
+export type RespuestasEvaluacionResponse = {
+  empleado_id: number;
+  evaluacion_id: number;
+  total_preguntas: number;
+  respondidas: number;
+  estado_captura?: string | null;
+  observaciones?: string | null;
+  finalizado_en?: string | null;
+  preguntas: PreguntaRespuesta[];
 };
 
 export type PsicoResultadoIndividual = {
@@ -90,56 +107,6 @@ export type PsicoResultadoIndividual = {
   dominios: Array<Record<string, unknown>>;
   dimensiones: Array<Record<string, unknown>>;
 };
-
-function apiBase() {
-  return (
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.VITE_API_BASE_URL ||
-    "http://localhost:8000"
-  ).replace(/\/$/, "");
-}
-
-function authHeaders(): HeadersInit {
-  const token =
-    localStorage.getItem("token") ||
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("accessToken") ||
-    "";
-  const empresaId =
-    localStorage.getItem("empresa_id") ||
-    localStorage.getItem("empresaId") ||
-    localStorage.getItem("X-Empresa-Id") ||
-    "46fa152f-cafc-4a1a-bee8-3831403ae1db";
-
-  return {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(empresaId ? { "X-Empresa-Id": empresaId } : {}),
-  };
-}
-
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${apiBase()}${path}`, {
-    ...init,
-    headers: {
-      ...authHeaders(),
-      ...(init?.headers || {}),
-    },
-  });
-
-  if (!res.ok) {
-    let detail = `HTTP ${res.status}`;
-    try {
-      const body = await res.json();
-      detail = body?.detail || body?.message || detail;
-    } catch {
-      // ignore
-    }
-    throw new Error(detail);
-  }
-  return (await res.json()) as T;
-}
 
 export function obtenerPerfilPsicoEmpleado(empleadoId: number | string) {
   return requestJson<PsicoEmpleadoPerfil>(`/psicosocial/empleados/${empleadoId}/perfil`);
@@ -151,6 +118,29 @@ export function obtenerAplicacionesPsicoEmpleado(empleadoId: number | string) {
 
 export function obtenerAplicacionesDisponiblesPsicoEmpleado(empleadoId: number | string) {
   return requestJson<PsicoAplicacionesEmpleadoResponse>(`/psicosocial/empleados/${empleadoId}/aplicaciones-disponibles`);
+}
+
+export function obtenerRespuestasPsicoEmpleado(empleadoId: number | string, evaluacionId: number | string) {
+  return requestJson<RespuestasEvaluacionResponse>(`/psicosocial/evaluaciones/${evaluacionId}/empleados/${empleadoId}/respuestas`);
+}
+
+export function guardarRespuestasPsicoEmpleado(
+  empleadoId: number | string,
+  evaluacionId: number | string,
+  respuestas: Array<{ pregunta_id: number; orden?: number; respuesta?: string | null }>,
+  finalizar = false,
+  observaciones = "",
+) {
+  return requestJson<{ ok: boolean; respondidas: number; total: number; estado: string }>(
+    `/psicosocial/evaluaciones/${evaluacionId}/empleados/${empleadoId}/respuestas`,
+    { method: "PUT", body: JSON.stringify({ respuestas, finalizar, observaciones }) },
+  );
+}
+
+export function finalizarRespuestasPsicoEmpleado(empleadoId: number | string, evaluacionId: number | string) {
+  return requestJson<{ ok: boolean }>(`/psicosocial/evaluaciones/${evaluacionId}/empleados/${empleadoId}/finalizar`, {
+    method: "POST",
+  });
 }
 
 export function obtenerResultadosPsicoEmpleado(empleadoId: number | string, aplicacionId: number | string) {

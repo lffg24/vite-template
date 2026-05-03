@@ -7,8 +7,13 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    logout();
-    navigate("/login", { replace: true });
+    let alive = true;
+    logout().finally(() => {
+      if (alive) navigate("/login", { replace: true });
+    });
+    return () => {
+      alive = false;
+    };
   }, [logout, navigate]);
 
   return null;

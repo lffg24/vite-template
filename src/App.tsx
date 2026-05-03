@@ -33,6 +33,7 @@ import EmpresasPsicoPage from "@/pages/psicosocial/EmpresasPsicoPage";
 import EmpresaPerfilPage from "@/pages/psicosocial/EmpresaPerfilPage";
 import EmpresaEmpleadosPage from "@/pages/psicosocial/EmpresaEmpleadosPage";
 import EmpresaAplicacionesPage from "@/pages/psicosocial/EmpresaAplicacionesPage";
+import AplicacionDetallePage from "@/pages/psicosocial/AplicacionDetallePage";
 import AplicacionResultadosPage from "@/pages/psicosocial/AplicacionResultadosPage";
 
 function App() {
@@ -91,6 +92,10 @@ function App() {
             <Route
               path="empresas/:empresaId/aplicaciones"
               element={<EmpresaAplicacionesPage />}
+            />
+            <Route
+              path="empresas/:empresaId/aplicaciones/:aplicacionId"
+              element={<AplicacionDetallePage />}
             />
             <Route
               path="empresas/:empresaId/aplicaciones/:aplicacionId/resultados"
