@@ -146,3 +146,66 @@ export function finalizarRespuestasPsicoEmpleado(empleadoId: number | string, ev
 export function obtenerResultadosPsicoEmpleado(empleadoId: number | string, aplicacionId: number | string) {
   return requestJson<PsicoResultadoIndividual>(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/resultados`);
 }
+
+export type FichaSociodemografica = {
+  sexo?: string | null;
+  anio_nacimiento?: number | null;
+  edad?: number | null;
+  estado_civil?: string | null;
+  nivel_estudios?: string | null;
+  ocupacion_profesion?: string | null;
+  ciudad_residencia?: string | null;
+  departamento_residencia?: string | null;
+  ciudad_trabajo?: string | null;
+  departamento_trabajo?: string | null;
+  estrato?: string | null;
+  tipo_vivienda?: string | null;
+  personas_dependen?: number | null;
+  area?: string | null;
+  cargo?: string | null;
+  tipo_cargo?: string | null;
+  tipo_contrato?: string | null;
+  tipo_salario?: string | null;
+  horas_diarias_trabajo?: number | null;
+  antiguedad_empresa?: string | null;
+  antiguedad_cargo?: string | null;
+  estado?: string | null;
+  datos?: Record<string, unknown>;
+};
+
+export function obtenerFichaSociodemografica(empleadoId: number | string, aplicacionId: number | string) {
+  return requestJson<{ ok: boolean; item: FichaSociodemografica; completa: boolean }>(
+    `/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/ficha-sociodemografica`,
+  );
+}
+
+export function guardarFichaSociodemografica(
+  empleadoId: number | string,
+  aplicacionId: number | string,
+  payload: FichaSociodemografica & { finalizar?: boolean },
+) {
+  return requestJson<{ ok: boolean; estado: string; completa: boolean }>(
+    `/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/ficha-sociodemografica`,
+    { method: "PUT", body: JSON.stringify(payload) },
+  );
+}
+
+export type PsicoCatalogoItem = { id?: number | string; nombre: string };
+export type MunicipioCatalogoItem = { id: number; municipio: string; departamento?: string | null };
+
+export function obtenerCatalogosSociodemograficos() {
+  return requestJson<{
+    ok: boolean;
+    estado_civil: PsicoCatalogoItem[];
+    nivel_estudios: PsicoCatalogoItem[];
+    tipo_vivienda: PsicoCatalogoItem[];
+    tipo_cargo: PsicoCatalogoItem[];
+    tipo_contrato: PsicoCatalogoItem[];
+    tipo_salario: PsicoCatalogoItem[];
+  }>(`/psicosocial/catalogos/sociodemograficos`);
+}
+
+export function buscarMunicipiosPsico(q: string) {
+  const params = new URLSearchParams({ q });
+  return requestJson<{ ok: boolean; items: MunicipioCatalogoItem[] }>(`/psicosocial/catalogos/municipios?${params.toString()}`);
+}

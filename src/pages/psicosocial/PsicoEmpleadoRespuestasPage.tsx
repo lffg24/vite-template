@@ -7,14 +7,20 @@ import {
   ClipboardList,
   FileLock2,
   FileText,
+  ChevronDown,
   Loader2,
   Save,
   ShieldCheck,
 } from "lucide-react";
 import {
+  buscarMunicipiosPsico,
+  guardarFichaSociodemografica,
   guardarRespuestasPsicoEmpleado,
+  obtenerCatalogosSociodemograficos,
+  obtenerFichaSociodemografica,
   obtenerPerfilPsicoEmpleado,
   obtenerRespuestasPsicoEmpleado,
+  type FichaSociodemografica,
   type PreguntaRespuesta,
   type PsicoAplicacionEmpleado,
   type PsicoEmpleadoPerfil,
@@ -25,6 +31,29 @@ import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 
 const LIKERT = ["Siempre", "Casi siempre", "Algunas veces", "Casi nunca", "Nunca"];
+const EMPTY_FICHA: FichaSociodemografica = {
+  sexo: "",
+  anio_nacimiento: null,
+  edad: null,
+  estado_civil: "",
+  nivel_estudios: "",
+  ocupacion_profesion: "",
+  ciudad_residencia: "",
+  departamento_residencia: "",
+  ciudad_trabajo: "",
+  departamento_trabajo: "",
+  estrato: "",
+  tipo_vivienda: "",
+  personas_dependen: null,
+  area: "",
+  cargo: "",
+  tipo_cargo: "",
+  tipo_contrato: "",
+  tipo_salario: "",
+  horas_diarias_trabajo: null,
+  antiguedad_empresa: "",
+  antiguedad_cargo: "",
+};
 
 const INSTRUMENT_LABELS: Record<string, string> = {
   PSICO_INTRA_A: "Intralaboral Forma A",
@@ -64,6 +93,19 @@ const DIMENSION_LABELS: Record<string, string> = {
 function instrumentLabel(code?: string | null) {
   return INSTRUMENT_LABELS[String(code || "")] || String(code || "Instrumento");
 }
+
+function normalizeRespuestaLabel(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const normalized = raw.toLowerCase().replace(/_/g, " ").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const byText = LIKERT.find((opt) => opt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === normalized);
+  if (byText) return byText;
+  const n = Number(raw);
+  // Compatibilidad con respuestas históricas guardadas como índice 0..4 de la escala visual.
+  if (Number.isInteger(n) && n >= 0 && n < LIKERT.length) return LIKERT[n];
+  return raw;
+}
+
 function parseParams(value: any) {
   if (!value) return {};
   if (typeof value === "object") return value;
@@ -85,7 +127,8 @@ function dimensionOf(p: PreguntaRespuesta) {
   );
 }
 function pct(a: number, b: number) {
-  return b > 0 ? Math.round((a * 1000) / b) / 10 : 0;
+  if (b <= 0) return 0;
+  return Math.min(100, Math.round((a * 1000) / b) / 10);
 }
 function statusTone(status?: string | null) {
   const value = String(status || "").toLowerCase();
@@ -96,6 +139,31 @@ function statusTone(status?: string | null) {
 function isStarted(ev?: PsicoEvaluacionEmpleado | null) {
   if (!ev) return false;
   return Number(ev.respondidas || 0) > 0 || ["borrador", "finalizada", "calculada", "completa"].includes(String(ev.estado_respuestas || "").toLowerCase());
+}
+
+function isEvalBlockedBySibling(evaluaciones: PsicoEvaluacionEmpleado[] = [], ev?: PsicoEvaluacionEmpleado | null) {
+  if (!ev) return false;
+  const code = String(ev.instrument_code || "");
+  if (!["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(code)) return false;
+  const siblingCode = code === "PSICO_INTRA_A" ? "PSICO_INTRA_B" : "PSICO_INTRA_A";
+  const sibling = evaluaciones.find((item) => item.instrument_code === siblingCode);
+  return Boolean(sibling && isStarted(sibling) && !isStarted(ev));
+}
+function chooseInitialEvaluation(app?: PsicoAplicacionEmpleado | null, preferredEvalId?: number) {
+  const evals = app?.evaluaciones || [];
+  if (!evals.length) return null;
+  const usable = evals.filter((ev) => !isEvalBlockedBySibling(evals, ev));
+  if (preferredEvalId) {
+    const preferred = usable.find((ev) => ev.evaluacion_id === preferredEvalId);
+    if (preferred) return preferred;
+  }
+  return (
+    usable.find((ev) => isStarted(ev)) ||
+    usable.find((ev) => Number(ev.respondidas || 0) > 0) ||
+    usable.find((ev) => ev.editable) ||
+    usable[0] ||
+    evals[0]
+  );
 }
 
 export default function PsicoEmpleadoRespuestasPage() {
@@ -113,6 +181,9 @@ export default function PsicoEmpleadoRespuestasPage() {
   const [pageError, setPageError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
   const [confirmFinalize, setConfirmFinalize] = useState(false);
+  const [showFicha, setShowFicha] = useState(false);
+  const [ficha, setFicha] = useState<FichaSociodemografica>(EMPTY_FICHA);
+  const [fichaCompleta, setFichaCompleta] = useState(false);
 
   const notify = (payload: Omit<ToastPayload, "id">) => {
     const id = Date.now();
@@ -127,13 +198,7 @@ export default function PsicoEmpleadoRespuestasPage() {
     const selected = (p.aplicaciones || []).find((a) => String(a.aplicacion_id) === String(aplicacionId)) || null;
     setPerfil(p);
     setApp(selected);
-    const nextSelected =
-      selected?.evaluaciones?.find((e) => e.evaluacion_id === preferredEvalId) ||
-      selected?.evaluaciones?.find((e) => e.editable && String(e.instrument_code).includes("INTRA")) ||
-      selected?.evaluaciones?.find((e) => e.editable) ||
-      selected?.evaluaciones?.[0] ||
-      null;
-    setSelectedEval(nextSelected);
+    setSelectedEval(chooseInitialEvaluation(selected, preferredEvalId));
   };
 
   useEffect(() => {
@@ -163,12 +228,7 @@ export default function PsicoEmpleadoRespuestasPage() {
         if (!mounted) return;
         setPerfil(p);
         setApp(selected);
-        const preferred =
-          selected?.evaluaciones?.find((e) => e.editable && String(e.instrument_code).includes("INTRA")) ||
-          selected?.evaluaciones?.find((e) => e.editable) ||
-          selected?.evaluaciones?.[0] ||
-          null;
-        setSelectedEval(preferred);
+        setSelectedEval(chooseInitialEvaluation(selected));
       } catch (e) {
         if (mounted) setPageError(e instanceof Error ? e.message : "No fue posible cargar la aplicación.");
       } finally {
@@ -183,6 +243,23 @@ export default function PsicoEmpleadoRespuestasPage() {
 
   useEffect(() => {
     let mounted = true;
+    async function loadFicha() {
+      if (!empleadoId || !aplicacionId) return;
+      try {
+        const res = await obtenerFichaSociodemografica(empleadoId, aplicacionId);
+        if (!mounted) return;
+        setFicha({ ...EMPTY_FICHA, ...(res.item || {}) });
+        setFichaCompleta(Boolean(res.completa));
+      } catch {
+        // Datos generales se cargan desde empleados. No requiere migración sociodemográfica nueva.
+      }
+    }
+    loadFicha();
+    return () => { mounted = false; };
+  }, [empleadoId, aplicacionId]);
+
+  useEffect(() => {
+    let mounted = true;
     async function loadQuestions() {
       if (!empleadoId || !selectedEval?.evaluacion_id) return;
       setLoadingQuestions(true);
@@ -192,9 +269,10 @@ export default function PsicoEmpleadoRespuestasPage() {
         if (!mounted) return;
         setPreguntas(res.preguntas || []);
         const serverAnswers: Record<number, string> = {};
-        for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = String(p.respuesta);
+        for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta);
         const local = readDraft(`abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`);
-        setAnswers({ ...serverAnswers, ...(local?.answers || {}) });
+        const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value)]));
+        setAnswers({ ...serverAnswers, ...localAnswers });
         setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
         if (local?.answers) {
           notify({
@@ -228,10 +306,21 @@ export default function PsicoEmpleadoRespuestasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers, observaciones, draftKey]);
 
-  const answered = useMemo(() => Object.values(answers).filter(Boolean).length, [answers]);
+  const answered = useMemo(() => preguntas.filter((p) => Boolean(answers[p.pregunta_id])).length, [preguntas, answers]);
   const total = preguntas.length;
   const pending = Math.max(total - answered, 0);
   const progress = pct(answered, total);
+
+  // Datos generales no es un instrumento de 31/97/123 preguntas.
+  // La ficha oficial se mide por campos requeridos para evitar reutilizar métricas de Extralaboral/Estrés.
+  const fichaPendientes = useMemo(() => fichaMissing(ficha), [ficha]);
+  const fichaTotal = 18;
+  const fichaAnswered = Math.max(0, fichaTotal - fichaPendientes.length);
+  const fichaProgress = pct(fichaAnswered, fichaTotal);
+  const metricTotal = showFicha ? fichaTotal : total;
+  const metricAnswered = showFicha ? fichaAnswered : answered;
+  const metricPending = showFicha ? fichaPendientes.length : pending;
+  const metricProgress = showFicha ? fichaProgress : progress;
   const sections = useMemo(() => {
     const map = new Map<string, { name: string; total: number; answered: number }>();
     for (const p of preguntas) {
@@ -248,7 +337,8 @@ export default function PsicoEmpleadoRespuestasPage() {
     return { details: missing.slice(0, 4), moreCount: Math.max(missing.length - 4, 0) };
   }, [preguntas, answers]);
 
-  const selectedLocked = !selectedEval?.editable || ["finalizada", "calculada"].includes(String(selectedEval?.estado_respuestas || "").toLowerCase());
+  const appClosed = ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state));
+  const selectedLocked = appClosed || !selectedEval?.editable || ["finalizada", "calculada"].includes(String(selectedEval?.estado_respuestas || "").toLowerCase());
   const selectedCode = String(selectedEval?.instrument_code || "");
   const siblingStarted = useMemo(() => {
     if (!app || !["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(selectedCode)) return false;
@@ -258,12 +348,40 @@ export default function PsicoEmpleadoRespuestasPage() {
   }, [app, selectedCode]);
 
   const getEvalMeta = (ev: PsicoEvaluacionEmpleado) => {
-    const isIntra = ["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(String(ev.instrument_code || ""));
-    const siblingCode = ev.instrument_code === "PSICO_INTRA_A" ? "PSICO_INTRA_B" : ev.instrument_code === "PSICO_INTRA_B" ? "PSICO_INTRA_A" : null;
-    const sibling = siblingCode ? app?.evaluaciones.find((item) => item.instrument_code === siblingCode) : null;
-    const blockedBySibling = Boolean(isIntra && sibling && isStarted(sibling) && !isStarted(ev));
+    const blockedBySibling = isEvalBlockedBySibling(app?.evaluaciones || [], ev);
     return { blockedBySibling };
   };
+
+  async function executeSaveFicha(finalizar = false) {
+    const missingLocal = fichaMissing(ficha);
+    if (finalizar && missingLocal.length > 0) {
+      notify({
+        type: "warning",
+        title: "Datos generales incompletos",
+        message: `Completa: ${missingLocal.slice(0, 5).join(", ")}${missingLocal.length > 5 ? ` y ${missingLocal.length - 5} más` : ""}.`,
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await guardarFichaSociodemografica(empleadoId, aplicacionId, { ...ficha, finalizar });
+      const completa = Boolean(res.completa);
+      setFichaCompleta(completa);
+      if (res.item) setFicha({ ...EMPTY_FICHA, ...(res.item || {}) });
+      await refreshContext(selectedEval?.evaluacion_id);
+      notify({
+        type: completa || !finalizar ? "success" : "warning",
+        title: finalizar ? (completa ? "Datos generales finalizados" : "Datos generales pendientes") : "Datos generales guardados",
+        message: completa
+          ? "La ficha quedó completa y se actualizó el estado del participante."
+          : "Los datos se guardaron, pero aún faltan campos para completar la ficha.",
+      });
+    } catch (e) {
+      notify({ type: "warning", title: "No se pudo guardar la ficha", message: e instanceof Error ? e.message : "Revisa los campos obligatorios." });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function executeSave(finalizar = false) {
     if (!selectedEval || selectedLocked) return;
@@ -314,8 +432,21 @@ export default function PsicoEmpleadoRespuestasPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8 text-slate-500">
-        <Loader2 className="mr-2 inline h-5 w-5 animate-spin" /> Cargando registro...
+      <main className="min-h-screen bg-slate-50 p-6">
+        <div className="mx-auto max-w-[1540px] space-y-5">
+          <div className="h-28 animate-pulse rounded-[30px] border border-slate-200 bg-white" />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
+            <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
+            <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
+          </div>
+          <div className="grid min-h-[360px] place-items-center rounded-3xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+            <div className="text-center">
+              <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-700" />
+              <p className="mt-3 text-sm font-black">Cargando registro de respuestas…</p>
+            </div>
+          </div>
+        </div>
       </main>
     );
   }
@@ -383,21 +514,23 @@ export default function PsicoEmpleadoRespuestasPage() {
                 </div>
               </div>
               <div className="grid grid-cols-4 overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
-                <Kpi label="Total preguntas" value={total} />
-                <Kpi label="Respondidas" value={answered} tone="text-emerald-600" />
-                <Kpi label="Pendientes" value={pending} tone="text-amber-600" />
-                <Kpi label="Avance" value={`${progress}%`} tone="text-violet-700" />
+                <Kpi label={showFicha ? "Campos requeridos" : "Total preguntas"} value={metricTotal} />
+                <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
+                <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
+                <Kpi label="Avance" value={`${metricProgress}%`} tone="text-violet-700" />
               </div>
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="text-sm font-black text-slate-950">Alertas de validación</p>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
-                  {pending > 0 ? (
+                  {metricPending > 0 ? (
                     <p className="flex gap-2">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-600" /> Hay {pending} preguntas pendientes.
+                      <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-600" />
+                      {showFicha ? `Hay ${metricPending} campos obligatorios pendientes.` : `Hay ${metricPending} preguntas pendientes.`}
                     </p>
                   ) : (
                     <p className="flex gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" /> Todas las preguntas están respondidas.
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                      {showFicha ? "Los datos generales requeridos están completos." : "Todas las preguntas están respondidas."}
                     </p>
                   )}
                   {selectedEval?.estado_respuestas === "calculada" && (
@@ -418,11 +551,11 @@ export default function PsicoEmpleadoRespuestasPage() {
               <div className="flex flex-wrap border-b border-slate-200">
                 {app.evaluaciones.map((ev) => {
                   const meta = getEvalMeta(ev);
-                  const active = selectedEval?.evaluacion_id === ev.evaluacion_id;
+                  const active = !showFicha && selectedEval?.evaluacion_id === ev.evaluacion_id;
                   return (
                     <button
                       key={ev.evaluacion_id}
-                      onClick={() => !meta.blockedBySibling && setSelectedEval(ev)}
+                      onClick={() => { if (!meta.blockedBySibling) { setSelectedEval(ev); setShowFicha(false); } }}
                       disabled={meta.blockedBySibling}
                       className={`flex items-center gap-2 px-5 py-4 text-sm font-black transition ${
                         active
@@ -437,8 +570,19 @@ export default function PsicoEmpleadoRespuestasPage() {
                     </button>
                   );
                 })}
+                <button
+                  type="button"
+                  onClick={() => setShowFicha(true)}
+                  className={`flex items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+                >
+                  <FileText className="h-4 w-4" /> Datos generales
+                  {fichaCompleta ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
+                </button>
               </div>
 
+              {showFicha ? (
+                <FichaSociodemograficaPanel ficha={ficha} setFicha={setFicha} saving={saving} completa={fichaCompleta} onSave={() => void executeSaveFicha(false)} onFinalize={() => void executeSaveFicha(true)} />
+              ) : (
               <div className="grid gap-5 p-5 xl:grid-cols-[260px_1fr_320px]">
                 <aside className="space-y-2">
                   {sections.length === 0 ? (
@@ -468,7 +612,9 @@ export default function PsicoEmpleadoRespuestasPage() {
                   </div>
                   {selectedLocked && (
                     <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                      Este instrumento ya fue finalizado o calculado. Puedes revisar las respuestas, pero no modificarlas.
+                      {appClosed
+                        ? "Esta aplicación ya fue cerrada/calculada. Solo puedes revisar instrumentos con respuestas registradas; no se permite capturar instrumentos pendientes."
+                        : "Este instrumento ya fue finalizado o calculado. Puedes revisar las respuestas, pero no modificarlas."}
                     </div>
                   )}
                   <div className="space-y-3">
@@ -544,6 +690,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   </div>
                 </aside>
               </div>
+              )}
             </section>
           </>
         )}
@@ -567,6 +714,287 @@ function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: 
       <p className="text-xs font-bold text-slate-500">{label}</p>
       <p className={`mt-2 text-3xl font-black ${tone}`}>{value}</p>
     </div>
+  );
+}
+
+type CatalogosSocio = {
+  estado_civil: string[];
+  nivel_estudios: string[];
+  tipo_vivienda: string[];
+  tipo_cargo: string[];
+  tipo_contrato: string[];
+  tipo_salario: string[];
+};
+
+const FALLBACK_CATALOGOS: CatalogosSocio = {
+  estado_civil: ["Soltero(a)", "Casado(a)", "Unión libre", "Separado(a)", "Divorciado(a)", "Viudo(a)", "Sacerdote / Monja"],
+  nivel_estudios: [
+    "Ninguno", "Primaria incompleta", "Primaria completa", "Bachillerato incompleto", "Bachillerato completo",
+    "Técnico / tecnológico incompleto", "Técnico / tecnológico completo", "Profesional incompleto", "Profesional completo",
+    "Carrera militar / policía", "Post-grado incompleto", "Post-grado completo",
+  ],
+  tipo_vivienda: ["Propia", "En arriendo", "Familiar"],
+  tipo_cargo: [
+    "Jefatura - tiene personal a cargo",
+    "Profesional, analista, técnico, tecnólogo",
+    "Auxiliar, asistente administrativo, asistente técnico",
+    "Operario, operador, ayudante, servicios generales",
+  ],
+  tipo_contrato: ["Temporal de menos de 1 año", "Temporal de 1 año o más", "Término indefinido", "Cooperado (cooperativa)", "Prestación de servicios", "No sé"],
+  tipo_salario: ["Fijo (diario, semanal, quincenal o mensual)", "Una parte fija y otra variable", "Todo variable (a destajo, por producción, por comisión)"],
+};
+const SEXO_OPTIONS = ["Masculino", "Femenino"];
+const ESTRATO_OPTIONS = ["1", "2", "3", "4", "5", "6", "Finca", "No sé"];
+const CURRENT_YEAR = new Date().getFullYear();
+
+function normalizeOptions(fallback: string[], remote?: Array<{ nombre?: string }>) {
+  const remoteValues = (remote || []).map((x) => String(x.nombre || "").trim()).filter(Boolean);
+  // El orden normativo del formulario oficial manda. Las opciones remotas solo agregan valores faltantes.
+  return Array.from(new Set([...fallback, ...remoteValues]));
+}
+function fichaEdad(anio?: number | null) {
+  return anio ? Math.max(CURRENT_YEAR - Number(anio), 0) : "";
+}
+function fichaMissing(ficha: FichaSociodemografica) {
+  const required: Array<[keyof FichaSociodemografica, string]> = [
+    ["sexo", "Sexo"], ["anio_nacimiento", "Año de nacimiento"], ["estado_civil", "Estado civil"], ["nivel_estudios", "Nivel de estudios"],
+    ["ocupacion_profesion", "Ocupación / profesión"], ["ciudad_residencia", "Ciudad de residencia"], ["estrato", "Estrato"], ["tipo_vivienda", "Tipo de vivienda"],
+    ["personas_dependen", "Personas dependientes"], ["ciudad_trabajo", "Ciudad donde trabaja"], ["cargo", "Nombre del cargo"], ["tipo_cargo", "Tipo de cargo"],
+    ["antiguedad_empresa", "Antigüedad en la empresa"], ["antiguedad_cargo", "Antigüedad en el cargo"], ["area", "Área / sección"], ["tipo_contrato", "Tipo de contrato"],
+    ["horas_diarias_trabajo", "Horas diarias"], ["tipo_salario", "Tipo de salario"],
+  ];
+  return required.filter(([key]) => {
+    const value = ficha[key];
+    return value === null || value === undefined || String(value).trim() === "";
+  }).map(([, label]) => label);
+}
+
+function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave, onFinalize }: { ficha: FichaSociodemografica; setFicha: (value: FichaSociodemografica | ((prev: FichaSociodemografica) => FichaSociodemografica)) => void; saving: boolean; completa: boolean; onSave: () => void; onFinalize: () => void }) {
+  const [catalogos, setCatalogos] = useState<CatalogosSocio>(FALLBACK_CATALOGOS);
+  const [resQuery, setResQuery] = useState(String(ficha.ciudad_residencia || ""));
+  const [trabQuery, setTrabQuery] = useState(String(ficha.ciudad_trabajo || ""));
+  const [resOptions, setResOptions] = useState<Array<{ municipio: string; departamento?: string | null }>>([]);
+  const [trabOptions, setTrabOptions] = useState<Array<{ municipio: string; departamento?: string | null }>>([]);
+  const missing = useMemo(() => fichaMissing(ficha), [ficha]);
+  const update = (key: keyof FichaSociodemografica, value: any) => {
+    setFicha((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => {
+    let alive = true;
+    obtenerCatalogosSociodemograficos()
+      .then((res) => {
+        if (!alive) return;
+        setCatalogos({
+          estado_civil: normalizeOptions(FALLBACK_CATALOGOS.estado_civil, res.estado_civil),
+          nivel_estudios: normalizeOptions(FALLBACK_CATALOGOS.nivel_estudios, res.nivel_estudios),
+          tipo_vivienda: normalizeOptions(FALLBACK_CATALOGOS.tipo_vivienda, res.tipo_vivienda),
+          tipo_cargo: normalizeOptions(FALLBACK_CATALOGOS.tipo_cargo, res.tipo_cargo),
+          tipo_contrato: normalizeOptions(FALLBACK_CATALOGOS.tipo_contrato, res.tipo_contrato),
+          tipo_salario: normalizeOptions(FALLBACK_CATALOGOS.tipo_salario, res.tipo_salario),
+        });
+      })
+      .catch(() => setCatalogos(FALLBACK_CATALOGOS));
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => { setResQuery(String(ficha.ciudad_residencia || "")); }, [ficha.ciudad_residencia]);
+  useEffect(() => { setTrabQuery(String(ficha.ciudad_trabajo || "")); }, [ficha.ciudad_trabajo]);
+
+  useEffect(() => {
+    const query = resQuery.trim();
+    const t = window.setTimeout(() => {
+      if (query.length < 2) return setResOptions([]);
+      buscarMunicipiosPsico(query).then((r) => setResOptions(r.items || [])).catch(() => setResOptions([]));
+    }, 280);
+    return () => window.clearTimeout(t);
+  }, [resQuery]);
+  useEffect(() => {
+    const query = trabQuery.trim();
+    const t = window.setTimeout(() => {
+      if (query.length < 2) return setTrabOptions([]);
+      buscarMunicipiosPsico(query).then((r) => setTrabOptions(r.items || [])).catch(() => setTrabOptions([]));
+    }, 280);
+    return () => window.clearTimeout(t);
+  }, [trabQuery]);
+
+  const selectMunicipio = (kind: "res" | "trab", item: { municipio: string; departamento?: string | null }) => {
+    if (kind === "res") {
+      setFicha((prev) => ({ ...prev, ciudad_residencia: item.municipio, departamento_residencia: item.departamento || "" }));
+      setResOptions([]);
+      setResQuery(item.municipio);
+    } else {
+      setFicha((prev) => ({ ...prev, ciudad_trabajo: item.municipio, departamento_trabajo: item.departamento || "" }));
+      setTrabOptions([]);
+      setTrabQuery(item.municipio);
+    }
+  };
+
+  return (
+    <div className="p-5">
+      <div className="rounded-3xl border border-violet-100 bg-violet-50/60 p-5">
+        <h2 className="text-xl font-black text-slate-950">Ficha de datos generales</h2>
+        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. Los campos de catálogo usan listas controladas para proteger la calidad del dashboard.</p>
+      </div>
+
+      {missing.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <b>Campos pendientes para finalizar:</b> {missing.slice(0, 8).join(", ")}{missing.length > 8 ? ` y ${missing.length - 8} más.` : "."}
+        </div>
+      )}
+      {completa && (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+          Ficha de datos generales finalizada. La información queda en modo consulta para proteger la integridad de la aplicación.
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-5">
+        <fieldset className="rounded-3xl border border-slate-200 bg-white p-5">
+          <legend className="px-2 text-sm font-black text-slate-900">Información personal</legend>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <SelectField disabled={completa} label="Sexo" value={ficha.sexo || ""} options={SEXO_OPTIONS} onChange={(v) => update("sexo", v)} />
+            <NumberField disabled={completa} label="Año de nacimiento" value={ficha.anio_nacimiento ?? ""} min={1900} max={CURRENT_YEAR} onChange={(v) => update("anio_nacimiento", v)} />
+            <ReadOnlyField label="Edad calculada" value={String(fichaEdad(ficha.anio_nacimiento))} />
+            <SelectField disabled={completa} label="Estado civil" value={ficha.estado_civil || ""} options={catalogos.estado_civil} onChange={(v) => update("estado_civil", v)} />
+            <SelectField disabled={completa} label="Nivel de estudios" value={ficha.nivel_estudios || ""} options={catalogos.nivel_estudios} onChange={(v) => update("nivel_estudios", v)} />
+            <TextField disabled={completa} label="Ocupación / profesión" value={ficha.ocupacion_profesion || ""} onChange={(v) => update("ocupacion_profesion", v)} />
+          </div>
+        </fieldset>
+
+        <fieldset className="rounded-3xl border border-slate-200 bg-white p-5">
+          <legend className="px-2 text-sm font-black text-slate-900">Residencia</legend>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <MunicipioField disabled={completa} label="Ciudad / municipio de residencia" query={resQuery} selectedValue={ficha.ciudad_residencia || ""} setQuery={(v) => { setResQuery(v); if (v !== String(ficha.ciudad_residencia || "")) { update("ciudad_residencia", ""); update("departamento_residencia", ""); } }} options={resOptions} onSelect={(item) => selectMunicipio("res", item)} />
+            <ReadOnlyField label="Departamento de residencia" value={ficha.departamento_residencia || ""} />
+            <SelectField disabled={completa} label="Estrato" value={String(ficha.estrato || "")} options={ESTRATO_OPTIONS} onChange={(v) => update("estrato", v)} />
+            <SelectField disabled={completa} label="Tipo de vivienda" value={ficha.tipo_vivienda || ""} options={catalogos.tipo_vivienda} onChange={(v) => update("tipo_vivienda", v)} />
+            <NumberField disabled={completa} label="Personas que dependen económicamente" value={ficha.personas_dependen ?? ""} min={0} max={99} onChange={(v) => update("personas_dependen", v)} />
+          </div>
+        </fieldset>
+
+        <fieldset className="rounded-3xl border border-slate-200 bg-white p-5">
+          <legend className="px-2 text-sm font-black text-slate-900">Información laboral</legend>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <MunicipioField disabled={completa} label="Ciudad / municipio donde trabaja" query={trabQuery} selectedValue={ficha.ciudad_trabajo || ""} setQuery={(v) => { setTrabQuery(v); if (v !== String(ficha.ciudad_trabajo || "")) { update("ciudad_trabajo", ""); update("departamento_trabajo", ""); } }} options={trabOptions} onSelect={(item) => selectMunicipio("trab", item)} />
+            <ReadOnlyField label="Departamento donde trabaja" value={ficha.departamento_trabajo || ""} />
+            <TextField disabled={completa} label="Nombre del cargo" value={ficha.cargo || ""} onChange={(v) => update("cargo", v)} />
+            <SelectField disabled={completa} label="Tipo de cargo" value={ficha.tipo_cargo || ""} options={catalogos.tipo_cargo} onChange={(v) => update("tipo_cargo", v)} />
+            <TextField disabled={completa} label="Área / departamento / sección" value={ficha.area || ""} onChange={(v) => update("area", v)} />
+            <NumberField disabled={completa} label="Antigüedad en la empresa (años)" value={ficha.antiguedad_empresa ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_empresa", v === null ? "" : String(v))} />
+            <NumberField disabled={completa} label="Antigüedad en el cargo (años)" value={ficha.antiguedad_cargo ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_cargo", v === null ? "" : String(v))} />
+            <SelectField disabled={completa} label="Tipo de contrato" value={ficha.tipo_contrato || ""} options={catalogos.tipo_contrato} onChange={(v) => update("tipo_contrato", v)} />
+            <NumberField disabled={completa} label="Horas diarias de trabajo" value={ficha.horas_diarias_trabajo ?? ""} min={1} max={24} onChange={(v) => update("horas_diarias_trabajo", v)} />
+            <SelectField disabled={completa} label="Tipo de salario" value={ficha.tipo_salario || ""} options={catalogos.tipo_salario} onChange={(v) => update("tipo_salario", v)} />
+          </div>
+        </fieldset>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-white p-4">
+        <p className="text-sm text-slate-500">{completa ? "Ficha finalizada. Para modificarla deberá reabrirse la aplicación o habilitarse un flujo de corrección." : "Guardar permite borrador parcial. Finalizar exige todos los campos obligatorios."}</p>
+        <div className="flex flex-wrap gap-3">
+          <button disabled={saving || completa} type="button" onClick={onSave} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {completa ? "Datos guardados" : "Guardar datos"}
+          </button>
+          <button disabled={saving || completa} type="button" onClick={onFinalize} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} {completa ? "Ficha finalizada" : "Finalizar datos generales"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function fieldBase(disabled = false) { return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`; }
+function TextField({ label, value, onChange, disabled = false }: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
+  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input disabled={disabled} value={value} onChange={(e) => onChange(e.target.value)} className={fieldBase(disabled)} /></label>;
+}
+function NumberField({ label, value, min, max, onChange, disabled = false }: { label: string; value: number | string; min?: number; max?: number; onChange: (v: number | null) => void; disabled?: boolean }) {
+  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input disabled={disabled} type="number" min={min} max={max} value={value} onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))} className={fieldBase(disabled)} /></label>;
+}
+function SelectField({ label, value, options, onChange, disabled = false }: { label: string; value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const display = value || "Selecciona una opción";
+  return (
+    <div className="relative space-y-1 text-sm font-bold text-slate-700">
+      <span>{label}</span>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => { if (!disabled) setOpen((v) => !v); }}
+        className={`${fieldBase(disabled)} flex min-h-[50px] items-center justify-between gap-3 text-left ${value ? "text-slate-900" : "text-slate-400"}`}
+      >
+        <span className="truncate">{display}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && !disabled && (
+        <div className="absolute z-40 mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
+          <button
+            type="button"
+            onClick={() => { onChange(""); setOpen(false); }}
+            className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${!value ? "bg-violet-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
+          >
+            Selecciona una opción
+          </button>
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${value === opt ? "bg-violet-600 text-white" : "text-slate-700 hover:bg-violet-50 hover:text-violet-800"}`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input value={value} readOnly className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-normal text-slate-500 outline-none" /></label>;
+}
+function MunicipioField({ label, query, selectedValue, setQuery, options, onSelect, disabled = false }: { label: string; query: string; selectedValue?: string; setQuery: (v: string) => void; options: Array<{ municipio: string; departamento?: string | null }>; onSelect: (item: { municipio: string; departamento?: string | null }) => void; disabled?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedSelected = String(selectedValue || "").trim().toLowerCase();
+  const showPanel = !disabled && open && query.trim().length >= 2 && normalizedQuery !== normalizedSelected;
+  return (
+    <label className="relative space-y-1 text-sm font-bold text-slate-700">
+      {label}
+      <input
+        disabled={disabled}
+        value={query}
+        onFocus={() => { if (!disabled) setOpen(true); }}
+        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onChange={(e) => { if (disabled) return; setTouched(true); setOpen(true); setQuery(e.target.value); }}
+        onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
+        placeholder="Escribe mínimo 2 letras…"
+        className={fieldBase(disabled)}
+        autoComplete="off"
+      />
+      {showPanel && (
+        <div className="absolute z-30 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
+          {options.length > 0 ? (
+            options.map((item) => (
+              <button
+                key={`${item.municipio}-${item.departamento}`}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { onSelect(item); setOpen(false); setTouched(false); }}
+                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-violet-50 hover:text-violet-800"
+              >
+                {item.municipio} <span className="font-normal text-slate-500">{item.departamento ? `· ${item.departamento}` : ""}</span>
+              </button>
+            ))
+          ) : touched ? (
+            <div className="rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500">
+              Sin coincidencias. Verifica que el catálogo de municipios esté cargado o intenta con tilde/sin tilde.
+            </div>
+          ) : null}
+        </div>
+      )}
+    </label>
   );
 }
 
@@ -597,9 +1025,13 @@ function QuestionRow({
               onClick={() => onChange(opt)}
               className={`rounded-xl border px-3 py-2 text-xs font-black transition ${
                 value === opt
-                  ? "border-violet-700 bg-violet-700 text-white shadow-sm"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-violet-300"
-              } disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400`}
+                  ? disabled
+                    ? "border-violet-300 bg-violet-100 text-violet-900 shadow-inner"
+                    : "border-violet-700 bg-violet-700 text-white shadow-sm"
+                  : disabled
+                    ? "border-slate-200 bg-slate-100 text-slate-400"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-300"
+              } ${disabled ? "cursor-not-allowed" : ""}`}
             >
               {opt}
             </button>

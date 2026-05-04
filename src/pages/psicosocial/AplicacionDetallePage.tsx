@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BarChart3, CheckCircle2, ClipboardCheck, Coins, FilePenLine, Loader2, Lock, Search, ShieldCheck, Users, XCircle } from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, ClipboardCheck, Coins, FilePenLine, Loader2, Lock, RotateCcw, Search, ShieldCheck, Users, XCircle } from "lucide-react";
 import { AplicacionDetalle, psicoAdminService } from "@/features/psicosocial/api/psicoAdminService";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
@@ -28,6 +28,7 @@ export default function AplicacionDetallePage() {
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmReopen, setConfirmReopen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
 
@@ -76,6 +77,7 @@ export default function AplicacionDetallePage() {
   }, [data, q]);
 
   const finalizada = isFinalizada(data?.aplicacion?.estado);
+  const canOpenParticipant = (emp: any) => !finalizada || Boolean(emp.registrado || emp.completo || (emp.instrumentos_registrados || []).length > 0);
 
   async function cerrarAplicacion() {
     if (!data || !empresaId || !aplicacionId) return;
@@ -91,12 +93,43 @@ export default function AplicacionDetallePage() {
     setConfirmClose(true);
   }
 
+  async function confirmReabrirAplicacion() {
+    if (!empresaId || !aplicacionId) return;
+    setConfirmReopen(false);
+    setClosing(true);
+    try {
+      await psicoAdminService.reabrirAplicacion(empresaId, Number(aplicacionId), {
+        motivo: "Corrección de respuestas y reprocesamiento",
+        consumir_credito: true,
+      });
+      notify({ type: "success", title: "Aplicación reabierta", message: "Se registró el reproceso. Al cerrar nuevamente podrá consumirse un crédito adicional." });
+      await load();
+    } catch (e: any) {
+      notify({ type: "error", title: "No fue posible reabrir", message: e?.message || "Intenta nuevamente." });
+    } finally {
+      setClosing(false);
+    }
+  }
+
   async function confirmCerrarAplicacion() {
     if (!empresaId || !aplicacionId) return;
     setConfirmClose(false);
     setClosing(true);
     try {
-      await psicoAdminService.cerrarAplicacion(empresaId, Number(aplicacionId), 1);
+      const cierre = await psicoAdminService.cerrarAplicacion(empresaId, Number(aplicacionId), 1);
+      if (cierre && cierre.ok === false) {
+        const calidad = cierre.scoring_fallidos ? Object.values(cierre.scoring_fallidos as Record<string, any>)[0]?.quality : null;
+        const detalle = calidad
+          ? `Sin transformar: ${calidad.sin_transformado || 0}. Sin nivel: ${calidad.sin_nivel || 0}.`
+          : (cierre.message || "El motor detectó inconsistencias de cálculo.");
+        notify({
+          type: "error",
+          title: "Cálculo incompleto",
+          message: `No se cerró la aplicación para evitar resultados inválidos. ${detalle}`,
+        });
+        await load();
+        return;
+      }
       notify({
         type: "success",
         title: "Aplicación cerrada",
@@ -146,11 +179,21 @@ export default function AplicacionDetallePage() {
       <ConfirmDialog
         open={confirmClose}
         title="Cerrar y calcular la aplicación"
-        description="Al cerrar la aplicación se congelará la captura y se ejecutará el cálculo/recalculo de resultados. Después, los resultados quedarán disponibles para reportes y tablero analítico."
+        description="Al cerrar la aplicación se congelará la captura y se ejecutará el cálculo/recalculo de resultados. Verifica la información antes de continuar: si posteriormente necesitas reabrir para corregir datos, el reprocesamiento podrá consumir un crédito adicional."
         confirmLabel="Cerrar aplicación"
         cancelLabel="Seguir revisando"
         onConfirm={() => void confirmCerrarAplicacion()}
         onCancel={() => setConfirmClose(false)}
+      />
+      <ConfirmDialog
+        open={confirmReopen}
+        title="Reabrir aplicación para reproceso"
+        description="Reabrir esta aplicación habilitará correcciones, invalidará temporalmente la lectura de resultados y registrará un crédito adicional por reprocesamiento. No se borrarán datos: el cambio quedará auditado."
+        confirmLabel="Reabrir y registrar reproceso"
+        cancelLabel="Cancelar"
+        tone="amber"
+        onConfirm={() => void confirmReabrirAplicacion()}
+        onCancel={() => setConfirmReopen(false)}
       />
 
       <div className="mx-auto max-w-7xl space-y-6">
@@ -175,9 +218,15 @@ export default function AplicacionDetallePage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button onClick={cerrarAplicacion} disabled={closing || finalizada} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
-                <ShieldCheck className="h-4 w-4" /> {finalizada ? "Aplicación cerrada" : closing ? "Calculando..." : "Cerrar y calcular"}
-              </button>
+              {finalizada ? (
+                <button onClick={() => setConfirmReopen(true)} disabled={closing} className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-bold text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">
+                  <RotateCcw className="h-4 w-4" /> Reabrir aplicación
+                </button>
+              ) : (
+                <button onClick={cerrarAplicacion} disabled={closing} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
+                  <ShieldCheck className="h-4 w-4" /> {closing ? "Calculando..." : "Cerrar y calcular"}
+                </button>
+              )}
               <button
                 onClick={() => finalizada ? navigate(`/psicosocial/resultados?aplicacionId=${aplicacionId}`) : notify({ type: "warning", title: "Resultados no disponibles", message: "Primero cierra y calcula la aplicación." })}
                 className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold ${finalizada ? "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
@@ -188,7 +237,7 @@ export default function AplicacionDetallePage() {
           </div>
           {!finalizada && (
             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <b>Resultados bloqueados:</b> estarán habilitados cuando cierres la aplicación y el motor calcule/recalcule resultados.
+              <b>Resultados bloqueados:</b> estarán habilitados cuando cierres la aplicación y el motor calcule/recalcule resultados. Si reabres después de cerrar, el reprocesamiento podrá consumir un crédito adicional.
             </div>
           )}
         </section>
@@ -268,14 +317,23 @@ export default function AplicacionDetallePage() {
                       )}
                     </td>
                     <td className="px-4 py-4 text-right">
-                      <button
-                        disabled={finalizada}
-                        onClick={() => navigate(`/psicosocial/empleados/${emp.id}/aplicaciones/${aplicacionId}/respuestas`)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-                      >
-                        {finalizada ? <Lock className="h-4 w-4" /> : <FilePenLine className="h-4 w-4" />}
-                        {emp.registrado ? "Actualizar respuesta" : "Registrar respuesta"}
-                      </button>
+                      {(() => {
+                        const enabled = canOpenParticipant(emp);
+                        const label = finalizada
+                          ? enabled ? "Ver respuestas" : "Sin respuestas"
+                          : emp.completo ? "Ver respuestas" : emp.registrado ? "Actualizar respuesta" : "Registrar respuesta";
+                        return (
+                          <button
+                            onClick={() => { if (enabled) navigate(`/psicosocial/empleados/${emp.id}/aplicaciones/${aplicacionId}/respuestas`); }}
+                            disabled={!enabled}
+                            title={enabled ? label : "La aplicación ya fue cerrada/calculada y este participante no tiene respuestas registradas."}
+                            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 font-bold ${enabled ? "bg-violet-700 text-white hover:bg-violet-800" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
+                          >
+                            {finalizada ? <Lock className="h-4 w-4" /> : <FilePenLine className="h-4 w-4" />}
+                            {label}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}

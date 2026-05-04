@@ -71,6 +71,7 @@ export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
   total_instrumentos: number;
   completados: number;
   avance_porcentaje?: number;
+  ficha_sociodemografica?: { requerida: boolean; estado: string; completa: boolean };
 };
 
 export type AplicacionDetalle = {
@@ -86,6 +87,7 @@ export type AplicacionDetalle = {
     instrumentos_total: number;
     creditos_consumidos: number;
     creditos_estimados: number;
+    ficha_sociodemografica_requerida?: boolean;
   };
   empleados: AplicacionDetalleEmpleado[];
 };
@@ -172,5 +174,11 @@ export const psicoAdminService = {
     requestJson<{ ok: boolean; estado: string; participantes: number; evaluacion_ids: number[] }>(
       `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/cerrar?min_participantes=${minParticipantes}`,
       { method: "POST", headers: { "X-Empresa-Id": empresaId } },
+    ),
+
+  reabrirAplicacion: (empresaId: string, aplicacionId: number, payload: { motivo?: string; consumir_credito?: boolean }) =>
+    requestJson<{ ok: boolean; estado: string; credito_reproceso_consumido: boolean }>(
+      `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/reabrir`,
+      { method: "POST", headers: { "X-Empresa-Id": empresaId }, body: JSON.stringify(payload) },
     ),
 };

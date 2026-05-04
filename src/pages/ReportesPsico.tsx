@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AbrilLoading } from "@/components/common/AbrilLoading";
 import {
   listarAplicacionesPsicoDashboard,
   obtenerDashboardPsicoAplicacion,
@@ -247,6 +248,99 @@ function DonutGlobal({ data }: { data: DistribucionTotal[] }) {
   );
 }
 
+
+type InstrumentRiskBucket = { nivel: string; label: string; cantidad: number; porcentaje: number };
+type InstrumentRiskSummary = { key?: string; label: string; grupo?: string; total: number; promedio_transformado?: number; pct_alto_muy_alto?: number; niveles: InstrumentRiskBucket[] };
+
+function normalizeInstrumentSummaries(data: any): InstrumentRiskSummary[] {
+  const explicit = Array.isArray(data?.graficas_resumen?.items) ? data.graficas_resumen.items : [];
+  if (explicit.length) return explicit.map((x: any) => ({
+    key: x.key ?? x.label,
+    label: x.label ?? x.instrument_label ?? "Instrumento",
+    grupo: x.grupo,
+    total: Number(x.total ?? 0),
+    promedio_transformado: Number(x.promedio_transformado ?? 0),
+    pct_alto_muy_alto: Number(x.pct_alto_muy_alto ?? 0),
+    niveles: Array.isArray(x.niveles) ? x.niveles : [],
+  }));
+  const fallback = Array.isArray(data?.distribucion_totales) ? data.distribucion_totales : [];
+  return fallback.map((x: any) => ({
+    key: `${x.evaluacion_id}-${x.total_code}`,
+    label: x.instrument_label ?? x.total_label ?? "Instrumento",
+    grupo: x.total_label,
+    total: Number(x.total ?? 0),
+    promedio_transformado: undefined,
+    pct_alto_muy_alto: Number((x.niveles ?? []).filter((n: any) => ["ALTO", "MUY_ALTO"].includes(String(n.nivel))).reduce((acc: number, n: any) => acc + Number(n.porcentaje ?? 0), 0)),
+    niveles: Array.isArray(x.niveles) ? x.niveles : [],
+  }));
+}
+
+function InstrumentMiniDistribution({ item }: { item: InstrumentRiskSummary }) {
+  const niveles = [...(item.niveles ?? [])].sort((a, b) => {
+    const ao = NIVEL_ORDER_FRONT.indexOf(String(a.nivel));
+    const bo = NIVEL_ORDER_FRONT.indexOf(String(b.nivel));
+    return (ao === -1 ? 999 : ao) - (bo === -1 ? 999 : bo);
+  });
+  return (
+    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="line-clamp-2 text-sm font-bold text-slate-950" title={item.label}>{item.label}</div>
+          <div className="mt-1 text-xs text-slate-500">{item.grupo || "Distribución por nivel"} · N {Number(item.total ?? 0).toLocaleString("es-CO")}</div>
+        </div>
+        <span className={cn("shrink-0 rounded-full border px-2 py-1 text-xs font-semibold", riesgoTone(item.pct_alto_muy_alto))}>{fmtPct(item.pct_alto_muy_alto)}</span>
+      </div>
+      <div className="flex h-3 overflow-hidden rounded-full bg-slate-100">
+        {niveles.filter((n) => Number(n.porcentaje ?? 0) > 0).map((n) => (
+          <div key={String(n.nivel)} title={`${n.label}: ${fmtPct(n.porcentaje)}`} style={{ width: `${Number(n.porcentaje ?? 0)}%`, backgroundColor: NIVEL_COLORS[String(n.nivel)] ?? "#94a3b8" }} />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+        {niveles.filter((n) => Number(n.cantidad ?? 0) > 0).slice(0, 4).map((n) => (
+          <div key={String(n.nivel)} className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 px-2 py-1.5">
+            <span className="truncate">{n.label}</span>
+            <b>{Number(n.cantidad ?? 0).toLocaleString("es-CO")}</b>
+          </div>
+        ))}
+      </div>
+      {typeof item.promedio_transformado === "number" && item.promedio_transformado > 0 && (
+        <div className="text-xs text-slate-500">Puntaje promedio: <b className="text-slate-800">{fmtNum(item.promedio_transformado)}</b></div>
+      )}
+    </div>
+  );
+}
+
+const NIVEL_ORDER_FRONT = ["MUY_BAJO", "SIN_RIESGO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"];
+
+function InstrumentOverviewSection({ data }: { data: any }) {
+  const items = normalizeInstrumentSummaries(data);
+  if (!items.length) return <EmptyState text="No hay distribución por evaluación disponible. Recalcula la aplicación o verifica scores totales." />;
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => <InstrumentMiniDistribution key={String(item.key ?? item.label)} item={item} />)}
+      </div>
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Vista comparativa por evaluación</CardTitle>
+          <CardDescription>Resumen visual por Intralaboral A/B, Extralaboral y Estrés. Cuando el backend entrega segmentación por forma, se separa A/B y global.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DistributionBars data={items.map((it: any, idx: number) => ({
+            evaluacion_id: idx,
+            instrument_code: it.key,
+            instrument_label: it.label,
+            total_code: it.grupo ?? it.label,
+            total_label: it.grupo ?? it.label,
+            total: it.total,
+            niveles: it.niveles,
+          })) as any} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function RankingList({ items }: { items: DimensionPsico[] }) {
   if (!items.length) return <EmptyState />;
   const max = Math.max(...items.map((i) => i.pct_alto_muy_alto), 1);
@@ -268,12 +362,12 @@ function RankingList({ items }: { items: DimensionPsico[] }) {
   );
 }
 
-function DominioCards({ dominios }: { dominios: DominioPsico[] }) {
+function DominioCards({ dominios, onOpen }: { dominios: DominioPsico[]; onOpen?: (dom: DominioPsico) => void }) {
   if (!dominios.length) return <EmptyState />;
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {dominios.slice(0, 8).map((dom) => (
-        <div key={`${dom.evaluacion_id}-${dom.dominio_code}`} className="rounded-2xl border bg-white p-3 shadow-sm">
+        <button key={`${dom.evaluacion_id}-${dom.dominio_code}`} type="button" onClick={() => onOpen?.(dom)} className="w-full rounded-2xl border bg-white p-3 text-left shadow-sm transition hover:border-violet-200 hover:bg-violet-50/40 focus:outline-none focus:ring-2 focus:ring-violet-300">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900" title={dom.dominio_label}>{dom.dominio_label}</div>
@@ -291,7 +385,7 @@ function DominioCards({ dominios }: { dominios: DominioPsico[] }) {
               <div className="text-xl font-bold text-slate-950">{dom.alto_muy_alto}</div>
             </div>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -330,6 +424,93 @@ function TotalesTable({ items }: { items: TotalPsico[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+
+type NormativaRow = Record<string, any>;
+type NormativaTable = Record<string, any>;
+
+function normCell(row: NormativaRow, key: string) {
+  return Number(row?.[key] ?? 0).toLocaleString("es-CO");
+}
+
+function NormativeRiskTable({ table, compact = false }: { table: NormativaTable; compact?: boolean }) {
+  const columnas = Array.isArray(table?.columnas) ? table.columnas : [
+    { key: "sin_riesgo", label: "Sin riesgo" },
+    { key: "riesgo_bajo", label: "Riesgo bajo" },
+    { key: "riesgo_medio", label: "Riesgo medio" },
+    { key: "riesgo_alto", label: "Riesgo alto" },
+    { key: "riesgo_muy_alto", label: "Riesgo muy alto" },
+  ];
+  const filas = Array.isArray(table?.filas) ? table.filas : [];
+  if (!filas.length) return <EmptyState text="Sin tabla normativa disponible para este bloque." />;
+  return (
+    <div className="overflow-hidden rounded-2xl border bg-white">
+      <div className="border-b bg-slate-50 px-4 py-3">
+        <div className="text-sm font-bold text-slate-900">{table?.dominio_label ?? table?.instrument_label ?? "Tabla normativa"}</div>
+        <div className="text-xs text-slate-500">{table?.instrument_label ?? "Instrumento"} · Puntaje transformado y distribución por nivel de riesgo</div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className={cn("w-full text-sm", compact ? "min-w-[860px]" : "min-w-[1120px]")}> 
+          <thead className="bg-white text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-4 py-3">{table?.tipo_tabla === "INTRALABORAL" ? "Dominio / dimensión" : "Dimensión / total"}</th>
+              <th className="px-4 py-3 text-right">Puntaje (T)</th>
+              {columnas.map((c: any) => <th key={c.key} className="px-4 py-3 text-right">{c.label}</th>)}
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {filas.map((row: NormativaRow, idx: number) => {
+              const isTotal = row.tipo === "DOMINIO_TOTAL" || row.tipo === "TOTAL";
+              return (
+                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-violet-50/50 font-semibold")}> 
+                  <td className="px-4 py-3">
+                    <div className="break-words font-medium text-slate-900">{row.nombre ?? row.codigo ?? "Sin nombre"}</div>
+                    {isTotal && <div className="mt-1 text-[11px] uppercase tracking-wide text-violet-600">Resultado consolidado</div>}
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold">{fmtNum(row.puntaje_transformado)}</td>
+                  {columnas.map((c: any) => <td key={c.key} className="px-4 py-3 text-right">{normCell(row, c.key)}</td>)}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function NormativeNarrative({ narrativa }: { narrativa?: Record<string, any> | null }) {
+  if (!narrativa) return null;
+  const dims = Array.isArray(narrativa.dimensiones_relevantes) ? narrativa.dimensiones_relevantes.filter(Boolean) : [];
+  return (
+    <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 text-sm leading-relaxed text-slate-700">
+      <div className="font-bold text-slate-950">Lectura normativa controlada</div>
+      <p className="mt-2"><b>Riesgos identificados:</b> {narrativa.riesgos_identificados}</p>
+      {!!dims.length && <p className="mt-2"><b>Dimensiones de mayor relevancia:</b> {dims.join(", ")}.</p>}
+      <p className="mt-2"><b>Identificación general:</b> {narrativa.identificacion_general}</p>
+      <p className="mt-2"><b>Recomendación:</b> {narrativa.recomendacion}</p>
+    </div>
+  );
+}
+
+function NormativeTablesSection({ data, limit }: { data?: any; limit?: number }) {
+  const tables = Array.isArray(data?.normativa?.items) ? data.normativa.items : [];
+  const visible = typeof limit === "number" ? tables.slice(0, limit) : tables;
+  if (!visible.length) return <EmptyState text="No hay tablas normativas disponibles. Verifica que existan scores transformados y niveles de riesgo." />;
+  return (
+    <div className="space-y-4">
+      {visible.map((table: NormativaTable) => (
+        <div key={String(table.key)} className="space-y-3">
+          <NormativeRiskTable table={table} />
+          <NormativeNarrative narrativa={table.narrativa} />
+        </div>
+      ))}
+      {typeof limit === "number" && tables.length > limit && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500">Mostrando {limit} de {tables.length} tablas normativas. Cambia a la pestaña Dominios y dimensiones para ver el detalle completo.</div>
+      )}
     </div>
   );
 }
@@ -462,6 +643,84 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
 }
 
 
+
+function DomainDetailPanel({
+  open,
+  dominio,
+  dimensiones,
+  onClose,
+}: {
+  open: boolean;
+  dominio: DominioPsico | null;
+  dimensiones: DimensionPsico[];
+  onClose: () => void;
+}) {
+  if (!open || !dominio) return null;
+  const dims = dimensiones
+    .filter((d) => d.evaluacion_id === dominio.evaluacion_id && String(d.dominio_code ?? "") === String(dominio.dominio_code ?? ""))
+    .sort((a, b) => Number(b.pct_alto_muy_alto ?? 0) - Number(a.pct_alto_muy_alto ?? 0));
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+      <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" onClick={onClose} />
+      <section role="dialog" aria-modal="true" className="relative flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+        <div className="border-b bg-white/95 px-6 py-5 backdrop-blur">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico de dominio</div>
+              <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dominio.dominio_label}>{dominio.dominio_label}</h2>
+              <p className="mt-1 text-sm text-slate-500">{dominio.instrument_label} · dominio agregado</p>
+            </div>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard title="N dominio" value={dominio.n} icon={Users} tone="violet" compact />
+            <KpiCard title="Promedio transformado" value={fmtNum(dominio.promedio_transformado)} icon={Gauge} tone="blue" compact />
+            <KpiCard title="% Alto/Muy alto" value={fmtPct(dominio.pct_alto_muy_alto)} icon={AlertTriangle} tone={dominio.pct_alto_muy_alto > 0 ? "orange" : "green"} compact />
+            <KpiCard title="Calidad" value={Number((dominio as any).sin_nivel ?? 0) + Number((dominio as any).fuera_rango_0_100 ?? 0) === 0 ? "OK" : "Revisar"} icon={ShieldCheck} tone={Number((dominio as any).sin_nivel ?? 0) + Number((dominio as any).fuera_rango_0_100 ?? 0) === 0 ? "green" : "red"} compact />
+          </div>
+          <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm leading-relaxed text-sky-900">
+            <b>Lectura técnica:</b> este dominio consolida las dimensiones asociadas y debe interpretarse con el puntaje transformado oficial. Las dimensiones con mayor porcentaje Alto/Muy alto orientan la priorización del plan de intervención.
+          </div>
+          <Card className="mt-5 border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base">Dimensiones del dominio</CardTitle>
+              <CardDescription>Ordenadas por criticidad para análisis y plan de acción.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!dims.length ? <EmptyState text="No hay dimensiones asociadas a este dominio." /> : (
+                <div className="overflow-hidden rounded-2xl border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3">Dimensión</th>
+                        <th className="px-4 py-3 text-right">N</th>
+                        <th className="px-4 py-3 text-right">Promedio</th>
+                        <th className="px-4 py-3 text-right">% Alto/Muy alto</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {dims.map((d) => (
+                        <tr key={`${d.evaluacion_id}-${d.dimension_code}`}>
+                          <td className="px-4 py-3 font-medium text-slate-900">{d.dimension_label}</td>
+                          <td className="px-4 py-3 text-right">{d.n}</td>
+                          <td className="px-4 py-3 text-right font-semibold">{fmtNum(d.promedio_transformado)}</td>
+                          <td className="px-4 py-3 text-right"><span className={cn("rounded-full border px-2 py-1 text-xs font-semibold", riesgoTone(d.pct_alto_muy_alto))}>{fmtPct(d.pct_alto_muy_alto)}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function DimensionDetailPanel({
   open,
   loading,
@@ -496,7 +755,7 @@ function DimensionDetailPanel({
         <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-5 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico de dimensión</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico integrado</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
               {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
             </div>
@@ -521,7 +780,7 @@ function DimensionDetailPanel({
                 <KpiCard title="Calidad" value={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "OK" : "Revisar"} subtitle={String(dim.sin_nivel) + " sin nivel · " + String(dim.fuera_rango_0_100) + " fuera de rango"} icon={ShieldCheck} tone={dim.sin_nivel + dim.fuera_rango_0_100 === 0 ? "green" : "red"} compact />
               </div>
 
-              <div className="grid grid-cols-1 gap-5 xl:grid-cols-[.9fr_1.1fr]">
+              <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_1.15fr]">
                 <Card className="border-slate-200 shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-base">Distribución por nivel de riesgo</CardTitle>
@@ -537,16 +796,20 @@ function DimensionDetailPanel({
                     ))}
                   </CardContent>
                 </Card>
-
-                <Card className="border-slate-200 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-base">Lectura psicométrica</CardTitle>
-                    <CardDescription>Guía rápida para interpretar el detalle sin perder la lectura normativa.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm leading-relaxed text-sky-900">
-                    El nivel de riesgo se interpreta con el puntaje transformado y el baremo aplicable al instrumento. Los conteos por respuesta ayudan a identificar patrones de exposición por ítem, pero no reemplazan la clasificación normativa de la dimensión.
-                  </CardContent>
-                </Card>
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 text-sm leading-relaxed text-slate-700">
+                    <div className="font-bold text-slate-950">Lectura integrada</div>
+                    {(detail as any).narrativa || (detail as any).normativa?.narrativa ? (
+                      <NormativeNarrative narrativa={(detail as any).narrativa ?? (detail as any).normativa?.narrativa} />
+                    ) : null}
+                    <p className="mt-2"><b>Lectura psicométrica:</b> el nivel de riesgo se interpreta con el puntaje transformado y el baremo aplicable al instrumento. Los conteos por respuesta ayudan a identificar patrones de exposición por ítem, pero no reemplazan la clasificación normativa.</p>
+                  </div>
+                  {(detail as any).normativa && (
+                    <div className="max-h-[340px] overflow-auto rounded-2xl border border-slate-200">
+                      <NormativeRiskTable table={(detail as any).normativa} compact />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <Card className="border-slate-200 shadow-sm">
@@ -704,8 +967,8 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
           <table className="min-w-[1320px] w-full text-sm">
             <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-sm">
               <tr>
-                <Th label="Dimensión" sortKey="dimension_label" />
                 <Th label="Dominio" sortKey="dominio_label" />
+                <Th label="Dimensión" sortKey="dimension_label" />
                 <Th label="Instrumento" sortKey="instrument_label" />
                 <Th label="N" sortKey="n" align="right" />
                 <Th label="Promedio" sortKey="promedio_transformado" align="right" />
@@ -720,6 +983,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
             <tbody className="divide-y">
               {filtered.map((it) => (
                 <tr key={`${it.evaluacion_id}-${it.dimension_code}`} className="hover:bg-slate-50/70">
+                  <td className="max-w-[260px] px-4 py-3 text-slate-700"><div className="break-words font-semibold leading-snug">{it.dominio_label || "—"}</div></td>
                   <td className="max-w-[360px] px-4 py-3 font-medium text-slate-900">
                     <button
                       type="button"
@@ -733,7 +997,6 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
                       <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-violet-500">Ver detalle</span>
                     </button>
                   </td>
-                  <td className="max-w-[260px] px-4 py-3 text-slate-600"><div className="break-words leading-snug">{it.dominio_label || "—"}</div></td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-600">{it.instrument_label}</td>
                   <td className="px-4 py-3 text-right">{it.n}</td>
                   <td className="px-4 py-3 text-right font-semibold">{fmtNum(it.promedio_transformado)}</td>
@@ -918,6 +1181,7 @@ export default function ReportesPsico() {
   const [dimensionDetail, setDimensionDetail] = useState<DimensionDetalleResponse | null>(null);
   const [dimensionDetailLoading, setDimensionDetailLoading] = useState(false);
   const [dimensionDetailError, setDimensionDetailError] = useState<string | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<DominioPsico | null>(null);
 
   async function loadApps() {
     const items = await listarAplicacionesPsicoDashboard();
@@ -932,7 +1196,14 @@ export default function ReportesPsico() {
       const res = await obtenerDashboardPsicoAplicacion(id);
       setData(res);
       if (res?.aplicacion?.nombre) {
-        setApps((prev) => prev.some((a) => Number(a.id) === Number(id)) ? prev : [{ id, nombre: res.aplicacion.nombre } as PsicoAplicacionItem, ...prev]);
+        setApps((prev) => {
+          const label = res.aplicacion.nombre;
+          const empresaNombre = (res.aplicacion as any)?.empresa_nombre || (res.aplicacion as any)?.empresa || undefined;
+          const item = { id, nombre: label, empresa_nombre: empresaNombre } as PsicoAplicacionItem;
+          return prev.some((a) => Number(a.id) === Number(id))
+            ? prev.map((a) => (Number(a.id) === Number(id) ? { ...a, ...item } : a))
+            : [item, ...prev];
+        });
       }
     } catch (e) {
       console.error(e);
@@ -966,12 +1237,22 @@ export default function ReportesPsico() {
     setDimensionDetailError(null);
   }
 
+  function openDomainDetail(item: DominioPsico) {
+    setSelectedDomain(item);
+  }
+
+  function closeDomainDetail() {
+    setSelectedDomain(null);
+  }
+
   useEffect(() => {
-    if (initialAplicacionId) {
-      setApps([{ id: initialAplicacionId, nombre: `Aplicación #${initialAplicacionId}` } as PsicoAplicacionItem]);
-      return;
-    }
-    loadApps().catch(() => setApps([]));
+    loadApps().catch(() => {
+      if (initialAplicacionId) {
+        setApps([{ id: initialAplicacionId, nombre: `Aplicación #${initialAplicacionId}` } as PsicoAplicacionItem]);
+      } else {
+        setApps([]);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1016,7 +1297,7 @@ export default function ReportesPsico() {
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                   <span>Aplicación: <b>{app?.nombre ?? "—"}</b></span>
                   <span>·</span>
-                  <span>Aplicación precargada por URL cuando aplica</span>
+                  <span>Empresa: <b>{(app as any)?.empresa_nombre ?? (app as any)?.empresa ?? "—"}</b></span>
                   <span>·</span>
                   <span>Estado: <b>{app?.estado ?? calidad?.estado ?? "—"}</b></span>
                 </div>
@@ -1028,7 +1309,11 @@ export default function ReportesPsico() {
                   <SelectValue placeholder="Selecciona una aplicación" />
                 </SelectTrigger>
                 <SelectContent>
-                  {apps.map((a) => <SelectItem key={String(a.id)} value={String(a.id)}>{a.nombre} · #{a.id}</SelectItem>)}
+                  {apps.map((a) => (
+                    <SelectItem key={String(a.id)} value={String(a.id)}>
+                      {a.nombre} · {(a as any).empresa_nombre ? `${(a as any).empresa_nombre} · ` : ""}#{a.id}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={() => aplicacionId && loadDashboard(aplicacionId)} disabled={!aplicacionId || loading}>
@@ -1068,12 +1353,7 @@ export default function ReportesPsico() {
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
         {loading ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={"dashboard-skeleton-" + String(i)} className="h-32 rounded-2xl" />)}
-            </div>
-            <Skeleton className="h-[420px] rounded-2xl" />
-          </div>
+          <AbrilLoading title="Preparando dashboard psicosocial" subtitle="Validando sesión, aplicación, maestros normativos y resultados calculados." />
         ) : !data ? (
           <EmptyState text="Selecciona una aplicación para visualizar el dashboard." />
         ) : (
@@ -1127,32 +1407,25 @@ export default function ReportesPsico() {
                       <CardTitle className="text-base">Mapa ejecutivo de dominios</CardTitle>
                       <CardDescription>Promedio y exposición por dominio/dimensión agrupada.</CardDescription>
                     </CardHeader>
-                    <CardContent><DominioCards dominios={data.ranking_dominios} /></CardContent>
+                    <CardContent><DominioCards dominios={data.ranking_dominios} onOpen={openDomainDetail} /></CardContent>
                   </Card>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-                  <Card className="border-slate-200 shadow-sm xl:col-span-8">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Distribución por instrumento</CardTitle>
-                      <CardDescription>Barras apiladas por nivel de riesgo.</CardDescription>
-                    </CardHeader>
-                    <CardContent><DistributionBars data={data.distribucion_totales} /></CardContent>
-                  </Card>
-                  <Card className="border-slate-200 shadow-sm xl:col-span-4">
-                    <CardHeader>
-                      <CardTitle className="text-base">Alertas importantes</CardTitle>
-                      <CardDescription>Eventos para revisión del psicólogo/SST.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {!data.alertas.length ? (
-                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" />Sin alertas críticas con los datos actuales.</div>
-                      ) : data.alertas.map((a, i) => (
-                        <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </div>
+                <InstrumentOverviewSection data={data as any} />
+
+                <Card className="border-slate-200 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-base">Alertas importantes</CardTitle>
+                    <CardDescription>Eventos para revisión del psicólogo/SST.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!data.alertas.length ? (
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" />Sin alertas críticas con los datos actuales.</div>
+                    ) : data.alertas.map((a, i) => (
+                      <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
+                    ))}
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -1197,7 +1470,7 @@ export default function ReportesPsico() {
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                   <Card className="border-slate-200 shadow-sm">
                     <CardHeader><CardTitle>Riesgo por dominios</CardTitle><CardDescription>Ranking ejecutivo por exposición Alto/Muy alto.</CardDescription></CardHeader>
-                    <CardContent><DominioCards dominios={data.ranking_dominios} /></CardContent>
+                    <CardContent><DominioCards dominios={data.ranking_dominios} onOpen={openDomainDetail} /></CardContent>
                   </Card>
                   <Card className="border-slate-200 shadow-sm">
                     <CardHeader><CardTitle>Top dimensiones críticas</CardTitle><CardDescription>Priorización para intervención.</CardDescription></CardHeader>
@@ -1265,6 +1538,12 @@ export default function ReportesPsico() {
           </>
         )}
       </div>
+      <DomainDetailPanel
+        open={Boolean(selectedDomain)}
+        dominio={selectedDomain}
+        dimensiones={data?.dimensiones ?? []}
+        onClose={closeDomainDetail}
+      />
       <DimensionDetailPanel
         open={Boolean(selectedDimension)}
         loading={dimensionDetailLoading}
