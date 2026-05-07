@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BarChart3, CheckCircle2, ClipboardCheck, Coins, FilePenLine, Loader2, Lock, RotateCcw, Search, ShieldCheck, Users, XCircle } from "lucide-react";
+import { ArrowLeft, BarChart3, CheckCircle2, ClipboardCheck, Coins, FilePenLine, FileText, Loader2, Lock, RotateCcw, Search, ShieldCheck, Users, XCircle } from "lucide-react";
 import { AplicacionDetalle, psicoAdminService } from "@/features/psicosocial/api/psicoAdminService";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
@@ -31,6 +31,8 @@ export default function AplicacionDetallePage() {
   const [confirmReopen, setConfirmReopen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
+  const [calcStartedAt, setCalcStartedAt] = useState<number | null>(null);
+  const [calcElapsed, setCalcElapsed] = useState(0);
 
   const notify = (payload: Omit<ToastPayload, "id">) => {
     const id = Date.now();
@@ -69,6 +71,27 @@ export default function AplicacionDetallePage() {
     return () => window.removeEventListener("abril360:session-expired", onExpired);
   }, [navigate]);
 
+
+
+  useEffect(() => {
+    if (!closing || !calcStartedAt) return;
+    const timer = window.setInterval(() => {
+      setCalcElapsed(Math.max(0, Math.floor((Date.now() - calcStartedAt) / 1000)));
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [closing, calcStartedAt]);
+
+  const calcProgress = closing ? Math.min(96, Math.max(8, Math.round((calcElapsed / 90) * 100))) : 0;
+  const calcStage = !closing
+    ? ""
+    : calcElapsed < 8
+      ? "Preparando cierre y validando completitud..."
+      : calcElapsed < 25
+        ? "Sincronizando respuestas y hechos analíticos..."
+        : calcElapsed < 60
+          ? "Calculando puntajes transformados y niveles de riesgo..."
+          : "Consolidando resultados, dominios, dimensiones e informes...";
+
   const empleados = useMemo(() => {
     const term = q.trim().toLowerCase();
     const rows = data?.empleados || [];
@@ -97,6 +120,8 @@ export default function AplicacionDetallePage() {
     if (!empresaId || !aplicacionId) return;
     setConfirmReopen(false);
     setClosing(true);
+    setCalcStartedAt(Date.now());
+    setCalcElapsed(0);
     try {
       await psicoAdminService.reabrirAplicacion(empresaId, Number(aplicacionId), {
         motivo: "Corrección de respuestas y reprocesamiento",
@@ -108,6 +133,8 @@ export default function AplicacionDetallePage() {
       notify({ type: "error", title: "No fue posible reabrir", message: e?.message || "Intenta nuevamente." });
     } finally {
       setClosing(false);
+      setCalcStartedAt(null);
+      setCalcElapsed(0);
     }
   }
 
@@ -115,6 +142,8 @@ export default function AplicacionDetallePage() {
     if (!empresaId || !aplicacionId) return;
     setConfirmClose(false);
     setClosing(true);
+    setCalcStartedAt(Date.now());
+    setCalcElapsed(0);
     try {
       const cierre = await psicoAdminService.cerrarAplicacion(empresaId, Number(aplicacionId), 1);
       if (cierre && cierre.ok === false) {
@@ -144,6 +173,8 @@ export default function AplicacionDetallePage() {
       });
     } finally {
       setClosing(false);
+      setCalcStartedAt(null);
+      setCalcElapsed(0);
     }
   }
 
@@ -175,6 +206,34 @@ export default function AplicacionDetallePage() {
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+
+      {closing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-3xl border border-violet-100 bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black uppercase tracking-widest text-violet-700">Motor de cálculo psicosocial</p>
+                <h2 className="mt-1 text-xl font-black text-slate-950">Calculando resultados oficiales</h2>
+                <p className="mt-2 text-sm text-slate-600">{calcStage}</p>
+                <div className="mt-4 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-3 rounded-full bg-violet-700 transition-all duration-500" style={{ width: `${calcProgress}%` }} />
+                </div>
+                <div className="mt-2 flex justify-between text-xs text-slate-500">
+                  <span>Tiempo transcurrido: {calcElapsed}s</span>
+                  <span>{calcProgress}% estimado</span>
+                </div>
+                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  No cierres esta ventana. En aplicaciones grandes el cálculo puede tardar mientras se consolidan respuestas, puntajes, niveles de riesgo y tablas del informe.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
       <ConfirmDialog
         open={confirmClose}
@@ -233,11 +292,19 @@ export default function AplicacionDetallePage() {
               >
                 <BarChart3 className="h-4 w-4" /> Dashboard de resultados
               </button>
+              {finalizada && (
+                <button
+                  onClick={() => navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800"
+                >
+                  <FileText className="h-4 w-4" /> Informes oficiales
+                </button>
+              )}
             </div>
           </div>
           {!finalizada && (
             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              <b>Resultados bloqueados:</b> estarán habilitados cuando cierres la aplicación y el motor calcule/recalcule resultados. Si reabres después de cerrar, el reprocesamiento podrá consumir un crédito adicional.
+              <b>Resultados e informes bloqueados:</b> estarán habilitados cuando cierres la aplicación y el motor calcule/recalcule resultados. Al finalizar, aparecerán las opciones de Dashboard e Informes oficiales con esta evaluación precargada. Si reabres después de cerrar, el reprocesamiento podrá consumir un crédito adicional.
             </div>
           )}
         </section>

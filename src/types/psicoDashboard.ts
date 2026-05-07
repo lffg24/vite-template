@@ -29,6 +29,8 @@ export interface CalidadBateria {
 export interface TotalPsico {
   evaluacion_id: number;
   instrument_code: string;
+  grupo_forma?: "FORMA_A" | "FORMA_B" | "SIN_FORMA" | string | null;
+  instrument_group_code?: string | null;
   instrument_label: string;
   total_code: string;
   total_label: string;
@@ -36,6 +38,16 @@ export interface TotalPsico {
   promedio_transformado: number;
   min_transformado: number;
   max_transformado: number;
+  riesgo_sin?: number;
+  sin_riesgo?: number;
+  riesgo_bajo?: number;
+  bajo?: number;
+  riesgo_medio?: number;
+  medio?: number;
+  riesgo_alto?: number;
+  alto?: number;
+  riesgo_muy_alto?: number;
+  muy_alto?: number;
   alto_muy_alto: number;
   pct_alto_muy_alto: number;
   sin_nivel: number;
@@ -65,6 +77,8 @@ export interface NivelDistribucion {
 export interface DistribucionTotal {
   evaluacion_id: number;
   instrument_code: string;
+  grupo_forma?: "FORMA_A" | "FORMA_B" | "SIN_FORMA" | string | null;
+  instrument_group_code?: string | null;
   instrument_label: string;
   total_code: string;
   total_label: string;
@@ -75,11 +89,23 @@ export interface DistribucionTotal {
 export interface DominioPsico {
   evaluacion_id: number;
   instrument_code: string;
+  grupo_forma?: "FORMA_A" | "FORMA_B" | "SIN_FORMA" | string | null;
+  instrument_group_code?: string | null;
   instrument_label: string;
   dominio_code: string;
   dominio_label: string;
   n: number;
   promedio_transformado: number;
+  riesgo_sin?: number;
+  sin_riesgo?: number;
+  riesgo_bajo?: number;
+  bajo?: number;
+  riesgo_medio?: number;
+  medio?: number;
+  riesgo_alto?: number;
+  alto?: number;
+  riesgo_muy_alto?: number;
+  muy_alto?: number;
   alto_muy_alto: number;
   pct_alto_muy_alto: number;
   sin_nivel: number;
@@ -89,6 +115,8 @@ export interface DominioPsico {
 export interface DimensionPsico {
   evaluacion_id: number;
   instrument_code: string;
+  grupo_forma?: "FORMA_A" | "FORMA_B" | "SIN_FORMA" | string | null;
+  instrument_group_code?: string | null;
   instrument_label: string;
   dominio_code?: string | null;
   dominio_label?: string | null;
@@ -98,6 +126,16 @@ export interface DimensionPsico {
   promedio_transformado: number;
   min_transformado: number;
   max_transformado: number;
+  riesgo_sin?: number;
+  sin_riesgo?: number;
+  riesgo_bajo?: number;
+  bajo?: number;
+  riesgo_medio?: number;
+  medio?: number;
+  riesgo_alto?: number;
+  alto?: number;
+  riesgo_muy_alto?: number;
+  muy_alto?: number;
   alto_muy_alto: number;
   pct_alto_muy_alto: number;
   sin_nivel: number;
@@ -209,6 +247,16 @@ export interface DimensionDetalleResumen {
   promedio_transformado: number;
   min_transformado: number;
   max_transformado: number;
+  riesgo_sin?: number;
+  sin_riesgo?: number;
+  riesgo_bajo?: number;
+  bajo?: number;
+  riesgo_medio?: number;
+  medio?: number;
+  riesgo_alto?: number;
+  alto?: number;
+  riesgo_muy_alto?: number;
+  muy_alto?: number;
   alto_muy_alto: number;
   pct_alto_muy_alto: number;
   sin_nivel: number;

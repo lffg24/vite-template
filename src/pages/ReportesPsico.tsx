@@ -1323,7 +1323,11 @@ export default function ReportesPsico() {
               <Button variant="outline" disabled>
                 <Download className="mr-2 h-4 w-4" /> Exportar
               </Button>
-              <Button className="bg-violet-600 hover:bg-violet-700" disabled>
+              <Button
+                className="bg-violet-600 hover:bg-violet-700"
+                disabled={!aplicacionId}
+                onClick={() => aplicacionId && navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
+              >
                 <FileText className="mr-2 h-4 w-4" /> Informe global
               </Button>
             </div>

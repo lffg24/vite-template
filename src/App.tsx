@@ -21,6 +21,7 @@ import Logout from "@/pages/Logout";
 import Login from "@/pages/Login";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import ReportesPsico from "@/pages/ReportesPsico";
+import ReportesOficialesPsicoPage from "@/pages/ReportesOficialesPsicoPage";
 
 import PsicoEmpleadoPerfilPage from "@/pages/psicosocial/PsicoEmpleadoPerfilPage";
 import PsicoEmpleadoRespuestasPage from "@/pages/psicosocial/PsicoEmpleadoRespuestasPage";
@@ -35,6 +36,8 @@ import EmpresaEmpleadosPage from "@/pages/psicosocial/EmpresaEmpleadosPage";
 import EmpresaAplicacionesPage from "@/pages/psicosocial/EmpresaAplicacionesPage";
 import AplicacionDetallePage from "@/pages/psicosocial/AplicacionDetallePage";
 import AplicacionResultadosPage from "@/pages/psicosocial/AplicacionResultadosPage";
+import PsicoEvaluacionesPage from "@/pages/psicosocial/PsicoEvaluacionesPage";
+import AplicacionesBTPage from "@/pages/psicosocial/AplicacionesBTPage";
 
 function App() {
   return (
@@ -67,6 +70,7 @@ function App() {
               element={<EvaluacionesAsignadas />}
             />
             <Route path="reportes/psico" element={<ReportesPsico />} />
+            <Route path="reportes/psico/oficiales" element={<ReportesOficialesPsicoPage />} />
           </Route>
         </Route>
 
@@ -82,6 +86,8 @@ function App() {
 
             <Route path="dashboard" element={<PsicologoDashboardPage />} />
             <Route path="perfil" element={<PsicologoPerfilPage />} />
+            <Route path="aplicaciones-bt" element={<AplicacionesBTPage />} />
+            <Route path="evaluaciones" element={<PsicoEvaluacionesPage />} />
 
             <Route path="empresas" element={<EmpresasPsicoPage />} />
             <Route path="empresas/:empresaId" element={<EmpresaPerfilPage />} />
@@ -117,6 +123,8 @@ function App() {
 
             <Route path="resultados" element={<ReportesPsico />} />
             <Route path="reportes" element={<ReportesPsico />} />
+            <Route path="reportes-oficiales" element={<ReportesOficialesPsicoPage />} />
+            <Route path="informes" element={<ReportesOficialesPsicoPage />} />
           </Route>
         </Route>
 
