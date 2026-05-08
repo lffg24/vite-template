@@ -1,6 +1,5 @@
-// src/pages/Login.tsx
 import { useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BarChart3,
@@ -28,16 +27,15 @@ type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const REL_LOGO_URL = "https://relconsilium.com/wp-content/uploads/2026/02/Logo-REL-Consilium-1.png";
 
 function routeByAccess(roles: string[], permissions: string[]) {
   if (roles.includes("PSICOLOGO_EVALUADOR") || permissions.includes("psico.dashboard.view")) {
     return "/psicosocial/dashboard";
   }
-
   if (roles.includes("ADMIN_EMPRESA") || roles.includes("admin_empresa") || permissions.includes("evaluaciones.view")) {
     return "/evaluaciones";
   }
-
   return "/mis-evaluaciones";
 }
 
@@ -69,9 +67,12 @@ export default function Login() {
   const { initialized, isAuthenticated, roles, permissions, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const from = (location.state as LoginLocationState)?.from;
+  const fromState = (location.state as LoginLocationState)?.from;
+  const fromQuery = searchParams.get("next") || undefined;
+  const from = fromState || fromQuery;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -79,12 +80,13 @@ export default function Login() {
   const [remember, setRemember] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [logoError, setLogoError] = useState(false);
 
   const redirectPath = useMemo(() => safeRedirectPath(from, roles, permissions), [from, roles, permissions]);
 
   if (!initialized) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-950 px-4 text-sm text-white">
+      <div className="grid h-screen place-items-center overflow-hidden bg-slate-950 px-4 text-sm text-white">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 shadow-2xl backdrop-blur">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-violet-300 border-t-transparent" />
           Validando sesión segura...
@@ -132,40 +134,41 @@ export default function Login() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f7f8ff] text-slate-950">
-      <div className="pointer-events-none absolute -right-28 -top-40 h-[520px] w-[520px] rounded-full bg-violet-100/70 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-cyan-100/60 blur-3xl" />
+    <main className="relative h-screen overflow-hidden bg-[#f4f6ff] text-slate-950">
+      <div className="pointer-events-none absolute -right-24 -top-36 h-[360px] w-[360px] rounded-full bg-violet-100/80 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-cyan-100/70 blur-3xl" />
 
-      <div className="grid min-h-screen lg:grid-cols-[0.82fr_1.18fr]">
+      <div className="grid h-full lg:grid-cols-[0.92fr_1.08fr]">
         <section className="relative hidden overflow-hidden bg-[#061126] text-white lg:block">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_12%,rgba(124,58,237,0.42),transparent_28%),radial-gradient(circle_at_85%_78%,rgba(34,211,238,0.22),transparent_35%)]" />
-          <div className="absolute -bottom-32 left-12 h-72 w-72 rounded-full border border-violet-400/20 bg-violet-500/10 blur-sm" />
-          <div className="relative z-10 flex h-full flex-col justify-between p-12 xl:p-14">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_16%,rgba(124,58,237,0.38),transparent_28%),radial-gradient(circle_at_85%_78%,rgba(34,211,238,0.20),transparent_32%)]" />
+          <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-violet-400/15 bg-violet-500/10 blur-sm" />
+          <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
-              <div className="mb-16 flex items-center gap-4">
+              <div className="mb-10 flex items-center gap-4">
                 <div className="grid h-14 w-14 place-items-center rounded-3xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-2xl shadow-violet-950/40">
                   <BrainCircuit className="h-8 w-8" />
                 </div>
                 <div>
                   <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-violet-300">360</span></div>
-                  <div className="text-xs uppercase tracking-[0.35em] text-cyan-100/70">Gestión psicosocial</div>
+                  <div className="text-xs uppercase tracking-[0.32em] text-cyan-100/70">Gestión psicosocial</div>
                 </div>
               </div>
 
-              <h1 className="max-w-lg text-5xl font-black leading-tight tracking-tight">
+              <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
                 Evaluamos.<br />Protegemos.<br />
                 <span className="bg-gradient-to-r from-violet-300 to-cyan-200 bg-clip-text text-transparent">Transformamos.</span>
               </h1>
-              <p className="mt-6 max-w-md text-lg leading-8 text-slate-300">
+
+              <p className="mt-4 max-w-md text-base leading-7 text-slate-300 xl:text-lg">
                 Plataforma integral para evaluaciones, seguridad laboral, bienestar y desarrollo organizacional.
               </p>
 
-              <div className="mt-10 grid max-w-lg grid-cols-2 gap-4 xl:grid-cols-3">
+              <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 xl:grid-cols-3">
                 {productCards.map((item) => {
                   const Icon = item.icon;
                   return (
                     <div key={item.title} className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-xl shadow-slate-950/20 backdrop-blur">
-                      <Icon className="mb-3 h-7 w-7 text-cyan-200" />
+                      <Icon className="mb-3 h-6 w-6 text-cyan-200" />
                       <div className="text-sm font-black">{item.title}</div>
                       <div className="mt-1 text-xs text-slate-400">{item.text}</div>
                     </div>
@@ -174,38 +177,37 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="space-y-2 text-sm text-slate-400">
-              <div className="flex items-center gap-2">
-                <LockKeyhole className="h-4 w-4" /> Seguridad y confidencialidad de tus datos garantizada
-              </div>
-              <div>© {new Date().getFullYear()} REL Consilium SAS · ABRIL-360</div>
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              <LockKeyhole className="h-4 w-4" /> Seguridad y confidencialidad de tus datos garantizada
             </div>
           </div>
         </section>
 
-        <section className="relative grid place-items-center px-5 py-10 sm:px-8">
-          <div className="absolute right-16 top-14 hidden grid-cols-4 gap-3 opacity-40 md:grid">
-            {Array.from({ length: 32 }).map((_, i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-violet-300" />)}
+        <section className="relative flex h-full items-center justify-center px-4 py-4 sm:px-6 lg:px-8">
+          <div className="absolute right-10 top-10 hidden grid-cols-4 gap-3 opacity-40 md:grid">
+            {Array.from({ length: 20 }).map((_, i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-violet-300" />)}
           </div>
 
-          <div className="w-full max-w-[560px]">
-            <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
+          <div className="w-full max-w-[620px]">
+            <div className="mb-4 flex items-center justify-center gap-3 lg:hidden">
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-400 text-white shadow-lg">
                 <BrainCircuit className="h-7 w-7" />
               </div>
               <div className="text-2xl font-black tracking-tight">ABRIL<span className="text-violet-600">360</span></div>
             </div>
 
-            <Card className="rounded-[2rem] border-white/70 bg-white/88 p-6 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-10">
-              <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-700">
+            <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-8 xl:p-9">
+              <div className="mb-6 text-center">
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-700">
                   <ShieldCheck className="h-7 w-7" />
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">Bienvenido de nuevo</h2>
-                <p className="mt-2 text-slate-600">Inicia sesión en tu cuenta de <span className="font-bold text-violet-700">ABRIL360</span></p>
+                <p className="mt-1 text-slate-600">
+                  Inicia sesión en tu cuenta de <span className="font-bold text-violet-700">ABRIL360</span>
+                </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-bold">Correo electrónico</Label>
                   <div className="relative">
@@ -223,17 +225,19 @@ export default function Login() {
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      aria-invalid={!!errors.email}
-                      aria-describedby={errors.email ? "email-error" : undefined}
-                      disabled={loading}
-                      className="h-14 rounded-2xl border-slate-200 bg-white pl-12 text-base shadow-sm focus-visible:ring-violet-500"
+                      className="h-14 rounded-2xl border-slate-200 pl-12 text-base"
                     />
                   </div>
-                  {errors.email && <p id="email-error" className="text-sm font-medium text-red-600">{errors.email}</p>}
+                  {errors.email ? <p className="text-sm text-rose-600">{errors.email}</p> : null}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="font-bold">Contraseña</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="font-bold">Contraseña</Label>
+                    <button type="button" className="text-sm font-semibold text-violet-700 hover:text-violet-800">
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
                     <Input
@@ -247,47 +251,70 @@ export default function Login() {
                         setPassword(e.target.value);
                         if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                       }}
-                      aria-invalid={!!errors.password}
-                      aria-describedby={errors.password ? "password-error" : undefined}
-                      disabled={loading}
-                      className="h-14 rounded-2xl border-slate-200 bg-white px-12 text-base shadow-sm focus-visible:ring-violet-500"
+                      className="h-14 rounded-2xl border-slate-200 pl-12 pr-12 text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 hover:text-slate-700"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-violet-700"
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                      aria-pressed={showPassword}
-                      disabled={loading}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                   </div>
-                  {errors.password && <p id="password-error" className="text-sm font-medium text-red-600">{errors.password}</p>}
+                  {errors.password ? <p className="text-sm text-rose-600">{errors.password}</p> : null}
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <label htmlFor="remember" className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
-                    <Checkbox id="remember" checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} disabled={loading} />
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <label className="flex items-center gap-3 text-sm text-slate-600">
+                    <Checkbox checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} />
                     Recordarme en este dispositivo
                   </label>
-                  <span className="text-sm font-semibold text-violet-700">Recuperación con administrador</span>
+                  <div className="hidden items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 sm:flex">
+                    <CheckCircle2 className="h-4 w-4" /> Acceso seguro
+                  </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-700 to-indigo-600 text-base font-black shadow-lg shadow-violet-900/20 hover:from-violet-800 hover:to-indigo-700">
-                  {loading ? "Iniciando sesión..." : "Iniciar sesión"}
-                  {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold shadow-lg shadow-violet-500/25 transition hover:from-violet-700 hover:to-indigo-700"
+                >
+                  {loading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                      Iniciando sesión...
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      Iniciar sesión <ArrowRight className="h-5 w-5" />
+                    </span>
+                  )}
                 </Button>
               </form>
-            </Card>
 
-            <div className="mx-auto mt-6 flex w-fit flex-col items-center gap-1 rounded-2xl border border-violet-100 bg-white/80 px-5 py-3 text-center text-sm text-slate-600 shadow-sm backdrop-blur sm:flex-row sm:gap-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-violet-700" /> Cumplimiento normativo colombiano y trazabilidad SG-SST
+              <div className="mt-5 rounded-[1.6rem] border border-violet-100 bg-gradient-to-r from-violet-50 to-cyan-50 px-4 py-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-black text-slate-900">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
+                    <p className="text-sm text-slate-600">Plataforma operada para gestión psicosocial empresarial.</p>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-3 py-2 shadow-sm">
+                    {!logoError ? (
+                      <img
+                        src={REL_LOGO_URL}
+                        alt="REL Consilium SAS"
+                        className="h-8 w-auto object-contain"
+                        onError={() => setLogoError(true)}
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="text-sm font-bold text-slate-700">REL Consilium SAS</div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <span className="hidden text-slate-300 sm:inline">·</span>
-              <a href="https://relconsilium.com/" target="_blank" rel="noreferrer" className="font-semibold text-violet-700 hover:text-violet-900">REL Consilium SAS</a>
-            </div>
+            </Card>
           </div>
         </section>
       </div>

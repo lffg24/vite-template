@@ -182,3 +182,58 @@ export const psicoAdminService = {
       { method: "POST", headers: { "X-Empresa-Id": empresaId }, body: JSON.stringify(payload) },
     ),
 };
+
+export type AplicacionBTServerItem = {
+  id: number;
+  empresa_id: string;
+  empresa_nombre: string;
+  nombre: string;
+  estado: "BORRADOR" | "EN_CAPTURA" | "CALCULANDO" | "FINALIZADA" | "REABIERTA" | "ERROR_CALCULO" | string;
+  estado_label?: string;
+  fecha_aplicacion?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  evaluaciones?: Array<{ evaluacion_id: number; instrument_code: string }>;
+  instrumentos?: string[];
+  participantes?: number;
+  registrados?: number;
+  respuestas_registradas?: number;
+  participantes_con_scores?: number;
+  scores_total?: number;
+  avance_porcentaje?: number;
+  creditos?: number;
+  puede_editar?: boolean;
+  puede_cerrar?: boolean;
+  tiene_resultados?: boolean;
+};
+
+export type AplicacionesBTResponse = {
+  ok: boolean;
+  items: AplicacionBTServerItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  counters: {
+    total?: number;
+    borrador?: number;
+    en_captura?: number;
+    calculando?: number;
+    finalizada?: number;
+    reabierta?: number;
+    error_calculo?: number;
+    creditos_consumidos?: number;
+  };
+};
+
+export const psicoAplicacionesBTService = {
+  listar: (params: { page?: number; pageSize?: number; empresaId?: string; estado?: string; instrumento?: string; q?: string } = {}) => {
+    const qs = new URLSearchParams();
+    qs.set("page", String(params.page ?? 1));
+    qs.set("page_size", String(params.pageSize ?? 10));
+    if (params.empresaId && params.empresaId !== "TODAS") qs.set("empresa_id", params.empresaId);
+    if (params.estado && params.estado !== "TODOS") qs.set("estado", params.estado);
+    if (params.instrumento && params.instrumento !== "TODOS") qs.set("instrumento", params.instrumento);
+    if (params.q) qs.set("q", params.q);
+    return requestJson<AplicacionesBTResponse>(`/psicosocial/admin/aplicaciones-bt?${qs.toString()}`);
+  },
+};

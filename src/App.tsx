@@ -87,6 +87,8 @@ function App() {
             <Route path="dashboard" element={<PsicologoDashboardPage />} />
             <Route path="perfil" element={<PsicologoPerfilPage />} />
             <Route path="aplicaciones-bt" element={<AplicacionesBTPage />} />
+            <Route path="aplicaciones" element={<Navigate to="/psicosocial/aplicaciones-bt" replace />} />
+            <Route path="baterias" element={<Navigate to="/psicosocial/aplicaciones-bt" replace />} />
             <Route path="evaluaciones" element={<PsicoEvaluacionesPage />} />
 
             <Route path="empresas" element={<EmpresasPsicoPage />} />

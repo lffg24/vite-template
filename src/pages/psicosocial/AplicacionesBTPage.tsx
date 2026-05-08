@@ -2,17 +2,18 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Building2,
   CalendarDays,
   CheckCircle2,
-  Clock3,
   Download,
   FileText,
   Layers3,
   Loader2,
   Plus,
+  RotateCcw,
   Search,
   ShieldCheck,
   Sparkles,
@@ -24,7 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { psicoAdminService, type AplicacionEmpresa, type EmpresaPsico } from "@/features/psicosocial/api/psicoAdminService";
+import {
+  psicoAdminService,
+  psicoAplicacionesBTService,
+  type AplicacionBTServerItem,
+  type EmpresaPsico,
+} from "@/features/psicosocial/api/psicoAdminService";
 
 type AplicacionBT = {
   id: number;
@@ -35,13 +41,14 @@ type AplicacionBT = {
   instrumentos: string[];
   instrumentosLabel: string;
   estado: string;
-  fechaInicio?: string;
-  fechaFin?: string;
+  estadoLabel: string;
+  fechaInicio?: string | null;
   participantes: number;
   registrados: number;
   avance: number;
   creditos: number;
-  createdAt?: string;
+  tieneResultados: boolean;
+  puedeCerrar: boolean;
 };
 
 const PAGE_SIZES = [10, 25, 50, 100];
@@ -53,6 +60,15 @@ const instrumentLabels: Record<string, string> = {
   PSICO_ESTRES: "Estrés",
 };
 
+const stateLabels: Record<string, string> = {
+  BORRADOR: "Borrador",
+  EN_CAPTURA: "En captura",
+  CALCULANDO: "Calculando",
+  FINALIZADA: "Finalizada",
+  REABIERTA: "Reabierta",
+  ERROR_CALCULO: "Error de cálculo",
+};
+
 function normalize(value: unknown) {
   return String(value ?? "")
     .normalize("NFD")
@@ -60,92 +76,73 @@ function normalize(value: unknown) {
     .toLowerCase();
 }
 
-function formatDate(value?: string) {
+function formatDate(value?: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("es-CO", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
-function getNumber(source: any, keys: string[], fallback = 0) {
-  for (const key of keys) {
-    const value = Number(source?.[key]);
-    if (Number.isFinite(value) && value >= 0) return value;
-  }
-  return fallback;
+function buildInstrumentLabels(codes: string[] = []) {
+  const unique = Array.from(new Set(codes.filter(Boolean).map(String)));
+  const labels = unique.map((code) => instrumentLabels[code] ?? code);
+  return { codes: unique, label: labels.length ? labels.join(" + ") : "Sin instrumentos visibles" };
 }
 
-function buildInstrumentLabels(app: AplicacionEmpresa) {
-  const evaluaciones = Array.isArray((app as any).evaluaciones) ? (app as any).evaluaciones : [];
-  const codes = evaluaciones.map((ev: any) => ev.instrument_code || ev.instrumento || ev.codigo).filter(Boolean);
-  const uniqueCodes = Array.from(new Set(codes));
-  const labels = uniqueCodes.map((code) => instrumentLabels[String(code)] ?? String(code));
+function toRow(item: AplicacionBTServerItem): AplicacionBT {
+  const instrumentosRaw = Array.isArray(item.instrumentos)
+    ? item.instrumentos
+    : Array.isArray(item.evaluaciones)
+      ? item.evaluaciones.map((ev) => ev.instrument_code).filter(Boolean)
+      : [];
+  const instrumentos = buildInstrumentLabels(instrumentosRaw);
+  const estado = String(item.estado || "BORRADOR").toUpperCase();
+  const participantes = Number(item.participantes ?? 0);
+  const registrados = Number(item.registrados ?? 0);
+  const avance = Number(item.avance_porcentaje ?? (participantes > 0 ? Math.round((registrados / participantes) * 1000) / 10 : 0));
+
   return {
-    codes: uniqueCodes.map(String),
-    label: labels.length ? labels.join(" + ") : "Sin instrumentos visibles",
+    id: Number(item.id),
+    empresaId: String(item.empresa_id),
+    empresaNombre: item.empresa_nombre || "Empresa sin nombre",
+    nombre: item.nombre || `Aplicación #${item.id}`,
+    servicio: "Riesgo Psicosocial",
+    instrumentos: instrumentos.codes,
+    instrumentosLabel: instrumentos.label,
+    estado,
+    estadoLabel: item.estado_label || stateLabels[estado] || estado,
+    fechaInicio: item.fecha_aplicacion || item.created_at,
+    participantes,
+    registrados,
+    avance,
+    creditos: Number(item.creditos ?? Math.max(registrados, Number(item.participantes_con_scores ?? 0))),
+    tieneResultados: Boolean(item.tiene_resultados),
+    puedeCerrar: Boolean(item.puede_cerrar),
   };
 }
 
-type WorkflowState = "FINALIZADA" | "LISTA_CIERRE" | "ACTIVA" | "BORRADOR";
-
-function workflowState(row: Pick<AplicacionBT, "estado" | "participantes" | "registrados" | "avance">): WorkflowState {
-  const key = normalize(row.estado);
-  if (key.includes("final") || key.includes("calcul")) return "FINALIZADA";
-  if (row.participantes > 0 && row.avance >= 100) return "LISTA_CIERRE";
-  if (row.registrados > 0 || row.avance > 0 || key.includes("activa") || key.includes("abierta") || key.includes("captura") || key.includes("progreso")) return "ACTIVA";
-  return "BORRADOR";
-}
-
-function workflowLabel(row: Pick<AplicacionBT, "estado" | "participantes" | "registrados" | "avance">) {
-  const state = workflowState(row);
-  if (state === "FINALIZADA") return "Finalizada";
-  if (state === "LISTA_CIERRE") return "Lista para cierre";
-  if (state === "ACTIVA") return "Activa";
-  return "Borrador";
-}
-
-function workflowClass(row: Pick<AplicacionBT, "estado" | "participantes" | "registrados" | "avance">) {
-  const state = workflowState(row);
-  if (state === "FINALIZADA") return "bg-emerald-50 text-emerald-700 ring-emerald-200";
-  if (state === "LISTA_CIERRE") return "bg-orange-50 text-orange-700 ring-orange-200";
-  if (state === "ACTIVA") return "bg-sky-50 text-sky-700 ring-sky-200";
-  return "bg-violet-50 text-violet-700 ring-violet-200";
-}
-
-function buildRows(empresas: EmpresaPsico[], appsByEmpresa: Map<string, AplicacionEmpresa[]>) {
-  const rows: AplicacionBT[] = [];
-  for (const empresa of empresas) {
-    const apps = appsByEmpresa.get(empresa.id) ?? [];
-    for (const app of apps) {
-      const anyApp = app as any;
-      const instrumentos = buildInstrumentLabels(app);
-      const participantes = getNumber(anyApp, ["participantes", "total_participantes", "total_empleados", "empleados", "empleados_empresa"]);
-      const registrados = getNumber(anyApp, ["registrados", "con_registro", "empleados_registrados", "participantes_registrados", "completados"], 0);
-      const avance = participantes > 0 ? Math.min(100, Math.round((registrados / participantes) * 1000) / 10) : 0;
-      rows.push({
-        id: Number(anyApp.id),
-        empresaId: empresa.id,
-        empresaNombre: empresa.nombre,
-        nombre: anyApp.nombre || `Aplicación #${anyApp.id}`,
-        servicio: anyApp.servicio || anyApp.tipo || "Riesgo Psicosocial",
-        instrumentos: instrumentos.codes,
-        instrumentosLabel: instrumentos.label,
-        estado: anyApp.estado || "Sin estado",
-        fechaInicio: anyApp.fecha_aplicacion || anyApp.fecha_inicio || anyApp.created_at || anyApp.creado_en,
-        fechaFin: anyApp.fecha_cierre || anyApp.fecha_fin,
-        participantes,
-        registrados,
-        avance,
-        creditos: getNumber(anyApp, ["creditos_consumidos", "creditos", "creditos_estimados"], registrados || participantes || 0),
-        createdAt: anyApp.created_at || anyApp.creado_en,
-      });
-    }
+function stateClass(state: string) {
+  switch (state) {
+    case "FINALIZADA":
+      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+    case "EN_CAPTURA":
+      return "bg-sky-50 text-sky-700 ring-sky-200";
+    case "CALCULANDO":
+      return "bg-violet-50 text-violet-700 ring-violet-200";
+    case "REABIERTA":
+      return "bg-amber-50 text-amber-700 ring-amber-200";
+    case "ERROR_CALCULO":
+      return "bg-red-50 text-red-700 ring-red-200";
+    default:
+      return "bg-slate-50 text-slate-700 ring-slate-200";
   }
-  return rows.sort((a, b) => b.id - a.id);
 }
 
 export default function AplicacionesBTPage() {
   const [rows, setRows] = useState<AplicacionBT[]>([]);
+  const [empresas, setEmpresas] = useState<EmpresaPsico[]>([]);
+  const [serverCounters, setServerCounters] = useState<Record<string, number>>({});
+  const [serverTotal, setServerTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -159,22 +156,21 @@ export default function AplicacionesBTPage() {
     setLoading(true);
     setError(null);
     try {
-      const empresasResp = await psicoAdminService.listarEmpresas(true);
-      const empresas = empresasResp.items ?? [];
-      const appsByEmpresa = new Map<string, AplicacionEmpresa[]>();
-
-      await Promise.all(
-        empresas.map(async (empresa) => {
-          try {
-            const appsResp = await psicoAdminService.aplicacionesEmpresa(empresa.id);
-            appsByEmpresa.set(empresa.id, appsResp.items ?? []);
-          } catch {
-            appsByEmpresa.set(empresa.id, []);
-          }
+      const [empresasResp, appsResp] = await Promise.all([
+        psicoAdminService.listarEmpresas(true),
+        psicoAplicacionesBTService.listar({
+          page,
+          pageSize,
+          empresaId: empresaFilter,
+          estado: statusFilter,
+          instrumento: instrumentFilter,
+          q: query,
         }),
-      );
-
-      setRows(buildRows(empresas, appsByEmpresa));
+      ]);
+      setEmpresas(empresasResp.items ?? []);
+      setRows((appsResp.items ?? []).map(toRow));
+      setServerCounters(appsResp.counters ?? {});
+      setServerTotal(Number(appsResp.total ?? 0));
     } catch (err: any) {
       setError(err?.message || "No se pudieron cargar las aplicaciones BT.");
     } finally {
@@ -183,70 +179,37 @@ export default function AplicacionesBTPage() {
   }
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const empresasResp = await psicoAdminService.listarEmpresas(true);
-        const empresas = empresasResp.items ?? [];
-        const appsByEmpresa = new Map<string, AplicacionEmpresa[]>();
-        await Promise.all(
-          empresas.map(async (empresa) => {
-            try {
-              const appsResp = await psicoAdminService.aplicacionesEmpresa(empresa.id);
-              appsByEmpresa.set(empresa.id, appsResp.items ?? []);
-            } catch {
-              appsByEmpresa.set(empresa.id, []);
-            }
-          }),
-        );
-        if (alive) setRows(buildRows(empresas, appsByEmpresa));
-      } catch (err: any) {
-        if (alive) setError(err?.message || "No se pudieron cargar las aplicaciones BT.");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, empresaFilter, instrumentFilter, statusFilter]);
 
-  useEffect(() => setPage(1), [query, empresaFilter, instrumentFilter, statusFilter, pageSize]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPage(1);
+      load();
+    }, 360);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
-  const empresas = useMemo(() => Array.from(new Map(rows.map((row) => [row.empresaId, row.empresaNombre])).entries()), [rows]);
-  const instruments = useMemo(() => Array.from(new Set(rows.flatMap((row) => row.instrumentos.map((code) => instrumentLabels[code] ?? code)))).sort(), [rows]);
-  const statuses = useMemo(() => Array.from(new Set(rows.map((row) => workflowLabel(row)))).sort(), [rows]);
-
-  const filtered = useMemo(() => {
-    const q = normalize(query);
-    return rows.filter((row) => {
-      const instrumentNames = row.instrumentos.map((code) => instrumentLabels[code] ?? code);
-      const matchesQuery = !q || [row.id, row.empresaNombre, row.nombre, row.servicio, row.instrumentosLabel, row.estado]
-        .some((value) => normalize(value).includes(q));
-      const matchesEmpresa = empresaFilter === "TODAS" || row.empresaId === empresaFilter;
-      const matchesInstrument = instrumentFilter === "TODOS" || instrumentNames.includes(instrumentFilter);
-      const matchesStatus = statusFilter === "TODOS" || workflowLabel(row) === statusFilter;
-      return matchesQuery && matchesEmpresa && matchesInstrument && matchesStatus;
-    });
-  }, [rows, query, empresaFilter, instrumentFilter, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const instruments = useMemo(() => ["PSICO_INTRA_A", "PSICO_INTRA_B", "PSICO_EXTRA", "PSICO_ESTRES"], []);
+  const totalPages = Math.max(1, Math.ceil(serverTotal / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const first = filtered.length ? (currentPage - 1) * pageSize + 1 : 0;
-  const last = Math.min(currentPage * pageSize, filtered.length);
+  const first = serverTotal ? (currentPage - 1) * pageSize + 1 : 0;
+  const last = Math.min(currentPage * pageSize, serverTotal);
 
   const summary = useMemo(() => {
-    const total = filtered.length;
-    const finalizadas = filtered.filter((row) => workflowState(row) === "FINALIZADA").length;
-    const listasCierre = filtered.filter((row) => workflowState(row) === "LISTA_CIERRE").length;
-    const activas = filtered.filter((row) => workflowState(row) === "ACTIVA" || workflowState(row) === "LISTA_CIERRE").length;
-    const captura = filtered.filter((row) => workflowState(row) === "ACTIVA" && row.avance < 100).length;
-    const creditos = filtered.reduce((acc, row) => acc + (row.creditos || 0), 0);
-    return { total, activas, captura, listasCierre, finalizadas, creditos };
-  }, [filtered]);
+    return {
+      total: Number(serverCounters.total ?? serverTotal ?? 0),
+      borrador: Number(serverCounters.borrador ?? 0),
+      captura: Number(serverCounters.en_captura ?? 0),
+      calculando: Number(serverCounters.calculando ?? 0),
+      finalizadas: Number(serverCounters.finalizada ?? 0),
+      reabiertas: Number(serverCounters.reabierta ?? 0),
+      errores: Number(serverCounters.error_calculo ?? 0),
+      creditos: Number(serverCounters.creditos_consumidos ?? rows.reduce((acc, row) => acc + row.creditos, 0)),
+    };
+  }, [serverCounters, serverTotal, rows]);
 
   const pageNumbers = useMemo(() => {
     const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
@@ -263,19 +226,19 @@ export default function AplicacionesBTPage() {
             </div>
             <h1 className="text-4xl font-black tracking-tight text-slate-950">Aplicaciones BT</h1>
             <p className="mt-2 max-w-3xl text-base text-slate-600">
-              Consulta y gestiona todas las aplicaciones de batería psicosocial creadas en tus empresas asignadas, con filtros, avance, créditos y acceso directo al detalle.
+              Estado oficial de las aplicaciones de batería psicosocial. Los estados vienen del backend y las métricas de avance son derivadas, no quemadas en la pantalla.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Select value={empresaFilter} onValueChange={setEmpresaFilter}>
-              <SelectTrigger className="h-11 min-w-[210px] rounded-xl bg-white shadow-sm">
+            <Select value={empresaFilter} onValueChange={(v) => { setEmpresaFilter(v); setPage(1); }}>
+              <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-sm">
                 <Building2 className="mr-2 h-4 w-4 text-violet-700" />
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="TODAS">Todas mis empresas</SelectItem>
-                {empresas.map(([id, nombre]) => <SelectItem key={id} value={id}>{nombre}</SelectItem>)}
+                {empresas.map((empresa) => <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>)}
               </SelectContent>
             </Select>
             <Button variant="outline" className="h-11 rounded-xl bg-white shadow-sm" onClick={load} disabled={loading}>
@@ -288,12 +251,12 @@ export default function AplicacionesBTPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-          <MetricCard icon={Layers3} label="Total aplicaciones" value={summary.total} note="en tus empresas" accent="from-violet-600 to-indigo-500" progress={100} />
-          <MetricCard icon={CheckCircle2} label="Activas" value={summary.activas} note={`${percent(summary.activas, summary.total)}% del total`} accent="from-emerald-500 to-teal-400" progress={percent(summary.activas, summary.total)} />
+          <MetricCard icon={Layers3} label="Total" value={summary.total} note="aplicaciones" accent="from-violet-600 to-indigo-500" progress={100} />
           <MetricCard icon={FileText} label="En captura" value={summary.captura} note={`${percent(summary.captura, summary.total)}% del total`} accent="from-blue-500 to-cyan-400" progress={percent(summary.captura, summary.total)} />
-          <MetricCard icon={Clock3} label="Listas para cierre" value={summary.listasCierre} note={`${percent(summary.listasCierre, summary.total)}% del total`} accent="from-orange-500 to-amber-400" progress={percent(summary.listasCierre, summary.total)} />
-          <MetricCard icon={ShieldCheck} label="Finalizadas" value={summary.finalizadas} note={`${percent(summary.finalizadas, summary.total)}% del total`} accent="from-violet-600 to-fuchsia-500" progress={percent(summary.finalizadas, summary.total)} />
-          <MetricCard icon={WalletCards} label="Créditos consumidos" value={summary.creditos} note="estimados" accent="from-purple-500 to-violet-700" progress={100} />
+          <MetricCard icon={ShieldCheck} label="Finalizadas" value={summary.finalizadas} note={`${percent(summary.finalizadas, summary.total)}% del total`} accent="from-emerald-500 to-teal-400" progress={percent(summary.finalizadas, summary.total)} />
+          <MetricCard icon={RotateCcw} label="Reabiertas" value={summary.reabiertas} note={`${percent(summary.reabiertas, summary.total)}% del total`} accent="from-amber-500 to-orange-400" progress={percent(summary.reabiertas, summary.total)} />
+          <MetricCard icon={AlertTriangle} label="Error cálculo" value={summary.errores} note={`${percent(summary.errores, summary.total)}% del total`} accent="from-red-500 to-rose-400" progress={percent(summary.errores, summary.total)} />
+          <MetricCard icon={WalletCards} label="Créditos" value={summary.creditos} note="consumidos" accent="from-purple-500 to-violet-700" progress={100} />
         </section>
 
         <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-sm">
@@ -301,17 +264,28 @@ export default function AplicacionesBTPage() {
             <div className="grid gap-4 border-b border-slate-100 p-5 lg:grid-cols-[1.45fr_0.95fr_0.95fr_0.95fr_auto]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-sm" placeholder="Buscar aplicación, empresa, instrumento o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-sm" placeholder="Buscar aplicación, empresa o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
-              <Select value={instrumentFilter} onValueChange={setInstrumentFilter}>
+              <Select value={instrumentFilter} onValueChange={(v) => { setInstrumentFilter(v); setPage(1); }}>
                 <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Formulario" /></SelectTrigger>
-                <SelectContent><SelectItem value="TODOS">Todos los formularios</SelectItem>{instruments.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="TODOS">Todos los formularios</SelectItem>
+                  {instruments.map((code) => <SelectItem key={code} value={code}>{instrumentLabels[code] ?? code}</SelectItem>)}
+                </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
                 <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Estado" /></SelectTrigger>
-                <SelectContent><SelectItem value="TODOS">Todos los estados</SelectItem>{statuses.map((estado) => <SelectItem key={estado} value={estado}>{estado}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="TODOS">Todos los estados</SelectItem>
+                  <SelectItem value="BORRADOR">Borrador</SelectItem>
+                  <SelectItem value="EN_CAPTURA">En captura</SelectItem>
+                  <SelectItem value="CALCULANDO">Calculando</SelectItem>
+                  <SelectItem value="FINALIZADA">Finalizada</SelectItem>
+                  <SelectItem value="REABIERTA">Reabierta</SelectItem>
+                  <SelectItem value="ERROR_CALCULO">Error de cálculo</SelectItem>
+                </SelectContent>
               </Select>
-              <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+              <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
                 <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>{PAGE_SIZES.map((size) => <SelectItem key={size} value={String(size)}>{size} filas</SelectItem>)}</SelectContent>
               </Select>
@@ -321,13 +295,12 @@ export default function AplicacionesBTPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-[1040px] w-full text-sm">
+              <table className="min-w-[980px] w-full text-sm">
                 <thead className="bg-slate-50/90 text-left text-xs font-black uppercase tracking-wide text-slate-500">
                   <tr>
                     <th className="px-5 py-4">Aplicación</th>
                     <th className="px-5 py-4">Empresa</th>
-                    <th className="px-5 py-4">Servicio</th>
-                    <th className="px-5 py-4">Formulario / instrumentos</th>
+                    <th className="px-5 py-4">Instrumentos</th>
                     <th className="px-5 py-4">Participantes</th>
                     <th className="px-5 py-4">Registrados / avance</th>
                     <th className="px-5 py-4">Estado</th>
@@ -337,23 +310,18 @@ export default function AplicacionesBTPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {loading ? (
-                    <tr><td colSpan={9} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-violet-700" />Cargando aplicaciones BT...</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-violet-700" />Cargando aplicaciones BT...</td></tr>
                   ) : error ? (
-                    <tr><td colSpan={9} className="px-5 py-12 text-center text-red-700">{error}</td></tr>
-                  ) : paginated.length === 0 ? (
-                    <tr><td colSpan={9} className="px-5 py-12 text-center text-slate-500">No hay aplicaciones para los filtros seleccionados.</td></tr>
-                  ) : paginated.map((row) => (
+                    <tr><td colSpan={8} className="px-5 py-12 text-center text-red-700">{error}</td></tr>
+                  ) : rows.length === 0 ? (
+                    <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-500">No hay aplicaciones para los filtros seleccionados.</td></tr>
+                  ) : rows.map((row) => (
                     <tr key={`${row.empresaId}-${row.id}`} className="transition hover:bg-violet-50/35">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
-                            <ClipboardIcon />
-                          </div>
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700 ring-1 ring-violet-100"><FileText className="h-5 w-5" /></div>
                           <div>
-                            <Link
-                              to={`/psicosocial/empresas/${row.empresaId}/aplicaciones/${row.id}`}
-                              className="font-black text-slate-900 underline decoration-violet-300 underline-offset-4 transition hover:text-violet-700 hover:decoration-violet-700"
-                            >
+                            <Link to={`/psicosocial/empresas/${row.empresaId}/aplicaciones/${row.id}`} className="font-black text-slate-900 underline decoration-violet-300 underline-offset-4 transition hover:text-violet-700 hover:decoration-violet-700">
                               {row.nombre}
                             </Link>
                             <div className="text-xs text-slate-500">Aplicación #{row.id}</div>
@@ -361,17 +329,14 @@ export default function AplicacionesBTPage() {
                         </div>
                       </td>
                       <td className="px-5 py-4 font-semibold text-slate-700">{row.empresaNombre}</td>
-                      <td className="px-5 py-4 text-slate-600">{row.servicio}</td>
                       <td className="px-5 py-4 text-slate-700">{row.instrumentosLabel}</td>
                       <td className="px-5 py-4"><strong className="text-slate-950">{row.participantes}</strong><div className="text-xs text-slate-500">participantes</div></td>
                       <td className="px-5 py-4 min-w-[170px]">
                         <div className="mb-1 font-bold text-slate-800">{row.registrados} / {row.avance}%</div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-                          <div className="h-full rounded-full bg-violet-700" style={{ width: `${row.avance}%` }} />
-                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-violet-700" style={{ width: `${Math.max(0, Math.min(100, row.avance))}%` }} /></div>
                       </td>
-                      <td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${workflowClass(row)}`}>{workflowLabel(row)}</span></td>
-                      <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" /> {formatDate(row.fechaInicio)}{row.fechaFin ? <div className="text-xs text-slate-500">a {formatDate(row.fechaFin)}</div> : null}</td>
+                      <td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${stateClass(row.estado)}`}>{row.estadoLabel}</span></td>
+                      <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" /> {formatDate(row.fechaInicio)}</td>
                       <td className="px-5 py-4"><strong>{row.creditos}</strong><div className="text-xs text-slate-500">créditos</div></td>
                     </tr>
                   ))}
@@ -380,7 +345,7 @@ export default function AplicacionesBTPage() {
             </div>
 
             <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/80 px-5 py-4 md:flex-row md:items-center md:justify-between">
-              <div className="text-sm text-slate-600">Mostrando <strong>{first}</strong> a <strong>{last}</strong> de <strong>{filtered.length}</strong> aplicaciones</div>
+              <div className="text-sm text-slate-600">Mostrando <strong>{first}</strong> a <strong>{last}</strong> de <strong>{serverTotal}</strong> aplicaciones</div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}><ArrowLeft className="h-4 w-4" /></Button>
                 {pageNumbers.map((p, index) => (
@@ -395,31 +360,18 @@ export default function AplicacionesBTPage() {
           </CardContent>
         </Card>
 
-        <section className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
-          <Card className="rounded-[1.75rem] border-violet-100 bg-gradient-to-br from-violet-50 to-white shadow-sm">
-            <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm"><Sparkles className="h-7 w-7" /></div>
-                <div>
-                  <h2 className="text-lg font-black text-slate-950">¿Necesitas ayuda con tus aplicaciones?</h2>
-                  <p className="text-sm text-slate-600">Usa esta vista para revisar avance, estado y entrada al detalle operativo por empresa.</p>
-                </div>
-              </div>
-              <Button asChild className="rounded-xl bg-violet-700 hover:bg-violet-800"><Link to="/psicosocial/informes">Ir a informes</Link></Button>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-[1.75rem] border-slate-200 bg-white shadow-sm">
-            <CardContent className="grid gap-4 p-6 md:grid-cols-[auto_1fr_auto] md:items-center">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-700"><WalletCards className="h-7 w-7" /></div>
+        <Card className="rounded-[1.75rem] border-violet-100 bg-gradient-to-br from-violet-50 to-white shadow-sm">
+          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm"><Sparkles className="h-7 w-7" /></div>
               <div>
-                <h2 className="text-lg font-black text-slate-950">Créditos consumidos</h2>
-                <p className="text-sm text-slate-600">Estimación consolidada sobre aplicaciones filtradas.</p>
+                <h2 className="text-lg font-black text-slate-950">Estados oficiales centralizados</h2>
+                <p className="text-sm text-slate-600">BORRADOR, EN_CAPTURA, CALCULANDO, FINALIZADA, REABIERTA y ERROR_CALCULO. El frontend no decide el estado oficial.</p>
               </div>
-              <div className="text-right"><div className="text-3xl font-black text-slate-950">{summary.creditos}</div><div className="text-xs text-slate-500">créditos</div></div>
-            </CardContent>
-          </Card>
-        </section>
+            </div>
+            <Button asChild className="rounded-xl bg-violet-700 hover:bg-violet-800"><Link to="/psicosocial/informes">Ir a informes</Link></Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -444,9 +396,7 @@ function MetricCard({ icon: Icon, label, value, note, accent, progress }: Metric
     <Card className="rounded-[1.5rem] border-slate-200 bg-white shadow-sm">
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-lg shadow-violet-100`}>
-            <Icon className="h-6 w-6" />
-          </div>
+          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-lg shadow-violet-100`}><Icon className="h-6 w-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-500">{label}</p>
             <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">{value}</p>
@@ -459,8 +409,4 @@ function MetricCard({ icon: Icon, label, value, note, accent, progress }: Metric
       </CardContent>
     </Card>
   );
-}
-
-function ClipboardIcon() {
-  return <FileText className="h-5 w-5" />;
 }

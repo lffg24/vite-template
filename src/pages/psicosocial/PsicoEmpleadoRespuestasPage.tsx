@@ -248,7 +248,7 @@ export default function PsicoEmpleadoRespuestasPage() {
       try {
         const res = await obtenerFichaSociodemografica(empleadoId, aplicacionId);
         if (!mounted) return;
-        setFicha({ ...EMPTY_FICHA, ...(res.item || {}) });
+        setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
         setFichaCompleta(Boolean(res.completa));
       } catch {
         // Datos generales se cargan desde empleados. No requiere migración sociodemográfica nueva.
@@ -367,7 +367,7 @@ export default function PsicoEmpleadoRespuestasPage() {
       const res = await guardarFichaSociodemografica(empleadoId, aplicacionId, { ...ficha, finalizar });
       const completa = Boolean(res.completa);
       setFichaCompleta(completa);
-      if (res.item) setFicha({ ...EMPTY_FICHA, ...(res.item || {}) });
+      if ((res as any).item) setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
       await refreshContext(selectedEval?.evaluacion_id);
       notify({
         type: completa || !finalizar ? "success" : "warning",
@@ -500,7 +500,7 @@ export default function PsicoEmpleadoRespuestasPage() {
           <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">No se encontró esta aplicación para el colaborador.</div>
         ) : (
           <>
-            <section className="grid gap-4 lg:grid-cols-[1fr_1.35fr_1fr]">
+            <section className="grid gap-4 min-[1380px]:grid-cols-[minmax(340px,0.95fr)_minmax(520px,1.05fr)] min-[1850px]:grid-cols-[1fr_1.25fr_1fr]">
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-violet-100 text-2xl font-black text-violet-700">
@@ -513,13 +513,13 @@ export default function PsicoEmpleadoRespuestasPage() {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-4 overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
+              <div className="grid min-w-0 grid-cols-2 gap-2 rounded-3xl border border-slate-200 bg-white p-2 text-center shadow-sm md:grid-cols-4 min-[1380px]:grid-cols-4">
                 <Kpi label={showFicha ? "Campos requeridos" : "Total preguntas"} value={metricTotal} />
                 <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
                 <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
                 <Kpi label="Avance" value={`${metricProgress}%`} tone="text-violet-700" />
               </div>
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm min-[1380px]:col-span-2 min-[1850px]:col-span-1">
                 <p className="text-sm font-black text-slate-950">Alertas de validación</p>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   {metricPending > 0 ? (
@@ -548,7 +548,7 @@ export default function PsicoEmpleadoRespuestasPage() {
             </section>
 
             <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex flex-wrap border-b border-slate-200">
+              <div className="flex overflow-x-auto border-b border-slate-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {app.evaluaciones.map((ev) => {
                   const meta = getEvalMeta(ev);
                   const active = !showFicha && selectedEval?.evaluacion_id === ev.evaluacion_id;
@@ -557,7 +557,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                       key={ev.evaluacion_id}
                       onClick={() => { if (!meta.blockedBySibling) { setSelectedEval(ev); setShowFicha(false); } }}
                       disabled={meta.blockedBySibling}
-                      className={`flex items-center gap-2 px-5 py-4 text-sm font-black transition ${
+                      className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${
                         active
                           ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700"
                           : meta.blockedBySibling
@@ -573,7 +573,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                 <button
                   type="button"
                   onClick={() => setShowFicha(true)}
-                  className={`flex items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+                  className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
                 >
                   <FileText className="h-4 w-4" /> Datos generales
                   {fichaCompleta ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
@@ -583,8 +583,8 @@ export default function PsicoEmpleadoRespuestasPage() {
               {showFicha ? (
                 <FichaSociodemograficaPanel ficha={ficha} setFicha={setFicha} saving={saving} completa={fichaCompleta} onSave={() => void executeSaveFicha(false)} onFinalize={() => void executeSaveFicha(true)} />
               ) : (
-              <div className="grid gap-5 p-5 xl:grid-cols-[260px_1fr_320px]">
-                <aside className="space-y-2">
+              <div className="grid gap-5 p-4 md:p-5 min-[1500px]:grid-cols-[minmax(0,1fr)_300px] min-[1900px]:grid-cols-[240px_minmax(0,1fr)_300px]">
+                <aside className="hidden space-y-2 min-[1900px]:block">
                   {sections.length === 0 ? (
                     <div className="rounded-2xl border border-dashed p-4 text-sm text-slate-500">Sin secciones cargadas.</div>
                   ) : (
@@ -602,7 +602,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   )}
                 </aside>
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 md:p-5">
+                <div className="min-w-0 rounded-3xl border border-slate-200 bg-slate-50 p-4 md:p-5">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-black text-slate-950">{selectedEval ? instrumentLabel(selectedEval.instrument_code) : "Instrumento"}</h2>
@@ -630,7 +630,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   </div>
                 </div>
 
-                <aside className="space-y-4 xl:sticky xl:top-5 xl:self-start">
+                <aside className="space-y-4 min-[1500px]:sticky min-[1500px]:top-5 min-[1500px]:self-start">
                   <div className="rounded-3xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="font-black text-slate-950">Observaciones</h3>
@@ -710,9 +710,9 @@ function readDraft(key: string): { answers?: Record<number, string>; observacion
 
 function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: number | string; tone?: string }) {
   return (
-    <div className="border-r border-slate-200 p-5 last:border-r-0">
-      <p className="text-xs font-bold text-slate-500">{label}</p>
-      <p className={`mt-2 text-3xl font-black ${tone}`}>{value}</p>
+    <div className="min-w-0 rounded-2xl bg-slate-50/70 p-3 text-center sm:p-4">
+      <p className="mx-auto min-h-[2rem] max-w-[8rem] text-[11px] font-extrabold leading-tight text-slate-500 sm:text-xs">{label}</p>
+      <p className={`mt-1 truncate text-2xl font-black leading-none tracking-tight sm:text-3xl ${tone}`}>{value}</p>
     </div>
   );
 }
@@ -1010,27 +1010,27 @@ function QuestionRow({
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-sm font-black text-violet-700">{pregunta.orden}</span>
-          <p className="text-sm font-semibold leading-snug text-slate-700">{pregunta.texto}</p>
+    <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:border-violet-200 sm:p-4">
+      <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(430px,500px)] min-[1500px]:items-center">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-sm font-black text-violet-700">{pregunta.orden}</span>
+          <p className="min-w-0 text-[15px] font-bold leading-snug text-slate-800 sm:text-base min-[1500px]:pr-2">{pregunta.texto}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 min-[1500px]:grid-cols-5">
           {LIKERT.map((opt) => (
             <button
               key={opt}
               type="button"
               disabled={disabled}
               onClick={() => onChange(opt)}
-              className={`rounded-xl border px-3 py-2 text-xs font-black transition ${
+              className={`min-h-9 min-w-0 overflow-hidden rounded-xl border px-2 py-1.5 text-[12px] font-black leading-tight transition sm:text-[13px] ${
                 value === opt
                   ? disabled
                     ? "border-violet-300 bg-violet-100 text-violet-900 shadow-inner"
                     : "border-violet-700 bg-violet-700 text-white shadow-sm"
                   : disabled
                     ? "border-slate-200 bg-slate-100 text-slate-400"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-violet-300"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
               } ${disabled ? "cursor-not-allowed" : ""}`}
             >
               {opt}
