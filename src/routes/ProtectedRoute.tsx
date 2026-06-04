@@ -14,6 +14,9 @@ function hasAny(values: string[], required?: string | string[]) {
 }
 
 function defaultRoute(roles: string[], permissions: string[]) {
+  if (roles.includes("SUPER_ADMIN") || roles.includes("SUPERADMIN") || permissions.includes("superadmin.dashboard.view")) {
+    return "/superadmin/dashboard";
+  }
   if (
     roles.includes("PSICOLOGO_EVALUADOR") ||
     permissions.includes("psico.dashboard.view")

@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BarChart3, CalendarDays, ClipboardList, Loader2, Plus, Search, X } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarDays, ClipboardList, FileText, Loader2, Plus, Search, X } from "lucide-react";
 import { AplicacionEmpresa, CrearBateriaPayload, psicoAdminService } from "@/features/psicosocial/api/psicoAdminService";
 import AbrilDatePicker from "@/features/psicosocial/components/AbrilDatePicker";
 
@@ -30,6 +30,24 @@ function instrumentLabel(code: string) {
     PSICO_ESTRES: "Estrés",
   };
   return labels[code] || code;
+}
+
+const ESTADO_LABELS: Record<string, string> = {
+  BORRADOR: "Borrador",
+  EN_CAPTURA: "En captura",
+  CALCULANDO: "Calculando",
+  FINALIZADA: "Finalizada",
+  REABIERTA: "Reabierta",
+  ERROR_CALCULO: "Error de cálculo",
+};
+
+function estadoLabel(estado?: string | null) {
+  const key = String(estado || "BORRADOR").trim().toUpperCase();
+  return ESTADO_LABELS[key] || estado || "Borrador";
+}
+
+function isFinalizada(estado?: string | null) {
+  return String(estado || "").trim().toUpperCase() === "FINALIZADA" || String(estado || "").toLowerCase().includes("final");
 }
 
 export default function EmpresaAplicacionesPage() {
@@ -147,8 +165,8 @@ export default function EmpresaAplicacionesPage() {
                       <td className="px-4 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><ClipboardList className="h-5 w-5" /></span><div><Link to={`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`} className="block font-black text-slate-950 hover:text-violet-700 hover:underline">{a.nombre}</Link><span className="text-xs text-slate-500">#{a.id}{a.created_at || a.creado_en ? ` · ${new Date(a.created_at || a.creado_en || "").toLocaleDateString()}` : ""}</span></div></div></td>
                       <td className="px-4 py-4"><div className="flex flex-wrap gap-2">{(a.evaluaciones || []).length === 0 ? <span className="text-slate-400">Sin instrumentos</span> : a.evaluaciones?.map((ev) => <span key={`${a.id}-${ev.evaluacion_id}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{instrumentLabel(ev.instrument_code)}</span>)}</div></td>
                       <td className="px-4 py-4 font-bold">{a.participantes ?? a.participantes_calculados ?? 0}</td>
-                      <td className="px-4 py-4"><span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">{a.estado || "Borrador"}</span></td>
-                      <td className="px-4 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`)} className="rounded-xl border px-4 py-2 font-bold hover:bg-slate-50">Detalle</button><button onClick={() => navigate(`/psicosocial/resultados?aplicacionId=${a.id}`)} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-bold hover:bg-slate-50"><BarChart3 className="h-4 w-4" /> Resultados</button></div></td>
+                      <td className="px-4 py-4"><span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">{estadoLabel(a.estado)}</span></td>
+                      <td className="px-4 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`)} className="rounded-xl border px-4 py-2 font-bold hover:bg-slate-50">Detalle</button>{isFinalizada(a.estado) ? <><button onClick={() => navigate(`/psicosocial/resultados?aplicacionId=${a.id}`)} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-bold hover:bg-slate-50"><BarChart3 className="h-4 w-4" /> Resultados</button><button onClick={() => navigate(`/psicosocial/reportes-oficiales?aplicacionId=${a.id}&tipo=resultados`)} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-bold hover:bg-slate-50"><FileText className="h-4 w-4" /> Informes</button></> : <button disabled title="Disponible al finalizar y calcular la aplicación" className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 font-bold text-slate-400"><BarChart3 className="h-4 w-4" /> Resultados</button>}</div></td>
                     </tr>
                   ))}
                 </tbody>

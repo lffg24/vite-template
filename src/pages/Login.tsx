@@ -30,6 +30,9 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REL_LOGO_URL = "https://relconsilium.com/wp-content/uploads/2026/02/Logo-REL-Consilium-1.png";
 
 function routeByAccess(roles: string[], permissions: string[]) {
+  if (roles.includes("SUPER_ADMIN") || roles.includes("SUPERADMIN") || permissions.includes("superadmin.dashboard.view")) {
+    return "/superadmin/dashboard";
+  }
   if (roles.includes("PSICOLOGO_EVALUADOR") || permissions.includes("psico.dashboard.view")) {
     return "/psicosocial/dashboard";
   }

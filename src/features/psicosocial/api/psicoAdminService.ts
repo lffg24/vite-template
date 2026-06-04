@@ -176,6 +176,19 @@ export const psicoAdminService = {
       { method: "POST", headers: { "X-Empresa-Id": empresaId } },
     ),
 
+
+  previewLimpiarRespuestasEmpleado: (empresaId: string, aplicacionId: number, empleadoId: number) =>
+    requestJson<{ ok: boolean; counts: Record<string, number>; total_registros: number; bloqueada: boolean; estado: string }>(
+      `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/empleados/${empleadoId}/respuestas/cleanup-preview`,
+      { headers: { "X-Empresa-Id": empresaId } },
+    ),
+
+  limpiarRespuestasEmpleado: (empresaId: string, aplicacionId: number, empleadoId: number) =>
+    requestJson<{ ok: boolean; deleted: Record<string, number>; total_eliminado: number }>(
+      `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/empleados/${empleadoId}/respuestas?confirm=true`,
+      { method: "DELETE", headers: { "X-Empresa-Id": empresaId } },
+    ),
+
   reabrirAplicacion: (empresaId: string, aplicacionId: number, payload: { motivo?: string; consumir_credito?: boolean }) =>
     requestJson<{ ok: boolean; estado: string; credito_reproceso_consumido: boolean }>(
       `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/reabrir`,

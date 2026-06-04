@@ -1,9 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Building2, Users, ClipboardList, BarChart3, Plus, Upload, Eye } from "lucide-react";
+import { Building2, Users, ClipboardList, BarChart3, Plus, Upload, Eye, FileText } from "lucide-react";
 import { psicoAdminService, EmpresaPsico, AplicacionEmpresa } from "@/features/psicosocial/api/psicoAdminService";
 
 function n(value: unknown) { const num = Number(value ?? 0); return Number.isFinite(num) ? num : 0; }
+
+const ESTADO_LABELS: Record<string, string> = {
+  BORRADOR: "Borrador",
+  EN_CAPTURA: "En captura",
+  CALCULANDO: "Calculando",
+  FINALIZADA: "Finalizada",
+  REABIERTA: "Reabierta",
+  ERROR_CALCULO: "Error de cálculo",
+};
+
+function estadoLabel(estado?: string | null) {
+  const key = String(estado || "BORRADOR").trim().toUpperCase();
+  return ESTADO_LABELS[key] || estado || "Borrador";
+}
+
+function isFinalizada(estado?: string | null) {
+  return String(estado || "").trim().toUpperCase() === "FINALIZADA" || String(estado || "").toLowerCase().includes("final");
+}
+
+function resultsButtonClass(enabled: boolean) {
+  return enabled
+    ? "rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"
+    : "cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 font-bold text-slate-400";
+}
 
 export default function EmpresaPerfilPage() {
   const { empresaId = "" } = useParams();
@@ -41,7 +65,7 @@ export default function EmpresaPerfilPage() {
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-950">Aplicaciones recientes</h2><button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} className="text-sm font-bold text-violet-700 hover:underline">Ver todas</button></div>
-          <div className="overflow-hidden rounded-2xl border border-slate-200"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Participantes</th><th className="px-4 py-3">Instrumentos</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead><tbody className="divide-y divide-slate-100">{apps.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-500">No hay aplicaciones recientes.</td></tr>}{apps.map((a) => <tr key={a.id} className="hover:bg-slate-50"><td className="px-4 py-4"><Link to={`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`} className="font-black text-slate-950 hover:text-violet-700 hover:underline">{a.nombre}</Link><p className="text-xs text-slate-500">Aplicación #{a.id}</p></td><td className="px-4 py-4"><span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">{a.estado || "Borrador"}</span></td><td className="px-4 py-4 font-bold">{n((a as any).participantes ?? a.participantes_calculados)}</td><td className="px-4 py-4 text-xs text-slate-500">{(a.evaluaciones || []).length || "—"}</td><td className="px-4 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><Eye className="inline h-4 w-4" /> Detalle</button><button onClick={() => navigate(`/psicosocial/resultados?aplicacionId=${a.id}`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><BarChart3 className="inline h-4 w-4" /> Resultados</button></div></td></tr>)}</tbody></table></div>
+          <div className="overflow-hidden rounded-2xl border border-slate-200"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Participantes</th><th className="px-4 py-3">Instrumentos</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead><tbody className="divide-y divide-slate-100">{apps.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-slate-500">No hay aplicaciones recientes.</td></tr>}{apps.map((a) => <tr key={a.id} className="hover:bg-slate-50"><td className="px-4 py-4"><Link to={`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`} className="font-black text-slate-950 hover:text-violet-700 hover:underline">{a.nombre}</Link><p className="text-xs text-slate-500">Aplicación #{a.id}</p></td><td className="px-4 py-4"><span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">{estadoLabel(a.estado)}</span></td><td className="px-4 py-4 font-bold">{n((a as any).participantes ?? a.participantes_calculados)}</td><td className="px-4 py-4 text-xs text-slate-500">{(a.evaluaciones || []).length || "—"}</td><td className="px-4 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><Eye className="inline h-4 w-4" /> Detalle</button>{isFinalizada(a.estado) ? <><button onClick={() => navigate(`/psicosocial/resultados?aplicacionId=${a.id}`)} className={resultsButtonClass(true)}><BarChart3 className="inline h-4 w-4" /> Resultados</button><button onClick={() => navigate(`/psicosocial/reportes-oficiales?aplicacionId=${a.id}&tipo=resultados`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><FileText className="inline h-4 w-4" /> Informes</button></> : <button disabled title="Disponible al finalizar y calcular la aplicación" className={resultsButtonClass(false)}><BarChart3 className="inline h-4 w-4" /> Resultados</button>}</div></td></tr>)}</tbody></table></div>
         </section>
       </div>
     </main>

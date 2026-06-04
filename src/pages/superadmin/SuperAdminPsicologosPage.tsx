@@ -1,0 +1,12 @@
+// src/pages/superadmin/SuperAdminPsicologosPage.tsx
+import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
+import { superadminService, type SuperPsicologo } from "@/features/superadmin/api/superadminService";
+import SuperAdminPagination from "@/features/superadmin/components/SuperAdminPagination";
+import SuperAdminPageHeader from "./SuperAdminPageHeader";
+
+export default function SuperAdminPsicologosPage() {
+  const [items, setItems] = useState<SuperPsicologo[]>([]); const [total, setTotal] = useState(0); const [page, setPage] = useState(1); const [pageSize, setPageSize] = useState(10); const [q, setQ] = useState(""); const [error, setError] = useState<string | null>(null);
+  useEffect(() => { superadminService.psicologos({ q, page, page_size: pageSize }).then((r) => { setItems(r.items); setTotal(r.total); }).catch((e) => setError(e.message)); }, [q, page, pageSize]);
+  return <div><SuperAdminPageHeader title="Psicólogos" subtitle="Usuarios profesionales, empresas asignadas y saldos globales." action={<button className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white"><Plus className="h-5 w-5" /> Nuevo psicólogo</button>} />{error && <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}<div className="rounded-3xl border bg-white shadow-sm"><div className="p-5"><input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className="h-12 w-full rounded-2xl border border-slate-200 px-4" placeholder="Buscar psicólogo por nombre o correo..." /></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Psicólogo</th><th>Empresas</th><th>Créditos asignados</th><th>Disponibles</th><th>Acciones</th></tr></thead><tbody>{items.map((p) => <tr key={p.id} className="border-t"><td className="px-5 py-4"><div className="font-black">{p.nombre}</div><div className="text-xs text-slate-500">{p.email}</div></td><td>{p.empresas_asignadas}</td><td>{p.creditos_asignados ?? 0}</td><td>{p.creditos_disponibles ?? 0}</td><td><button className="rounded-xl border px-3 py-2 font-bold">Gestionar</button></td></tr>)}</tbody></table></div><SuperAdminPagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} /></div></div>;
+}

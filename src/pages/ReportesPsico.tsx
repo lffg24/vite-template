@@ -44,6 +44,7 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { AbrilLoading } from "@/components/common/AbrilLoading";
+import { StandardPagination } from "@/components/common/StandardPagination";
 import {
   listarAplicacionesPsicoDashboard,
   obtenerDashboardPsicoAplicacion,
@@ -531,6 +532,8 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
   const [riesgo, setRiesgo] = useState("ALL");
   const [estado, setEstado] = useState("ALL");
   const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico" | "estado"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const riskOrder: Record<string, number> = { MUY_ALTO: 5, ALTO: 4, MEDIO: 3, BAJO: 2, SIN_RIESGO: 1, MUY_BAJO: 1, SIN_NIVEL: 0 };
 
   const filtered = useMemo(() => {
@@ -550,6 +553,14 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
         return sort.dir === "asc" ? cmp : -cmp;
       });
   }, [items, q, riesgo, estado, sort]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [q, riesgo, estado, pageSize, items.length]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const setSortKey = (key: typeof sort.key) => {
     setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -602,7 +613,7 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filtered.map((it) => {
+            {paginated.map((it) => {
               const nivelIntra = it.intra === "A" ? it.niveles?.a : it.niveles?.b;
               const puntajeIntra = it.intra === "A" ? it.puntajes?.a : it.puntajes?.b;
               return (
@@ -637,7 +648,15 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-slate-500">Mostrando {filtered.length} de {items.length} participantes. El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
+      <StandardPagination
+        page={currentPage}
+        pageSize={pageSize}
+        total={filtered.length}
+        itemLabel="participantes"
+        onPageChange={setPage}
+        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+      />
+      <p className="text-xs text-slate-500">El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
     </div>
   );
 }

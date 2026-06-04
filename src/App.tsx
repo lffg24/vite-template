@@ -39,6 +39,15 @@ import AplicacionResultadosPage from "@/pages/psicosocial/AplicacionResultadosPa
 import PsicoEvaluacionesPage from "@/pages/psicosocial/PsicoEvaluacionesPage";
 import AplicacionesBTPage from "@/pages/psicosocial/AplicacionesBTPage";
 
+import SuperAdminLayout from "@/layout/SuperAdminLayout";
+import SuperAdminDashboardPage from "@/pages/superadmin/SuperAdminDashboardPage";
+import SuperAdminEmpresasPage from "@/pages/superadmin/SuperAdminEmpresasPage";
+import SuperAdminPsicologosPage from "@/pages/superadmin/SuperAdminPsicologosPage";
+import SuperAdminCreditosPage from "@/pages/superadmin/SuperAdminCreditosPage";
+import SuperAdminRolesPermisosPage from "@/pages/superadmin/SuperAdminRolesPermisosPage";
+import SuperAdminAuditoriaPage from "@/pages/superadmin/SuperAdminAuditoriaPage";
+import SuperAdminPlaceholderPage from "@/pages/superadmin/SuperAdminPlaceholderPage";
+
 function App() {
   return (
     <Router>
@@ -71,6 +80,22 @@ function App() {
             />
             <Route path="reportes/psico" element={<ReportesPsico />} />
             <Route path="reportes/psico/oficiales" element={<ReportesOficialesPsicoPage />} />
+          </Route>
+        </Route>
+
+
+        {/* Privadas con layout SuperAdmin ABRIL360 */}
+        <Route element={<ProtectedRoute requireRole={["SUPER_ADMIN", "SUPERADMIN"]} />}>
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+            <Route index element={<Navigate to="/superadmin/dashboard" replace />} />
+            <Route path="dashboard" element={<SuperAdminDashboardPage />} />
+            <Route path="empresas" element={<SuperAdminEmpresasPage />} />
+            <Route path="psicologos" element={<SuperAdminPsicologosPage />} />
+            <Route path="creditos" element={<SuperAdminCreditosPage />} />
+            <Route path="roles-permisos" element={<SuperAdminRolesPermisosPage />} />
+            <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
+            <Route path="planes" element={<SuperAdminPlaceholderPage title="Planes y suscripciones" />} />
+            <Route path="configuracion" element={<SuperAdminPlaceholderPage title="Configuración global" />} />
           </Route>
         </Route>
 
