@@ -1,6 +1,7 @@
 // src/lib/apiClient.ts
 import axios from "axios";
 import { API_URL } from "@/lib/config";
+import { emitSessionExpired } from "@/lib/sessionEvents";
 
 // Sesión definitiva: cookie HttpOnly enviada por el navegador.
 // No se guarda ni se inyecta JWT en JavaScript.
@@ -18,9 +19,7 @@ api.interceptors.response.use(
   (error) => {
     const status = error?.response?.status;
     if (status === 401) {
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
+      emitSessionExpired();
     }
     return Promise.reject(error);
   }

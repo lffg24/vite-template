@@ -22,40 +22,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { safeRedirectPath } from "@/lib/accessRoutes";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REL_LOGO_URL = "https://relconsilium.com/wp-content/uploads/2026/02/Logo-REL-Consilium-1.png";
-
-function routeByAccess(roles: string[], permissions: string[]) {
-  if (roles.includes("SUPER_ADMIN") || roles.includes("SUPERADMIN") || permissions.includes("superadmin.dashboard.view")) {
-    return "/superadmin/dashboard";
-  }
-  if (roles.includes("PSICOLOGO_EVALUADOR") || permissions.includes("psico.dashboard.view")) {
-    return "/psicosocial/dashboard";
-  }
-  if (roles.includes("ADMIN_EMPRESA") || roles.includes("admin_empresa") || permissions.includes("evaluaciones.view")) {
-    return "/evaluaciones";
-  }
-  return "/mis-evaluaciones";
-}
-
-function safeRedirectPath(path: unknown, roles: string[], permissions: string[]) {
-  if (typeof path !== "string" || !path.startsWith("/")) return routeByAccess(roles, permissions);
-  if (path === "/login" || path === "/logout") return routeByAccess(roles, permissions);
-
-  if (
-    path.startsWith("/psicosocial") &&
-    !permissions.includes("psico.dashboard.view") &&
-    !roles.includes("PSICOLOGO_EVALUADOR")
-  ) {
-    return routeByAccess(roles, permissions);
-  }
-
-  return path;
-}
 
 const productCards = [
   { icon: UsersRound, title: "Evaluaciones", text: "360° · 180° · 90°" },

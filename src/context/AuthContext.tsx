@@ -1,6 +1,7 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { API_URL } from "@/lib/config";
+import { loginPathForCurrentLocation, SESSION_EXPIRED_EVENT } from "@/lib/sessionEvents";
 
 export type AuthState = {
   token: null;
@@ -123,6 +124,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       alive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setState(emptyState(true));
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.assign(loginPathForCurrentLocation());
+      }
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
   }, []);
 
   const login = useCallback(async (email: string, password: string, options?: LoginOptions): Promise<LoginResult> => {

@@ -1,4 +1,5 @@
 import { API_URL } from "@/lib/config";
+import { emitSessionExpired } from "@/lib/sessionEvents";
 
 const API_BASE = API_URL;
 
@@ -10,6 +11,7 @@ function authHeaders(): HeadersInit {
 
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { credentials: "include", headers: authHeaders() });
+  if (res.status === 401) emitSessionExpired();
   if (!res.ok) throw new Error(await safeMessage(res));
   return res.json();
 }
@@ -21,6 +23,7 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
     headers: authHeaders(),
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+  if (res.status === 401) emitSessionExpired();
   if (!res.ok) throw new Error(await safeMessage(res));
   return res.json();
 }
@@ -32,6 +35,7 @@ export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
     headers: authHeaders(),
     body: body === undefined ? undefined : JSON.stringify(body),
   });
+  if (res.status === 401) emitSessionExpired();
   if (!res.ok) throw new Error(await safeMessage(res));
   return res.json();
 }

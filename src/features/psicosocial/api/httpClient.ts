@@ -1,4 +1,5 @@
 import { API_URL } from "@/lib/config";
+import { emitSessionExpired } from "@/lib/sessionEvents";
 
 export class AbrilApiError extends Error {
   status: number;
@@ -14,11 +15,6 @@ export class AbrilApiError extends Error {
 
 export function apiBase() {
   return API_URL;
-}
-
-function emitSessionExpired() {
-  if (typeof window === "undefined") return;
-  window.dispatchEvent(new CustomEvent("abril360:session-expired"));
 }
 
 async function parseError(res: Response): Promise<string> {

@@ -1,6 +1,7 @@
 // src/routes/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { routeByAccess } from "@/lib/accessRoutes";
 
 type Props = {
   requireRole?: string | string[];
@@ -11,28 +12,6 @@ function hasAny(values: string[], required?: string | string[]) {
   if (!required) return true;
   const list = Array.isArray(required) ? required : [required];
   return list.some((item) => values.includes(item));
-}
-
-function defaultRoute(roles: string[], permissions: string[]) {
-  if (roles.includes("SUPER_ADMIN") || roles.includes("SUPERADMIN") || permissions.includes("superadmin.dashboard.view")) {
-    return "/superadmin/dashboard";
-  }
-  if (
-    roles.includes("PSICOLOGO_EVALUADOR") ||
-    permissions.includes("psico.dashboard.view")
-  ) {
-    return "/psicosocial/dashboard";
-  }
-
-  if (
-    roles.includes("ADMIN_EMPRESA") ||
-    roles.includes("admin_empresa") ||
-    permissions.includes("evaluaciones.view")
-  ) {
-    return "/evaluaciones";
-  }
-
-  return "/mis-evaluaciones";
 }
 
 export default function ProtectedRoute({ requireRole, requirePermission }: Props) {
@@ -55,7 +34,7 @@ export default function ProtectedRoute({ requireRole, requirePermission }: Props
   const okPermission = hasAny(permissions, requirePermission);
 
   if (!okRole || !okPermission) {
-    return <Navigate to={defaultRoute(roles, permissions)} replace />;
+    return <Navigate to={routeByAccess(roles, permissions)} replace />;
   }
 
   return <Outlet />;

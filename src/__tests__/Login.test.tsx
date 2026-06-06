@@ -5,14 +5,14 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Login from "@/pages/Login";
 
-function meResponse(roles: string[]) {
+function meResponse(roles: string[], permissions: string[] = []) {
   return {
     id: "u1",
     nombre: "Usuario Test",
     email: "test@example.com",
     empresa_id: "t1",
     roles,
-    permissions: [],
+    permissions,
   };
 }
 
@@ -23,10 +23,10 @@ describe("Login", () => {
     localStorage.clear();
   });
 
-  it("loguea y redirige admin a /evaluaciones", async () => {
+  it("loguea psicóloga y redirige al dashboard psicosocial", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
-      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["admin_empresa"])), {
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["PSICOLOGO_EVALUADOR"], ["psico.dashboard.view"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }) as any);
@@ -36,7 +36,7 @@ describe("Login", () => {
         <MemoryRouter initialEntries={["/login"]}>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/evaluaciones" element={<div>HOME EMPRESA</div>} />
+            <Route path="/psicosocial/dashboard" element={<div>HOME PSICO</div>} />
           </Routes>
         </MemoryRouter>
       </AuthProvider>
@@ -51,14 +51,14 @@ describe("Login", () => {
     fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() =>
-      expect(screen.getByText("HOME EMPRESA")).toBeInTheDocument()
+      expect(screen.getByText("HOME PSICO")).toBeInTheDocument()
     );
   });
 
-  it("loguea empleado y redirige a /mis-evaluaciones", async () => {
+  it("loguea superadmin y redirige al dashboard de plataforma", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
-      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["evaluado"])), {
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["SUPER_ADMIN"], ["superadmin.dashboard.view"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }) as any);
@@ -69,8 +69,8 @@ describe("Login", () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route
-              path="/mis-evaluaciones"
-              element={<div>HOME EMPLEADO</div>}
+              path="/superadmin/dashboard"
+              element={<div>HOME SUPERADMIN</div>}
             />
           </Routes>
         </MemoryRouter>
@@ -86,7 +86,41 @@ describe("Login", () => {
     fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() =>
-      expect(screen.getByText("HOME EMPLEADO")).toBeInTheDocument()
+      expect(screen.getByText("HOME SUPERADMIN")).toBeInTheDocument()
     );
+  });
+
+  it("no reutiliza rutas piloto recibidas en next", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["PSICOLOGO_EVALUADOR"], ["psico.dashboard.view"])), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }) as any);
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={["/login?next=/usuarios"]}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/usuarios" element={<div>RUTA PILOTO</div>} />
+            <Route path="/psicosocial/dashboard" element={<div>HOME PSICO</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>
+    );
+
+    fireEvent.change(await screen.findByLabelText(/correo/i), {
+      target: { value: "psicologa.demo@eva360.com.co" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/ingresa tu contraseña/i), {
+      target: { value: "MiP4ss!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("HOME PSICO")).toBeInTheDocument()
+    );
+    expect(screen.queryByText("RUTA PILOTO")).not.toBeInTheDocument();
   });
 });

@@ -6,22 +6,19 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import RegistroUsuarios from "./pages/RegistroUsuarios";
-import GestionCargos from "./pages/GestionCargos";
-import GestionEvaluaciones from "./pages/GestionEvaluaciones";
-import GestionPreguntas from "./pages/GestionPreguntas";
-import EvaluacionesAsignadas from "./pages/EvaluacionesAsignadas";
 import ResponderEvaluacion from "./pages/ResponderEvaluacion";
 
 import { Toaster } from "@/components/ui/toaster";
-import Layout from "@/layout/Layout";
 import PsicologoLayout from "@/layout/PsicologoLayout";
 
 import Logout from "@/pages/Logout";
 import Login from "@/pages/Login";
+import SinAcceso from "@/pages/SinAcceso";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import ReportesPsico from "@/pages/ReportesPsico";
 import ReportesOficialesPsicoPage from "@/pages/ReportesOficialesPsicoPage";
+import { LEGACY_APP_ROUTES, routeByAccess } from "@/lib/accessRoutes";
+import { useAuth } from "@/context/AuthContext";
 
 import PsicoEmpleadoPerfilPage from "@/pages/psicosocial/PsicoEmpleadoPerfilPage";
 import PsicoEmpleadoRespuestasPage from "@/pages/psicosocial/PsicoEmpleadoRespuestasPage";
@@ -48,6 +45,11 @@ import SuperAdminRolesPermisosPage from "@/pages/superadmin/SuperAdminRolesPermi
 import SuperAdminAuditoriaPage from "@/pages/superadmin/SuperAdminAuditoriaPage";
 import SuperAdminPlaceholderPage from "@/pages/superadmin/SuperAdminPlaceholderPage";
 
+function AccessRedirect() {
+  const { roles, permissions } = useAuth();
+  return <Navigate to={routeByAccess(roles, permissions)} replace />;
+}
+
 function App() {
   return (
     <Router>
@@ -56,31 +58,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
 
-        {/* Privadas con layout histórico/base */}
+        {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/usuarios" replace />} />
-
-            <Route path="usuarios" element={<RegistroUsuarios />} />
-            <Route path="registro-usuarios" element={<RegistroUsuarios />} />
-            <Route path="cargos" element={<GestionCargos />} />
-            <Route path="evaluaciones" element={<GestionEvaluaciones />} />
-            <Route path="preguntas" element={<GestionPreguntas />} />
-            <Route
-              path="evaluaciones/:id/preguntas"
-              element={<GestionPreguntas />}
-            />
-            <Route
-              path="mis-evaluaciones"
-              element={<EvaluacionesAsignadas />}
-            />
-            <Route
-              path="evaluaciones-asignadas"
-              element={<EvaluacionesAsignadas />}
-            />
-            <Route path="reportes/psico" element={<ReportesPsico />} />
-            <Route path="reportes/psico/oficiales" element={<ReportesOficialesPsicoPage />} />
-          </Route>
+          <Route path="/" element={<AccessRedirect />} />
+          <Route path="/sin-acceso" element={<SinAcceso />} />
+          {LEGACY_APP_ROUTES.map((path) => (
+            <Route key={path} path={`${path}/*`} element={<AccessRedirect />} />
+          ))}
         </Route>
 
 
@@ -101,7 +85,15 @@ function App() {
 
         {/* Privadas con layout nuevo de psicólogo */}
         <Route
-          element={<ProtectedRoute requirePermission="psico.dashboard.view" />}
+          element={
+            <ProtectedRoute
+              requirePermission={[
+                "psico.dashboard.view",
+                "psico.aplicaciones.view",
+                "psico.resultados.global.view",
+              ]}
+            />
+          }
         >
           <Route path="/psicosocial" element={<PsicologoLayout />}>
             <Route
