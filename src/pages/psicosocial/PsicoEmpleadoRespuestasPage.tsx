@@ -474,6 +474,13 @@ export default function PsicoEmpleadoRespuestasPage() {
             <ArrowLeft className="h-4 w-4" /> Volver
           </button>
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm transition hover:bg-violet-100"
+            >
+              <FileText className="h-4 w-4" /> Informe individual
+            </button>
             {selectedEval && <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusTone(selectedEval.estado_respuestas)}`}>{String(selectedEval.estado_respuestas || "sin iniciar").replace(/_/g, " ")}</span>}
             {selectedLocked && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">Modo solo lectura</span>}
           </div>

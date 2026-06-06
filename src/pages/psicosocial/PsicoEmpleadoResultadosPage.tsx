@@ -493,11 +493,11 @@ export default function PsicoEmpleadoResultadosPage() {
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
+              onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
               className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-violet-800"
             >
               <Download className="h-4 w-4" />
-              Informe oficial
+              Informes individuales
             </button>
           </div>
         </div>

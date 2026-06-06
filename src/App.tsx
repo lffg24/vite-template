@@ -23,6 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 import PsicoEmpleadoPerfilPage from "@/pages/psicosocial/PsicoEmpleadoPerfilPage";
 import PsicoEmpleadoRespuestasPage from "@/pages/psicosocial/PsicoEmpleadoRespuestasPage";
 import PsicoEmpleadoResultadosPage from "@/pages/psicosocial/PsicoEmpleadoResultadosPage";
+import PsicoEmpleadoInformesPage from "@/pages/psicosocial/PsicoEmpleadoInformesPage";
 
 import PsicologoPerfilPage from "@/pages/psicosocial/PsicologoPerfilPage";
 import PsicologoDashboardPage from "@/pages/psicosocial/PsicologoDashboardPage";
@@ -138,6 +139,10 @@ function App() {
             <Route
               path="empleados/:empleadoId/aplicaciones/:aplicacionId/resultados"
               element={<PsicoEmpleadoResultadosPage />}
+            />
+            <Route
+              path="empleados/:empleadoId/aplicaciones/:aplicacionId/informes"
+              element={<PsicoEmpleadoInformesPage />}
             />
 
             <Route path="resultados" element={<ReportesPsico />} />

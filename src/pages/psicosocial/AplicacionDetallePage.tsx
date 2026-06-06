@@ -999,6 +999,7 @@ export default function AplicacionDetallePage() {
                             : emp.registrado
                               ? "Actualizar respuesta"
                               : "Registrar respuesta";
+                        const reportEnabled = finalizada && enabled;
                         return (
                           <div className="flex justify-end gap-2">
                             <button
@@ -1023,6 +1024,30 @@ export default function AplicacionDetallePage() {
                               )}
                               {label}
                             </button>
+                            {finalizada && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (reportEnabled)
+                                    navigate(
+                                      `/psicosocial/empleados/${emp.id}/aplicaciones/${aplicacionId}/informes`,
+                                    );
+                                }}
+                                disabled={!reportEnabled}
+                                title={
+                                  reportEnabled
+                                    ? "Ver informes individuales del colaborador"
+                                    : "Disponible para participantes con respuestas/resultados en aplicaciones finalizadas."
+                                }
+                                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 font-bold ${
+                                  reportEnabled
+                                    ? "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100"
+                                    : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                                }`}
+                              >
+                                <FileText className="h-4 w-4" /> Informe
+                              </button>
+                            )}
                             {(emp.registrado ||
                               emp.completo ||
                               (emp.instrumentos_registrados || []).length >
