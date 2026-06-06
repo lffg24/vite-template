@@ -1,7 +1,6 @@
-const API_BASE =
-  (import.meta as any).env?.VITE_API_URL ||
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  "http://localhost:8000";
+import { API_URL } from "@/lib/config";
+
+const API_BASE = API_URL;
 
 function authHeaders(): HeadersInit {
   return {

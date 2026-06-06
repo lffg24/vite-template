@@ -1,4 +1,5 @@
 // src/features/psicosocial/api/psicoAccessService.ts
+import { API_URL } from "@/lib/config";
 
 export type EmpresaAsignada = {
   empresa_id: string;
@@ -38,8 +39,6 @@ export type CrearEmpresaPsicoResponse = {
   empresa_id: string;
   message?: string | null;
 };
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export function getToken(): string | null {
   // La sesión definitiva usa cookie HttpOnly; no existe token legible desde JavaScript.

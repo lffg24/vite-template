@@ -10,9 +10,10 @@ export default defineConfig({
     },
   },
   build: { outDir: "dist" },
-  server: { fs: { strict: false } },
+  server: { host: "0.0.0.0", fs: { strict: false } },
   test: {
     environment: "jsdom",
+    exclude: ["node_modules/**", "dist/**", "e2e/**"],
     setupFiles: "./src/test/setup.ts",
     globals: true,
   },

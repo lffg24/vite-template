@@ -193,7 +193,7 @@ export function SociodemographicChartCard({
                 innerRadius={chartType === "donut" ? 62 : 0}
                 outerRadius={96}
                 paddingAngle={chartType === "donut" ? 2 : 0}
-                label={(entry) => `${entry.porcentaje.toFixed(1)}%`}
+                label={(entry: any) => `${Number(entry?.porcentaje ?? 0).toFixed(1)}%`}
               >
                 {rows.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={PALETTE[index % PALETTE.length]} />

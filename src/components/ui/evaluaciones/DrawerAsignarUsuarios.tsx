@@ -28,7 +28,7 @@ export default function DrawerasignarUsuariosAEvaluacion({
   cerrarDrawer: () => void;
 }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
+  const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!abierto) return;
@@ -39,7 +39,7 @@ export default function DrawerasignarUsuariosAEvaluacion({
           obtenerUsuariosAsignados(evaluacionId),
         ]);
         setUsuarios(listado);
-        setSeleccion(new Set(asignados.map((u) => u.id)));
+        setSeleccion(new Set(asignados.map((u) => String(u.usuario_id ?? u.id))));
       } catch {
         toast({
           title: "No pudimos cargar usuarios",
@@ -51,14 +51,21 @@ export default function DrawerasignarUsuariosAEvaluacion({
   }, [abierto, evaluacionId]);
 
   const usuariosSeleccionados: UsuarioAsignado[] = useMemo(() => {
-    const map = new Map(usuarios.map((u) => [u.id, u]));
+    const map = new Map(usuarios.map((u) => [String(u.id), u]));
     return [...seleccion].map((id) => {
       const u = map.get(id)!;
-      return { id: u.id, nombre: u.nombre, email: u.email };
+      const usuarioId = Number(u.id);
+      return {
+        id: usuarioId,
+        usuario_id: usuarioId,
+        evaluacion_id: evaluacionId,
+        nombre: u.nombre,
+        email: u.email ?? u.correo ?? "",
+      };
     });
-  }, [seleccion, usuarios]);
+  }, [evaluacionId, seleccion, usuarios]);
 
-  const toggle = (id: number) => {
+  const toggle = (id: string) => {
     setSeleccion((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -91,8 +98,8 @@ export default function DrawerasignarUsuariosAEvaluacion({
           {usuarios.map((u) => (
             <label key={u.id} className="flex items-center gap-3 py-1">
               <Checkbox
-                checked={seleccion.has(u.id)}
-                onCheckedChange={() => toggle(u.id)}
+                checked={seleccion.has(String(u.id))}
+                onCheckedChange={() => toggle(String(u.id))}
               />
               <span className="text-sm">
                 {u.nombre} · {u.email}

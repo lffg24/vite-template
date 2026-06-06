@@ -1,9 +1,9 @@
 // src/services/competenciaService.ts
+import { API_URL } from "@/lib/config";
+
 export type Competencia = { id: number; nombre: string };
 
-const BASE =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ??
-  "http://localhost:8000";
+const BASE = API_URL;
 
 const buildHeaders = (): HeadersInit => ({});
 /**

@@ -13,6 +13,7 @@ import {
   Target,
   UserRound,
 } from "lucide-react";
+import { API_URL } from "@/lib/config";
 
 type RiskKey = "SIN_RIESGO" | "MUY_BAJO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | string;
 
@@ -93,8 +94,6 @@ type ResultadoIndividual = {
     dimensiones?: ScoreRow[];
   };
 };
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const riskRank: Record<string, number> = {
   SIN_RIESGO: 0,

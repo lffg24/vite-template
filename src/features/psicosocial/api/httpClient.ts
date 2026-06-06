@@ -1,3 +1,5 @@
+import { API_URL } from "@/lib/config";
+
 export class AbrilApiError extends Error {
   status: number;
   detail: unknown;
@@ -11,11 +13,7 @@ export class AbrilApiError extends Error {
 }
 
 export function apiBase() {
-  return (
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.VITE_API_BASE_URL ||
-    "http://localhost:8000"
-  ).replace(/\/$/, "");
+  return API_URL;
 }
 
 function emitSessionExpired() {

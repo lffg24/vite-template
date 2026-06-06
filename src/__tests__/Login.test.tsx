@@ -5,14 +5,15 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Login from "@/pages/Login";
 
-function jwt(roles: string[]) {
-  const header = Buffer.from(
-    JSON.stringify({ alg: "none", typ: "JWT" })
-  ).toString("base64url");
-  const payload = Buffer.from(
-    JSON.stringify({ sub: "u1", tenant_id: "t1", roles, exp: 9999999999 })
-  ).toString("base64url");
-  return `${header}.${payload}.`;
+function meResponse(roles: string[]) {
+  return {
+    id: "u1",
+    nombre: "Usuario Test",
+    email: "test@example.com",
+    empresa_id: "t1",
+    roles,
+    permissions: [],
+  };
 }
 
 describe("Login", () => {
@@ -23,12 +24,12 @@ describe("Login", () => {
   });
 
   it("loguea y redirige admin a /evaluaciones", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ access_token: jwt(["admin_empresa"]) }), {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["admin_empresa"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }) as any
-    );
+      }) as any);
 
     render(
       <AuthProvider>
@@ -41,13 +42,13 @@ describe("Login", () => {
       </AuthProvider>
     );
 
-    fireEvent.change(screen.getByLabelText(/email/i), {
+    fireEvent.change(await screen.findByLabelText(/correo/i), {
       target: { value: "a@b.com" },
     });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+    fireEvent.change(screen.getByPlaceholderText(/ingresa tu contraseña/i), {
       target: { value: "x" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /ingresar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() =>
       expect(screen.getByText("HOME EMPRESA")).toBeInTheDocument()
@@ -55,12 +56,12 @@ describe("Login", () => {
   });
 
   it("loguea empleado y redirige a /mis-evaluaciones", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ access_token: jwt(["evaluado"]) }), {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["evaluado"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }) as any
-    );
+      }) as any);
 
     render(
       <AuthProvider>
@@ -76,13 +77,13 @@ describe("Login", () => {
       </AuthProvider>
     );
 
-    fireEvent.change(screen.getByLabelText(/email/i), {
+    fireEvent.change(await screen.findByLabelText(/correo/i), {
       target: { value: "c@d.com" },
     });
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+    fireEvent.change(screen.getByPlaceholderText(/ingresa tu contraseña/i), {
       target: { value: "y" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /ingresar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
 
     await waitFor(() =>
       expect(screen.getByText("HOME EMPLEADO")).toBeInTheDocument()

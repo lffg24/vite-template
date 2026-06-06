@@ -1189,6 +1189,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
 
 export default function ReportesPsico() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialAplicacionId = Number(searchParams.get("aplicacionId") || searchParams.get("aplicacion_id") || 0) || null;
   const [apps, setApps] = useState<PsicoAplicacionItem[]>([]);
   const [aplicacionId, setAplicacionId] = useState<number | null>(initialAplicacionId);
