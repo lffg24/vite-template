@@ -23,6 +23,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { safeRedirectPath } from "@/lib/accessRoutes";
+import evaLogoColor from "@/assets/eva-logo-color.png";
+import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
@@ -56,7 +58,7 @@ export default function Login() {
   const [remember, setRemember] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [logoError, setLogoError] = useState(false);
+  const [relLogoError, setRelLogoError] = useState(false);
 
   const redirectPath = useMemo(() => safeRedirectPath(from, roles, permissions), [from, roles, permissions]);
 
@@ -121,8 +123,8 @@ export default function Login() {
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
               <div className="mb-10 flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-3xl bg-gradient-to-br from-violet-500 to-cyan-400 shadow-2xl shadow-violet-950/40">
-                  <BrainCircuit className="h-8 w-8" />
+                <div className="grid h-14 w-14 place-items-center rounded-3xl border border-white/10 bg-white/10 p-2 shadow-2xl shadow-violet-950/40">
+                  <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
                 </div>
                 <div>
                   <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-violet-300">360</span></div>
@@ -166,8 +168,8 @@ export default function Login() {
 
           <div className="w-full max-w-[620px]">
             <div className="mb-4 flex items-center justify-center gap-3 lg:hidden">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-400 text-white shadow-lg">
-                <BrainCircuit className="h-7 w-7" />
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 p-2 shadow-lg">
+                <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
               </div>
               <div className="text-2xl font-black tracking-tight">ABRIL<span className="text-violet-600">360</span></div>
             </div>
@@ -175,7 +177,7 @@ export default function Login() {
             <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-700">
-                  <ShieldCheck className="h-7 w-7" />
+                  <img src={evaLogoColor} alt="EVA 360" className="h-11 w-11 object-contain" />
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">Bienvenido de nuevo</h2>
                 <p className="mt-1 text-slate-600">
@@ -276,12 +278,12 @@ export default function Login() {
                     <p className="text-sm text-slate-600">Plataforma operada para gestión psicosocial empresarial.</p>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-3 py-2 shadow-sm">
-                    {!logoError ? (
+                    {!relLogoError ? (
                       <img
                         src={REL_LOGO_URL}
                         alt="REL Consilium SAS"
-                        className="h-8 w-auto object-contain"
-                        onError={() => setLogoError(true)}
+                        className="h-10 w-auto object-contain"
+                        onError={() => setRelLogoError(true)}
                         referrerPolicy="no-referrer"
                       />
                     ) : (

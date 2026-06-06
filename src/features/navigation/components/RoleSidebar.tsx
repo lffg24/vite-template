@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { BrainCircuit, ChevronLeft, ChevronRight, LogOut, type LucideIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, type LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 
 export type RoleSidebarItem = {
   label: string;
@@ -55,8 +56,8 @@ export default function RoleSidebar({
       <div className="flex h-full flex-col p-4">
         <div className="mb-6 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-400 text-white shadow-lg shadow-violet-950/30">
-              <BrainCircuit className="h-7 w-7" />
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg shadow-violet-950/30">
+              <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
             </div>
             {!collapsed && (
               <div className="min-w-0">

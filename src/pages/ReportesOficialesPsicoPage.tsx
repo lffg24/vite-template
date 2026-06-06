@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BrainCircuit, Download, FileText, FileType2, Loader2, Printer, RefreshCcw, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, FileText, FileType2, Loader2, Printer, RefreshCcw, ShieldCheck, Sparkles } from "lucide-react";
+import evaLogoColor from "@/assets/eva-logo-color.png";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -180,7 +181,9 @@ export default function ReportesOficialesPsicoPage() {
       <Card className="rounded-2xl border-violet-100 bg-gradient-to-r from-violet-50 to-cyan-50 shadow-sm">
         <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3">
-            <div className="rounded-2xl bg-violet-700 p-2 text-white"><BrainCircuit className="h-5 w-5" /></div>
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-sm">
+              <img src={evaLogoColor} alt="" className="h-full w-full object-contain" aria-hidden="true" />
+            </div>
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-violet-900"><Sparkles className="h-4 w-4" /> NeuroMapa Psicosocial ABRIL-360</div>
               <p className="mt-1 max-w-4xl text-sm text-slate-700">
