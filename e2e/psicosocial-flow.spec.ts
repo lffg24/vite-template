@@ -136,7 +136,7 @@ test.describe("Flujos psicosociales críticos", () => {
       fulfillJson(route, creditSummary),
     );
 
-    await page.goto("/login");
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
     await page.getByLabel("Correo electrónico").fill("psicologa.demo@abril360.com");
     await page.getByPlaceholder("Ingresa tu contraseña").fill("Correcta-123");
     await page.getByRole("button", { name: /iniciar sesión/i }).click();
@@ -164,7 +164,7 @@ test.describe("Flujos psicosociales críticos", () => {
       return fulfillJson(route, applicationDetail);
     });
 
-    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77");
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByRole("heading", { name: "Bateria Planta Norte" })).toBeVisible();
     await expect(page.getByText("Empresa Andina SAS · Estado En captura")).toBeVisible();
@@ -180,7 +180,7 @@ test.describe("Flujos psicosociales críticos", () => {
       fulfillJson(route, { detail: "Sesion expirada" }, 401),
     );
 
-    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77");
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
 
     await expect(page).toHaveURL(/\/login\?next=%2Fpsicosocial%2Fempresas%2Fempresa-1%2Faplicaciones%2F77/, {
       timeout: 4_000,
