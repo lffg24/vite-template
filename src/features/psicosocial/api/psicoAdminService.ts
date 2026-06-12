@@ -15,6 +15,17 @@ export type EmpresaPsico = {
   evaluaciones_calculadas?: number;
 };
 
+export type CreditosResumen = {
+  ok: boolean;
+  cuenta_id?: number | string | null;
+  saldo_actual: number;
+  creditos_asignados: number;
+  creditos_consumidos: number;
+  registros_consumidos: number;
+  estado?: string | null;
+  actualizado_en?: string | null;
+};
+
 export type AreaEmpresa = { id: number; nombre: string; descripcion?: string };
 export type CargoEmpresa = { id: number; nombre: string; area_id?: number | null; area_nombre?: string; nivel?: string };
 
@@ -95,6 +106,9 @@ export type AplicacionDetalle = {
 export const psicoAdminService = {
   listarEmpresas: (todas = true) =>
     requestJson<{ ok: boolean; items: EmpresaPsico[] }>(`/psicosocial/admin/empresas?todas=${todas}`),
+
+  creditosResumen: () =>
+    requestJson<CreditosResumen>("/psicosocial/admin/creditos/resumen"),
 
   perfilEmpresa: (empresaId: string) =>
     requestJson<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(

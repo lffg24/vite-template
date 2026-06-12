@@ -1,19 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, Building2, CalendarDays, ClipboardCheck, Coins, FileText, Loader2, Plus, RefreshCw, Upload, Users, WalletCards } from "lucide-react";
-import { psicoAdminService, type EmpresaPsico } from "@/features/psicosocial/api/psicoAdminService";
+import { psicoAdminService, type CreditosResumen, type EmpresaPsico } from "@/features/psicosocial/api/psicoAdminService";
 
 function n(value: unknown) { const num = Number(value ?? 0); return Number.isFinite(num) ? num : 0; }
 
 export default function PsicologoDashboardPage() {
   const navigate = useNavigate();
   const [empresas, setEmpresas] = useState<EmpresaPsico[]>([]);
+  const [creditos, setCreditos] = useState<CreditosResumen | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true); setError(null);
-    try { setEmpresas((await psicoAdminService.listarEmpresas(true)).items || []); }
+    try {
+      const [empresasRes, creditosRes] = await Promise.all([
+        psicoAdminService.listarEmpresas(true),
+        psicoAdminService.creditosResumen(),
+      ]);
+      setEmpresas(empresasRes.items || []);
+      setCreditos(creditosRes);
+    }
     catch (e: any) { setError(e?.message || "No fue posible cargar el dashboard."); }
     finally { setLoading(false); }
   };
@@ -24,9 +32,12 @@ export default function PsicologoDashboardPage() {
     const aplicaciones = empresas.reduce((acc, e) => acc + n(e.aplicaciones), 0);
     const empleados = empresas.reduce((acc, e) => acc + n(e.empleados), 0);
     const resultados = empresas.reduce((acc, e) => acc + n(e.evaluaciones_calculadas), 0);
-    const creditosDisponibles = Math.max(100 - resultados, 0);
-    return { empresasActivas, aplicaciones, empleados, resultados, creditosDisponibles, creditosUsados: resultados };
-  }, [empresas]);
+    const creditosDisponibles = n(creditos?.saldo_actual);
+    const creditosAsignados = n(creditos?.creditos_asignados);
+    const creditosUsados = n(creditos?.creditos_consumidos);
+    const registrosConsumidos = n(creditos?.registros_consumidos);
+    return { empresasActivas, aplicaciones, empleados, resultados, creditosDisponibles, creditosAsignados, creditosUsados, registrosConsumidos };
+  }, [empresas, creditos]);
 
   return <main className="space-y-6">
     <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm">
@@ -46,8 +57,8 @@ export default function PsicologoDashboardPage() {
     </section>
     <section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
       <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-black text-slate-950">Créditos para aplicaciones</h2><p className="mt-1 text-sm text-slate-500">Vista preliminar del módulo de créditos. Por ahora se estima contra resultados calculados.</p></div><WalletCards className="h-8 w-8 text-violet-700" /></div>
-        <div className="mt-6 grid gap-5 md:grid-cols-[190px_1fr]"><div className="grid h-44 w-44 place-items-center rounded-full border-[18px] border-violet-200 bg-violet-50"><div className="text-center"><p className="text-4xl font-black text-slate-950">{stats.creditosDisponibles}</p><p className="text-sm font-bold text-slate-500">Disponibles</p></div></div><div className="space-y-3 text-sm"><Row label="Comprados" value="100" /><Row label="Utilizados" value={stats.creditosUsados} /><Row label="Disponibles" value={stats.creditosDisponibles} tone="text-emerald-600" /><Row label="Plan actual" value="Profesional" tone="text-violet-700" /><button className="mt-3 rounded-2xl bg-violet-700 px-5 py-3 font-black text-white hover:bg-violet-800">Comprar más créditos</button></div></div>
+        <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-black text-slate-950">Créditos para aplicaciones</h2><p className="mt-1 text-sm text-slate-500">Saldos cargados desde el ledger formal de créditos.</p></div><WalletCards className="h-8 w-8 text-violet-700" /></div>
+        <div className="mt-6 grid gap-5 md:grid-cols-[190px_1fr]"><div className="grid h-44 w-44 place-items-center rounded-full border-[18px] border-violet-200 bg-violet-50"><div className="text-center"><p className="text-4xl font-black text-slate-950">{loading ? "—" : stats.creditosDisponibles}</p><p className="text-sm font-bold text-slate-500">Disponibles</p></div></div><div className="space-y-3 text-sm"><Row label="Asignados" value={loading ? "—" : stats.creditosAsignados} /><Row label="Consumidos" value={loading ? "—" : stats.creditosUsados} /><Row label="Disponibles" value={loading ? "—" : stats.creditosDisponibles} tone="text-emerald-600" /><Row label="Registros consumidos" value={loading ? "—" : stats.registrosConsumidos} /><button className="mt-3 rounded-2xl bg-violet-700 px-5 py-3 font-black text-white hover:bg-violet-800">Comprar más créditos</button></div></div>
       </article>
       <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-950">Mis empresas</h2><button onClick={() => navigate('/psicosocial/empresas')} className="text-sm font-black text-violet-700 hover:underline">Ver todas</button></div>

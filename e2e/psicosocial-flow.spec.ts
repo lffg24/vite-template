@@ -44,6 +44,16 @@ const dashboardCompanies = {
   ],
 };
 
+const creditSummary = {
+  ok: true,
+  cuenta_id: 3001,
+  saldo_actual: 237,
+  creditos_asignados: 250,
+  creditos_consumidos: 13,
+  registros_consumidos: 13,
+  estado: "ACTIVA",
+};
+
 const applicationDetail = {
   ok: true,
   empresa: {
@@ -122,6 +132,9 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas?todas=true`, (route) =>
       fulfillJson(route, dashboardCompanies),
     );
+    await page.route(`${API_ORIGIN}/psicosocial/admin/creditos/resumen`, (route) =>
+      fulfillJson(route, creditSummary),
+    );
 
     await page.goto("/login");
     await page.getByLabel("Correo electrónico").fill("psicologa.demo@abril360.com");
@@ -131,6 +144,15 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page).toHaveURL(/\/psicosocial\/dashboard$/);
     await expect(page.getByRole("heading", { name: "Dashboard psicosocial" })).toBeVisible();
     await expect(page.getByRole("row", { name: /Empresa Andina SAS.*42.*3.*5/ })).toBeVisible();
+    const creditCard = page.locator("article").filter({ hasText: "Créditos para aplicaciones" });
+    await expect(creditCard).toContainText("Saldos cargados desde el ledger formal de créditos.");
+    await expect(creditCard).toContainText("237");
+    await expect(creditCard).toContainText("Asignados");
+    await expect(creditCard).toContainText("250");
+    await expect(creditCard).toContainText("Consumidos");
+    await expect(creditCard).toContainText("13");
+    await expect(creditCard).toContainText("Registros consumidos");
+    await expect(creditCard).not.toContainText("95");
   });
 
   test("detalle de aplicacion respeta empresa activa, participantes y creditos del contrato", async ({ page }) => {
