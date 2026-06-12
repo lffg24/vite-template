@@ -101,6 +101,30 @@ const applicationDetail = {
   ],
 };
 
+const applicationDetailWithoutCompleteParticipants = {
+  ...applicationDetail,
+  resumen: {
+    ...applicationDetail.resumen,
+    participantes_completos: 0,
+  },
+};
+
+const finalizedApplicationDetail = {
+  ...applicationDetail,
+  aplicacion: {
+    ...applicationDetail.aplicacion,
+    estado: "FINALIZADA",
+  },
+};
+
+const reopenedApplicationDetail = {
+  ...applicationDetail,
+  aplicacion: {
+    ...applicationDetail.aplicacion,
+    estado: "REABIERTA",
+  },
+};
+
 async function fulfillJson(route: Route, body: unknown, status = 200) {
   await route.fulfill({
     status,
@@ -184,6 +208,91 @@ test.describe("Flujos psicosociales críticos", () => {
 
     await expect(page).toHaveURL(/\/login\?next=%2Fpsicosocial%2Fempresas%2Fempresa-1%2Faplicaciones%2F77/, {
       timeout: 4_000,
+    });
+  });
+
+  test("cierra y calcula una aplicacion con participantes completos", async ({ page }) => {
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+
+    let closed = false;
+    let closeRequestUrl = "";
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
+      fulfillJson(route, closed ? finalizedApplicationDetail : applicationDetail),
+    );
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
+      closeRequestUrl = route.request().url();
+      closed = true;
+      await fulfillJson(route, {
+        ok: true,
+        aplicacion_id: 77,
+        estado: "FINALIZADA",
+        participantes: 8,
+        evaluacion_ids: [1001, 1002],
+      });
+    });
+
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /cerrar y calcular/i }).click();
+    await expect(page.getByRole("heading", { name: "Cerrar y calcular la aplicación" })).toBeVisible();
+    await page.getByRole("button", { name: "Cerrar aplicación" }).click();
+
+    await expect(page.getByText("Aplicación cerrada")).toBeVisible();
+    await expect(page.getByText("Empresa Andina SAS · Estado Finalizada")).toBeVisible();
+    await expect(page.getByRole("button", { name: /reabrir aplicación/i })).toBeVisible();
+    expect(closeRequestUrl).toContain("min_participantes=1");
+  });
+
+  test("no intenta cerrar cuando no hay participantes completos", async ({ page }) => {
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+
+    let closeCalled = false;
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
+      fulfillJson(route, applicationDetailWithoutCompleteParticipants),
+    );
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
+      closeCalled = true;
+      await fulfillJson(route, { ok: false, error: "MINIMO_PARTICIPANTES" }, 422);
+    });
+
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /cerrar y calcular/i }).click();
+
+    await expect(page.getByText("No se puede cerrar todavía")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cerrar y calcular la aplicación" })).toHaveCount(0);
+    expect(closeCalled).toBe(false);
+  });
+
+  test("reabre aplicacion finalizada registrando reproceso con credito", async ({ page }) => {
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+
+    let reopened = false;
+    let reopenPayload: unknown = null;
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
+      fulfillJson(route, reopened ? reopenedApplicationDetail : finalizedApplicationDetail),
+    );
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/reabrir`, async (route) => {
+      reopenPayload = route.request().postDataJSON();
+      reopened = true;
+      await fulfillJson(route, {
+        ok: true,
+        aplicacion_id: 77,
+        estado_anterior: "FINALIZADA",
+        estado: "REABIERTA",
+        credito_reproceso_consumido: true,
+      });
+    });
+
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /reabrir aplicación/i }).click();
+    await expect(page.getByRole("heading", { name: "Reabrir aplicación para reproceso" })).toBeVisible();
+    await page.getByRole("button", { name: "Reabrir y registrar reproceso" }).click();
+
+    await expect(page.getByText("Aplicación reabierta")).toBeVisible();
+    await expect(page.getByText("Empresa Andina SAS · Estado Reabierta")).toBeVisible();
+    await expect(page.getByRole("button", { name: /cerrar y calcular/i })).toBeVisible();
+    expect(reopenPayload).toEqual({
+      motivo: "Corrección de respuestas y reprocesamiento",
+      consumir_credito: true,
     });
   });
 });
