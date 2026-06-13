@@ -94,8 +94,13 @@ Root directory: frontend
 Variable de entorno de produccion:
 
 ```text
-VITE_API_URL=https://eva-360-production.up.railway.app
+VITE_API_URL=/api
+BACKEND_URL=https://eva-360-production.up.railway.app
 ```
+
+En Cloudflare Pages, el frontend debe consumir `/api`. La funcion
+`functions/api/[[path]].js` proxyea esas llamadas al backend Railway. Esto evita
+que Safari/iOS trate la cookie HttpOnly de sesion como cookie de terceros.
 
 No configurar en Cloudflare Pages:
 
@@ -138,7 +143,8 @@ Despues de desplegar:
 2. Validar `/login`.
 3. Refrescar una ruta interna como `/dashboard` y confirmar que no devuelve 404.
 4. Iniciar sesion o validar `/auth/me` segun el flujo actual.
-5. Confirmar en Network que las llamadas API apuntan a `https://eva-360-production.up.railway.app`.
+5. Confirmar en Network que las llamadas del navegador apuntan a `/api/*`.
+6. Confirmar que la funcion de Pages proxyea al backend Railway.
 
 ## Troubleshooting
 
