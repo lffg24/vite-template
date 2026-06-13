@@ -32,9 +32,10 @@ async function parseError(res: Response): Promise<string> {
 }
 
 export async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
   const headers: HeadersInit = {
     Accept: "application/json",
-    ...(init.body ? { "Content-Type": "application/json" } : {}),
+    ...(init.body && !isFormData ? { "Content-Type": "application/json" } : {}),
     ...(init.headers || {}),
   };
 

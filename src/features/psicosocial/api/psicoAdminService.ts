@@ -53,6 +53,35 @@ export type CrearEmpleadoPayload = {
   identificador_externo?: string;
 };
 
+export type EmpleadoImportError = {
+  row: number | null;
+  field: string;
+  message: string;
+};
+
+export type EmpleadoImportPreview = {
+  row: number;
+  cedula: string;
+  nombres: string;
+  apellidos: string;
+  cargo: string;
+  nivel_academico: string;
+  area_departamento: string;
+  action?: "create" | "update" | string;
+};
+
+export type EmpleadoImportResponse = {
+  ok: boolean;
+  dry_run: boolean;
+  total_rows: number;
+  valid_rows: number;
+  created: number;
+  updated: number;
+  errors: EmpleadoImportError[];
+  preview: EmpleadoImportPreview[];
+  items?: EmpleadoEmpresa[];
+};
+
 export type AplicacionEmpresa = {
   id: number;
   nombre: string;
@@ -154,6 +183,19 @@ export const psicoAdminService = {
       headers: { "X-Empresa-Id": empresaId },
       body: JSON.stringify(payload),
     }),
+
+  importarEmpleados: (empresaId: string, file: File, dryRun = true) => {
+    const form = new FormData();
+    form.append("file", file);
+    return requestJson<EmpleadoImportResponse>(
+      `/psicosocial/admin/empresas/${empresaId}/empleados/importar?dry_run=${dryRun}`,
+      {
+        method: "POST",
+        headers: { "X-Empresa-Id": empresaId },
+        body: form,
+      },
+    );
+  },
 
   aplicacionesEmpresa: (empresaId: string) =>
     requestJson<{ ok: boolean; items: AplicacionEmpresa[] }>(
