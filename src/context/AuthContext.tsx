@@ -3,8 +3,16 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { API_URL } from "@/lib/config";
 import { loginPathForCurrentLocation, SESSION_EXPIRED_EVENT } from "@/lib/sessionEvents";
 
+export type AuthUser = {
+  id: string;
+  nombre: string;
+  email: string;
+  empresaId: string;
+};
+
 export type AuthState = {
   token: null;
+  user: AuthUser | null;
   userId: string | null;
   tenantId: string | null;
   roles: string[];
@@ -25,6 +33,7 @@ type LoginResult = {
 type AuthContextType = AuthState & {
   login: (email: string, password: string, options?: LoginOptions) => Promise<LoginResult>;
   logout: () => Promise<void>;
+  changePassword: (payload: ChangePasswordPayload) => Promise<void>;
   hasRole: (required?: string | string[]) => boolean;
   hasPermission: (required?: string | string[]) => boolean;
 };
@@ -38,11 +47,18 @@ type MeResponse = {
   permissions?: string[];
 };
 
+type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
 const AuthContext = createContext<AuthContextType | null>(null);
 
 function emptyState(initialized = true): AuthState {
   return {
     token: null,
+    user: null,
     userId: null,
     tenantId: null,
     roles: [],
@@ -59,9 +75,16 @@ function normalizeList(value?: string[] | string | null): string[] {
 }
 
 function stateFromMe(me: MeResponse): AuthState {
+  const user = {
+    id: String(me.id),
+    nombre: me.nombre,
+    email: me.email,
+    empresaId: me.empresa_id,
+  };
   return {
     token: null,
-    userId: String(me.id),
+    user,
+    userId: user.id,
     tenantId: me.empresa_id,
     roles: normalizeList(me.roles),
     permissions: normalizeList(me.permissions),
@@ -182,15 +205,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const changePassword = useCallback(async (payload: ChangePasswordPayload) => {
+    const res = await fetch(`${API_URL}/auth/password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        current_password: payload.currentPassword,
+        new_password: payload.newPassword,
+        confirm_password: payload.confirmPassword,
+      }),
+    });
+
+    if (!res.ok) {
+      const message = await parseError(res, `No fue posible actualizar la contraseña (${res.status})`);
+      const err = new Error(message) as Error & { status?: number };
+      err.status = res.status;
+      throw err;
+    }
+  }, []);
+
   const value = useMemo<AuthContextType>(
     () => ({
       ...state,
       login,
       logout,
+      changePassword,
       hasRole: (required?: string | string[]) => hasAny(state.roles, required),
       hasPermission: (required?: string | string[]) => hasAny(state.permissions, required),
     }),
-    [state, login, logout]
+    [state, login, logout, changePassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

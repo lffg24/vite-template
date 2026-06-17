@@ -7,6 +7,7 @@ import {
   Settings,
 } from "lucide-react";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
+import { useAuth } from "@/context/AuthContext";
 
 const items = [
   { label: "Dashboard", to: "/psicosocial/dashboard", icon: Home },
@@ -18,14 +19,24 @@ const items = [
 ];
 
 export default function PsicologoSidebar() {
+  const { user } = useAuth();
+  const displayName = user?.nombre?.trim() || "Usuario Abril360";
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "PS";
+
   return (
     <RoleSidebar
       items={items}
       storageKey="abril360.psico.sidebar.collapsed"
       brandTitle="ABRIL-360"
       brandSubtitle="Riesgo psicosocial"
-      avatarText="PS"
-      userTitle="Psicólogo evaluador"
+      avatarText={initials}
+      userTitle={displayName}
       userSubtitle="Gestión psicosocial"
       navLabel="Navegación psicosocial"
     />
