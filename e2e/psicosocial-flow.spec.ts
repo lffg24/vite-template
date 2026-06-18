@@ -295,4 +295,50 @@ test.describe("Flujos psicosociales críticos", () => {
       consumir_credito: true,
     });
   });
+
+  test("psicologa cambia su contraseña desde perfil con contrato seguro", async ({ page }) => {
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+
+    let passwordPayload: unknown = null;
+    await page.route(`${API_ORIGIN}/auth/password`, async (route) => {
+      expect(route.request().method()).toBe("POST");
+      passwordPayload = route.request().postDataJSON();
+      await fulfillJson(route, { ok: true, message: "Contraseña actualizada correctamente" });
+    });
+
+    await page.goto("/psicosocial/perfil", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Psicologa Demo" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Cambiar contraseña" }).click();
+    await page.getByLabel("Contraseña actual").fill("ActualPass!2026");
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill("ClaveSegura!2026");
+    await page.getByLabel("Confirmar nueva contraseña").fill("ClaveSegura!2026");
+    await page.getByRole("button", { name: "Guardar contraseña" }).click();
+
+    await expect(page.getByText("Contraseña actualizada")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cambiar contraseña" })).toHaveCount(0);
+    expect(passwordPayload).toEqual({
+      current_password: "ActualPass!2026",
+      new_password: "ClaveSegura!2026",
+      confirm_password: "ClaveSegura!2026",
+    });
+  });
+
+  test("perfil muestra error de backend si la contraseña actual es incorrecta", async ({ page }) => {
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+
+    await page.route(`${API_ORIGIN}/auth/password`, (route) =>
+      fulfillJson(route, { detail: "La contraseña actual no es correcta" }, 400),
+    );
+
+    await page.goto("/psicosocial/perfil", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Cambiar contraseña" }).click();
+    await page.getByLabel("Contraseña actual").fill("Incorrecta!2026");
+    await page.getByLabel("Nueva contraseña", { exact: true }).fill("ClaveSegura!2026");
+    await page.getByLabel("Confirmar nueva contraseña").fill("ClaveSegura!2026");
+    await page.getByRole("button", { name: "Guardar contraseña" }).click();
+
+    await expect(page.getByText("La contraseña actual no es correcta")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cambiar contraseña" })).toBeVisible();
+  });
 });
