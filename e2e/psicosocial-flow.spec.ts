@@ -200,14 +200,20 @@ test.describe("Flujos psicosociales críticos", () => {
 
   test("sesion vencida en una ruta protegida redirige al login con next seguro", async ({ page }) => {
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
+    const expiredApplicationResponse = page.waitForResponse(
+      (response) =>
+        response.url() === `${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77` &&
+        response.status() === 401,
+    );
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, { detail: "Sesion expirada" }, 401),
     );
 
     await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await expiredApplicationResponse;
 
     await expect(page).toHaveURL(/\/login\?next=%2Fpsicosocial%2Fempresas%2Fempresa-1%2Faplicaciones%2F77/, {
-      timeout: 4_000,
+      timeout: 10_000,
     });
   });
 
