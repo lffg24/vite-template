@@ -147,7 +147,7 @@ export default function SuperAdminPsicologosPage() {
     const next: Record<string, string> = {};
     if (!form.nombre.trim()) next.nombre = "El nombre es obligatorio.";
     if (!validateEmail(form.email)) next.email = "Correo inválido.";
-    if (form.password.length < 8) next.password = "La contraseña debe tener mínimo 8 caracteres.";
+    if (form.password.length < 12) next.password = "La contraseña temporal debe tener mínimo 12 caracteres.";
     if (form.password !== form.confirmPassword) next.confirmPassword = "Las contraseñas no coinciden.";
     if (form.identificacion_profesional.trim() && form.identificacion_profesional.trim().length < 5) {
       next.identificacion_profesional = "La identificación debe tener mínimo 5 caracteres.";

@@ -17,6 +17,7 @@ export type AuthState = {
   tenantId: string | null;
   roles: string[];
   permissions: string[];
+  passwordChangeRequired: boolean;
   isAuthenticated: boolean;
   initialized: boolean;
 };
@@ -28,6 +29,7 @@ type LoginResult = {
   permissions: string[];
   userId: string | null;
   tenantId: string | null;
+  passwordChangeRequired: boolean;
 };
 
 type AuthContextType = AuthState & {
@@ -45,6 +47,7 @@ type MeResponse = {
   empresa_id: string;
   roles?: string[];
   permissions?: string[];
+  password_change_required?: boolean;
 };
 
 type ChangePasswordPayload = {
@@ -63,6 +66,7 @@ function emptyState(initialized = true): AuthState {
     tenantId: null,
     roles: [],
     permissions: [],
+    passwordChangeRequired: false,
     isAuthenticated: false,
     initialized,
   };
@@ -88,6 +92,7 @@ function stateFromMe(me: MeResponse): AuthState {
     tenantId: me.empresa_id,
     roles: normalizeList(me.roles),
     permissions: normalizeList(me.permissions),
+    passwordChangeRequired: Boolean(me.password_change_required),
     isAuthenticated: true,
     initialized: true,
   };
@@ -190,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       permissions: next.permissions,
       userId: next.userId,
       tenantId: next.tenantId,
+      passwordChangeRequired: next.passwordChangeRequired,
     };
   }, []);
 
@@ -223,6 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       err.status = res.status;
       throw err;
     }
+    setState((current) => ({ ...current, passwordChangeRequired: false }));
   }, []);
 
   const value = useMemo<AuthContextType>(

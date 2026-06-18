@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Login from "@/pages/Login";
 
-function meResponse(roles: string[], permissions: string[] = []) {
+function meResponse(roles: string[], permissions: string[] = [], passwordChangeRequired = false) {
   return {
     id: "u1",
     nombre: "Usuario Test",
@@ -13,6 +13,7 @@ function meResponse(roles: string[], permissions: string[] = []) {
     empresa_id: "t1",
     roles,
     permissions,
+    password_change_required: passwordChangeRequired,
   };
 }
 
@@ -122,5 +123,39 @@ describe("Login", () => {
       expect(screen.getByText("HOME PSICO")).toBeInTheDocument()
     );
     expect(screen.queryByText("RUTA PILOTO")).not.toBeInTheDocument();
+  });
+
+  it("redirige al perfil cuando el backend exige cambio de contraseña inicial", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["PSICOLOGO_EVALUADOR"], ["psico.dashboard.view"], true)), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }) as any);
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={["/login"]}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/psicosocial/dashboard" element={<div>HOME PSICO</div>} />
+            <Route path="/psicosocial/perfil" element={<div>PERFIL CAMBIO OBLIGATORIO</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>
+    );
+
+    fireEvent.change(await screen.findByLabelText(/correo/i), {
+      target: { value: "psicologa.demo@eva360.com.co" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/ingresa tu contraseña/i), {
+      target: { value: "Temporal!2026" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("PERFIL CAMBIO OBLIGATORIO")).toBeInTheDocument()
+    );
+    expect(screen.queryByText("HOME PSICO")).not.toBeInTheDocument();
   });
 });

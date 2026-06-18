@@ -91,7 +91,12 @@ export default function Login() {
     setLoading(true);
     try {
       const result = await login(email.trim(), password, { remember });
-      navigate(safeRedirectPath(from, result.roles, result.permissions), { replace: true });
+      navigate(
+        result.passwordChangeRequired
+          ? "/psicosocial/perfil?forcePassword=1"
+          : safeRedirectPath(from, result.roles, result.permissions),
+        { replace: true },
+      );
     } catch (err: any) {
       const status = err?.status as number | undefined;
       const msg = typeof err?.message === "string" ? err.message : "No pudimos iniciar sesión.";

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   AlertCircle,
   Check,
@@ -28,7 +28,7 @@ const initialPasswordForm: PasswordForm = {
 };
 
 export default function PsicologoPerfilPage() {
-  const { user, roles, permissions, tenantId, changePassword } = useAuth();
+  const { user, roles, permissions, tenantId, passwordChangeRequired, changePassword } = useAuth();
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [form, setForm] = useState<PasswordForm>(initialPasswordForm);
   const [show, setShow] = useState({ current: false, next: false, confirm: false });
@@ -43,12 +43,19 @@ export default function PsicologoPerfilPage() {
   const validPassword = passwordChecks.every((item) => item.valid);
   const canSubmit = Boolean(form.currentPassword && validPassword && form.newPassword === form.confirmPassword && !saving);
 
+  useEffect(() => {
+    if (passwordChangeRequired) {
+      setPasswordOpen(true);
+    }
+  }, [passwordChangeRequired]);
+
   const updateForm = (field: keyof PasswordForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
     setFormError(null);
   };
 
   const closePasswordModal = (force = false) => {
+    if (passwordChangeRequired && !force) return;
     if (saving && !force) return;
     setPasswordOpen(false);
     setForm(initialPasswordForm);
@@ -93,6 +100,7 @@ export default function PsicologoPerfilPage() {
             <button
               type="button"
               onClick={() => setPasswordOpen(true)}
+              disabled={passwordChangeRequired}
               className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-100 hover:bg-violet-800"
             >
               <KeyRound className="h-4 w-4" />
@@ -141,12 +149,20 @@ export default function PsicologoPerfilPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-black uppercase text-violet-700">Seguridad</p>
-                  <h3 className="text-xl font-black text-slate-950">Cambiar contraseña</h3>
-                  <p className="mt-1 text-sm text-slate-500">Usa una contraseña única para Abril360.</p>
+                  <h3 className="text-xl font-black text-slate-950">
+                    {passwordChangeRequired ? "Cambio obligatorio de contraseña" : "Cambiar contraseña"}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {passwordChangeRequired
+                      ? "Por seguridad, actualiza la contraseña temporal antes de continuar."
+                      : "Usa una contraseña única para Abril360."}
+                  </p>
                 </div>
-                <button type="button" onClick={() => closePasswordModal()} className="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-white">
-                  <X className="h-5 w-5" />
-                </button>
+                {!passwordChangeRequired ? (
+                  <button type="button" onClick={() => closePasswordModal()} className="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-white">
+                    <X className="h-5 w-5" />
+                  </button>
+                ) : null}
               </div>
             </div>
 
@@ -195,9 +211,11 @@ export default function PsicologoPerfilPage() {
             </div>
 
             <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4">
-              <button type="button" onClick={() => closePasswordModal()} className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
-                Cancelar
-              </button>
+              {!passwordChangeRequired ? (
+                <button type="button" onClick={() => closePasswordModal()} className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
+                  Cancelar
+                </button>
+              ) : null}
               <button
                 type="submit"
                 disabled={!canSubmit}

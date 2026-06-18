@@ -15,7 +15,7 @@ function hasAny(values: string[], required?: string | string[]) {
 }
 
 export default function ProtectedRoute({ requireRole, requirePermission }: Props) {
-  const { initialized, isAuthenticated, roles, permissions } = useAuth();
+  const { initialized, isAuthenticated, roles, permissions, passwordChangeRequired } = useAuth();
   const location = useLocation();
 
   if (!initialized) {
@@ -28,6 +28,10 @@ export default function ProtectedRoute({ requireRole, requirePermission }: Props
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  if (passwordChangeRequired && location.pathname !== "/psicosocial/perfil") {
+    return <Navigate to="/psicosocial/perfil?forcePassword=1" replace state={{ from: location.pathname }} />;
   }
 
   const okRole = hasAny(roles, requireRole);

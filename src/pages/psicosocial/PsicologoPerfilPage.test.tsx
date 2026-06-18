@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import PsicologoPerfilPage from "./PsicologoPerfilPage";
 
 const changePassword = vi.fn();
+let passwordChangeRequired = false;
 
 vi.mock("@/context/AuthContext", () => ({
   useAuth: () => ({
@@ -15,6 +16,7 @@ vi.mock("@/context/AuthContext", () => ({
     tenantId: "46fa152f-cafc-4a1a-bee8-3831403ae1db",
     roles: ["PSICOLOGO_EVALUADOR"],
     permissions: ["psico.dashboard.view", "psico.empresas.view"],
+    passwordChangeRequired,
     changePassword,
   }),
 }));
@@ -27,6 +29,7 @@ describe("PsicologoPerfilPage", () => {
   beforeEach(() => {
     changePassword.mockReset();
     changePassword.mockResolvedValue(undefined);
+    passwordChangeRequired = false;
   });
 
   it("muestra la información registrada del psicólogo", () => {
@@ -53,5 +56,16 @@ describe("PsicologoPerfilPage", () => {
         confirmPassword: "ClaveSegura!2026",
       });
     });
+  });
+
+  it("abre el cambio obligatorio y bloquea cancelar cuando la cuenta tiene contraseña temporal", () => {
+    passwordChangeRequired = true;
+
+    render(<PsicologoPerfilPage />);
+
+    expect(screen.getByText("Cambio obligatorio de contraseña")).toBeInTheDocument();
+    expect(screen.getByText("Por seguridad, actualiza la contraseña temporal antes de continuar.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cerrar" })).not.toBeInTheDocument();
   });
 });
