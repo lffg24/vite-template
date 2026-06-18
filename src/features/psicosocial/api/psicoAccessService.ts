@@ -9,8 +9,12 @@ export type EmpresaAsignada = {
   ciudad?: string | null;
   estado?: string | null;
   rol_en_empresa?: string | null;
+  identificacion_profesional?: string | null;
+  profesion?: string | null;
+  postgrado?: string | null;
   licencia_sst?: string | null;
   tarjeta_profesional?: string | null;
+  fecha_expedicion_licencia?: string | null;
   puede_validar_informes?: boolean;
   puede_ver_individuales?: boolean;
   puede_cargar_respuestas?: boolean;

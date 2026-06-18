@@ -2,8 +2,12 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "re
 import {
   AlertCircle,
   Check,
+  BriefcaseBusiness,
+  CalendarDays,
+  GraduationCap,
   Eye,
   EyeOff,
+  FileBadge,
   KeyRound,
   Loader2,
   LockKeyhole,
@@ -14,6 +18,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import {
+  getEmpresasAsignadasResponse,
+  type EmpresaAsignada,
+} from "@/features/psicosocial/api/psicoAccessService";
 
 type PasswordForm = {
   currentPassword: string;
@@ -29,6 +37,9 @@ const initialPasswordForm: PasswordForm = {
 
 export default function PsicologoPerfilPage() {
   const { user, roles, permissions, tenantId, passwordChangeRequired, changePassword } = useAuth();
+  const [empresas, setEmpresas] = useState<EmpresaAsignada[]>([]);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [form, setForm] = useState<PasswordForm>(initialPasswordForm);
   const [show, setShow] = useState({ current: false, next: false, confirm: false });
@@ -42,6 +53,28 @@ export default function PsicologoPerfilPage() {
   const passwordChecks = useMemo(() => getPasswordChecks(form.newPassword, nombre, email), [form.newPassword, nombre, email]);
   const validPassword = passwordChecks.every((item) => item.valid);
   const canSubmit = Boolean(form.currentPassword && validPassword && form.newPassword === form.confirmPassword && !saving);
+  const professionalProfile = useMemo(() => selectProfessionalProfile(empresas), [empresas]);
+
+  useEffect(() => {
+    let active = true;
+    setProfileLoading(true);
+    setProfileError(null);
+    getEmpresasAsignadasResponse()
+      .then((response) => {
+        if (!active) return;
+        setEmpresas(response.empresas || []);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setProfileError(error instanceof Error ? error.message : "No fue posible cargar la información profesional.");
+      })
+      .finally(() => {
+        if (active) setProfileLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (passwordChangeRequired) {
@@ -113,6 +146,47 @@ export default function PsicologoPerfilPage() {
           <InfoCard icon={<UserRound className="h-5 w-5" />} label="Nombre registrado" value={nombre} />
           <InfoCard icon={<Mail className="h-5 w-5" />} label="Correo" value={email} />
           <InfoCard icon={<ShieldCheck className="h-5 w-5" />} label="Rol principal" value={roleLabel} />
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-violet-700">
+                <FileBadge className="h-4 w-4" />
+                Información profesional
+              </p>
+              <h2 className="mt-2 text-lg font-black text-slate-950">Datos registrados para informes y validaciones</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Esta información se toma de la creación/asignación del psicólogo en SuperAdmin.
+              </p>
+            </div>
+            {professionalProfile?.empresaNombre ? (
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
+                Fuente: {professionalProfile.empresaNombre}
+              </span>
+            ) : null}
+          </div>
+
+          {profileLoading ? (
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Cargando información profesional...
+            </div>
+          ) : profileError ? (
+            <div className="mt-5 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{profileError}</span>
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <Detail icon={<FileBadge className="h-4 w-4" />} label="Número de identificación profesional" value={professionalProfile?.identificacionProfesional || "No registrado"} />
+              <Detail icon={<BriefcaseBusiness className="h-4 w-4" />} label="Profesión" value={professionalProfile?.profesion || "No registrado"} />
+              <Detail icon={<GraduationCap className="h-4 w-4" />} label="Postgrado" value={professionalProfile?.postgrado || "No registrado"} />
+              <Detail icon={<FileBadge className="h-4 w-4" />} label="Tarjeta profesional" value={professionalProfile?.tarjetaProfesional || "No registrado"} />
+              <Detail icon={<ShieldCheck className="h-4 w-4" />} label="Nro. licencia SST" value={professionalProfile?.licenciaSst || "No registrado"} />
+              <Detail icon={<CalendarDays className="h-4 w-4" />} label="Fecha expedición licencia" value={formatDate(professionalProfile?.fechaExpedicionLicencia) || "No registrada"} />
+            </div>
+          )}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
@@ -253,6 +327,46 @@ function formatRole(role: string) {
     .join(" ");
 }
 
+function hasValue(value?: string | null) {
+  return Boolean(String(value || "").trim());
+}
+
+function selectProfessionalProfile(empresas: EmpresaAsignada[]) {
+  const profile = empresas.find((empresa) =>
+    [
+      empresa.identificacion_profesional,
+      empresa.profesion,
+      empresa.postgrado,
+      empresa.tarjeta_profesional,
+      empresa.licencia_sst,
+      empresa.fecha_expedicion_licencia,
+    ].some(hasValue)
+  );
+
+  if (!profile) return null;
+
+  return {
+    empresaNombre: profile.nombre,
+    identificacionProfesional: profile.identificacion_profesional?.trim(),
+    profesion: profile.profesion?.trim(),
+    postgrado: profile.postgrado?.trim(),
+    tarjetaProfesional: profile.tarjeta_profesional?.trim(),
+    licenciaSst: profile.licencia_sst?.trim(),
+    fechaExpedicionLicencia: profile.fecha_expedicion_licencia?.trim(),
+  };
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString("es-CO", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
 function getPasswordChecks(password: string, nombre: string, email: string) {
   const lower = password.toLowerCase();
   const emailPrefix = email.split("@")[0]?.toLowerCase() || "";
@@ -277,10 +391,13 @@ function InfoCard({ icon, label, value }: { icon: ReactNode; label: string; valu
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ icon, label, value }: { icon?: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
+      <p className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
+        {icon ? <span className="text-violet-600">{icon}</span> : null}
+        {label}
+      </p>
       <p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
