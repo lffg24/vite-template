@@ -26,7 +26,37 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export type Paginated<T> = { ok: boolean; items: T[]; total: number; page: number; page_size: number };
 export type SuperAdminDashboard = { ok: boolean; kpis: Record<string, number> };
 export type SuperEmpresa = { id: string; nombre: string; nit?: string; empleados?: number; aplicaciones?: number };
-export type SuperPsicologo = { id: number; nombre: string; email?: string; empresas_asignadas: number; creditos_disponibles?: number; creditos_asignados?: number };
+export type SuperPsicologo = {
+  id: number;
+  nombre: string;
+  email?: string;
+  empresas_asignadas: number;
+  empresas_nombres?: string;
+  identificacion_profesional?: string;
+  profesion?: string;
+  postgrado?: string;
+  tarjeta_profesional?: string;
+  licencia_sst?: string;
+  fecha_expedicion_licencia?: string;
+  creditos_disponibles?: number;
+  creditos_asignados?: number;
+};
+export type CrearPsicologoPayload = {
+  nombre: string;
+  email: string;
+  password: string;
+  empresa_ids: string[];
+  identificacion_profesional?: string;
+  profesion?: string;
+  postgrado?: string;
+  tarjeta_profesional?: string;
+  licencia_sst?: string;
+  fecha_expedicion_licencia?: string;
+  puede_validar_informes?: boolean;
+  puede_ver_individuales?: boolean;
+  puede_cargar_respuestas?: boolean;
+  puede_crear_aplicaciones?: boolean;
+};
 export type CreditAccount = { id: number; psicologo_usuario_id: number; psicologo_nombre?: string; psicologo_email?: string; empresa_id?: string | null; empresa_nombre?: string; saldo_actual: number; creditos_asignados: number; estado: string; actualizado_en?: string };
 export type CreditMovement = { id: number; account_id: number; tipo: string; cantidad: number; saldo_anterior: number; saldo_nuevo: number; descripcion?: string; creado_en: string };
 
@@ -40,10 +70,11 @@ function qs(params: Record<string, string | number | undefined | null>) {
 export const superadminService = {
   dashboard: () => request<SuperAdminDashboard>("/superadmin/dashboard"),
   empresas: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<SuperEmpresa>>(`/superadmin/empresas${qs(p)}`),
-  psicologos: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<SuperPsicologo>>(`/superadmin/psicologos${qs(p)}`),
+  psicologos: (p: { q?: string; page?: number; page_size?: number; empresa_estado?: string; credito_estado?: string }) => request<Paginated<SuperPsicologo>>(`/superadmin/psicologos${qs(p)}`),
+  createPsicologo: (payload: CrearPsicologoPayload) => request<{ ok: boolean; item: SuperPsicologo }>("/superadmin/psicologos", { method: "POST", body: JSON.stringify(payload) }),
   creditAccounts: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<CreditAccount>>(`/superadmin/creditos/cuentas${qs(p)}`),
   creditMovements: (p: { account_id?: number; page?: number; page_size?: number }) => request<Paginated<CreditMovement>>(`/superadmin/creditos/movimientos${qs(p)}`),
-  assignCredits: (payload: { psicologo_usuario_id: number; empresa_id?: string | null; cantidad: number; descripcion?: string; idempotency_key?: string }) => request<any>("/superadmin/creditos/asignar", { method: "POST", body: JSON.stringify(payload) }),
+  assignCredits: (payload: { psicologo_usuario_id: number; empresa_id?: string | null; cantidad: number; descripcion: string; idempotency_key?: string }) => request<any>("/superadmin/creditos/asignar", { method: "POST", body: JSON.stringify(payload) }),
   rolesPermisos: () => request<any>("/superadmin/roles-permisos"),
   auditoria: (p: { page?: number; page_size?: number }) => request<Paginated<any>>(`/superadmin/auditoria${qs(p)}`),
 };
