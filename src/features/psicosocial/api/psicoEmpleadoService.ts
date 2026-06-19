@@ -89,11 +89,25 @@ export type PreguntaRespuesta = {
   dominio_code?: string | null;
 };
 
+export type CondicionalRespuesta = {
+  codigo: string;
+  label?: string;
+  dimension_code?: string;
+  ordenes?: number[];
+  respuesta?: boolean | null;
+  aplica_bloque?: boolean | null;
+};
+
 export type RespuestasEvaluacionResponse = {
   empleado_id: number;
   evaluacion_id: number;
+  instrument_code?: string | null;
   total_preguntas: number;
+  total_aplicable?: number;
   respondidas: number;
+  omitidas_condicionales?: number;
+  preguntas_condicionales_omitidas?: number[];
+  condicionales?: CondicionalRespuesta[];
   estado_captura?: string | null;
   observaciones?: string | null;
   finalizado_en?: string | null;
@@ -130,10 +144,11 @@ export function guardarRespuestasPsicoEmpleado(
   respuestas: Array<{ pregunta_id: number; orden?: number; respuesta?: string | null }>,
   finalizar = false,
   observaciones = "",
+  condicionales: Array<{ codigo: string; respuesta: boolean | string | number }> = [],
 ) {
   return requestJson<{ ok: boolean; respondidas: number; total: number; estado: string }>(
     `/psicosocial/evaluaciones/${evaluacionId}/empleados/${empleadoId}/respuestas`,
-    { method: "PUT", body: JSON.stringify({ respuestas, finalizar, observaciones }) },
+    { method: "PUT", body: JSON.stringify({ respuestas, condicionales, finalizar, observaciones }) },
   );
 }
 

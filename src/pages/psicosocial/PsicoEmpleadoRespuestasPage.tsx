@@ -11,6 +11,7 @@ import {
   Loader2,
   Save,
   ShieldCheck,
+  UsersRound,
 } from "lucide-react";
 import {
   buscarMunicipiosPsico,
@@ -21,6 +22,7 @@ import {
   obtenerPerfilPsicoEmpleado,
   obtenerRespuestasPsicoEmpleado,
   type FichaSociodemografica,
+  type CondicionalRespuesta,
   type PreguntaRespuesta,
   type PsicoAplicacionEmpleado,
   type PsicoEmpleadoPerfil,
@@ -31,6 +33,14 @@ import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 
 const LIKERT = ["Siempre", "Casi siempre", "Algunas veces", "Casi nunca", "Nunca"];
+const CLIENTS_GATE_CODE = "servicio_clientes_usuarios";
+const CLIENTS_GATE_FALLBACK: CondicionalRespuesta = {
+  codigo: CLIENTS_GATE_CODE,
+  label: "En mi trabajo debo brindar servicio a clientes o usuarios",
+  dimension_code: "demandas_emocionales",
+  ordenes: [106, 107, 108, 109, 110, 111, 112, 113, 114],
+  respuesta: null,
+};
 const EMPTY_FICHA: FichaSociodemografica = {
   sexo: "",
   anio_nacimiento: null,
@@ -177,6 +187,9 @@ export default function PsicoEmpleadoRespuestasPage() {
   const [selectedEval, setSelectedEval] = useState<PsicoEvaluacionEmpleado | null>(null);
   const [preguntas, setPreguntas] = useState<PreguntaRespuesta[]>([]);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [conditionalRules, setConditionalRules] = useState<CondicionalRespuesta[]>([]);
+  const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, boolean | null>>({});
+  const [clientBlockOpen, setClientBlockOpen] = useState(true);
   const [observaciones, setObservaciones] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -217,7 +230,7 @@ export default function PsicoEmpleadoRespuestasPage() {
     window.addEventListener("abril360:session-expired", onExpired);
     return () => window.removeEventListener("abril360:session-expired", onExpired);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, answers, observaciones, draftKey]);
+  }, [navigate, answers, conditionalAnswers, observaciones, draftKey]);
 
   useEffect(() => {
     let mounted = true;
@@ -271,6 +284,13 @@ export default function PsicoEmpleadoRespuestasPage() {
         const res = await obtenerRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id);
         if (!mounted) return;
         setPreguntas(res.preguntas || []);
+        const apiRules = Array.isArray(res.condicionales) ? res.condicionales : [];
+        const rules = apiRules.length > 0
+          ? apiRules
+          : selectedEval?.instrument_code === "PSICO_INTRA_A"
+            ? [CLIENTS_GATE_FALLBACK]
+            : [];
+        setConditionalRules(rules);
         const serverAnswers: Record<number, string> = {};
         for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta);
         const lockedForDraft =
@@ -280,7 +300,23 @@ export default function PsicoEmpleadoRespuestasPage() {
         const draftStorageKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`;
         const local = lockedForDraft ? null : readDraft(draftStorageKey);
         const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value)]));
+        const nextConditionalAnswers: Record<string, boolean | null> = {};
+        for (const rule of rules) {
+          const code = String(rule.codigo || "");
+          if (!code) continue;
+          const fromServer = typeof rule.respuesta === "boolean" ? rule.respuesta : null;
+          const fromLocal = typeof local?.conditionalAnswers?.[code] === "boolean" ? local.conditionalAnswers[code] : undefined;
+          nextConditionalAnswers[code] = fromLocal ?? fromServer;
+        }
+        const clientsRule = rules.find((rule) => rule.codigo === CLIENTS_GATE_CODE);
+        if (clientsRule && nextConditionalAnswers[CLIENTS_GATE_CODE] == null) {
+          const clientOrders = new Set((clientsRule.ordenes || []).map(Number));
+          const hasClientBlockAnswers = (res.preguntas || []).some((p) => clientOrders.has(Number(p.orden)) && Boolean(serverAnswers[p.pregunta_id]));
+          if (hasClientBlockAnswers) nextConditionalAnswers[CLIENTS_GATE_CODE] = true;
+        }
         setAnswers({ ...serverAnswers, ...localAnswers });
+        setConditionalAnswers(nextConditionalAnswers);
+        setClientBlockOpen(true);
         setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
         if (lockedForDraft) {
           try {
@@ -313,19 +349,39 @@ export default function PsicoEmpleadoRespuestasPage() {
   function persistDraft() {
     if (!selectedEval || selectedLocked) return;
     try {
-      sessionStorage.setItem(draftKey, JSON.stringify({ answers, observaciones, updatedAt: new Date().toISOString() }));
+      sessionStorage.setItem(draftKey, JSON.stringify({ answers, conditionalAnswers, observaciones, updatedAt: new Date().toISOString() }));
     } catch {}
   }
   useEffect(() => {
     const t = window.setTimeout(() => persistDraft(), 450);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, observaciones, draftKey]);
+  }, [answers, conditionalAnswers, observaciones, draftKey]);
 
-  const answered = useMemo(() => preguntas.filter((p) => Boolean(answers[p.pregunta_id])).length, [preguntas, answers]);
-  const total = preguntas.length;
-  const pending = Math.max(total - answered, 0);
-  const progress = pct(answered, total);
+  const clientsRule = useMemo(() => {
+    return conditionalRules.find((rule) => rule.codigo === CLIENTS_GATE_CODE) || null;
+  }, [conditionalRules]);
+  const clientBlockOrders = useMemo(() => new Set((clientsRule?.ordenes || []).map(Number)), [clientsRule]);
+  const clientGateAnswer = conditionalAnswers[CLIENTS_GATE_CODE] ?? null;
+  const clientBlockQuestions = useMemo(
+    () => preguntas.filter((p) => clientBlockOrders.has(Number(p.orden))),
+    [preguntas, clientBlockOrders],
+  );
+  const applicableQuestions = useMemo(() => {
+    if (!clientsRule || clientGateAnswer !== false) return preguntas;
+    return preguntas.filter((p) => !clientBlockOrders.has(Number(p.orden)));
+  }, [preguntas, clientsRule, clientGateAnswer, clientBlockOrders]);
+  const baseQuestionsForRender = useMemo(() => {
+    if (!clientsRule) return applicableQuestions;
+    return preguntas.filter((p) => !clientBlockOrders.has(Number(p.orden)));
+  }, [preguntas, applicableQuestions, clientsRule, clientBlockOrders]);
+  const hasClientAnchor = useMemo(() => baseQuestionsForRender.some((p) => Number(p.orden) === 105), [baseQuestionsForRender]);
+  const answered = useMemo(() => applicableQuestions.filter((p) => Boolean(answers[p.pregunta_id])).length, [applicableQuestions, answers]);
+  const conditionalTotal = clientsRule ? 1 : 0;
+  const conditionalAnswered = clientsRule && clientGateAnswer !== null ? 1 : 0;
+  const total = applicableQuestions.length + conditionalTotal;
+  const pending = Math.max(total - answered - conditionalAnswered, 0);
+  const progress = pct(answered + conditionalAnswered, total);
 
   // Datos generales no es un instrumento de 31/97/123 preguntas.
   // La ficha oficial se mide por campos requeridos para evitar reutilizar métricas de Extralaboral/Estrés.
@@ -334,12 +390,12 @@ export default function PsicoEmpleadoRespuestasPage() {
   const fichaAnswered = Math.max(0, fichaTotal - fichaPendientes.length);
   const fichaProgress = pct(fichaAnswered, fichaTotal);
   const metricTotal = showFicha ? fichaTotal : total;
-  const metricAnswered = showFicha ? fichaAnswered : answered;
+  const metricAnswered = showFicha ? fichaAnswered : answered + conditionalAnswered;
   const metricPending = showFicha ? fichaPendientes.length : pending;
   const metricProgress = showFicha ? fichaProgress : progress;
   const sections = useMemo(() => {
     const map = new Map<string, { name: string; total: number; answered: number }>();
-    for (const p of preguntas) {
+    for (const p of applicableQuestions) {
       const name = dimensionOf(p);
       const current = map.get(name) || { name, total: 0, answered: 0 };
       current.total += 1;
@@ -347,11 +403,12 @@ export default function PsicoEmpleadoRespuestasPage() {
       map.set(name, current);
     }
     return Array.from(map.values());
-  }, [preguntas, answers]);
+  }, [applicableQuestions, answers]);
   const pendingPreview = useMemo(() => {
-    const missing = preguntas.filter((p) => !answers[p.pregunta_id]).map((p) => `Pregunta ${p.orden} · ${dimensionOf(p)}`);
+    const missing = applicableQuestions.filter((p) => !answers[p.pregunta_id]).map((p) => `Pregunta ${p.orden} · ${dimensionOf(p)}`);
+    if (clientsRule && clientGateAnswer === null) missing.unshift("Filtro condicional · Servicio a clientes o usuarios");
     return { details: missing.slice(0, 4), moreCount: Math.max(missing.length - 4, 0) };
-  }, [preguntas, answers]);
+  }, [applicableQuestions, answers, clientsRule, clientGateAnswer]);
 
   const selectedCode = String(selectedEval?.instrument_code || "");
   const siblingStarted = useMemo(() => {
@@ -365,6 +422,19 @@ export default function PsicoEmpleadoRespuestasPage() {
     const blockedBySibling = isEvalBlockedBySibling(app?.evaluaciones || [], ev);
     return { blockedBySibling };
   };
+
+  function setClientGateAnswer(value: boolean) {
+    setConditionalAnswers((prev) => ({ ...prev, [CLIENTS_GATE_CODE]: value }));
+    setClientBlockOpen(value);
+    if (!value && clientBlockQuestions.length > 0) {
+      const ids = new Set(clientBlockQuestions.map((p) => Number(p.pregunta_id)));
+      setAnswers((prev) => {
+        const next = { ...prev };
+        for (const id of ids) delete next[id];
+        return next;
+      });
+    }
+  }
 
   async function executeSaveFicha(finalizar = false) {
     const missingLocal = fichaMissing(ficha);
@@ -403,8 +473,9 @@ export default function PsicoEmpleadoRespuestasPage() {
     setSaving(true);
     setPageError(null);
     try {
-      const payload = preguntas.map((p) => ({ pregunta_id: p.pregunta_id, orden: p.orden, respuesta: answers[p.pregunta_id] || null }));
-      const res = await guardarRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id, payload, finalizar, observaciones);
+      const payload = applicableQuestions.map((p) => ({ pregunta_id: p.pregunta_id, orden: p.orden, respuesta: answers[p.pregunta_id] || null }));
+      const condicionales = clientsRule && clientGateAnswer !== null ? [{ codigo: CLIENTS_GATE_CODE, respuesta: clientGateAnswer }] : [];
+      const res = await guardarRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id, payload, finalizar, observaciones, condicionales);
       try {
         sessionStorage.removeItem(draftKey);
       } catch {}
@@ -535,7 +606,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                 </div>
               </div>
               <div className="grid min-w-0 grid-cols-2 gap-2 rounded-3xl border border-slate-200 bg-white p-2 text-center shadow-sm md:grid-cols-4 min-[1380px]:grid-cols-4">
-                <Kpi label={showFicha ? "Campos requeridos" : "Total preguntas"} value={metricTotal} />
+                <Kpi label={showFicha ? "Campos requeridos" : clientsRule ? "Ítems requeridos" : "Total preguntas"} value={metricTotal} />
                 <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
                 <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
                 <Kpi label="Avance" value={`${metricProgress}%`} tone="text-violet-700" />
@@ -639,14 +710,41 @@ export default function PsicoEmpleadoRespuestasPage() {
                     </div>
                   )}
                   <div className="space-y-3">
-                    {preguntas.map((p) => (
-                      <QuestionRow
-                        key={p.pregunta_id}
-                        pregunta={p}
-                        value={answers[p.pregunta_id] || ""}
+                    {clientsRule && !hasClientAnchor && (
+                      <ConditionalQuestionBlock
+                        rule={clientsRule}
+                        value={clientGateAnswer}
+                        blockQuestions={clientBlockQuestions}
+                        answers={answers}
                         disabled={selectedLocked}
-                        onChange={(value) => setAnswers((prev) => ({ ...prev, [p.pregunta_id]: value }))}
+                        open={clientBlockOpen}
+                        onToggleOpen={() => setClientBlockOpen((prev) => !prev)}
+                        onGateChange={setClientGateAnswer}
+                        onAnswerChange={(preguntaId, value) => setAnswers((prev) => ({ ...prev, [preguntaId]: value }))}
                       />
+                    )}
+                    {baseQuestionsForRender.map((p) => (
+                      <div key={p.pregunta_id} className="space-y-3">
+                        <QuestionRow
+                          pregunta={p}
+                          value={answers[p.pregunta_id] || ""}
+                          disabled={selectedLocked}
+                          onChange={(value) => setAnswers((prev) => ({ ...prev, [p.pregunta_id]: value }))}
+                        />
+                        {clientsRule && Number(p.orden) === 105 && (
+                          <ConditionalQuestionBlock
+                            rule={clientsRule}
+                            value={clientGateAnswer}
+                            blockQuestions={clientBlockQuestions}
+                            answers={answers}
+                            disabled={selectedLocked}
+                            open={clientBlockOpen}
+                            onToggleOpen={() => setClientBlockOpen((prev) => !prev)}
+                            onGateChange={setClientGateAnswer}
+                            onAnswerChange={(preguntaId, value) => setAnswers((prev) => ({ ...prev, [preguntaId]: value }))}
+                          />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -720,7 +818,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   );
 }
 
-function readDraft(key: string): { answers?: Record<number, string>; observaciones?: string } | null {
+function readDraft(key: string): { answers?: Record<number, string>; conditionalAnswers?: Record<string, boolean | null>; observaciones?: string } | null {
   try {
     const raw = sessionStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
@@ -734,6 +832,108 @@ function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: 
     <div className="min-w-0 rounded-2xl bg-slate-50/70 p-3 text-center sm:p-4">
       <p className="mx-auto min-h-[2rem] max-w-[8rem] text-[11px] font-extrabold leading-tight text-slate-500 sm:text-xs">{label}</p>
       <p className={`mt-1 truncate text-2xl font-black leading-none tracking-tight sm:text-3xl ${tone}`}>{value}</p>
+    </div>
+  );
+}
+
+function ConditionalQuestionBlock({
+  rule,
+  value,
+  blockQuestions,
+  answers,
+  disabled,
+  open,
+  onToggleOpen,
+  onGateChange,
+  onAnswerChange,
+}: {
+  rule: CondicionalRespuesta;
+  value: boolean | null;
+  blockQuestions: PreguntaRespuesta[];
+  answers: Record<number, string>;
+  disabled?: boolean;
+  open: boolean;
+  onToggleOpen: () => void;
+  onGateChange: (value: boolean) => void;
+  onAnswerChange: (preguntaId: number, value: string) => void;
+}) {
+  const active = value === true;
+  const inactive = value === false;
+  return (
+    <div className="rounded-[24px] border border-violet-200 bg-white p-3 shadow-sm sm:p-4">
+      <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(260px,360px)] min-[1500px]:items-center">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+            <UsersRound className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[15px] font-black leading-snug text-slate-900 sm:text-base">{rule.label || "Pregunta condicional"}</p>
+            <p className="mt-1 text-xs font-bold text-violet-600">Pregunta condicional</p>
+          </div>
+        </div>
+        <div className="grid min-w-0 grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onGateChange(true)}
+            className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-black transition ${
+              active
+                ? "border-violet-700 bg-violet-700 text-white shadow-sm"
+                : disabled
+                  ? "border-slate-200 bg-slate-100 text-slate-400"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+            } ${disabled ? "cursor-not-allowed" : ""}`}
+          >
+            Sí
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onGateChange(false)}
+            className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-black transition ${
+              inactive
+                ? "border-violet-700 bg-violet-700 text-white shadow-sm"
+                : disabled
+                  ? "border-slate-200 bg-slate-100 text-slate-400"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+            } ${disabled ? "cursor-not-allowed" : ""}`}
+          >
+            No
+          </button>
+        </div>
+      </div>
+
+      {inactive && (
+        <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          Este bloque queda marcado como no aplicable.
+        </div>
+      )}
+
+      {active && (
+        <div className="mt-3 rounded-3xl border border-violet-100 bg-violet-50/70 p-3">
+          <button
+            type="button"
+            onClick={onToggleOpen}
+            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-violet-800 shadow-sm"
+          >
+            <span>Se habilitan preguntas condicionales</span>
+            <ChevronDown className={`h-4 w-4 shrink-0 transition ${open ? "rotate-180" : ""}`} />
+          </button>
+          {open && (
+            <div className="mt-3 space-y-3">
+              {blockQuestions.map((p) => (
+                <QuestionRow
+                  key={p.pregunta_id}
+                  pregunta={p}
+                  value={answers[p.pregunta_id] || ""}
+                  disabled={disabled}
+                  onChange={(next) => onAnswerChange(p.pregunta_id, next)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
