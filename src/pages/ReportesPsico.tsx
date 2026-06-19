@@ -55,6 +55,7 @@ import type {
   DimensionPsico,
   DistribucionTotal,
   DominioPsico,
+  AreaDetallePsico,
   PsicoAplicacionItem,
   PsicoDashboardResponse,
   ParticipantePsico,
@@ -426,6 +427,111 @@ function TotalesTable({ items }: { items: TotalPsico[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function AreaDetailSection({ areas = [] }: { areas?: AreaDetallePsico[] }) {
+  if (!areas.length) {
+    return (
+      <Card className="border-slate-200 shadow-sm xl:col-span-3">
+        <CardHeader>
+          <CardTitle>Detalle por área</CardTitle>
+          <CardDescription>Disponible cuando los colaboradores tienen áreas registradas en cargos/áreas.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EmptyState text="No hay áreas registradas para segmentar este informe." />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-slate-200 shadow-sm xl:col-span-3">
+      <CardHeader>
+        <CardTitle>Detalle analítico por área</CardTitle>
+        <CardDescription>
+          Misma lectura del informe general, desagregada solo para áreas registradas en el sistema.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 xl:grid-cols-2">
+          {areas.map((area) => {
+            const kpis = area.kpis;
+            const dimension = kpis.dimension_mas_critica;
+            const totals = area.totales || [];
+            const dims = area.ranking_dimensiones || [];
+            return (
+              <div key={area.area_id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div className="border-b bg-slate-50 px-4 py-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-slate-950">{area.area_nombre}</h3>
+                      <p className="text-xs text-slate-500">
+                        N estimado {kpis.participantes_estimados ?? 0} · {kpis.total_scores ?? 0} scores totales
+                      </p>
+                    </div>
+                    <span className={cn("rounded-full border px-3 py-1 text-xs font-semibold", riesgoTone(kpis.pct_alto_muy_alto))}>
+                      {fmtPct(kpis.pct_alto_muy_alto)} Alto/Muy alto
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 p-4 md:grid-cols-3">
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <div className="text-xs text-slate-500">Participantes</div>
+                    <div className="text-xl font-bold text-slate-950">{kpis.participantes_estimados ?? 0}</div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <div className="text-xs text-slate-500">Scores críticos</div>
+                    <div className="text-xl font-bold text-slate-950">{kpis.alto_muy_alto ?? 0}</div>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-3">
+                    <div className="text-xs text-slate-500">Dimensión crítica</div>
+                    <div className="line-clamp-2 text-sm font-bold text-slate-950" title={dimension?.dimension_label || undefined}>
+                      {dimension?.dimension_label || "Sin dimensión"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t px-4 py-3">
+                  <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Resultados generales del área</div>
+                  <div className="overflow-x-auto rounded-xl border">
+                    <table className="w-full min-w-[620px] text-xs">
+                      <thead className="bg-slate-50 text-left uppercase text-slate-500">
+                        <tr>
+                          <th className="px-3 py-2">Instrumento</th>
+                          <th className="px-3 py-2 text-right">N</th>
+                          <th className="px-3 py-2 text-right">Prom.</th>
+                          <th className="px-3 py-2 text-right">Alto/Muy alto</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {totals.slice(0, 6).map((item) => (
+                          <tr key={`${area.area_id}-${item.instrument_group_code}-${item.total_code}`}>
+                            <td className="px-3 py-2">
+                              <div className="font-semibold text-slate-800">{item.instrument_label}</div>
+                              <div className="text-[11px] text-slate-500">{item.total_label}</div>
+                            </td>
+                            <td className="px-3 py-2 text-right">{item.n}</td>
+                            <td className="px-3 py-2 text-right">{fmtNum(item.promedio_transformado)}</td>
+                            <td className="px-3 py-2 text-right">{fmtPct(item.pct_alto_muy_alto)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="border-t px-4 py-3">
+                  <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Top dimensiones del área</div>
+                  <RankingList items={dims.slice(0, 5)} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1513,6 +1619,7 @@ export default function ReportesPsico() {
                 <SegmentacionChart title="Distribución por área" items={data.segmentacion?.area} />
                 <SegmentacionChart title="Distribución por cargo" items={data.segmentacion?.cargo} />
                 <SegmentacionChart title="Distribución por género" items={data.segmentacion?.sexo} />
+                <AreaDetailSection areas={data.areas_detalle?.areas} />
               </div>
             )}
 

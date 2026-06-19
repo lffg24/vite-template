@@ -202,6 +202,32 @@ export interface SegmentacionItem {
   promedio_transformado: number;
 }
 
+export interface AreaDetallePsico {
+  area_id: number;
+  area_nombre: string;
+  kpis: {
+    participantes_estimados: number;
+    total_scores: number;
+    alto_muy_alto: number;
+    pct_alto_muy_alto: number;
+    dominio_mas_critico?: DominioPsico | null;
+    dimension_mas_critica?: DimensionPsico | null;
+  };
+  totales: TotalPsico[];
+  dominios: DominioPsico[];
+  dimensiones: DimensionPsico[];
+  ranking_dominios: DominioPsico[];
+  ranking_dimensiones: DimensionPsico[];
+}
+
+export interface AreasDetallePsico {
+  ok: boolean;
+  aplicacion_id: number;
+  total_areas: number;
+  incluye_solo_areas_registradas: boolean;
+  areas: AreaDetallePsico[];
+}
+
 export interface PsicoDashboardResponse {
   ok: boolean;
   aplicacion: PsicoAplicacionItem & { evaluaciones?: any[] };
@@ -220,6 +246,7 @@ export interface PsicoDashboardResponse {
   ranking_dimensiones: DimensionPsico[];
   ranking_dominios: DominioPsico[];
   segmentacion: Record<string, SegmentacionItem[]>;
+  areas_detalle?: AreasDetallePsico;
   sociodemografia?: SociodemografiaPsico;
   participantes?: ParticipantesPsico;
   alertas: { tipo: string; nivel: string; mensaje: string }[];
