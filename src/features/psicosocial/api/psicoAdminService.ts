@@ -123,9 +123,11 @@ export type AplicacionDetalle = {
     empleados_total: number;
     participantes_registrados: number;
     participantes_completos?: number;
+    participantes_pendientes_completar?: number;
     pendientes: number;
     instrumentos_total: number;
     creditos_consumidos: number;
+    creditos_reservados?: number;
     creditos_estimados: number;
     ficha_sociodemografica_requerida?: boolean;
   };

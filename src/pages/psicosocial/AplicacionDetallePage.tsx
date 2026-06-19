@@ -52,6 +52,11 @@ function instrumentLabel(code: string) {
 }
 function fmtDate(value?: string) {
   if (!value) return "Sin fecha";
+  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (dateOnly) {
+    const [, year, month, day] = dateOnly;
+    return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString("es-CO");
+  }
   try {
     return new Date(value).toLocaleDateString("es-CO");
   } catch {
@@ -662,6 +667,16 @@ export default function AplicacionDetallePage() {
   }
 
   const resumen = data.resumen;
+  const participantesCompletos = Number(resumen.participantes_completos || 0);
+  const pendientesCompletar = Number(
+    resumen.participantes_pendientes_completar ?? resumen.pendientes ?? 0,
+  );
+  const creditosConsumidosCaptura = Number(
+    resumen.creditos_consumidos ?? participantesCompletos,
+  );
+  const creditosAsignadosAplicacion = Number(
+    resumen.creditos_reservados ?? resumen.participantes_registrados ?? 0,
+  );
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
@@ -847,31 +862,35 @@ export default function AplicacionDetallePage() {
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card
             icon={<Users />}
-            label="Empleados empresa"
+            label="Participantes asignados"
             value={resumen.empleados_total}
           />
           <Card
             icon={<ClipboardCheck />}
-            label="Con registro"
-            value={resumen.participantes_registrados}
+            label="Completados"
+            value={participantesCompletos}
           />
           <Card
             icon={<XCircle />}
-            label="Pendientes"
-            value={resumen.pendientes}
+            label="Pendientes por completar"
+            value={pendientesCompletar}
           />
-          <article className="rounded-3xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
-            <Coins className="mb-4 h-7 w-7 text-violet-700" />
-            <p className="text-sm font-bold text-violet-700">
-              Créditos consumidos
-            </p>
-            <strong className="text-3xl font-black text-violet-950">
-              {resumen.creditos_consumidos}
-            </strong>
-            <p className="mt-1 text-xs text-violet-700">
-              Vista previa del módulo de créditos. Estimados:{" "}
-              {resumen.creditos_estimados}
-            </p>
+          <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-violet-100">
+              <Coins className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-violet-700">
+                Créditos consumidos
+              </p>
+              <strong className="text-3xl font-black text-violet-950">
+                {creditosConsumidosCaptura}
+              </strong>
+              <p className="mt-1 text-xs leading-5 text-violet-700">
+                Baterías completas en esta aplicación. Asignados:{" "}
+                {creditosAsignadosAplicacion}. Estimados: {resumen.creditos_estimados}
+              </p>
+            </div>
           </article>
         </section>
 
@@ -1467,10 +1486,14 @@ function Card({
   value: number;
 }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 text-violet-700">{icon}</div>
-      <p className="text-sm font-bold text-slate-500">{label}</p>
-      <strong className="text-3xl font-black">{value}</strong>
+    <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-50 text-violet-700">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-bold leading-5 text-slate-500">{label}</p>
+        <strong className="text-3xl font-black">{value}</strong>
+      </div>
     </article>
   );
 }

@@ -136,6 +136,9 @@ function statusTone(status?: string | null) {
   if (["borrador"].includes(value)) return "bg-violet-50 text-violet-700 border-violet-200";
   return "bg-slate-50 text-slate-600 border-slate-200";
 }
+function isLockedResponseStatus(status?: string | null) {
+  return ["finalizada", "calculada", "completa"].includes(String(status || "").toLowerCase());
+}
 function isStarted(ev?: PsicoEvaluacionEmpleado | null) {
   if (!ev) return false;
   return Number(ev.respondidas || 0) > 0 || ["borrador", "finalizada", "calculada", "completa"].includes(String(ev.estado_respuestas || "").toLowerCase());
@@ -270,10 +273,20 @@ export default function PsicoEmpleadoRespuestasPage() {
         setPreguntas(res.preguntas || []);
         const serverAnswers: Record<number, string> = {};
         for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta);
-        const local = readDraft(`abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`);
+        const lockedForDraft =
+          ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state)) ||
+          !selectedEval?.editable ||
+          isLockedResponseStatus(selectedEval?.estado_respuestas);
+        const draftStorageKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`;
+        const local = lockedForDraft ? null : readDraft(draftStorageKey);
         const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value)]));
         setAnswers({ ...serverAnswers, ...localAnswers });
         setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
+        if (lockedForDraft) {
+          try {
+            sessionStorage.removeItem(draftStorageKey);
+          } catch {}
+        }
         if (local?.answers) {
           notify({
             type: "info",
@@ -294,8 +307,11 @@ export default function PsicoEmpleadoRespuestasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [empleadoId, aplicacionId, selectedEval?.evaluacion_id]);
 
+  const appClosed = ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state));
+  const selectedLocked = appClosed || !selectedEval?.editable || isLockedResponseStatus(selectedEval?.estado_respuestas);
+
   function persistDraft() {
-    if (!selectedEval) return;
+    if (!selectedEval || selectedLocked) return;
     try {
       sessionStorage.setItem(draftKey, JSON.stringify({ answers, observaciones, updatedAt: new Date().toISOString() }));
     } catch {}
@@ -337,8 +353,6 @@ export default function PsicoEmpleadoRespuestasPage() {
     return { details: missing.slice(0, 4), moreCount: Math.max(missing.length - 4, 0) };
   }, [preguntas, answers]);
 
-  const appClosed = ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state));
-  const selectedLocked = appClosed || !selectedEval?.editable || ["finalizada", "calculada"].includes(String(selectedEval?.estado_respuestas || "").toLowerCase());
   const selectedCode = String(selectedEval?.instrument_code || "");
   const siblingStarted = useMemo(() => {
     if (!app || !["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(selectedCode)) return false;
