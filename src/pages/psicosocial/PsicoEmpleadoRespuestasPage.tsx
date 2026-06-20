@@ -41,6 +41,19 @@ const CLIENTS_GATE_FALLBACK: CondicionalRespuesta = {
   ordenes: [106, 107, 108, 109, 110, 111, 112, 113, 114],
   respuesta: null,
 };
+const LEADER_GATE_CODE = "jefe_personas";
+const LEADER_GATE_FALLBACK: CondicionalRespuesta = {
+  codigo: LEADER_GATE_CODE,
+  label: "Soy jefe de otras personas en mi trabajo",
+  dimension_code: "relacion_colaboradores",
+  ordenes: [115, 116, 117, 118, 119, 120, 121, 122, 123],
+  respuesta: null,
+};
+const INTRA_A_FALLBACK_RULES = [CLIENTS_GATE_FALLBACK, LEADER_GATE_FALLBACK];
+const CONDITIONAL_ANCHORS: Record<string, number> = {
+  [CLIENTS_GATE_CODE]: 105,
+  [LEADER_GATE_CODE]: 114,
+};
 const EMPTY_FICHA: FichaSociodemografica = {
   sexo: "",
   anio_nacimiento: null,
@@ -130,6 +143,37 @@ function prettyDimension(value?: string | null) {
   if (!raw) return "Preguntas";
   return DIMENSION_LABELS[raw] || raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
+function conditionalAnchor(rule: CondicionalRespuesta) {
+  const byCode = CONDITIONAL_ANCHORS[String(rule.codigo || "")];
+  if (byCode) return byCode;
+  const firstControlled = Math.min(...(rule.ordenes || []).map(Number).filter(Number.isFinite));
+  return Number.isFinite(firstControlled) ? firstControlled - 1 : 0;
+}
+function conditionalSort(a: CondicionalRespuesta, b: CondicionalRespuesta) {
+  return conditionalAnchor(a) - conditionalAnchor(b);
+}
+export function mergeConditionalRules(apiRules: CondicionalRespuesta[], instrumentCode?: string | null) {
+  const rules = [...apiRules];
+  if (instrumentCode === "PSICO_INTRA_A") {
+    for (const fallback of INTRA_A_FALLBACK_RULES) {
+      if (!rules.some((rule) => rule.codigo === fallback.codigo)) rules.push(fallback);
+    }
+  }
+  return rules.sort(conditionalSort);
+}
+export function applicableQuestionIdsForConditionals(
+  preguntas: PreguntaRespuesta[],
+  rules: CondicionalRespuesta[],
+  answers: Record<string, boolean | null>,
+) {
+  const omittedOrders = new Set<number>();
+  for (const rule of rules) {
+    if ((answers[rule.codigo] ?? false) === false) {
+      for (const order of rule.ordenes || []) omittedOrders.add(Number(order));
+    }
+  }
+  return preguntas.filter((p) => !omittedOrders.has(Number(p.orden))).map((p) => Number(p.pregunta_id));
+}
 function dimensionOf(p: PreguntaRespuesta) {
   const params = parseParams(p.parametros);
   return String(
@@ -189,7 +233,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [conditionalRules, setConditionalRules] = useState<CondicionalRespuesta[]>([]);
   const [conditionalAnswers, setConditionalAnswers] = useState<Record<string, boolean | null>>({});
-  const [clientBlockOpen, setClientBlockOpen] = useState(true);
+  const [conditionalBlockOpen, setConditionalBlockOpen] = useState<Record<string, boolean>>({});
   const [observaciones, setObservaciones] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -285,11 +329,7 @@ export default function PsicoEmpleadoRespuestasPage() {
         if (!mounted) return;
         setPreguntas(res.preguntas || []);
         const apiRules = Array.isArray(res.condicionales) ? res.condicionales : [];
-        const rules = apiRules.length > 0
-          ? apiRules
-          : selectedEval?.instrument_code === "PSICO_INTRA_A"
-            ? [CLIENTS_GATE_FALLBACK]
-            : [];
+        const rules = mergeConditionalRules(apiRules, selectedEval?.instrument_code);
         setConditionalRules(rules);
         const serverAnswers: Record<number, string> = {};
         for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta);
@@ -306,17 +346,13 @@ export default function PsicoEmpleadoRespuestasPage() {
           if (!code) continue;
           const fromServer = typeof rule.respuesta === "boolean" ? rule.respuesta : null;
           const fromLocal = typeof local?.conditionalAnswers?.[code] === "boolean" ? local.conditionalAnswers[code] : undefined;
-          nextConditionalAnswers[code] = fromLocal ?? fromServer;
-        }
-        const clientsRule = rules.find((rule) => rule.codigo === CLIENTS_GATE_CODE);
-        if (clientsRule && nextConditionalAnswers[CLIENTS_GATE_CODE] == null) {
-          const clientOrders = new Set((clientsRule.ordenes || []).map(Number));
-          const hasClientBlockAnswers = (res.preguntas || []).some((p) => clientOrders.has(Number(p.orden)) && Boolean(serverAnswers[p.pregunta_id]));
-          if (hasClientBlockAnswers) nextConditionalAnswers[CLIENTS_GATE_CODE] = true;
+          const blockOrders = new Set((rule.ordenes || []).map(Number));
+          const hasBlockAnswers = (res.preguntas || []).some((p) => blockOrders.has(Number(p.orden)) && Boolean(serverAnswers[p.pregunta_id]));
+          nextConditionalAnswers[code] = fromLocal ?? fromServer ?? (hasBlockAnswers ? true : false);
         }
         setAnswers({ ...serverAnswers, ...localAnswers });
         setConditionalAnswers(nextConditionalAnswers);
-        setClientBlockOpen(true);
+        setConditionalBlockOpen(Object.fromEntries(rules.map((rule) => [rule.codigo, Boolean(nextConditionalAnswers[rule.codigo])])));
         setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
         if (lockedForDraft) {
           try {
@@ -358,27 +394,48 @@ export default function PsicoEmpleadoRespuestasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answers, conditionalAnswers, observaciones, draftKey]);
 
-  const clientsRule = useMemo(() => {
-    return conditionalRules.find((rule) => rule.codigo === CLIENTS_GATE_CODE) || null;
-  }, [conditionalRules]);
-  const clientBlockOrders = useMemo(() => new Set((clientsRule?.ordenes || []).map(Number)), [clientsRule]);
-  const clientGateAnswer = conditionalAnswers[CLIENTS_GATE_CODE] ?? null;
-  const clientBlockQuestions = useMemo(
-    () => preguntas.filter((p) => clientBlockOrders.has(Number(p.orden))),
-    [preguntas, clientBlockOrders],
-  );
+  const conditionalOrders = useMemo(() => new Set(conditionalRules.flatMap((rule) => (rule.ordenes || []).map(Number))), [conditionalRules]);
+  const omittedConditionalOrders = useMemo(() => {
+    const omitted = new Set<number>();
+    for (const rule of conditionalRules) {
+      if ((conditionalAnswers[rule.codigo] ?? false) === false) {
+        for (const order of rule.ordenes || []) omitted.add(Number(order));
+      }
+    }
+    return omitted;
+  }, [conditionalRules, conditionalAnswers]);
   const applicableQuestions = useMemo(() => {
-    if (!clientsRule || clientGateAnswer !== false) return preguntas;
-    return preguntas.filter((p) => !clientBlockOrders.has(Number(p.orden)));
-  }, [preguntas, clientsRule, clientGateAnswer, clientBlockOrders]);
+    if (omittedConditionalOrders.size === 0) return preguntas;
+    return preguntas.filter((p) => !omittedConditionalOrders.has(Number(p.orden)));
+  }, [preguntas, omittedConditionalOrders]);
   const baseQuestionsForRender = useMemo(() => {
-    if (!clientsRule) return applicableQuestions;
-    return preguntas.filter((p) => !clientBlockOrders.has(Number(p.orden)));
-  }, [preguntas, applicableQuestions, clientsRule, clientBlockOrders]);
-  const hasClientAnchor = useMemo(() => baseQuestionsForRender.some((p) => Number(p.orden) === 105), [baseQuestionsForRender]);
+    if (conditionalOrders.size === 0) return preguntas;
+    return preguntas.filter((p) => !conditionalOrders.has(Number(p.orden)));
+  }, [preguntas, conditionalOrders]);
+  const conditionalPlacementByCode = useMemo(() => {
+    const placements: Record<string, number> = {};
+    for (const rule of conditionalRules) {
+      const anchor = conditionalAnchor(rule);
+      const anchorQuestion = baseQuestionsForRender.find((p) => Number(p.orden) === anchor);
+      if (anchorQuestion) {
+        placements[rule.codigo] = Number(anchorQuestion.pregunta_id);
+        continue;
+      }
+      const firstControlled = Math.min(...(rule.ordenes || []).map(Number).filter(Number.isFinite));
+      const previousQuestion = [...baseQuestionsForRender]
+        .filter((p) => Number(p.orden) < firstControlled)
+        .sort((a, b) => Number(b.orden) - Number(a.orden))[0];
+      if (previousQuestion) placements[rule.codigo] = Number(previousQuestion.pregunta_id);
+    }
+    return placements;
+  }, [conditionalRules, baseQuestionsForRender]);
+  const topConditionalRules = useMemo(
+    () => conditionalRules.filter((rule) => !conditionalPlacementByCode[rule.codigo]),
+    [conditionalRules, conditionalPlacementByCode],
+  );
   const answered = useMemo(() => applicableQuestions.filter((p) => Boolean(answers[p.pregunta_id])).length, [applicableQuestions, answers]);
-  const conditionalTotal = clientsRule ? 1 : 0;
-  const conditionalAnswered = clientsRule && clientGateAnswer !== null ? 1 : 0;
+  const conditionalTotal = conditionalRules.length;
+  const conditionalAnswered = conditionalRules.length;
   const total = applicableQuestions.length + conditionalTotal;
   const pending = Math.max(total - answered - conditionalAnswered, 0);
   const progress = pct(answered + conditionalAnswered, total);
@@ -406,9 +463,8 @@ export default function PsicoEmpleadoRespuestasPage() {
   }, [applicableQuestions, answers]);
   const pendingPreview = useMemo(() => {
     const missing = applicableQuestions.filter((p) => !answers[p.pregunta_id]).map((p) => `Pregunta ${p.orden} · ${dimensionOf(p)}`);
-    if (clientsRule && clientGateAnswer === null) missing.unshift("Filtro condicional · Servicio a clientes o usuarios");
     return { details: missing.slice(0, 4), moreCount: Math.max(missing.length - 4, 0) };
-  }, [applicableQuestions, answers, clientsRule, clientGateAnswer]);
+  }, [applicableQuestions, answers]);
 
   const selectedCode = String(selectedEval?.instrument_code || "");
   const siblingStarted = useMemo(() => {
@@ -423,11 +479,13 @@ export default function PsicoEmpleadoRespuestasPage() {
     return { blockedBySibling };
   };
 
-  function setClientGateAnswer(value: boolean) {
-    setConditionalAnswers((prev) => ({ ...prev, [CLIENTS_GATE_CODE]: value }));
-    setClientBlockOpen(value);
-    if (!value && clientBlockQuestions.length > 0) {
-      const ids = new Set(clientBlockQuestions.map((p) => Number(p.pregunta_id)));
+  function setConditionalGateAnswer(rule: CondicionalRespuesta, value: boolean) {
+    const code = String(rule.codigo || "");
+    setConditionalAnswers((prev) => ({ ...prev, [code]: value }));
+    setConditionalBlockOpen((prev) => ({ ...prev, [code]: value }));
+    if (!value && (rule.ordenes || []).length > 0) {
+      const orders = new Set((rule.ordenes || []).map(Number));
+      const ids = new Set(preguntas.filter((p) => orders.has(Number(p.orden))).map((p) => Number(p.pregunta_id)));
       setAnswers((prev) => {
         const next = { ...prev };
         for (const id of ids) delete next[id];
@@ -474,7 +532,7 @@ export default function PsicoEmpleadoRespuestasPage() {
     setPageError(null);
     try {
       const payload = applicableQuestions.map((p) => ({ pregunta_id: p.pregunta_id, orden: p.orden, respuesta: answers[p.pregunta_id] || null }));
-      const condicionales = clientsRule && clientGateAnswer !== null ? [{ codigo: CLIENTS_GATE_CODE, respuesta: clientGateAnswer }] : [];
+      const condicionales = conditionalRules.map((rule) => ({ codigo: rule.codigo, respuesta: Boolean(conditionalAnswers[rule.codigo]) }));
       const res = await guardarRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id, payload, finalizar, observaciones, condicionales);
       try {
         sessionStorage.removeItem(draftKey);
@@ -513,6 +571,29 @@ export default function PsicoEmpleadoRespuestasPage() {
       return;
     }
     setConfirmFinalize(true);
+  }
+
+  function getConditionalBlockQuestions(rule: CondicionalRespuesta) {
+    const orders = new Set((rule.ordenes || []).map(Number));
+    return preguntas.filter((p) => orders.has(Number(p.orden)));
+  }
+
+  function renderConditionalBlock(rule: CondicionalRespuesta) {
+    const code = String(rule.codigo || "");
+    return (
+      <ConditionalQuestionBlock
+        key={`conditional-${code}`}
+        rule={rule}
+        value={conditionalAnswers[code] ?? false}
+        blockQuestions={getConditionalBlockQuestions(rule)}
+        answers={answers}
+        disabled={selectedLocked}
+        open={Boolean(conditionalBlockOpen[code])}
+        onToggleOpen={() => setConditionalBlockOpen((prev) => ({ ...prev, [code]: !prev[code] }))}
+        onGateChange={(value) => setConditionalGateAnswer(rule, value)}
+        onAnswerChange={(preguntaId, value) => setAnswers((prev) => ({ ...prev, [preguntaId]: value }))}
+      />
+    );
   }
 
   if (loading) {
@@ -606,7 +687,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                 </div>
               </div>
               <div className="grid min-w-0 grid-cols-2 gap-2 rounded-3xl border border-slate-200 bg-white p-2 text-center shadow-sm md:grid-cols-4 min-[1380px]:grid-cols-4">
-                <Kpi label={showFicha ? "Campos requeridos" : clientsRule ? "Ítems requeridos" : "Total preguntas"} value={metricTotal} />
+                <Kpi label={showFicha ? "Campos requeridos" : conditionalRules.length ? "Ítems requeridos" : "Total preguntas"} value={metricTotal} />
                 <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
                 <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
                 <Kpi label="Avance" value={`${metricProgress}%`} tone="text-violet-700" />
@@ -710,19 +791,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                     </div>
                   )}
                   <div className="space-y-3">
-                    {clientsRule && !hasClientAnchor && (
-                      <ConditionalQuestionBlock
-                        rule={clientsRule}
-                        value={clientGateAnswer}
-                        blockQuestions={clientBlockQuestions}
-                        answers={answers}
-                        disabled={selectedLocked}
-                        open={clientBlockOpen}
-                        onToggleOpen={() => setClientBlockOpen((prev) => !prev)}
-                        onGateChange={setClientGateAnswer}
-                        onAnswerChange={(preguntaId, value) => setAnswers((prev) => ({ ...prev, [preguntaId]: value }))}
-                      />
-                    )}
+                    {topConditionalRules.map((rule) => renderConditionalBlock(rule))}
                     {baseQuestionsForRender.map((p) => (
                       <div key={p.pregunta_id} className="space-y-3">
                         <QuestionRow
@@ -731,19 +800,9 @@ export default function PsicoEmpleadoRespuestasPage() {
                           disabled={selectedLocked}
                           onChange={(value) => setAnswers((prev) => ({ ...prev, [p.pregunta_id]: value }))}
                         />
-                        {clientsRule && Number(p.orden) === 105 && (
-                          <ConditionalQuestionBlock
-                            rule={clientsRule}
-                            value={clientGateAnswer}
-                            blockQuestions={clientBlockQuestions}
-                            answers={answers}
-                            disabled={selectedLocked}
-                            open={clientBlockOpen}
-                            onToggleOpen={() => setClientBlockOpen((prev) => !prev)}
-                            onGateChange={setClientGateAnswer}
-                            onAnswerChange={(preguntaId, value) => setAnswers((prev) => ({ ...prev, [preguntaId]: value }))}
-                          />
-                        )}
+                        {conditionalRules
+                          .filter((rule) => conditionalPlacementByCode[rule.codigo] === Number(p.pregunta_id))
+                          .map((rule) => renderConditionalBlock(rule))}
                       </div>
                     ))}
                   </div>
@@ -871,34 +930,30 @@ function ConditionalQuestionBlock({
             <p className="mt-1 text-xs font-bold text-violet-600">Pregunta condicional</p>
           </div>
         </div>
-        <div className="grid min-w-0 grid-cols-2 gap-2">
+        <div className="flex min-w-0 justify-start min-[1500px]:justify-end">
           <button
             type="button"
+            role="switch"
+            aria-checked={active}
+            aria-label={rule.label || "Pregunta condicional"}
             disabled={disabled}
-            onClick={() => onGateChange(true)}
-            className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-black transition ${
+            onClick={() => onGateChange(!active)}
+            className={`relative inline-flex h-11 w-40 shrink-0 items-center rounded-full border p-1 text-xs font-black transition ${
               active
-                ? "border-violet-700 bg-violet-700 text-white shadow-sm"
+                ? "border-violet-700 bg-violet-700 text-white shadow-sm shadow-violet-200"
                 : disabled
                   ? "border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+                  : "border-slate-200 bg-slate-100 text-slate-600 hover:border-violet-300 hover:bg-violet-50"
             } ${disabled ? "cursor-not-allowed" : ""}`}
           >
-            Sí
-          </button>
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => onGateChange(false)}
-            className={`min-h-10 rounded-xl border px-3 py-2 text-sm font-black transition ${
-              inactive
-                ? "border-violet-700 bg-violet-700 text-white shadow-sm"
-                : disabled
-                  ? "border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
-            } ${disabled ? "cursor-not-allowed" : ""}`}
-          >
-            No
+            <span className={`z-10 flex-1 text-center transition ${inactive ? "text-slate-900" : active ? "text-violet-100" : ""}`}>No</span>
+            <span className={`z-10 flex-1 text-center transition ${active ? "text-white" : "text-slate-500"}`}>Sí</span>
+            <span
+              aria-hidden="true"
+              className={`absolute left-1 top-1 h-9 w-[4.75rem] rounded-full bg-white shadow-sm transition-transform ${
+                active ? "translate-x-[4.75rem]" : "translate-x-0"
+              }`}
+            />
           </button>
         </div>
       </div>
