@@ -52,4 +52,25 @@ describe("PsicoEmpleadoRespuestasPage conditional rules", () => {
     expect(applicableIds).toContain(115);
     expect(applicableIds).toContain(123);
   });
+
+  it("agrega el bloque oficial de Forma B para servicio a clientes", () => {
+    const rules = mergeConditionalRules([], "PSICO_INTRA_B");
+
+    expect(rules.map((rule) => rule.codigo)).toEqual(["servicio_clientes_usuarios"]);
+    expect(rules[0].ordenes).toEqual([89, 90, 91, 92, 93, 94, 95, 96, 97]);
+  });
+
+  it("omite preguntas 89 a 97 en Forma B cuando servicio a clientes está en No", () => {
+    const preguntas = Array.from({ length: 97 }, (_, i) => question(i + 1));
+    const rules = mergeConditionalRules([], "PSICO_INTRA_B");
+
+    const applicableIds = applicableQuestionIdsForConditionals(preguntas, rules, {
+      servicio_clientes_usuarios: false,
+    });
+
+    expect(applicableIds).toHaveLength(88);
+    expect(applicableIds.at(-1)).toBe(88);
+    expect(applicableIds).not.toContain(89);
+    expect(applicableIds).not.toContain(97);
+  });
 });

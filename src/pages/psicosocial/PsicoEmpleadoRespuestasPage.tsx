@@ -41,6 +41,13 @@ const CLIENTS_GATE_FALLBACK: CondicionalRespuesta = {
   ordenes: [106, 107, 108, 109, 110, 111, 112, 113, 114],
   respuesta: null,
 };
+const CLIENTS_GATE_FALLBACK_B: CondicionalRespuesta = {
+  codigo: CLIENTS_GATE_CODE,
+  label: "En mi trabajo debo brindar servicio a clientes o usuarios",
+  dimension_code: "demandas_emocionales",
+  ordenes: [89, 90, 91, 92, 93, 94, 95, 96, 97],
+  respuesta: null,
+};
 const LEADER_GATE_CODE = "jefe_personas";
 const LEADER_GATE_FALLBACK: CondicionalRespuesta = {
   codigo: LEADER_GATE_CODE,
@@ -50,9 +57,9 @@ const LEADER_GATE_FALLBACK: CondicionalRespuesta = {
   respuesta: null,
 };
 const INTRA_A_FALLBACK_RULES = [CLIENTS_GATE_FALLBACK, LEADER_GATE_FALLBACK];
-const CONDITIONAL_ANCHORS: Record<string, number> = {
-  [CLIENTS_GATE_CODE]: 105,
-  [LEADER_GATE_CODE]: 114,
+const FALLBACK_RULES_BY_INSTRUMENT: Record<string, CondicionalRespuesta[]> = {
+  PSICO_INTRA_A: INTRA_A_FALLBACK_RULES,
+  PSICO_INTRA_B: [CLIENTS_GATE_FALLBACK_B],
 };
 const EMPTY_FICHA: FichaSociodemografica = {
   sexo: "",
@@ -144,8 +151,6 @@ function prettyDimension(value?: string | null) {
   return DIMENSION_LABELS[raw] || raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 function conditionalAnchor(rule: CondicionalRespuesta) {
-  const byCode = CONDITIONAL_ANCHORS[String(rule.codigo || "")];
-  if (byCode) return byCode;
   const firstControlled = Math.min(...(rule.ordenes || []).map(Number).filter(Number.isFinite));
   return Number.isFinite(firstControlled) ? firstControlled - 1 : 0;
 }
@@ -154,10 +159,8 @@ function conditionalSort(a: CondicionalRespuesta, b: CondicionalRespuesta) {
 }
 export function mergeConditionalRules(apiRules: CondicionalRespuesta[], instrumentCode?: string | null) {
   const rules = [...apiRules];
-  if (instrumentCode === "PSICO_INTRA_A") {
-    for (const fallback of INTRA_A_FALLBACK_RULES) {
-      if (!rules.some((rule) => rule.codigo === fallback.codigo)) rules.push(fallback);
-    }
+  for (const fallback of FALLBACK_RULES_BY_INSTRUMENT[String(instrumentCode || "")] || []) {
+    if (!rules.some((rule) => rule.codigo === fallback.codigo)) rules.push(fallback);
   }
   return rules.sort(conditionalSort);
 }
