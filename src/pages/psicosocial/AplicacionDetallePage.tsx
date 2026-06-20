@@ -671,11 +671,11 @@ export default function AplicacionDetallePage() {
   const pendientesCompletar = Number(
     resumen.participantes_pendientes_completar ?? resumen.pendientes ?? 0,
   );
+  const creditosReservadosCaptura = Number(
+    resumen.creditos_reservados ?? resumen.participantes_registrados ?? 0,
+  );
   const creditosConsumidosCaptura = Number(
     resumen.creditos_consumidos ?? participantesCompletos,
-  );
-  const creditosAsignadosAplicacion = Number(
-    resumen.creditos_reservados ?? resumen.participantes_registrados ?? 0,
   );
 
   return (
@@ -881,14 +881,14 @@ export default function AplicacionDetallePage() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-violet-700">
-                Créditos consumidos
+                Créditos reservados
               </p>
               <strong className="text-3xl font-black text-violet-950">
-                {creditosConsumidosCaptura}
+                {creditosReservadosCaptura}
               </strong>
               <p className="mt-1 text-xs leading-5 text-violet-700">
-                Baterías completas en esta aplicación. Asignados:{" "}
-                {creditosAsignadosAplicacion}. Estimados: {resumen.creditos_estimados}
+                Registros iniciados en esta aplicación. Consumidos/completos:{" "}
+                {creditosConsumidosCaptura}. Estimados: {resumen.creditos_estimados}
               </p>
             </div>
           </article>
@@ -997,9 +997,25 @@ export default function AplicacionDetallePage() {
                           <CheckCircle2 className="h-3 w-3" /> Completo
                         </span>
                       ) : emp.registrado ? (
-                        <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
-                          En captura
-                        </span>
+                        <div className="space-y-1">
+                          <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
+                            En captura
+                          </span>
+                          {emp.instrumentos_pendientes?.length > 0 && (
+                            <p className="max-w-[220px] text-xs font-semibold leading-5 text-slate-500">
+                              Falta:{" "}
+                              {emp.instrumentos_pendientes
+                                .slice(0, 3)
+                                .map((code) =>
+                                  code === "DATOS_GENERALES"
+                                    ? "Datos generales"
+                                    : instrumentLabel(code),
+                                )
+                                .join(", ")}
+                              {emp.instrumentos_pendientes.length > 3 ? "..." : ""}
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
                           Pendiente

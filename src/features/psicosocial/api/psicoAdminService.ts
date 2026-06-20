@@ -107,6 +107,7 @@ export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
   registrado: boolean;
   completo?: boolean;
   instrumentos_registrados: string[];
+  instrumentos_en_captura?: string[];
   instrumentos_pendientes: string[];
   total_instrumentos: number;
   completados: number;
