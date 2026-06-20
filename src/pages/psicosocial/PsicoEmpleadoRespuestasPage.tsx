@@ -177,6 +177,39 @@ export function applicableQuestionIdsForConditionals(
   }
   return preguntas.filter((p) => !omittedOrders.has(Number(p.orden))).map((p) => Number(p.pregunta_id));
 }
+export type InstrumentProgress = {
+  total: number;
+  answered: number;
+  pending: number;
+  progress: number;
+};
+export function calculateInstrumentProgress(
+  preguntas: PreguntaRespuesta[],
+  rules: CondicionalRespuesta[],
+  answers: Record<number, string>,
+  conditionalAnswers: Record<string, boolean | null>,
+): InstrumentProgress {
+  const applicableIds = new Set(applicableQuestionIdsForConditionals(preguntas, rules, conditionalAnswers));
+  const answeredQuestions = preguntas.filter((p) => applicableIds.has(Number(p.pregunta_id)) && Boolean(answers[p.pregunta_id])).length;
+  const conditionalTotal = rules.length;
+  const conditionalAnswered = rules.length;
+  const total = applicableIds.size + conditionalTotal;
+  const answered = answeredQuestions + conditionalAnswered;
+  return {
+    total,
+    answered,
+    pending: Math.max(total - answered, 0),
+    progress: pct(answered, total),
+  };
+}
+export function batterySummaryProgress(
+  ev: PsicoEvaluacionEmpleado,
+  activeEvalId?: number | null,
+  activeProgress?: InstrumentProgress | null,
+) {
+  if (activeEvalId === ev.evaluacion_id && activeProgress) return activeProgress.progress;
+  return pct(ev.respondidas, ev.total_preguntas);
+}
 function dimensionOf(p: PreguntaRespuesta) {
   const params = parseParams(p.parametros);
   return String(
@@ -436,12 +469,13 @@ export default function PsicoEmpleadoRespuestasPage() {
     () => conditionalRules.filter((rule) => !conditionalPlacementByCode[rule.codigo]),
     [conditionalRules, conditionalPlacementByCode],
   );
-  const answered = useMemo(() => applicableQuestions.filter((p) => Boolean(answers[p.pregunta_id])).length, [applicableQuestions, answers]);
-  const conditionalTotal = conditionalRules.length;
-  const conditionalAnswered = conditionalRules.length;
-  const total = applicableQuestions.length + conditionalTotal;
-  const pending = Math.max(total - answered - conditionalAnswered, 0);
-  const progress = pct(answered + conditionalAnswered, total);
+  const instrumentProgress = useMemo(
+    () => calculateInstrumentProgress(preguntas, conditionalRules, answers, conditionalAnswers),
+    [preguntas, conditionalRules, answers, conditionalAnswers],
+  );
+  const total = instrumentProgress.total;
+  const pending = instrumentProgress.pending;
+  const progress = instrumentProgress.progress;
 
   // Datos generales no es un instrumento de 31/97/123 preguntas.
   // La ficha oficial se mide por campos requeridos para evitar reutilizar métricas de Extralaboral/Estrés.
@@ -450,7 +484,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const fichaAnswered = Math.max(0, fichaTotal - fichaPendientes.length);
   const fichaProgress = pct(fichaAnswered, fichaTotal);
   const metricTotal = showFicha ? fichaTotal : total;
-  const metricAnswered = showFicha ? fichaAnswered : answered + conditionalAnswered;
+  const metricAnswered = showFicha ? fichaAnswered : instrumentProgress.answered;
   const metricPending = showFicha ? fichaPendientes.length : pending;
   const metricProgress = showFicha ? fichaProgress : progress;
   const sections = useMemo(() => {
@@ -833,7 +867,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                       {app.evaluaciones.map((ev) => (
                         <div key={`mini-${ev.evaluacion_id}`} className="flex items-center justify-between gap-3 rounded-2xl bg-white/70 px-3 py-2 text-sm">
                           <span>{instrumentLabel(ev.instrument_code)}</span>
-                          <b>{pct(ev.respondidas, ev.total_preguntas)}%</b>
+                          <b>{batterySummaryProgress(ev, selectedEval?.evaluacion_id, instrumentProgress)}%</b>
                         </div>
                       ))}
                     </div>

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   applicableQuestionIdsForConditionals,
+  batterySummaryProgress,
+  calculateInstrumentProgress,
   mergeConditionalRules,
 } from "./PsicoEmpleadoRespuestasPage";
-import type { PreguntaRespuesta } from "@/features/psicosocial/api/psicoEmpleadoService";
+import type { PreguntaRespuesta, PsicoEvaluacionEmpleado } from "@/features/psicosocial/api/psicoEmpleadoService";
 
 function question(orden: number): PreguntaRespuesta {
   return {
@@ -72,5 +74,58 @@ describe("PsicoEmpleadoRespuestasPage conditional rules", () => {
     expect(applicableIds.at(-1)).toBe(88);
     expect(applicableIds).not.toContain(89);
     expect(applicableIds).not.toContain(97);
+  });
+
+  it("actualiza el avance de Forma A descontando bloques no aplicables", () => {
+    const preguntas = Array.from({ length: 123 }, (_, i) => question(i + 1));
+    const rules = mergeConditionalRules([], "PSICO_INTRA_A");
+
+    const progress = calculateInstrumentProgress(
+      preguntas,
+      rules,
+      { 1: "Siempre", 2: "Casi siempre", 3: "Algunas veces" },
+      { servicio_clientes_usuarios: false, jefe_personas: false },
+    );
+
+    expect(progress).toEqual({
+      total: 107,
+      answered: 5,
+      pending: 102,
+      progress: 4.7,
+    });
+  });
+
+  it("actualiza el avance de Forma B descontando el bloque de servicio a clientes", () => {
+    const preguntas = Array.from({ length: 97 }, (_, i) => question(i + 1));
+    const rules = mergeConditionalRules([], "PSICO_INTRA_B");
+
+    const progress = calculateInstrumentProgress(
+      preguntas,
+      rules,
+      { 1: "Siempre", 2: "Casi siempre", 3: "Algunas veces" },
+      { servicio_clientes_usuarios: false },
+    );
+
+    expect(progress).toEqual({
+      total: 89,
+      answered: 4,
+      pending: 85,
+      progress: 4.5,
+    });
+  });
+
+  it("usa el avance local de la batería activa en el resumen lateral", () => {
+    const ev: PsicoEvaluacionEmpleado = {
+      evaluacion_id: 2,
+      instrument_code: "PSICO_INTRA_A",
+      total_preguntas: 123,
+      respondidas: 3,
+      score_count: 0,
+      estado_respuestas: "borrador",
+      editable: true,
+    };
+
+    expect(batterySummaryProgress(ev, 2, { total: 107, answered: 5, pending: 102, progress: 4.7 })).toBe(4.7);
+    expect(batterySummaryProgress(ev, 99, { total: 107, answered: 5, pending: 102, progress: 4.7 })).toBe(2.4);
   });
 });
