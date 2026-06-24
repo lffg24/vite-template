@@ -21,6 +21,7 @@ async function parseError(res: Response): Promise<string> {
   try {
     const body = await res.json();
     if (typeof body?.detail === "string") return body.detail;
+    if (typeof body?.detail?.message === "string") return body.detail.message;
     if (typeof body?.detail?.error === "string") return body.detail.error;
     if (typeof body?.message === "string") return body.message;
     if (Array.isArray(body?.detail)) return body.detail[0]?.msg || `HTTP ${res.status}`;
