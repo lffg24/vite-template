@@ -24,6 +24,7 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  Upload,
   Users,
   X,
   XCircle,
@@ -33,10 +34,16 @@ import {
   AreaEmpresa,
   CargoEmpresa,
   CrearEmpleadoPayload,
+  EmpleadoImportResponse,
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import {
+  BulkUploadModal,
+  bulkErrorResult,
+  validateBulkEmployeeFile,
+} from "./EmpresaEmpleadosPage";
 
 function instrumentLabel(code: string) {
   return (
@@ -154,6 +161,13 @@ export default function AplicacionDetallePage() {
     Record<string, string>
   >({});
   const [savingEmployee, setSavingEmployee] = useState(false);
+  const [openBulkUpload, setOpenBulkUpload] = useState(false);
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkResult, setBulkResult] = useState<EmpleadoImportResponse | null>(
+    null,
+  );
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const bulkRunId = useRef(0);
   const [catalogModal, setCatalogModal] = useState<null | "area" | "cargo">(
     null,
   );
@@ -299,6 +313,109 @@ export default function AplicacionDetallePage() {
         message: e?.message || "Revisa áreas y cargos e intenta nuevamente.",
       });
     }
+  };
+
+  const resetBulkUpload = () => {
+    bulkRunId.current += 1;
+    setBulkFile(null);
+    setBulkResult(null);
+    setBulkSaving(false);
+  };
+
+  const closeBulkUpload = () => {
+    setOpenBulkUpload(false);
+    resetBulkUpload();
+  };
+
+  const runBulkImport = async (
+    dryRun: boolean,
+    fileOverride?: File | null,
+    runIdOverride?: number,
+  ) => {
+    const selectedFile = fileOverride ?? bulkFile;
+    if (!selectedFile) {
+      notify({
+        type: "warning",
+        title: "Selecciona un archivo",
+        message: "Carga la plantilla diligenciada en formato .xlsx o .csv.",
+      });
+      return;
+    }
+    const fileError = validateBulkEmployeeFile(selectedFile);
+    if (fileError) {
+      setBulkResult(bulkErrorResult(fileError));
+      notify({
+        type: "warning",
+        title: "Archivo no permitido",
+        message: fileError,
+      });
+      return;
+    }
+    const runId = runIdOverride ?? bulkRunId.current + 1;
+    bulkRunId.current = runId;
+    setBulkSaving(true);
+    try {
+      const result = await psicoAdminService.importarEmpleados(
+        empresaId,
+        selectedFile,
+        dryRun,
+      );
+      if (runId !== bulkRunId.current) return;
+      setBulkResult(result);
+      if (!result.ok) {
+        notify({
+          type: "warning",
+          title: "Archivo con observaciones",
+          message: "Revisa los errores detectados antes de importar.",
+        });
+        return;
+      }
+      if (dryRun) {
+        notify({
+          type: "success",
+          title: "Archivo validado",
+          message: `${result.valid_rows} colaboradores listos para importar.`,
+        });
+      } else {
+        notify({
+          type: "success",
+          title: "Carga completada",
+          message: `${result.created} creados y ${result.updated} actualizados.`,
+        });
+        await load();
+        if (runId !== bulkRunId.current) return;
+        closeBulkUpload();
+      }
+    } catch (e: any) {
+      if (runId !== bulkRunId.current) return;
+      notify({
+        type: "error",
+        title: "No fue posible procesar",
+        message: e?.message || "Intenta nuevamente.",
+      });
+    } finally {
+      if (runId === bulkRunId.current) setBulkSaving(false);
+    }
+  };
+
+  const handleBulkFileChange = (file: File | null) => {
+    const runId = bulkRunId.current + 1;
+    bulkRunId.current = runId;
+    setBulkFile(file);
+    setBulkResult(null);
+    setBulkSaving(false);
+    if (!file) return;
+    const fileError = validateBulkEmployeeFile(file);
+    if (fileError) {
+      setBulkResult(bulkErrorResult(fileError));
+      notify({
+        type: "warning",
+        title: "Archivo no permitido",
+        message: fileError,
+      });
+      return;
+    }
+    window.setTimeout(() => void runBulkImport(true, file, runId), 0);
   };
 
   const updateEmployeeForm = (key: keyof EmployeeFormState, value: string) => {
@@ -881,14 +998,14 @@ export default function AplicacionDetallePage() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-violet-700">
-                Créditos reservados
+                Créditos consumidos
               </p>
               <strong className="text-3xl font-black text-violet-950">
-                {creditosReservadosCaptura}
+                {creditosConsumidosCaptura}
               </strong>
               <p className="mt-1 text-xs leading-5 text-violet-700">
-                Registros iniciados en esta aplicación. Consumidos/completos:{" "}
-                {creditosConsumidosCaptura}. Estimados: {resumen.creditos_estimados}
+                Reservados/iniciados: {creditosReservadosCaptura}. Estimados:{" "}
+                {resumen.creditos_estimados}
               </p>
             </div>
           </article>
@@ -907,12 +1024,20 @@ export default function AplicacionDetallePage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {!finalizada && (
-                <button
-                  onClick={() => void openAddEmployee()}
-                  className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800"
-                >
-                  <Plus className="h-4 w-4" /> Agregar colaborador
-                </button>
+                <>
+                  <button
+                    onClick={() => setOpenBulkUpload(true)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 hover:bg-violet-100"
+                  >
+                    <Upload className="h-4 w-4" /> Carga masiva
+                  </button>
+                  <button
+                    onClick={() => void openAddEmployee()}
+                    className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800"
+                  >
+                    <Plus className="h-4 w-4" /> Agregar colaborador
+                  </button>
+                </>
               )}
               <button
                 onClick={() => void load()}
@@ -1419,6 +1544,18 @@ export default function AplicacionDetallePage() {
             </form>
           </aside>
         </div>
+      )}
+
+      {openBulkUpload && (
+        <BulkUploadModal
+          file={bulkFile}
+          result={bulkResult}
+          saving={bulkSaving}
+          onFileChange={handleBulkFileChange}
+          onValidate={() => runBulkImport(true)}
+          onImport={() => runBulkImport(false)}
+          onClose={closeBulkUpload}
+        />
       )}
 
       {catalogModal && (

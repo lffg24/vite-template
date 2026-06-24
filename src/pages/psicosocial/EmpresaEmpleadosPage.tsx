@@ -20,7 +20,7 @@ export const BULK_EMPLOYEE_ALLOWED_EXTENSIONS = [".xlsx", ".csv"] as const;
 
 function validateEmail(value: string) { return !value.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()); }
 function digitsOnly(value: string) { return value.replace(/\D/g, ""); }
-function bulkErrorResult(message: string): EmpleadoImportResponse {
+export function bulkErrorResult(message: string): EmpleadoImportResponse {
   return {
     ok: false,
     dry_run: true,
@@ -294,7 +294,7 @@ export default function EmpresaEmpleadosPage() {
   </main>;
 }
 
-function BulkUploadModal({
+export function BulkUploadModal({
   file,
   result,
   saving,
