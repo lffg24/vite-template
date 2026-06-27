@@ -124,10 +124,19 @@ function digitsOnly(value: string) {
 
 type CierreAplicacionResponse = {
   ok: boolean;
+  error?: string;
   estado?: string;
   participantes?: number;
   evaluacion_ids?: number[];
   message?: string;
+  bloqueantes?: Array<{
+    empleado_id?: number;
+    documento?: string;
+    nombre?: string;
+    instrumentos_en_captura?: string[];
+    respondidas?: number;
+    total_preguntas?: number;
+  }>;
   scoring_fallidos?: Record<
     string,
     {
@@ -138,6 +147,27 @@ type CierreAplicacionResponse = {
     }
   >;
 };
+
+function closureBlockersMessage(detail: unknown) {
+  const body = detail as Partial<CierreAplicacionResponse> | undefined;
+  const blockers = Array.isArray(body?.bloqueantes) ? body.bloqueantes : [];
+  if (!blockers.length) return "";
+  const sample = blockers
+    .slice(0, 3)
+    .map((item) => {
+      const instrumentos = (item.instrumentos_en_captura || [])
+        .map(instrumentLabel)
+        .join(", ");
+      const progress =
+        item.respondidas != null && item.total_preguntas != null
+          ? ` (${item.respondidas}/${item.total_preguntas})`
+          : "";
+      return `${item.nombre || item.documento || `Empleado ${item.empleado_id}`}: ${instrumentos || "instrumento incompleto"}${progress}`;
+    })
+    .join(" · ");
+  const extra = blockers.length > 3 ? ` y ${blockers.length - 3} más` : "";
+  return `Pendientes: ${sample}${extra}.`;
+}
 
 export default function AplicacionDetallePage() {
   const { empresaId = "", aplicacionId = "" } = useParams();
@@ -628,7 +658,7 @@ export default function AplicacionDetallePage() {
       notify({
         type: "success",
         title: "Respuestas eliminadas",
-        message: `Se eliminaron ${result.total_eliminado || 0} registros de respuestas/resultados para este colaborador.`,
+        message: `Se eliminaron ${result.total_eliminado || 0} registros de respuestas/resultados. Los créditos ya consumidos se conservan; si vuelves a cargar este registro se consumirá un crédito adicional.`,
       });
 
       setCleanupTarget(null);
@@ -728,14 +758,19 @@ export default function AplicacionDetallePage() {
       notify({
         type: "success",
         title: "Aplicación cerrada",
-        message: "Se ejecutó el cálculo y ya puedes consultar los resultados.",
+        message:
+          "Se ejecutó el cálculo y se congelaron los resultados. Las correcciones posteriores requieren reabrir/reprocesar y pueden consumir créditos adicionales.",
       });
       await load();
     } catch (e: any) {
+      const blockers = closureBlockersMessage(e?.detail);
       notify({
         type: "error",
         title: "No fue posible cerrar",
-        message: e?.message || "Revisa la completitud de la aplicación.",
+        message:
+          blockers ||
+          e?.message ||
+          "Revisa la completitud de la aplicación antes de calcular.",
       });
     } finally {
       setClosing(false);
@@ -792,7 +827,9 @@ export default function AplicacionDetallePage() {
     resumen.creditos_reservados ?? resumen.participantes_registrados ?? 0,
   );
   const creditosConsumidosCaptura = Number(
-    resumen.creditos_consumidos ?? participantesCompletos,
+    data.creditos?.creditos_consumidos ??
+      resumen.creditos_consumidos ??
+      participantesCompletos,
   );
 
   return (
@@ -837,7 +874,7 @@ export default function AplicacionDetallePage() {
       <ConfirmDialog
         open={confirmClose}
         title="Cerrar y calcular la aplicación"
-        description="Al cerrar la aplicación se congelará la captura y se ejecutará el cálculo/recalculo de resultados. Verifica la información antes de continuar: si posteriormente necesitas reabrir para corregir datos, el reprocesamiento podrá consumir un crédito adicional."
+        description="Al cerrar la aplicación se congelará la captura y se ejecutará el cálculo oficial. Verifica que cada participante tenga instrumentos completos y datos coherentes: borrar o corregir después no reversa créditos ya consumidos, y una nueva carga/reproceso puede consumir créditos adicionales."
         confirmLabel="Cerrar aplicación"
         cancelLabel="Seguir revisando"
         onConfirm={() => void confirmCerrarAplicacion()}
@@ -1314,7 +1351,8 @@ export default function AplicacionDetallePage() {
                 <p className="mt-1 text-sm text-slate-500">
                   Esta acción eliminará respuestas y resultados calculados solo
                   para esta aplicación. No elimina el colaborador ni su ficha
-                  sociodemográfica.
+                  sociodemográfica. No reversa créditos ya consumidos; una nueva
+                  carga del colaborador podrá consumir otro crédito.
                 </p>
               </div>
               <button
@@ -1344,23 +1382,30 @@ export default function AplicacionDetallePage() {
               </div>
             )}
             {cleanupPreview && !cleanupLoading && (
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                {Object.entries(cleanupPreview.counts || {}).map(
-                  ([key, value]) => (
-                    <div
-                      key={key}
-                      className="rounded-2xl border border-slate-200 bg-white p-3"
-                    >
-                      <p className="text-xs font-bold uppercase text-slate-400">
-                        {key.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-xl font-black text-slate-950">
-                        {String(value)}
-                      </p>
-                    </div>
-                  ),
-                )}
-              </div>
+              <>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+                  {Object.entries(cleanupPreview.counts || {}).map(
+                    ([key, value]) => (
+                      <div
+                        key={key}
+                        className="rounded-2xl border border-slate-200 bg-white p-3"
+                      >
+                        <p className="text-xs font-bold uppercase text-slate-400">
+                          {key.replace(/_/g, " ")}
+                        </p>
+                        <p className="text-xl font-black text-slate-950">
+                          {String(value)}
+                        </p>
+                      </div>
+                    ),
+                  )}
+                </div>
+                <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+                  Esta limpieza no devuelve créditos ya consumidos. Si el
+                  colaborador vuelve a registrar respuestas para esta aplicación,
+                  el nuevo registro podrá consumir otro crédito.
+                </div>
+              </>
             )}
             {cleanupBlocked && (
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">

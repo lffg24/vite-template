@@ -17,18 +17,18 @@ export function apiBase() {
   return API_URL;
 }
 
-async function parseError(res: Response): Promise<string> {
+async function parseError(res: Response): Promise<{ message: string; detail?: unknown }> {
   try {
     const body = await res.json();
-    if (typeof body?.detail === "string") return body.detail;
-    if (typeof body?.detail?.message === "string") return body.detail.message;
-    if (typeof body?.detail?.error === "string") return body.detail.error;
-    if (typeof body?.message === "string") return body.message;
-    if (Array.isArray(body?.detail)) return body.detail[0]?.msg || `HTTP ${res.status}`;
-    return JSON.stringify(body);
+    if (typeof body?.detail === "string") return { message: body.detail, detail: body.detail };
+    if (typeof body?.detail?.message === "string") return { message: body.detail.message, detail: body.detail };
+    if (typeof body?.detail?.error === "string") return { message: body.detail.error, detail: body.detail };
+    if (typeof body?.message === "string") return { message: body.message, detail: body };
+    if (Array.isArray(body?.detail)) return { message: body.detail[0]?.msg || `HTTP ${res.status}`, detail: body.detail };
+    return { message: JSON.stringify(body), detail: body };
   } catch {
     const text = await res.text().catch(() => "");
-    return text || `HTTP ${res.status}`;
+    return { message: text || `HTTP ${res.status}`, detail: text };
   }
 }
 
@@ -47,9 +47,9 @@ export async function requestJson<T>(path: string, init: RequestInit = {}): Prom
   });
 
   if (!res.ok) {
-    const message = await parseError(res);
+    const { message, detail } = await parseError(res);
     if (res.status === 401) emitSessionExpired();
-    throw new AbrilApiError(message, res.status, message);
+    throw new AbrilApiError(message, res.status, detail);
   }
 
   if (res.status === 204) return undefined as T;

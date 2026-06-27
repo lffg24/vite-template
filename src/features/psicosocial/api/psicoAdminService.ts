@@ -132,6 +132,11 @@ export type AplicacionDetalle = {
     creditos_estimados: number;
     ficha_sociodemografica_requerida?: boolean;
   };
+  creditos?: {
+    creditos_consumidos?: number;
+    registros_consumidos?: number;
+    ultimos_movimientos?: Array<Record<string, unknown>>;
+  };
   empleados: AplicacionDetalleEmpleado[];
 };
 
