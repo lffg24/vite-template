@@ -19,8 +19,13 @@ import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
 const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; description: string }> = [
   {
     value: "resultados",
-    label: "Informe de resultados BRP",
-    description: "Resultados A/B, gráficas, NeuroMapa Psicosocial, recomendaciones y plan de intervención.",
+    label: "Informe general de resultados BRP",
+    description: "Informe general consolidado: resultados A/B, gráficas, NeuroMapa Psicosocial, recomendaciones y plan de intervención.",
+  },
+  {
+    value: "resultados_areas",
+    label: "Informe de resultados por áreas",
+    description: "Entregable independiente con resultados segmentados solo para áreas registradas en el sistema.",
   },
   {
     value: "sociodemografico",
@@ -67,7 +72,12 @@ function printHtml(html: string) {
 export default function ReportesOficialesPsicoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialAplicacionId = searchParams.get("aplicacionId") || searchParams.get("aplicacion") || "";
-  const initialTipo = (searchParams.get("tipo") === "sociodemografico" ? "sociodemografico" : "resultados") as TipoReportePsicoOficial;
+  const initialTipoParam = searchParams.get("tipo");
+  const initialTipo = (
+    initialTipoParam === "sociodemografico" || initialTipoParam === "resultados_areas"
+      ? initialTipoParam
+      : "resultados"
+  ) as TipoReportePsicoOficial;
   const [aplicaciones, setAplicaciones] = useState<PsicoAplicacionItem[]>([]);
   const [aplicacionId, setAplicacionId] = useState<string>(initialAplicacionId);
   const [tipoReporte, setTipoReporte] = useState<TipoReportePsicoOficial>(initialTipo);
@@ -172,7 +182,7 @@ export default function ReportesOficialesPsicoPage() {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-950">Generador de informes BRP</h1>
           <p className="mt-1 max-w-3xl text-sm text-slate-600">
-            Genera entregables oficiales separados: informe de resultados e informe sociodemográfico. Incluye vista previa, análisis por dimensión, DOC editable y descarga directa en PDF.
+            Genera entregables oficiales separados: informe general, informe por áreas e informe sociodemográfico. Incluye vista previa, DOC editable y descarga directa en PDF.
           </p>
         </div>
 

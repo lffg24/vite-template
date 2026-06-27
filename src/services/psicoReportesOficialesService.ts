@@ -3,7 +3,9 @@ import type { TipoReportePsicoOficial } from "@/types/psicoReportesOficiales";
 import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
 
 function pathFor(tipo: TipoReportePsicoOficial) {
-  return tipo === "resultados" ? "informe-resultados" : "informe-sociodemografico";
+  if (tipo === "resultados") return "informe-resultados";
+  if (tipo === "resultados_areas") return "informe-resultados-areas";
+  return "informe-sociodemografico";
 }
 
 export async function listarAplicacionesReportesOficiales(): Promise<PsicoAplicacionItem[]> {

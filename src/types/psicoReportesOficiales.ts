@@ -1,4 +1,4 @@
-export type TipoReportePsicoOficial = "resultados" | "sociodemografico";
+export type TipoReportePsicoOficial = "resultados" | "resultados_areas" | "sociodemografico";
 
 export interface ReporteAplicacionOption {
   id: number;
