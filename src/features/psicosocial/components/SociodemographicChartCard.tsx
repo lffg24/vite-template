@@ -95,7 +95,7 @@ export function SociodemographicChartCard({
   title,
   description = "Distribución de la ficha de datos generales.",
   data,
-  defaultType = "bar",
+  defaultType = "pie",
   height = 280,
 }: SociodemographicChartCardProps) {
   const [chartType, setChartType] = useState<SocioChartType>(defaultType);

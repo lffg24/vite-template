@@ -63,6 +63,33 @@ export type CrearBateriaPayload = {
   include_estres?: boolean;
 };
 
+export type PsicoCreditSummary = {
+  ok: boolean;
+  cuenta_id?: number | null;
+  saldo_actual: number;
+  creditos_asignados: number;
+  creditos_consumidos: number;
+  registros_consumidos: number;
+  estado?: string;
+  actualizado_en?: string;
+};
+
+export type PsicoApplicationCreditSummary = {
+  ok: boolean;
+  aplicacion_id: number;
+  creditos_consumidos: number;
+  registros_consumidos: number;
+  ultimos_movimientos?: Array<{
+    id: number;
+    cantidad: number;
+    saldo_anterior: number;
+    saldo_nuevo: number;
+    referencia_id?: string;
+    descripcion?: string;
+    creado_en?: string;
+  }>;
+};
+
 export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
   registrado: boolean;
   completo?: boolean;
@@ -83,18 +110,24 @@ export type AplicacionDetalle = {
     empleados_total: number;
     participantes_registrados: number;
     participantes_completos?: number;
+    participantes_pendientes_completar?: number;
     pendientes: number;
     instrumentos_total: number;
     creditos_consumidos: number;
+    creditos_reservados?: number;
     creditos_estimados: number;
     ficha_sociodemografica_requerida?: boolean;
   };
+  creditos?: PsicoApplicationCreditSummary;
   empleados: AplicacionDetalleEmpleado[];
 };
 
 export const psicoAdminService = {
   listarEmpresas: (todas = true) =>
     requestJson<{ ok: boolean; items: EmpresaPsico[] }>(`/psicosocial/admin/empresas?todas=${todas}`),
+
+  creditosResumen: () =>
+    requestJson<PsicoCreditSummary>("/psicosocial/admin/creditos/resumen"),
 
   perfilEmpresa: (empresaId: string) =>
     requestJson<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(

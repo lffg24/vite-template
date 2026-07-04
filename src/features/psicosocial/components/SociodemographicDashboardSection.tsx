@@ -70,7 +70,7 @@ export function SociodemographicDashboardSection({
             title={variable.title}
             description={variable.description}
             data={variable.data}
-            defaultType="bar"
+            defaultType="pie"
           />
         ))}
       </section>
