@@ -103,6 +103,33 @@ export type CrearBateriaPayload = {
   include_estres?: boolean;
 };
 
+export type PsicoCreditSummary = {
+  ok: boolean;
+  cuenta_id?: number | null;
+  saldo_actual: number;
+  creditos_asignados: number;
+  creditos_consumidos: number;
+  registros_consumidos: number;
+  estado?: string;
+  actualizado_en?: string;
+};
+
+export type PsicoApplicationCreditSummary = {
+  ok: boolean;
+  aplicacion_id: number;
+  creditos_consumidos: number;
+  registros_consumidos: number;
+  ultimos_movimientos?: Array<{
+    id: number;
+    cantidad: number;
+    saldo_anterior: number;
+    saldo_nuevo: number;
+    referencia_id?: string;
+    descripcion?: string;
+    creado_en?: string;
+  }>;
+};
+
 export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
   registrado: boolean;
   completo?: boolean;
@@ -132,11 +159,7 @@ export type AplicacionDetalle = {
     creditos_estimados: number;
     ficha_sociodemografica_requerida?: boolean;
   };
-  creditos?: {
-    creditos_consumidos?: number;
-    registros_consumidos?: number;
-    ultimos_movimientos?: Array<Record<string, unknown>>;
-  };
+  creditos?: PsicoApplicationCreditSummary;
   empleados: AplicacionDetalleEmpleado[];
 };
 

@@ -1176,9 +1176,9 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
   const storageKey = "eva360:socio-chart:" + title;
   const [mode, setMode] = useState<SocioChartMode>(() => {
     try {
-      return (localStorage.getItem(storageKey) as SocioChartMode) || "horizontal";
+      return (localStorage.getItem(storageKey) as SocioChartMode) || "pie";
     } catch {
-      return "horizontal";
+      return "pie";
     }
   });
   const data = useMemo(() => (items ?? []).slice(0, 10), [items]);

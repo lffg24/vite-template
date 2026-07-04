@@ -819,15 +819,19 @@ export default function AplicacionDetallePage() {
   }
 
   const resumen = data.resumen;
+  const creditosAplicacion = data.creditos;
   const participantesCompletos = Number(resumen.participantes_completos || 0);
   const pendientesCompletar = Number(
     resumen.participantes_pendientes_completar ?? resumen.pendientes ?? 0,
   );
   const creditosReservadosCaptura = Number(
-    resumen.creditos_reservados ?? resumen.participantes_registrados ?? 0,
+    resumen.creditos_reservados ??
+      creditosAplicacion?.registros_consumidos ??
+      resumen.participantes_registrados ??
+      0,
   );
   const creditosConsumidosCaptura = Number(
-    data.creditos?.creditos_consumidos ??
+    creditosAplicacion?.creditos_consumidos ??
       resumen.creditos_consumidos ??
       participantesCompletos,
   );
