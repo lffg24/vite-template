@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildApplicationEmployeeSocioDraft,
   hasApplicationEmployeeSocioData,
+  participantInstrumentChips,
+  participantStatusLabel,
 } from "./AplicacionDetallePage";
 import { normalizeSocioOptions } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
@@ -40,5 +42,62 @@ describe("application employee sociodemographic draft", () => {
         { nombre: " " },
       ]),
     ).toEqual(["Soltero(a)", "Casado(a)", "Union libre"]);
+  });
+});
+
+describe("application participant status chips", () => {
+  const instrumentos = [
+    { evaluacion_id: 1, instrument_code: "PSICO_INTRA_A", nombre: "Forma A" },
+    { evaluacion_id: 2, instrument_code: "PSICO_INTRA_B", nombre: "Forma B" },
+    { evaluacion_id: 3, instrument_code: "PSICO_EXTRA", nombre: "Extralaboral" },
+    { evaluacion_id: 4, instrument_code: "PSICO_ESTRES", nombre: "Estrés" },
+  ];
+
+  it("marca datos generales como completo cuando la ficha esta completa", () => {
+    const chips = participantInstrumentChips(instrumentos, {
+      ficha_sociodemografica: { requerida: true, estado: "completa", completa: true },
+      instrumentos_registrados: ["PSICO_EXTRA"],
+      instrumentos_en_captura: [],
+    });
+
+    expect(chips.find((chip) => chip.code === "DATOS_GENERALES")).toMatchObject({
+      label: "Datos generales",
+      state: "complete",
+    });
+    expect(chips.find((chip) => chip.code === "PSICO_EXTRA")).toMatchObject({
+      state: "complete",
+    });
+  });
+
+  it("oculta Forma B cuando Forma A ya fue iniciada o completada", () => {
+    const chips = participantInstrumentChips(instrumentos, {
+      ficha_sociodemografica: { requerida: true, estado: "borrador", completa: false },
+      instrumentos_registrados: [],
+      instrumentos_en_captura: ["PSICO_INTRA_A"],
+    });
+
+    expect(chips.map((chip) => chip.code)).toContain("PSICO_INTRA_A");
+    expect(chips.map((chip) => chip.code)).not.toContain("PSICO_INTRA_B");
+    expect(chips.find((chip) => chip.code === "PSICO_INTRA_A")).toMatchObject({
+      state: "capture",
+    });
+  });
+
+  it("oculta Forma A cuando Forma B ya fue completada", () => {
+    const chips = participantInstrumentChips(instrumentos, {
+      instrumentos_registrados: ["PSICO_INTRA_B"],
+      instrumentos_en_captura: [],
+    });
+
+    expect(chips.map((chip) => chip.code)).not.toContain("PSICO_INTRA_A");
+    expect(chips.find((chip) => chip.code === "PSICO_INTRA_B")).toMatchObject({
+      state: "complete",
+    });
+  });
+
+  it("expone los tres estados funcionales del participante", () => {
+    expect(participantStatusLabel({ registrado: false, completo: false })).toBe("Por tabular");
+    expect(participantStatusLabel({ registrado: true, completo: false })).toBe("En captura");
+    expect(participantStatusLabel({ registrado: true, completo: true })).toBe("Completo");
   });
 });

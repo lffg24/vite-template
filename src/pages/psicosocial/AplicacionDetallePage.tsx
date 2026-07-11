@@ -230,6 +230,65 @@ type CierreAplicacionResponse = {
   >;
 };
 
+type ParticipantInstrumentChip = {
+  code: string;
+  label: string;
+  state: "complete" | "capture" | "pending";
+};
+
+const INTRA_A_CODE = "PSICO_INTRA_A";
+const INTRA_B_CODE = "PSICO_INTRA_B";
+const GENERAL_DATA_CODE = "DATOS_GENERALES";
+
+function participantInstrumentState(emp: Partial<AplicacionDetalle["empleados"][number]>, code: string) {
+  if ((emp.instrumentos_registrados || []).includes(code)) return "complete";
+  if ((emp.instrumentos_en_captura || []).includes(code)) return "capture";
+  return "pending";
+}
+
+function participantGeneralDataState(emp: Partial<AplicacionDetalle["empleados"][number]>) {
+  const ficha = emp.ficha_sociodemografica;
+  if (!ficha?.requerida) return null;
+  if (ficha.completa) return "complete";
+  const estado = String(ficha.estado || "").trim().toLowerCase();
+  return estado && estado !== "sin_iniciar" ? "capture" : "pending";
+}
+
+export function participantStatusLabel(emp: Partial<AplicacionDetalle["empleados"][number]>) {
+  if (emp.completo) return "Completo";
+  if (emp.registrado) return "En captura";
+  return "Por tabular";
+}
+
+export function participantInstrumentChips(
+  instrumentos: AplicacionDetalle["instrumentos"],
+  emp: Partial<AplicacionDetalle["empleados"][number]>,
+): ParticipantInstrumentChip[] {
+  const chips: ParticipantInstrumentChip[] = [];
+  const generalState = participantGeneralDataState(emp);
+  if (generalState) {
+    chips.push({ code: GENERAL_DATA_CODE, label: "Datos generales", state: generalState });
+  }
+
+  const aState = participantInstrumentState(emp, INTRA_A_CODE);
+  const bState = participantInstrumentState(emp, INTRA_B_CODE);
+  const selectedIntra =
+    aState !== "pending" ? INTRA_A_CODE : bState !== "pending" ? INTRA_B_CODE : null;
+
+  for (const instrument of instrumentos) {
+    const code = instrument.instrument_code;
+    if (selectedIntra === INTRA_A_CODE && code === INTRA_B_CODE) continue;
+    if (selectedIntra === INTRA_B_CODE && code === INTRA_A_CODE) continue;
+    chips.push({
+      code,
+      label: instrumentLabel(code),
+      state: participantInstrumentState(emp, code),
+    });
+  }
+
+  return chips;
+}
+
 function closureBlockersMessage(detail: unknown) {
   const body = detail as Partial<CierreAplicacionResponse> | undefined;
   const blockers = Array.isArray(body?.bloqueantes) ? body.bloqueantes : [];
@@ -1320,49 +1379,36 @@ export default function AplicacionDetallePage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-2">
-                        {data.instrumentos.map((i) => {
-                          const done = emp.instrumentos_registrados.includes(
-                            i.instrument_code,
-                          );
+                        {participantInstrumentChips(data.instrumentos, emp).map((chip) => {
+                          const chipClass =
+                            chip.state === "complete"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : chip.state === "capture"
+                                ? "bg-violet-50 text-violet-700"
+                                : "bg-slate-100 text-slate-500";
                           return (
                             <span
-                              key={`${emp.id}-${i.instrument_code}`}
-                              className={`rounded-full px-3 py-1 text-xs font-black ${done ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                              key={`${emp.id}-${chip.code}`}
+                              className={`rounded-full px-3 py-1 text-xs font-black ${chipClass}`}
                             >
-                              {instrumentLabel(i.instrument_code)}
+                              {chip.label}
                             </span>
                           );
                         })}
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      {emp.completo ? (
+                      {participantStatusLabel(emp) === "Completo" ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
                           <CheckCircle2 className="h-3 w-3" /> Completo
                         </span>
-                      ) : emp.registrado ? (
-                        <div className="space-y-1">
-                          <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
-                            En captura
-                          </span>
-                          {emp.instrumentos_pendientes?.length > 0 && (
-                            <p className="max-w-[220px] text-xs font-semibold leading-5 text-slate-500">
-                              Falta:{" "}
-                              {emp.instrumentos_pendientes
-                                .slice(0, 3)
-                                .map((code) =>
-                                  code === "DATOS_GENERALES"
-                                    ? "Datos generales"
-                                    : instrumentLabel(code),
-                                )
-                                .join(", ")}
-                              {emp.instrumentos_pendientes.length > 3 ? "..." : ""}
-                            </p>
-                          )}
-                        </div>
+                      ) : participantStatusLabel(emp) === "En captura" ? (
+                        <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
+                          En captura
+                        </span>
                       ) : (
                         <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
-                          Pendiente
+                          Por tabular
                         </span>
                       )}
                     </td>
