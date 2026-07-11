@@ -46,9 +46,23 @@ import {
 } from "./EmpresaEmpleadosPage";
 import {
   guardarFichaSociodemografica,
+  buscarMunicipiosPsico,
   obtenerCatalogosSociodemograficos,
   type FichaSociodemografica,
 } from "@/features/psicosocial/api/psicoEmpleadoService";
+import {
+  FALLBACK_SOCIO_CATALOGOS,
+  SOCIO_CURRENT_YEAR,
+  SOCIO_ESTRATO_OPTIONS,
+  SOCIO_SEXO_OPTIONS,
+  SocioMunicipioField,
+  SocioNumberField,
+  SocioReadOnlyField,
+  SocioSelectField,
+  SocioTextField,
+  normalizeSocioOptions,
+  type CatalogosSocio,
+} from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
 function instrumentLabel(code: string) {
   return (
@@ -121,37 +135,6 @@ const emptyEmployeeForm: EmployeeFormState = {
   cargo_id: "",
 };
 
-type EmployeeSocioCatalogs = {
-  estado_civil: string[];
-  nivel_estudios: string[];
-  tipo_vivienda: string[];
-  tipo_cargo: string[];
-  tipo_contrato: string[];
-  tipo_salario: string[];
-};
-
-const EMPLOYEE_SOCIO_FALLBACK_CATALOGS: EmployeeSocioCatalogs = {
-  estado_civil: ["Soltero(a)", "Casado(a)", "Unión libre", "Separado(a)", "Divorciado(a)", "Viudo(a)", "Sacerdote / Monja"],
-  nivel_estudios: [
-    "Ninguno", "Primaria incompleta", "Primaria completa", "Bachillerato incompleto", "Bachillerato completo",
-    "Técnico / tecnológico incompleto", "Técnico / tecnológico completo", "Profesional incompleto", "Profesional completo",
-    "Carrera militar / policía", "Post-grado incompleto", "Post-grado completo",
-  ],
-  tipo_vivienda: ["Propia", "En arriendo", "Familiar"],
-  tipo_cargo: [
-    "Jefatura - tiene personal a cargo",
-    "Profesional, analista, técnico, tecnólogo",
-    "Auxiliar, asistente administrativo, asistente técnico",
-    "Operario, operador, ayudante, servicios generales",
-  ],
-  tipo_contrato: ["Temporal de menos de 1 año", "Temporal de 1 año o más", "Término indefinido", "Cooperado (cooperativa)", "Prestación de servicios", "No sé"],
-  tipo_salario: ["Fijo (diario, semanal, quincenal o mensual)", "Una parte fija y otra variable", "Todo variable (a destajo, por producción, por comisión)"],
-};
-
-const EMPLOYEE_SOCIO_SEXO_OPTIONS = ["Masculino", "Femenino"];
-const EMPLOYEE_SOCIO_ESTRATO_OPTIONS = ["1", "2", "3", "4", "5", "6", "Finca", "No sé"];
-const CURRENT_YEAR = new Date().getFullYear();
-
 const emptyEmployeeSocioForm: FichaSociodemografica = {
   sexo: "",
   anio_nacimiento: null,
@@ -160,6 +143,8 @@ const emptyEmployeeSocioForm: FichaSociodemografica = {
   ocupacion_profesion: "",
   ciudad_residencia: "",
   departamento_residencia: "",
+  ciudad_trabajo: "",
+  departamento_trabajo: "",
   estrato: "",
   tipo_vivienda: "",
   personas_dependen: null,
@@ -170,11 +155,6 @@ const emptyEmployeeSocioForm: FichaSociodemografica = {
   antiguedad_empresa: "",
   antiguedad_cargo: "",
 };
-
-export function normalizeEmployeeSocioOptions(fallback: string[], remote?: Array<{ nombre?: string }>) {
-  const remoteValues = (remote || []).map((item) => String(item.nombre || "").trim()).filter(Boolean);
-  return Array.from(new Set([...fallback, ...remoteValues]));
-}
 
 function isFilledSocioValue(value: unknown) {
   return value !== null && value !== undefined && String(value).trim() !== "";
@@ -189,6 +169,8 @@ export function hasApplicationEmployeeSocioData(ficha: FichaSociodemografica) {
     "ocupacion_profesion",
     "ciudad_residencia",
     "departamento_residencia",
+    "ciudad_trabajo",
+    "departamento_trabajo",
     "estrato",
     "tipo_vivienda",
     "personas_dependen",
@@ -290,8 +272,12 @@ export default function AplicacionDetallePage() {
   const [employeeSocioForm, setEmployeeSocioForm] =
     useState<FichaSociodemografica>({ ...emptyEmployeeSocioForm });
   const [employeeSocioCatalogs, setEmployeeSocioCatalogs] =
-    useState<EmployeeSocioCatalogs>(EMPLOYEE_SOCIO_FALLBACK_CATALOGS);
+    useState<CatalogosSocio>(FALLBACK_SOCIO_CATALOGOS);
   const [employeeSocioLoading, setEmployeeSocioLoading] = useState(false);
+  const [employeeResQuery, setEmployeeResQuery] = useState("");
+  const [employeeTrabQuery, setEmployeeTrabQuery] = useState("");
+  const [employeeResMunicipios, setEmployeeResMunicipios] = useState<Array<{ municipio: string; departamento?: string | null }>>([]);
+  const [employeeTrabMunicipios, setEmployeeTrabMunicipios] = useState<Array<{ municipio: string; departamento?: string | null }>>([]);
   const [employeeFieldErrors, setEmployeeFieldErrors] = useState<
     Record<string, string>
   >({});
@@ -439,6 +425,10 @@ export default function AplicacionDetallePage() {
   const openAddEmployee = async () => {
     setEmployeeFieldErrors({});
     setEmployeeSocioForm({ ...emptyEmployeeSocioForm });
+    setEmployeeResQuery("");
+    setEmployeeTrabQuery("");
+    setEmployeeResMunicipios([]);
+    setEmployeeTrabMunicipios([]);
     setOpenEmployeeDrawer(true);
     try {
       setEmployeeSocioLoading(true);
@@ -448,12 +438,12 @@ export default function AplicacionDetallePage() {
       ]);
       if (catalogs) {
         setEmployeeSocioCatalogs({
-          estado_civil: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.estado_civil, catalogs.estado_civil),
-          nivel_estudios: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.nivel_estudios, catalogs.nivel_estudios),
-          tipo_vivienda: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.tipo_vivienda, catalogs.tipo_vivienda),
-          tipo_cargo: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.tipo_cargo, catalogs.tipo_cargo),
-          tipo_contrato: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.tipo_contrato, catalogs.tipo_contrato),
-          tipo_salario: normalizeEmployeeSocioOptions(EMPLOYEE_SOCIO_FALLBACK_CATALOGS.tipo_salario, catalogs.tipo_salario),
+          estado_civil: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.estado_civil, catalogs.estado_civil),
+          nivel_estudios: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.nivel_estudios, catalogs.nivel_estudios),
+          tipo_vivienda: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_vivienda, catalogs.tipo_vivienda),
+          tipo_cargo: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_cargo, catalogs.tipo_cargo),
+          tipo_contrato: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_contrato, catalogs.tipo_contrato),
+          tipo_salario: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_salario, catalogs.tipo_salario),
         });
       }
     } catch (e: any) {
@@ -582,6 +572,50 @@ export default function AplicacionDetallePage() {
 
   const updateEmployeeSocioForm = (key: keyof FichaSociodemografica, value: string | number | null) => {
     setEmployeeSocioForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  useEffect(() => { setEmployeeResQuery(String(employeeSocioForm.ciudad_residencia || "")); }, [employeeSocioForm.ciudad_residencia]);
+  useEffect(() => { setEmployeeTrabQuery(String(employeeSocioForm.ciudad_trabajo || "")); }, [employeeSocioForm.ciudad_trabajo]);
+
+  useEffect(() => {
+    const query = employeeResQuery.trim();
+    const timer = window.setTimeout(() => {
+      if (query.length < 2) return setEmployeeResMunicipios([]);
+      buscarMunicipiosPsico(query).then((res) => setEmployeeResMunicipios(res.items || [])).catch(() => setEmployeeResMunicipios([]));
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [employeeResQuery]);
+
+  useEffect(() => {
+    const query = employeeTrabQuery.trim();
+    const timer = window.setTimeout(() => {
+      if (query.length < 2) return setEmployeeTrabMunicipios([]);
+      buscarMunicipiosPsico(query).then((res) => setEmployeeTrabMunicipios(res.items || [])).catch(() => setEmployeeTrabMunicipios([]));
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [employeeTrabQuery]);
+
+  const selectEmployeeMunicipio = (
+    kind: "res" | "trab",
+    item: { municipio: string; departamento?: string | null },
+  ) => {
+    if (kind === "res") {
+      setEmployeeSocioForm((prev) => ({
+        ...prev,
+        ciudad_residencia: item.municipio,
+        departamento_residencia: item.departamento || "",
+      }));
+      setEmployeeResMunicipios([]);
+      setEmployeeResQuery(item.municipio);
+      return;
+    }
+    setEmployeeSocioForm((prev) => ({
+      ...prev,
+      ciudad_trabajo: item.municipio,
+      departamento_trabajo: item.departamento || "",
+    }));
+    setEmployeeTrabMunicipios([]);
+    setEmployeeTrabQuery(item.municipio);
   };
 
   const validateEmployeeForm = () => {
@@ -1660,7 +1694,7 @@ export default function AplicacionDetallePage() {
                   />
                 </Field>
                 <Field label="Área *" error={employeeFieldErrors.area_id}>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                     <Combo
                       value={employeeForm.area_id}
                       label={selectedArea?.nombre || "Selecciona área"}
@@ -1675,14 +1709,14 @@ export default function AplicacionDetallePage() {
                     <button
                       type="button"
                       onClick={() => setCatalogModal("area")}
-                      className="rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50"
+                      className="shrink-0 whitespace-nowrap rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50"
                     >
                       Nuevo
                     </button>
                   </div>
                 </Field>
                 <Field label="Cargo *" error={employeeFieldErrors.cargo_id}>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                     <Combo
                       value={employeeForm.cargo_id}
                       label={selectedCargo?.nombre || "Selecciona cargo"}
@@ -1709,7 +1743,7 @@ export default function AplicacionDetallePage() {
                           ? "Crear cargo para el área seleccionada"
                           : "Selecciona primero un área"
                       }
-                      className="rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="shrink-0 whitespace-nowrap rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Nuevo
                     </button>
@@ -1737,118 +1771,125 @@ export default function AplicacionDetallePage() {
                   )}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <SocioSelect
+                  <SocioSelectField
                     label="Sexo"
                     value={employeeSocioForm.sexo || ""}
-                    options={EMPLOYEE_SOCIO_SEXO_OPTIONS}
+                    options={SOCIO_SEXO_OPTIONS}
                     onChange={(v) => updateEmployeeSocioForm("sexo", v)}
                   />
-                  <Field label="Año de nacimiento">
-                    <Input
-                      value={employeeSocioForm.anio_nacimiento ?? ""}
-                      onChange={(v: string) =>
-                        updateEmployeeSocioForm("anio_nacimiento", v ? Number(v) : null)
-                      }
-                      type="number"
-                      min={1900}
-                      max={CURRENT_YEAR}
-                    />
-                  </Field>
-                  <SocioSelect
+                  <SocioNumberField
+                    label="Año de nacimiento"
+                    value={employeeSocioForm.anio_nacimiento ?? ""}
+                    min={1900}
+                    max={SOCIO_CURRENT_YEAR}
+                    onChange={(v) => updateEmployeeSocioForm("anio_nacimiento", v)}
+                  />
+                  <SocioSelectField
                     label="Estado civil"
                     value={employeeSocioForm.estado_civil || ""}
                     options={employeeSocioCatalogs.estado_civil}
                     onChange={(v) => updateEmployeeSocioForm("estado_civil", v)}
                   />
-                  <SocioSelect
+                  <SocioSelectField
                     label="Nivel de estudios"
                     value={employeeSocioForm.nivel_estudios || ""}
                     options={employeeSocioCatalogs.nivel_estudios}
                     onChange={(v) => updateEmployeeSocioForm("nivel_estudios", v)}
                   />
-                  <Field label="Ocupación / profesión">
-                    <Input
-                      value={employeeSocioForm.ocupacion_profesion || ""}
-                      onChange={(v: string) => updateEmployeeSocioForm("ocupacion_profesion", v)}
-                    />
-                  </Field>
-                  <SocioSelect
+                  <SocioTextField
+                    label="Ocupación / profesión"
+                    value={employeeSocioForm.ocupacion_profesion || ""}
+                    onChange={(v) => updateEmployeeSocioForm("ocupacion_profesion", v)}
+                  />
+                  <SocioSelectField
                     label="Estrato"
                     value={String(employeeSocioForm.estrato || "")}
-                    options={EMPLOYEE_SOCIO_ESTRATO_OPTIONS}
+                    options={SOCIO_ESTRATO_OPTIONS}
                     onChange={(v) => updateEmployeeSocioForm("estrato", v)}
                   />
-                  <Field label="Ciudad de residencia">
-                    <Input
-                      value={employeeSocioForm.ciudad_residencia || ""}
-                      onChange={(v: string) => updateEmployeeSocioForm("ciudad_residencia", v)}
-                    />
-                  </Field>
-                  <Field label="Departamento de residencia">
-                    <Input
-                      value={employeeSocioForm.departamento_residencia || ""}
-                      onChange={(v: string) => updateEmployeeSocioForm("departamento_residencia", v)}
-                    />
-                  </Field>
-                  <SocioSelect
+                  <SocioMunicipioField
+                    label="Ciudad / municipio de residencia"
+                    query={employeeResQuery}
+                    selectedValue={employeeSocioForm.ciudad_residencia || ""}
+                    setQuery={(v) => {
+                      setEmployeeResQuery(v);
+                      if (v !== String(employeeSocioForm.ciudad_residencia || "")) {
+                        updateEmployeeSocioForm("ciudad_residencia", "");
+                        updateEmployeeSocioForm("departamento_residencia", "");
+                      }
+                    }}
+                    options={employeeResMunicipios}
+                    onSelect={(item) => selectEmployeeMunicipio("res", item)}
+                  />
+                  <SocioReadOnlyField
+                    label="Departamento de residencia"
+                    value={employeeSocioForm.departamento_residencia || ""}
+                  />
+                  <SocioSelectField
                     label="Tipo de vivienda"
                     value={employeeSocioForm.tipo_vivienda || ""}
                     options={employeeSocioCatalogs.tipo_vivienda}
                     onChange={(v) => updateEmployeeSocioForm("tipo_vivienda", v)}
                   />
-                  <Field label="Personas dependientes">
-                    <Input
-                      value={employeeSocioForm.personas_dependen ?? ""}
-                      onChange={(v: string) =>
-                        updateEmployeeSocioForm("personas_dependen", v ? Number(v) : null)
+                  <SocioNumberField
+                    label="Personas dependientes"
+                    value={employeeSocioForm.personas_dependen ?? ""}
+                    min={0}
+                    max={99}
+                    onChange={(v) => updateEmployeeSocioForm("personas_dependen", v)}
+                  />
+                  <SocioMunicipioField
+                    label="Ciudad / municipio donde trabaja"
+                    query={employeeTrabQuery}
+                    selectedValue={employeeSocioForm.ciudad_trabajo || ""}
+                    setQuery={(v) => {
+                      setEmployeeTrabQuery(v);
+                      if (v !== String(employeeSocioForm.ciudad_trabajo || "")) {
+                        updateEmployeeSocioForm("ciudad_trabajo", "");
+                        updateEmployeeSocioForm("departamento_trabajo", "");
                       }
-                      type="number"
-                      min={0}
-                      max={99}
-                    />
-                  </Field>
-                  <SocioSelect
+                    }}
+                    options={employeeTrabMunicipios}
+                    onSelect={(item) => selectEmployeeMunicipio("trab", item)}
+                  />
+                  <SocioReadOnlyField
+                    label="Departamento donde trabaja"
+                    value={employeeSocioForm.departamento_trabajo || ""}
+                  />
+                  <SocioSelectField
                     label="Tipo de cargo"
                     value={employeeSocioForm.tipo_cargo || ""}
                     options={employeeSocioCatalogs.tipo_cargo}
                     onChange={(v) => updateEmployeeSocioForm("tipo_cargo", v)}
                   />
-                  <SocioSelect
+                  <SocioSelectField
                     label="Tipo de contrato"
                     value={employeeSocioForm.tipo_contrato || ""}
                     options={employeeSocioCatalogs.tipo_contrato}
                     onChange={(v) => updateEmployeeSocioForm("tipo_contrato", v)}
                   />
-                  <Field label="Antigüedad en la empresa (años)">
-                    <Input
-                      value={employeeSocioForm.antiguedad_empresa || ""}
-                      onChange={(v: string) => updateEmployeeSocioForm("antiguedad_empresa", v)}
-                      type="number"
-                      min={0}
-                      max={80}
-                    />
-                  </Field>
-                  <Field label="Antigüedad en el cargo (años)">
-                    <Input
-                      value={employeeSocioForm.antiguedad_cargo || ""}
-                      onChange={(v: string) => updateEmployeeSocioForm("antiguedad_cargo", v)}
-                      type="number"
-                      min={0}
-                      max={80}
-                    />
-                  </Field>
-                  <Field label="Horas diarias de trabajo">
-                    <Input
-                      value={employeeSocioForm.horas_diarias_trabajo ?? ""}
-                      onChange={(v: string) =>
-                        updateEmployeeSocioForm("horas_diarias_trabajo", v ? Number(v) : null)
-                      }
-                      type="number"
-                      min={1}
-                      max={24}
-                    />
-                  </Field>
-                  <SocioSelect
+                  <SocioNumberField
+                    label="Antigüedad en la empresa (años)"
+                    value={employeeSocioForm.antiguedad_empresa || ""}
+                    min={0}
+                    max={80}
+                    onChange={(v) => updateEmployeeSocioForm("antiguedad_empresa", v === null ? "" : String(v))}
+                  />
+                  <SocioNumberField
+                    label="Antigüedad en el cargo (años)"
+                    value={employeeSocioForm.antiguedad_cargo || ""}
+                    min={0}
+                    max={80}
+                    onChange={(v) => updateEmployeeSocioForm("antiguedad_cargo", v === null ? "" : String(v))}
+                  />
+                  <SocioNumberField
+                    label="Horas diarias de trabajo"
+                    value={employeeSocioForm.horas_diarias_trabajo ?? ""}
+                    min={1}
+                    max={24}
+                    onChange={(v) => updateEmployeeSocioForm("horas_diarias_trabajo", v)}
+                  />
+                  <SocioSelectField
                     label="Tipo de salario"
                     value={employeeSocioForm.tipo_salario || ""}
                     options={employeeSocioCatalogs.tipo_salario}
@@ -2014,35 +2055,6 @@ function Input({ value, onChange, className = "", ...props }: any) {
       onChange={(e) => onChange(e.target.value)}
       className={`w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${className}`}
     />
-  );
-}
-
-function SocioSelect({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-}) {
-  return (
-    <Field label={label}>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-      >
-        <option value="">Selecciona una opción</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </Field>
   );
 }
 

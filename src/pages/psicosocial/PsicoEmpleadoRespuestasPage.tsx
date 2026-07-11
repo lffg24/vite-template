@@ -31,6 +31,19 @@ import {
 import { AbrilApiError } from "@/features/psicosocial/api/httpClient";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
+import {
+  FALLBACK_SOCIO_CATALOGOS,
+  SOCIO_CURRENT_YEAR,
+  SOCIO_ESTRATO_OPTIONS,
+  SOCIO_SEXO_OPTIONS,
+  SocioMunicipioField as MunicipioField,
+  SocioNumberField as NumberField,
+  SocioReadOnlyField as ReadOnlyField,
+  SocioSelectField as SelectField,
+  SocioTextField as TextField,
+  normalizeSocioOptions,
+  type CatalogosSocio,
+} from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
 const LIKERT = ["Siempre", "Casi siempre", "Algunas veces", "Casi nunca", "Nunca"];
 const CLIENTS_GATE_CODE = "servicio_clientes_usuarios";
@@ -1030,43 +1043,8 @@ function ConditionalQuestionBlock({
   );
 }
 
-type CatalogosSocio = {
-  estado_civil: string[];
-  nivel_estudios: string[];
-  tipo_vivienda: string[];
-  tipo_cargo: string[];
-  tipo_contrato: string[];
-  tipo_salario: string[];
-};
-
-const FALLBACK_CATALOGOS: CatalogosSocio = {
-  estado_civil: ["Soltero(a)", "Casado(a)", "Unión libre", "Separado(a)", "Divorciado(a)", "Viudo(a)", "Sacerdote / Monja"],
-  nivel_estudios: [
-    "Ninguno", "Primaria incompleta", "Primaria completa", "Bachillerato incompleto", "Bachillerato completo",
-    "Técnico / tecnológico incompleto", "Técnico / tecnológico completo", "Profesional incompleto", "Profesional completo",
-    "Carrera militar / policía", "Post-grado incompleto", "Post-grado completo",
-  ],
-  tipo_vivienda: ["Propia", "En arriendo", "Familiar"],
-  tipo_cargo: [
-    "Jefatura - tiene personal a cargo",
-    "Profesional, analista, técnico, tecnólogo",
-    "Auxiliar, asistente administrativo, asistente técnico",
-    "Operario, operador, ayudante, servicios generales",
-  ],
-  tipo_contrato: ["Temporal de menos de 1 año", "Temporal de 1 año o más", "Término indefinido", "Cooperado (cooperativa)", "Prestación de servicios", "No sé"],
-  tipo_salario: ["Fijo (diario, semanal, quincenal o mensual)", "Una parte fija y otra variable", "Todo variable (a destajo, por producción, por comisión)"],
-};
-const SEXO_OPTIONS = ["Masculino", "Femenino"];
-const ESTRATO_OPTIONS = ["1", "2", "3", "4", "5", "6", "Finca", "No sé"];
-const CURRENT_YEAR = new Date().getFullYear();
-
-function normalizeOptions(fallback: string[], remote?: Array<{ nombre?: string }>) {
-  const remoteValues = (remote || []).map((x) => String(x.nombre || "").trim()).filter(Boolean);
-  // El orden normativo del formulario oficial manda. Las opciones remotas solo agregan valores faltantes.
-  return Array.from(new Set([...fallback, ...remoteValues]));
-}
 function fichaEdad(anio?: number | null) {
-  return anio ? Math.max(CURRENT_YEAR - Number(anio), 0) : "";
+  return anio ? Math.max(SOCIO_CURRENT_YEAR - Number(anio), 0) : "";
 }
 function fichaMissing(ficha: FichaSociodemografica) {
   const required: Array<[keyof FichaSociodemografica, string]> = [
@@ -1083,7 +1061,7 @@ function fichaMissing(ficha: FichaSociodemografica) {
 }
 
 function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave, onFinalize }: { ficha: FichaSociodemografica; setFicha: (value: FichaSociodemografica | ((prev: FichaSociodemografica) => FichaSociodemografica)) => void; saving: boolean; completa: boolean; onSave: () => void; onFinalize: () => void }) {
-  const [catalogos, setCatalogos] = useState<CatalogosSocio>(FALLBACK_CATALOGOS);
+  const [catalogos, setCatalogos] = useState<CatalogosSocio>(FALLBACK_SOCIO_CATALOGOS);
   const [resQuery, setResQuery] = useState(String(ficha.ciudad_residencia || ""));
   const [trabQuery, setTrabQuery] = useState(String(ficha.ciudad_trabajo || ""));
   const [resOptions, setResOptions] = useState<Array<{ municipio: string; departamento?: string | null }>>([]);
@@ -1099,15 +1077,15 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
       .then((res) => {
         if (!alive) return;
         setCatalogos({
-          estado_civil: normalizeOptions(FALLBACK_CATALOGOS.estado_civil, res.estado_civil),
-          nivel_estudios: normalizeOptions(FALLBACK_CATALOGOS.nivel_estudios, res.nivel_estudios),
-          tipo_vivienda: normalizeOptions(FALLBACK_CATALOGOS.tipo_vivienda, res.tipo_vivienda),
-          tipo_cargo: normalizeOptions(FALLBACK_CATALOGOS.tipo_cargo, res.tipo_cargo),
-          tipo_contrato: normalizeOptions(FALLBACK_CATALOGOS.tipo_contrato, res.tipo_contrato),
-          tipo_salario: normalizeOptions(FALLBACK_CATALOGOS.tipo_salario, res.tipo_salario),
+          estado_civil: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.estado_civil, res.estado_civil),
+          nivel_estudios: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.nivel_estudios, res.nivel_estudios),
+          tipo_vivienda: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_vivienda, res.tipo_vivienda),
+          tipo_cargo: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_cargo, res.tipo_cargo),
+          tipo_contrato: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_contrato, res.tipo_contrato),
+          tipo_salario: normalizeSocioOptions(FALLBACK_SOCIO_CATALOGOS.tipo_salario, res.tipo_salario),
         });
       })
-      .catch(() => setCatalogos(FALLBACK_CATALOGOS));
+      .catch(() => setCatalogos(FALLBACK_SOCIO_CATALOGOS));
     return () => { alive = false; };
   }, []);
 
@@ -1165,8 +1143,8 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
         <fieldset className="rounded-3xl border border-slate-200 bg-white p-5">
           <legend className="px-2 text-sm font-black text-slate-900">Información personal</legend>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <SelectField disabled={completa} label="Sexo" value={ficha.sexo || ""} options={SEXO_OPTIONS} onChange={(v) => update("sexo", v)} />
-            <NumberField disabled={completa} label="Año de nacimiento" value={ficha.anio_nacimiento ?? ""} min={1900} max={CURRENT_YEAR} onChange={(v) => update("anio_nacimiento", v)} />
+            <SelectField disabled={completa} label="Sexo" value={ficha.sexo || ""} options={SOCIO_SEXO_OPTIONS} onChange={(v) => update("sexo", v)} />
+            <NumberField disabled={completa} label="Año de nacimiento" value={ficha.anio_nacimiento ?? ""} min={1900} max={SOCIO_CURRENT_YEAR} onChange={(v) => update("anio_nacimiento", v)} />
             <ReadOnlyField label="Edad calculada" value={String(fichaEdad(ficha.anio_nacimiento))} />
             <SelectField disabled={completa} label="Estado civil" value={ficha.estado_civil || ""} options={catalogos.estado_civil} onChange={(v) => update("estado_civil", v)} />
             <SelectField disabled={completa} label="Nivel de estudios" value={ficha.nivel_estudios || ""} options={catalogos.nivel_estudios} onChange={(v) => update("nivel_estudios", v)} />
@@ -1179,7 +1157,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MunicipioField disabled={completa} label="Ciudad / municipio de residencia" query={resQuery} selectedValue={ficha.ciudad_residencia || ""} setQuery={(v) => { setResQuery(v); if (v !== String(ficha.ciudad_residencia || "")) { update("ciudad_residencia", ""); update("departamento_residencia", ""); } }} options={resOptions} onSelect={(item) => selectMunicipio("res", item)} />
             <ReadOnlyField label="Departamento de residencia" value={ficha.departamento_residencia || ""} />
-            <SelectField disabled={completa} label="Estrato" value={String(ficha.estrato || "")} options={ESTRATO_OPTIONS} onChange={(v) => update("estrato", v)} />
+            <SelectField disabled={completa} label="Estrato" value={String(ficha.estrato || "")} options={SOCIO_ESTRATO_OPTIONS} onChange={(v) => update("estrato", v)} />
             <SelectField disabled={completa} label="Tipo de vivienda" value={ficha.tipo_vivienda || ""} options={catalogos.tipo_vivienda} onChange={(v) => update("tipo_vivienda", v)} />
             <NumberField disabled={completa} label="Personas que dependen económicamente" value={ficha.personas_dependen ?? ""} min={0} max={99} onChange={(v) => update("personas_dependen", v)} />
           </div>
@@ -1214,100 +1192,6 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
         </div>
       </div>
     </div>
-  );
-}
-
-function fieldBase(disabled = false) { return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`; }
-function TextField({ label, value, onChange, disabled = false }: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
-  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input disabled={disabled} value={value} onChange={(e) => onChange(e.target.value)} className={fieldBase(disabled)} /></label>;
-}
-function NumberField({ label, value, min, max, onChange, disabled = false }: { label: string; value: number | string; min?: number; max?: number; onChange: (v: number | null) => void; disabled?: boolean }) {
-  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input disabled={disabled} type="number" min={min} max={max} value={value} onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))} className={fieldBase(disabled)} /></label>;
-}
-function SelectField({ label, value, options, onChange, disabled = false }: { label: string; value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean }) {
-  const [open, setOpen] = useState(false);
-  const display = value || "Selecciona una opción";
-  return (
-    <div className="relative space-y-1 text-sm font-bold text-slate-700">
-      <span>{label}</span>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => { if (!disabled) setOpen((v) => !v); }}
-        className={`${fieldBase(disabled)} flex min-h-[50px] items-center justify-between gap-3 text-left ${value ? "text-slate-900" : "text-slate-400"}`}
-      >
-        <span className="truncate">{display}</span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && !disabled && (
-        <div className="absolute z-40 mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
-          <button
-            type="button"
-            onClick={() => { onChange(""); setOpen(false); }}
-            className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${!value ? "bg-violet-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
-          >
-            Selecciona una opción
-          </button>
-          {options.map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => { onChange(opt); setOpen(false); }}
-              className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${value === opt ? "bg-violet-600 text-white" : "text-slate-700 hover:bg-violet-50 hover:text-violet-800"}`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input value={value} readOnly className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-normal text-slate-500 outline-none" /></label>;
-}
-function MunicipioField({ label, query, selectedValue, setQuery, options, onSelect, disabled = false }: { label: string; query: string; selectedValue?: string; setQuery: (v: string) => void; options: Array<{ municipio: string; departamento?: string | null }>; onSelect: (item: { municipio: string; departamento?: string | null }) => void; disabled?: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [touched, setTouched] = useState(false);
-  const normalizedQuery = query.trim().toLowerCase();
-  const normalizedSelected = String(selectedValue || "").trim().toLowerCase();
-  const showPanel = !disabled && open && query.trim().length >= 2 && normalizedQuery !== normalizedSelected;
-  return (
-    <label className="relative space-y-1 text-sm font-bold text-slate-700">
-      {label}
-      <input
-        disabled={disabled}
-        value={query}
-        onFocus={() => { if (!disabled) setOpen(true); }}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
-        onChange={(e) => { if (disabled) return; setTouched(true); setOpen(true); setQuery(e.target.value); }}
-        onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-        placeholder="Escribe mínimo 2 letras…"
-        className={fieldBase(disabled)}
-        autoComplete="off"
-      />
-      {showPanel && (
-        <div className="absolute z-30 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
-          {options.length > 0 ? (
-            options.map((item) => (
-              <button
-                key={`${item.municipio}-${item.departamento}`}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { onSelect(item); setOpen(false); setTouched(false); }}
-                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-violet-50 hover:text-violet-800"
-              >
-                {item.municipio} <span className="font-normal text-slate-500">{item.departamento ? `· ${item.departamento}` : ""}</span>
-              </button>
-            ))
-          ) : touched ? (
-            <div className="rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500">
-              Sin coincidencias. Verifica que el catálogo de municipios esté cargado o intenta con tilde/sin tilde.
-            </div>
-          ) : null}
-        </div>
-      )}
-    </label>
   );
 }
 

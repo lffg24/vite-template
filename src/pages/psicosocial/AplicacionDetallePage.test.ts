@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildApplicationEmployeeSocioDraft,
   hasApplicationEmployeeSocioData,
-  normalizeEmployeeSocioOptions,
 } from "./AplicacionDetallePage";
+import { normalizeSocioOptions } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
 describe("application employee sociodemographic draft", () => {
   it("no intenta guardar ficha cuando los campos opcionales estan vacios", () => {
@@ -13,6 +13,7 @@ describe("application employee sociodemographic draft", () => {
   it("detecta ficha opcional diligenciada", () => {
     expect(hasApplicationEmployeeSocioData({ sexo: "Femenino" })).toBe(true);
     expect(hasApplicationEmployeeSocioData({ personas_dependen: 0 })).toBe(true);
+    expect(hasApplicationEmployeeSocioData({ ciudad_trabajo: "Bogotá" })).toBe(true);
   });
 
   it("construye borrador sin finalizar e inyecta area y cargo de la aplicacion", () => {
@@ -32,8 +33,9 @@ describe("application employee sociodemographic draft", () => {
 
   it("normaliza catalogos conservando el orden base y agregando valores remotos", () => {
     expect(
-      normalizeEmployeeSocioOptions(["Soltero(a)", "Casado(a)"], [
+      normalizeSocioOptions(["Soltero(a)", "Casado(a)"], [
         { nombre: "Casado(a)" },
+        { nombre: "casado(a)" },
         { nombre: "Union libre" },
         { nombre: " " },
       ]),
