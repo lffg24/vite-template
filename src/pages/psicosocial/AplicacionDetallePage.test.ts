@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildApplicationEmployeeSocioDraft,
   hasApplicationEmployeeSocioData,
+  participantActionLabel,
   participantInstrumentChips,
   participantStatusLabel,
+  sortApplicationParticipants,
 } from "./AplicacionDetallePage";
 import { normalizeSocioOptions } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
@@ -99,5 +101,41 @@ describe("application participant status chips", () => {
     expect(participantStatusLabel({ registrado: false, completo: false })).toBe("Por tabular");
     expect(participantStatusLabel({ registrado: true, completo: false })).toBe("En captura");
     expect(participantStatusLabel({ registrado: true, completo: true })).toBe("Completo");
+  });
+
+  it("ordena por defecto por estado y luego por nombre", () => {
+    const rows = [
+      { id: 1, cedula: "3", nombre: "Zoraida", area: "B", cargo: "Analista", registrado: false, completo: false, instrumentos_registrados: [], instrumentos_en_captura: [], instrumentos_pendientes: [], total_instrumentos: 4, completados: 0 },
+      { id: 2, cedula: "1", nombre: "Carlos", area: "A", cargo: "Auxiliar", registrado: true, completo: true, instrumentos_registrados: ["PSICO_EXTRA"], instrumentos_en_captura: [], instrumentos_pendientes: [], total_instrumentos: 4, completados: 4 },
+      { id: 3, cedula: "2", nombre: "Ana", area: "C", cargo: "Coordinadora", registrado: true, completo: false, instrumentos_registrados: [], instrumentos_en_captura: ["PSICO_INTRA_A"], instrumentos_pendientes: ["PSICO_EXTRA"], total_instrumentos: 4, completados: 1 },
+      { id: 4, cedula: "4", nombre: "Beatriz", area: "C", cargo: "Directora", registrado: true, completo: false, instrumentos_registrados: [], instrumentos_en_captura: ["PSICO_INTRA_B"], instrumentos_pendientes: ["PSICO_ESTRES"], total_instrumentos: 4, completados: 1 },
+    ];
+
+    expect(sortApplicationParticipants(rows, instrumentos).map((row) => row.nombre)).toEqual([
+      "Ana",
+      "Beatriz",
+      "Carlos",
+      "Zoraida",
+    ]);
+  });
+
+  it("ordena por columnas de datos y accion visible", () => {
+    const rows = [
+      { id: 1, cedula: "3", nombre: "Zoraida", area: "Operaciones", cargo: "Analista", registrado: false, completo: false, instrumentos_registrados: [], instrumentos_en_captura: [], instrumentos_pendientes: [], total_instrumentos: 4, completados: 0 },
+      { id: 2, cedula: "1", nombre: "Carlos", area: "Administrativa", cargo: "Auxiliar", registrado: true, completo: true, instrumentos_registrados: ["PSICO_EXTRA"], instrumentos_en_captura: [], instrumentos_pendientes: [], total_instrumentos: 4, completados: 4 },
+      { id: 3, cedula: "2", nombre: "Ana", area: "Comercial", cargo: "Coordinadora", registrado: true, completo: false, instrumentos_registrados: [], instrumentos_en_captura: ["PSICO_INTRA_A"], instrumentos_pendientes: ["PSICO_EXTRA"], total_instrumentos: 4, completados: 1 },
+    ];
+
+    expect(
+      sortApplicationParticipants(rows, instrumentos, { key: "areaCargo", direction: "asc" }).map((row) => row.area),
+    ).toEqual(["Administrativa", "Comercial", "Operaciones"]);
+    expect(
+      sortApplicationParticipants(rows, instrumentos, { key: "colaborador", direction: "desc" }).map((row) => row.nombre),
+    ).toEqual(["Zoraida", "Carlos", "Ana"]);
+    expect(
+      sortApplicationParticipants(rows, instrumentos, { key: "accion", direction: "asc" }).map((row) =>
+        participantActionLabel(row),
+      ),
+    ).toEqual(["Actualizar respuesta", "Registrar respuesta", "Ver respuestas"]);
   });
 });

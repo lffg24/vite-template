@@ -9,10 +9,12 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  ArrowUpDown,
   BarChart3,
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronUp,
   ClipboardCheck,
   Coins,
   FilePenLine,
@@ -239,6 +241,26 @@ type ParticipantInstrumentChip = {
 const INTRA_A_CODE = "PSICO_INTRA_A";
 const INTRA_B_CODE = "PSICO_INTRA_B";
 const GENERAL_DATA_CODE = "DATOS_GENERALES";
+const PARTICIPANT_STATUS_ORDER: Record<string, number> = {
+  "En captura": 0,
+  Completo: 1,
+  "Por tabular": 2,
+};
+const participantCollator = new Intl.Collator("es-CO", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+export type ParticipantSortKey =
+  | "colaborador"
+  | "areaCargo"
+  | "instrumentos"
+  | "estado"
+  | "accion";
+export type ParticipantSort = {
+  key: ParticipantSortKey;
+  direction: "asc" | "desc";
+};
 
 function participantInstrumentState(emp: Partial<AplicacionDetalle["empleados"][number]>, code: string) {
   if ((emp.instrumentos_registrados || []).includes(code)) return "complete";
@@ -258,6 +280,22 @@ export function participantStatusLabel(emp: Partial<AplicacionDetalle["empleados
   if (emp.completo) return "Completo";
   if (emp.registrado) return "En captura";
   return "Por tabular";
+}
+
+export function participantActionLabel(
+  emp: Partial<AplicacionDetalle["empleados"][number]>,
+  finalizada = false,
+) {
+  const enabled = Boolean(
+    !finalizada ||
+      emp.registrado ||
+      emp.completo ||
+      (emp.instrumentos_registrados || []).length > 0,
+  );
+  if (finalizada) return enabled ? "Ver respuestas" : "Sin respuestas";
+  if (emp.completo) return "Ver respuestas";
+  if (emp.registrado) return "Actualizar respuesta";
+  return "Registrar respuesta";
 }
 
 export function participantInstrumentChips(
@@ -287,6 +325,52 @@ export function participantInstrumentChips(
   }
 
   return chips;
+}
+
+function compareText(a?: string | null, b?: string | null) {
+  return participantCollator.compare(String(a || "").trim(), String(b || "").trim());
+}
+
+function participantSortValue(
+  emp: AplicacionDetalle["empleados"][number],
+  instrumentos: AplicacionDetalle["instrumentos"],
+  key: ParticipantSortKey,
+  finalizada = false,
+) {
+  if (key === "estado") {
+    return PARTICIPANT_STATUS_ORDER[participantStatusLabel(emp)] ?? 99;
+  }
+  if (key === "areaCargo") {
+    return `${emp.area || ""} ${emp.cargo || ""}`;
+  }
+  if (key === "instrumentos") {
+    return participantInstrumentChips(instrumentos, emp)
+      .map((chip) => `${chip.state}-${chip.label}`)
+      .join(" ");
+  }
+  if (key === "accion") {
+    return participantActionLabel(emp, finalizada);
+  }
+  return `${emp.nombre || ""} ${emp.cedula || ""}`;
+}
+
+export function sortApplicationParticipants(
+  rows: AplicacionDetalle["empleados"],
+  instrumentos: AplicacionDetalle["instrumentos"],
+  sort: ParticipantSort = { key: "estado", direction: "asc" },
+  finalizada = false,
+) {
+  const direction = sort.direction === "desc" ? -1 : 1;
+  return [...rows].sort((a, b) => {
+    const aValue = participantSortValue(a, instrumentos, sort.key, finalizada);
+    const bValue = participantSortValue(b, instrumentos, sort.key, finalizada);
+    const main =
+      typeof aValue === "number" && typeof bValue === "number"
+        ? aValue - bValue
+        : compareText(String(aValue), String(bValue));
+    if (main !== 0) return main * direction;
+    return compareText(a.nombre, b.nombre) || compareText(a.cedula, b.cedula);
+  });
 }
 
 function closureBlockersMessage(detail: unknown) {
@@ -355,6 +439,10 @@ export default function AplicacionDetallePage() {
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [participantPage, setParticipantPage] = useState(1);
   const [participantPageSize, setParticipantPageSize] = useState(10);
+  const [participantSort, setParticipantSort] = useState<ParticipantSort>({
+    key: "estado",
+    direction: "asc",
+  });
   const [cleanupTarget, setCleanupTarget] = useState<any | null>(null);
   const [cleanupPreview, setCleanupPreview] = useState<{
     ok: boolean;
@@ -803,20 +891,41 @@ export default function AplicacionDetallePage() {
     }
   };
 
+  const estadoAplicacion = String(data?.aplicacion?.estado || "BORRADOR")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+  const finalizada = isFinalizada(data?.aplicacion?.estado);
+
   const empleados = useMemo(() => {
     const term = q.trim().toLowerCase();
     const rows = data?.empleados || [];
-    if (!term) return rows;
-    return rows.filter((e) =>
-      `${e.cedula} ${e.nombre} ${e.area} ${e.cargo} ${e.email}`
-        .toLowerCase()
-        .includes(term),
+    const filtered = !term
+      ? rows
+      : rows.filter((e) =>
+          `${e.cedula} ${e.nombre} ${e.area} ${e.cargo} ${e.email}`
+            .toLowerCase()
+            .includes(term),
+        );
+    return sortApplicationParticipants(
+      filtered,
+      data?.instrumentos || [],
+      participantSort,
+      finalizada,
     );
-  }, [data, q]);
+  }, [data, finalizada, participantSort, q]);
 
   useEffect(() => {
     setParticipantPage(1);
-  }, [q, participantPageSize, data?.empleados?.length]);
+  }, [q, participantPageSize, data?.empleados?.length, participantSort]);
+
+  const toggleParticipantSort = (key: ParticipantSortKey) => {
+    setParticipantSort((current) => ({
+      key,
+      direction:
+        current.key === key && current.direction === "asc" ? "desc" : "asc",
+    }));
+  };
 
   const totalParticipantPages = Math.max(
     1,
@@ -839,11 +948,6 @@ export default function AplicacionDetallePage() {
     currentParticipantPage * participantPageSize,
   );
 
-  const estadoAplicacion = String(data?.aplicacion?.estado || "BORRADOR")
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
-  const finalizada = isFinalizada(data?.aplicacion?.estado);
   const cleanupBlocked =
     estadoAplicacion === "FINALIZADA" || estadoAplicacion === "CALCULANDO";
   const canOpenParticipant = (emp: any) =>
@@ -853,6 +957,36 @@ export default function AplicacionDetallePage() {
       emp.completo ||
       (emp.instrumentos_registrados || []).length > 0,
     );
+  const participantSortAria = (key: ParticipantSortKey) =>
+    participantSort.key === key
+      ? participantSort.direction === "asc"
+        ? "ascending"
+        : "descending"
+      : "none";
+  const renderParticipantSortHeader = (
+    key: ParticipantSortKey,
+    label: string,
+    align: "left" | "right" = "left",
+  ) => {
+    const active = participantSort.key === key;
+    const Icon = active
+      ? participantSort.direction === "asc"
+        ? ChevronUp
+        : ChevronDown
+      : ArrowUpDown;
+    return (
+      <button
+        type="button"
+        onClick={() => toggleParticipantSort(key)}
+        className={`inline-flex items-center gap-1 rounded-lg px-1 py-1 font-black uppercase tracking-normal transition hover:bg-slate-100 hover:text-slate-800 ${
+          active ? "text-violet-700" : "text-slate-500"
+        } ${align === "right" ? "ml-auto" : ""}`}
+      >
+        {label}
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+    );
+  };
 
   async function openCleanupResponses(emp: any) {
     if (!empresaId || !aplicacionId) return;
@@ -1340,11 +1474,21 @@ export default function AplicacionDetallePage() {
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="px-4 py-3">Colaborador</th>
-                  <th className="px-4 py-3">Área / cargo</th>
-                  <th className="px-4 py-3">Instrumentos</th>
-                  <th className="px-4 py-3">Estado</th>
-                  <th className="px-4 py-3 text-right">Acción</th>
+                  <th className="px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                    {renderParticipantSortHeader("colaborador", "Colaborador")}
+                  </th>
+                  <th className="px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                    {renderParticipantSortHeader("areaCargo", "Área / cargo")}
+                  </th>
+                  <th className="px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                    {renderParticipantSortHeader("instrumentos", "Instrumentos")}
+                  </th>
+                  <th className="px-4 py-3" aria-sort={participantSortAria("estado")}>
+                    {renderParticipantSortHeader("estado", "Estado")}
+                  </th>
+                  <th className="px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                    {renderParticipantSortHeader("accion", "Acción", "right")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1415,15 +1559,7 @@ export default function AplicacionDetallePage() {
                     <td className="px-4 py-4 text-right">
                       {(() => {
                         const enabled = canOpenParticipant(emp);
-                        const label = finalizada
-                          ? enabled
-                            ? "Ver respuestas"
-                            : "Sin respuestas"
-                          : emp.completo
-                            ? "Ver respuestas"
-                            : emp.registrado
-                              ? "Actualizar respuesta"
-                              : "Registrar respuesta";
+                        const label = participantActionLabel(emp, finalizada);
                         const reportEnabled = finalizada && enabled;
                         return (
                           <div className="flex justify-end gap-2">
