@@ -1471,22 +1471,22 @@ export default function AplicacionDetallePage() {
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[980px] table-fixed text-left text-sm">
+            <table className="w-full min-w-[1180px] table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="w-[22%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                  <th className="w-[21%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
                     {renderParticipantSortHeader("colaborador", "Colaborador")}
                   </th>
-                  <th className="w-[18%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                  <th className="w-[17%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
                     {renderParticipantSortHeader("areaCargo", "Área / cargo")}
                   </th>
-                  <th className="w-[27%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                  <th className="w-[20%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
                     {renderParticipantSortHeader("instrumentos", "Instrumentos")}
                   </th>
-                  <th className="w-[13%] px-4 py-3" aria-sort={participantSortAria("estado")}>
+                  <th className="w-[10%] px-4 py-3" aria-sort={participantSortAria("estado")}>
                     {renderParticipantSortHeader("estado", "Estado")}
                   </th>
-                  <th className="w-[20%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                  <th className="w-[32%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
                     {renderParticipantSortHeader("accion", "Acción", "right")}
                   </th>
                 </tr>
@@ -1562,7 +1562,7 @@ export default function AplicacionDetallePage() {
                         const label = participantActionLabel(emp, finalizada);
                         const reportEnabled = finalizada && enabled;
                         return (
-                          <div className="flex justify-end gap-2">
+                          <div className="flex flex-wrap justify-end gap-2">
                             <button
                               onClick={() => {
                                 if (enabled)
@@ -1576,7 +1576,7 @@ export default function AplicacionDetallePage() {
                                   ? label
                                   : "La aplicación ya fue cerrada/calculada y este participante no tiene respuestas registradas."
                               }
-                              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 font-bold ${enabled ? "bg-violet-700 text-white hover:bg-violet-800" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
+                              className={`inline-flex min-w-[150px] items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 font-bold ${enabled ? "bg-violet-700 text-white hover:bg-violet-800" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
                             >
                               {finalizada ? (
                                 <Lock className="h-4 w-4" />
@@ -1600,7 +1600,7 @@ export default function AplicacionDetallePage() {
                                     ? "Ver informes individuales del colaborador"
                                     : "Disponible para participantes con respuestas/resultados en aplicaciones finalizadas."
                                 }
-                                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 font-bold ${
+                                className={`inline-flex min-w-[122px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 font-bold ${
                                   reportEnabled
                                     ? "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100"
                                     : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
@@ -1622,7 +1622,7 @@ export default function AplicacionDetallePage() {
                                     ? "No disponible en aplicaciones finalizadas o en cálculo."
                                     : "Eliminar respuestas y resultados de este colaborador en esta aplicación."
                                 }
-                                className="inline-flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="inline-flex min-w-[120px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-red-100 bg-red-50 px-3 py-2 font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
                               >
                                 <Trash2 className="h-4 w-4" /> Limpiar
                               </button>
