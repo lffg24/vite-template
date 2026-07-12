@@ -26,6 +26,7 @@ const PsicoEvaluacionesPage = lazy(() => import("@/pages/psicosocial/PsicoEvalua
 const EmpresasPsicoPage = lazy(() => import("@/pages/psicosocial/EmpresasPsicoPage"));
 const EmpresaPerfilPage = lazy(() => import("@/pages/psicosocial/EmpresaPerfilPage"));
 const EmpresaEmpleadosPage = lazy(() => import("@/pages/psicosocial/EmpresaEmpleadosPage"));
+const EmpresaAreasCargosPage = lazy(() => import("@/pages/psicosocial/EmpresaAreasCargosPage"));
 const EmpresaAplicacionesPage = lazy(() => import("@/pages/psicosocial/EmpresaAplicacionesPage"));
 const AplicacionDetallePage = lazy(() => import("@/pages/psicosocial/AplicacionDetallePage"));
 const AplicacionResultadosPage = lazy(() => import("@/pages/psicosocial/AplicacionResultadosPage"));
@@ -119,6 +120,10 @@ function App() {
 
               <Route path="empresas" element={<EmpresasPsicoPage />} />
               <Route path="empresas/:empresaId" element={<EmpresaPerfilPage />} />
+              <Route
+                path="empresas/:empresaId/areas-cargos"
+                element={<EmpresaAreasCargosPage />}
+              />
               <Route
                 path="empresas/:empresaId/empleados"
                 element={<EmpresaEmpleadosPage />}

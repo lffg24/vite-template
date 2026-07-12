@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Building2, Users, ClipboardList, BarChart3, Plus, Upload, Eye, FileText } from "lucide-react";
+import { Building2, Users, BriefcaseBusiness, BarChart3, Plus, Eye, FileText } from "lucide-react";
 import { psicoAdminService, EmpresaPsico, AplicacionEmpresa } from "@/features/psicosocial/api/psicoAdminService";
 
 function n(value: unknown) { const num = Number(value ?? 0); return Number.isFinite(num) ? num : 0; }
@@ -60,7 +60,7 @@ export default function EmpresaPerfilPage() {
 
         <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-black text-slate-950">Información de la empresa</h2><div className="mt-5 grid gap-4 md:grid-cols-2"><Info label="Razón social" value={empresa.razon_social || empresa.nombre} /><Info label="Dirección" value={(empresa as any).direccion || "Sin dato"} /><Info label="Teléfono" value={empresa.telefono || "Sin dato"} /><Info label="País" value={empresa.pais || "Colombia"} /><Info label="Representante legal" value={(empresa as any).representante_legal || "Sin dato"} /><Info label="Actividad económica" value={(empresa as any).actividad_economica || "Sin dato"} /></div></div>
-          <aside className="space-y-4"><Action icon={<Plus />} title="Nueva batería" desc="Crear aplicación A/B + Extra + Estrés" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} /><Action icon={<Upload />} title="Cargar empleados" desc="Importar empleados desde Excel/CSV" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/empleados`)} /><Action icon={<Users />} title="Ver empleados" desc="Listado y perfiles de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/empleados`)} /><Action icon={<BarChart3 />} title="Resultados" desc="Dashboard por aplicación" onClick={() => navigate(`/psicosocial/resultados`)} /></aside>
+          <aside className="space-y-4"><Action icon={<Plus />} title="Nueva batería" desc="Crear aplicación A/B + Extra + Estrés" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} /><Action icon={<BriefcaseBusiness />} title="Áreas y cargos" desc="Gestionar estructura de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/areas-cargos`)} /><Action icon={<Users />} title="Ver empleados" desc="Listado y perfiles de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/empleados`)} /><Action icon={<BarChart3 />} title="Resultados" desc="Dashboard por aplicación" onClick={() => navigate(`/psicosocial/resultados`)} /></aside>
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">

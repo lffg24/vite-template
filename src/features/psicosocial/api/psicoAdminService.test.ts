@@ -33,3 +33,42 @@ describe("psicoAdminService.importarEmpleados", () => {
     expect((init?.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
   });
 });
+
+describe("psicoAdminService áreas y cargos", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("consulta áreas y cargos inactivos solo cuando se solicita para administración", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockImplementation(async () => new Response(
+      JSON.stringify({ ok: true, items: [] }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    ) as any);
+
+    await psicoAdminService.listarAreas("empresa-1", true);
+    await psicoAdminService.listarCargos("empresa-1", null, true);
+
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/psicosocial/admin/empresas/empresa-1/areas?include_inactive=true");
+    expect(String(fetchMock.mock.calls[1][0])).toContain("/psicosocial/admin/empresas/empresa-1/cargos?include_inactive=true");
+  });
+
+  it("actualiza y elimina áreas/cargos con métodos HTTP explícitos", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockImplementation(async () => new Response(
+      JSON.stringify({ ok: true, item: { id: 1, nombre: "Operaciones" } }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    ) as any);
+
+    await psicoAdminService.actualizarArea("empresa-1", 10, { activo: false });
+    await psicoAdminService.eliminarArea("empresa-1", 10);
+    await psicoAdminService.actualizarCargo("empresa-1", 20, { nombre: "Analista", area_id: 10 });
+    await psicoAdminService.eliminarCargo("empresa-1", 20);
+
+    expect(fetchMock.mock.calls.map(([, init]) => init?.method)).toEqual(["PUT", "DELETE", "PUT", "DELETE"]);
+  });
+});

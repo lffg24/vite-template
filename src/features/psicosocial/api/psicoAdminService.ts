@@ -26,8 +26,8 @@ export type CreditosResumen = {
   actualizado_en?: string | null;
 };
 
-export type AreaEmpresa = { id: number; nombre: string; descripcion?: string };
-export type CargoEmpresa = { id: number; nombre: string; area_id?: number | null; area_nombre?: string; nivel?: string };
+export type AreaEmpresa = { id: number; nombre: string; descripcion?: string; activo?: boolean; cargos_count?: number };
+export type CargoEmpresa = { id: number; nombre: string; area_id?: number | null; area_nombre?: string; nivel?: string; activo?: boolean; empleados_count?: number };
 
 export type EmpleadoEmpresa = {
   id: number;
@@ -176,8 +176,8 @@ export const psicoAdminService = {
       { headers: { "X-Empresa-Id": empresaId } },
     ),
 
-  listarAreas: (empresaId: string) =>
-    requestJson<{ ok: boolean; items: AreaEmpresa[] }>(`/psicosocial/admin/empresas/${empresaId}/areas`, {
+  listarAreas: (empresaId: string, includeInactive = false) =>
+    requestJson<{ ok: boolean; items: AreaEmpresa[] }>(`/psicosocial/admin/empresas/${empresaId}/areas${includeInactive ? "?include_inactive=true" : ""}`, {
       headers: { "X-Empresa-Id": empresaId },
     }),
 
@@ -188,8 +188,24 @@ export const psicoAdminService = {
       body: JSON.stringify(payload),
     }),
 
-  listarCargos: (empresaId: string, areaId?: number | null) => {
-    const query = areaId ? `?area_id=${areaId}` : "";
+  actualizarArea: (empresaId: string, areaId: number, payload: { nombre?: string; descripcion?: string; activo?: boolean }) =>
+    requestJson<{ ok: boolean; item: AreaEmpresa }>(`/psicosocial/admin/empresas/${empresaId}/areas/${areaId}`, {
+      method: "PUT",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify(payload),
+    }),
+
+  eliminarArea: (empresaId: string, areaId: number) =>
+    requestJson<{ ok: boolean; deleted_id: number }>(`/psicosocial/admin/empresas/${empresaId}/areas/${areaId}`, {
+      method: "DELETE",
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  listarCargos: (empresaId: string, areaId?: number | null, includeInactive = false) => {
+    const params = new URLSearchParams();
+    if (areaId) params.set("area_id", String(areaId));
+    if (includeInactive) params.set("include_inactive", "true");
+    const query = params.toString() ? `?${params.toString()}` : "";
     return requestJson<{ ok: boolean; items: CargoEmpresa[] }>(`/psicosocial/admin/empresas/${empresaId}/cargos${query}`, {
       headers: { "X-Empresa-Id": empresaId },
     });
@@ -200,6 +216,19 @@ export const psicoAdminService = {
       method: "POST",
       headers: { "X-Empresa-Id": empresaId },
       body: JSON.stringify(payload),
+    }),
+
+  actualizarCargo: (empresaId: string, cargoId: number, payload: { nombre?: string; area_id?: number | null; nivel?: string; activo?: boolean }) =>
+    requestJson<{ ok: boolean; item: CargoEmpresa }>(`/psicosocial/admin/empresas/${empresaId}/cargos/${cargoId}`, {
+      method: "PUT",
+      headers: { "X-Empresa-Id": empresaId },
+      body: JSON.stringify(payload),
+    }),
+
+  eliminarCargo: (empresaId: string, cargoId: number) =>
+    requestJson<{ ok: boolean; deleted_id: number }>(`/psicosocial/admin/empresas/${empresaId}/cargos/${cargoId}`, {
+      method: "DELETE",
+      headers: { "X-Empresa-Id": empresaId },
     }),
 
   empleadosEmpresa: (empresaId: string, q = "") =>

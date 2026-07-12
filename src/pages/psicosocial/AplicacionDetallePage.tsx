@@ -1470,23 +1470,23 @@ export default function AplicacionDetallePage() {
             />
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <table className="min-w-full text-left text-sm">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="w-full min-w-[980px] table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="w-[21%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                  <th className="w-[22%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
                     {renderParticipantSortHeader("colaborador", "Colaborador")}
                   </th>
-                  <th className="w-[19%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                  <th className="w-[18%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
                     {renderParticipantSortHeader("areaCargo", "Área / cargo")}
                   </th>
-                  <th className="w-[24%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                  <th className="w-[27%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
                     {renderParticipantSortHeader("instrumentos", "Instrumentos")}
                   </th>
-                  <th className="w-[14%] px-4 py-3" aria-sort={participantSortAria("estado")}>
+                  <th className="w-[13%] px-4 py-3" aria-sort={participantSortAria("estado")}>
                     {renderParticipantSortHeader("estado", "Estado")}
                   </th>
-                  <th className="w-[22%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                  <th className="w-[20%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
                     {renderParticipantSortHeader("accion", "Acción", "right")}
                   </th>
                 </tr>
