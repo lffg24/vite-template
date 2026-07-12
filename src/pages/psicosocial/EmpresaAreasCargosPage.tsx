@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, BriefcaseBusiness, Building2, Edit3, Loader2, Plus, Power, RefreshCw, Trash2, X } from "lucide-react";
 import { AreaEmpresa, CargoEmpresa, psicoAdminService } from "@/features/psicosocial/api/psicoAdminService";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
+import { StandardPagination } from "@/components/common/StandardPagination";
 
 type DrawerState =
   | { type: "area"; mode: "create"; item?: undefined }
@@ -11,6 +12,19 @@ type DrawerState =
   | { type: "cargo"; mode: "create"; item?: undefined }
   | { type: "cargo"; mode: "edit"; item: CargoEmpresa }
   | null;
+
+type CatalogTab = "areas" | "cargos";
+
+export function paginateCatalogItems<T>(items: T[], page: number, pageSize: number) {
+  const safePageSize = Math.max(1, Number(pageSize || 10));
+  const totalPages = Math.max(1, Math.ceil(items.length / safePageSize));
+  const currentPage = Math.min(Math.max(1, Number(page || 1)), totalPages);
+  const start = (currentPage - 1) * safePageSize;
+  return {
+    currentPage,
+    items: items.slice(start, start + safePageSize),
+  };
+}
 
 export default function EmpresaAreasCargosPage() {
   const { empresaId = "" } = useParams();
@@ -21,6 +35,11 @@ export default function EmpresaAreasCargosPage() {
   const [saving, setSaving] = useState(false);
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
+  const [activeTab, setActiveTab] = useState<CatalogTab>("areas");
+  const [areasPage, setAreasPage] = useState(1);
+  const [areasPageSize, setAreasPageSize] = useState(10);
+  const [cargosPage, setCargosPage] = useState(1);
+  const [cargosPageSize, setCargosPageSize] = useState(10);
 
   const notify = (payload: Omit<ToastPayload, "id">) => {
     const id = Date.now();
@@ -58,6 +77,16 @@ export default function EmpresaAreasCargosPage() {
     }
     return counts;
   }, [cargos]);
+  const paginatedAreas = useMemo(() => paginateCatalogItems(areas, areasPage, areasPageSize), [areas, areasPage, areasPageSize]);
+  const paginatedCargos = useMemo(() => paginateCatalogItems(cargos, cargosPage, cargosPageSize), [cargos, cargosPage, cargosPageSize]);
+
+  useEffect(() => {
+    setAreasPage(1);
+  }, [areas.length, areasPageSize]);
+
+  useEffect(() => {
+    setCargosPage(1);
+  }, [cargos.length, cargosPageSize]);
 
   const disableArea = async (area: AreaEmpresa, activo: boolean) => {
     try {
@@ -129,60 +158,93 @@ export default function EmpresaAreasCargosPage() {
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-          <CatalogPanel
-            title="Áreas"
-            icon={<Building2 className="h-5 w-5" />}
-            actionLabel="Nueva área"
-            onCreate={() => setDrawer({ type: "area", mode: "create" })}
-          >
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                  <tr><th className="px-4 py-3">Área</th><th className="px-4 py-3">Cargos</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {loading ? <EmptyRow colSpan={4} text="Cargando áreas..." /> : areas.length === 0 ? <EmptyRow colSpan={4} text="No hay áreas registradas." /> : areas.map((area) => {
-                    const count = area.cargos_count ?? cargosPorArea.get(area.id) ?? 0;
-                    return (
-                      <tr key={area.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-4"><strong className="block text-slate-950">{area.nombre}</strong><span className="text-xs text-slate-500">{area.descripcion || "Sin descripción"}</span></td>
-                        <td className="px-4 py-4 font-bold">{count}</td>
-                        <td className="px-4 py-4"><StatusPill active={area.activo !== false} /></td>
-                        <td className="px-4 py-4"><RowActions active={area.activo !== false} onEdit={() => setDrawer({ type: "area", mode: "edit", item: area })} onToggle={() => void disableArea(area, area.activo === false)} onDelete={() => void deleteArea(area)} /></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div role="tablist" aria-label="Gestión de áreas y cargos" className="flex flex-wrap gap-2">
+              <CatalogTabButton
+                active={activeTab === "areas"}
+                icon={<Building2 className="h-4 w-4" />}
+                label="Áreas"
+                count={areas.length}
+                onClick={() => setActiveTab("areas")}
+              />
+              <CatalogTabButton
+                active={activeTab === "cargos"}
+                icon={<BriefcaseBusiness className="h-4 w-4" />}
+                label="Cargos"
+                count={cargos.length}
+                onClick={() => setActiveTab("cargos")}
+              />
             </div>
-          </CatalogPanel>
+            <button
+              onClick={() => setDrawer(activeTab === "areas" ? { type: "area", mode: "create" } : { type: "cargo", mode: "create" })}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800"
+            >
+              <Plus className="h-4 w-4" /> {activeTab === "areas" ? "Nueva área" : "Nuevo cargo"}
+            </button>
+          </div>
 
-          <CatalogPanel
-            title="Cargos"
-            icon={<BriefcaseBusiness className="h-5 w-5" />}
-            actionLabel="Nuevo cargo"
-            onCreate={() => setDrawer({ type: "cargo", mode: "create" })}
-          >
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                  <tr><th className="px-4 py-3">Cargo</th><th className="px-4 py-3">Área</th><th className="px-4 py-3">Uso</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3 text-right">Acción</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {loading ? <EmptyRow colSpan={5} text="Cargando cargos..." /> : cargos.length === 0 ? <EmptyRow colSpan={5} text="No hay cargos registrados." /> : cargos.map((cargo) => (
-                    <tr key={cargo.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-4"><strong className="block text-slate-950">{cargo.nombre}</strong><span className="text-xs text-slate-500">{cargo.nivel || "Sin nivel"}</span></td>
-                      <td className="px-4 py-4">{cargo.area_nombre || (cargo.area_id ? areaById.get(cargo.area_id)?.nombre : "") || "Sin área"}</td>
-                      <td className="px-4 py-4 font-bold">{cargo.empleados_count || 0}</td>
-                      <td className="px-4 py-4"><StatusPill active={cargo.activo !== false} /></td>
-                      <td className="px-4 py-4"><RowActions active={cargo.activo !== false} onEdit={() => setDrawer({ type: "cargo", mode: "edit", item: cargo })} onToggle={() => void disableCargo(cargo, cargo.activo === false)} onDelete={() => void deleteCargo(cargo)} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {activeTab === "areas" ? (
+            <div role="tabpanel" aria-label="Áreas">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                    <tr><th className="px-5 py-4">Área</th><th className="px-5 py-4">Cargos</th><th className="px-5 py-4">Estado</th><th className="px-5 py-4 text-right">Acción</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loading ? <EmptyRow colSpan={4} text="Cargando áreas..." /> : areas.length === 0 ? <EmptyRow colSpan={4} text="No hay áreas registradas." /> : paginatedAreas.items.map((area) => {
+                      const count = area.cargos_count ?? cargosPorArea.get(area.id) ?? 0;
+                      return (
+                        <tr key={area.id} className="hover:bg-slate-50">
+                          <td className="px-5 py-4"><strong className="block text-slate-950">{area.nombre}</strong><span className="text-xs text-slate-500">{area.descripcion || "Sin descripción"}</span></td>
+                          <td className="px-5 py-4 font-bold">{count}</td>
+                          <td className="px-5 py-4"><StatusPill active={area.activo !== false} /></td>
+                          <td className="px-5 py-4"><RowActions active={area.activo !== false} onEdit={() => setDrawer({ type: "area", mode: "edit", item: area })} onToggle={() => void disableArea(area, area.activo === false)} onDelete={() => void deleteArea(area)} /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <StandardPagination
+                page={paginatedAreas.currentPage}
+                pageSize={areasPageSize}
+                total={areas.length}
+                itemLabel="áreas"
+                onPageChange={setAreasPage}
+                onPageSizeChange={(size) => { setAreasPageSize(size); setAreasPage(1); }}
+              />
             </div>
-          </CatalogPanel>
+          ) : (
+            <div role="tabpanel" aria-label="Cargos">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[920px] text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                    <tr><th className="px-5 py-4">Cargo</th><th className="px-5 py-4">Área</th><th className="px-5 py-4">Uso</th><th className="px-5 py-4">Estado</th><th className="px-5 py-4 text-right">Acción</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {loading ? <EmptyRow colSpan={5} text="Cargando cargos..." /> : cargos.length === 0 ? <EmptyRow colSpan={5} text="No hay cargos registrados." /> : paginatedCargos.items.map((cargo) => (
+                      <tr key={cargo.id} className="hover:bg-slate-50">
+                        <td className="px-5 py-4"><strong className="block text-slate-950">{cargo.nombre}</strong><span className="text-xs text-slate-500">{cargo.nivel || "Sin nivel"}</span></td>
+                        <td className="px-5 py-4">{cargo.area_nombre || (cargo.area_id ? areaById.get(cargo.area_id)?.nombre : "") || "Sin área"}</td>
+                        <td className="px-5 py-4 font-bold">{cargo.empleados_count || 0}</td>
+                        <td className="px-5 py-4"><StatusPill active={cargo.activo !== false} /></td>
+                        <td className="px-5 py-4"><RowActions active={cargo.activo !== false} onEdit={() => setDrawer({ type: "cargo", mode: "edit", item: cargo })} onToggle={() => void disableCargo(cargo, cargo.activo === false)} onDelete={() => void deleteCargo(cargo)} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <StandardPagination
+                page={paginatedCargos.currentPage}
+                pageSize={cargosPageSize}
+                total={cargos.length}
+                itemLabel="cargos"
+                onPageChange={setCargosPage}
+                onPageSizeChange={(size) => { setCargosPageSize(size); setCargosPage(1); }}
+              />
+            </div>
+          )}
         </section>
       </div>
 
@@ -192,17 +254,21 @@ export default function EmpresaAreasCargosPage() {
   );
 }
 
-function CatalogPanel({ title, icon, actionLabel, onCreate, children }: { title: string; icon: ReactNode; actionLabel: string; onCreate: () => void; children: ReactNode }) {
+function CatalogTabButton({ active, icon, label, count, onClick }: { active: boolean; icon: ReactNode; label: string; count: number; onClick: () => void }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="inline-flex items-center gap-2 text-xl font-black text-slate-950">{icon}{title}</h2>
-        <button onClick={onCreate} className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800">
-          <Plus className="h-4 w-4" /> {actionLabel}
-        </button>
-      </div>
-      {children}
-    </section>
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black transition ${
+        active ? "bg-violet-700 text-white shadow-sm shadow-violet-200" : "bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700"
+      }`}
+    >
+      {icon}
+      {label}
+      <span className={`rounded-full px-2 py-0.5 text-[11px] ${active ? "bg-white/20 text-white" : "bg-white text-slate-500"}`}>{count}</span>
+    </button>
   );
 }
 
