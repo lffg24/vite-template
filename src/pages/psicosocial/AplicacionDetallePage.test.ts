@@ -14,6 +14,10 @@ describe("application employee sociodemographic draft", () => {
     expect(hasApplicationEmployeeSocioData({ sexo: "", anio_nacimiento: null })).toBe(false);
   });
 
+  it("no considera area y cargo base como perfil sociodemografico diligenciado", () => {
+    expect(hasApplicationEmployeeSocioData({ area: "Operaciones", cargo: "Analista" })).toBe(false);
+  });
+
   it("detecta ficha opcional diligenciada", () => {
     expect(hasApplicationEmployeeSocioData({ sexo: "Femenino" })).toBe(true);
     expect(hasApplicationEmployeeSocioData({ personas_dependen: 0 })).toBe(true);

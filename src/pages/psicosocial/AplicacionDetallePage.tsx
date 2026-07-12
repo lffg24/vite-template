@@ -1818,7 +1818,7 @@ export default function AplicacionDetallePage() {
                   Agregar empleado manualmente
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Se agregará sin salir del detalle de esta aplicación.
+                  Se creará en el maestro de colaboradores sin marcar la batería como diligenciada.
                 </p>
               </div>
               <button
@@ -1830,6 +1830,18 @@ export default function AplicacionDetallePage() {
             </div>
 
             <form onSubmit={submitEmployee} className="space-y-4">
+              <section className="rounded-3xl border border-slate-200 bg-white p-4">
+                <div className="mb-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+                    Información base del colaborador
+                  </p>
+                  <h3 className="text-lg font-black text-slate-950">
+                    Datos maestros
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Estos datos identifican al colaborador en la empresa. No cuentan como ficha sociodemográfica de la aplicación.
+                  </p>
+                </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Nombres *" error={employeeFieldErrors.nombres}>
                   <Input
@@ -1932,6 +1944,7 @@ export default function AplicacionDetallePage() {
                   </div>
                 </Field>
               </div>
+              </section>
 
               <section className="rounded-3xl border border-violet-100 bg-violet-50/50 p-4">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -1943,7 +1956,7 @@ export default function AplicacionDetallePage() {
                       Datos generales de la aplicación
                     </h3>
                     <p className="mt-1 text-sm text-slate-600">
-                      Si los registras ahora, quedarán como borrador para esta aplicación.
+                      Si los registras ahora, quedarán como borrador solo para esta aplicación.
                     </p>
                   </div>
                   {employeeSocioLoading && (

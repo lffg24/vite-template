@@ -1050,8 +1050,8 @@ function fichaMissing(ficha: FichaSociodemografica) {
   const required: Array<[keyof FichaSociodemografica, string]> = [
     ["sexo", "Sexo"], ["anio_nacimiento", "Año de nacimiento"], ["estado_civil", "Estado civil"], ["nivel_estudios", "Nivel de estudios"],
     ["ocupacion_profesion", "Ocupación / profesión"], ["ciudad_residencia", "Ciudad de residencia"], ["estrato", "Estrato"], ["tipo_vivienda", "Tipo de vivienda"],
-    ["personas_dependen", "Personas dependientes"], ["ciudad_trabajo", "Ciudad donde trabaja"], ["cargo", "Nombre del cargo"], ["tipo_cargo", "Tipo de cargo"],
-    ["antiguedad_empresa", "Antigüedad en la empresa"], ["antiguedad_cargo", "Antigüedad en el cargo"], ["area", "Área / sección"], ["tipo_contrato", "Tipo de contrato"],
+    ["personas_dependen", "Personas dependientes"], ["ciudad_trabajo", "Ciudad donde trabaja"], ["tipo_cargo", "Tipo de cargo"],
+    ["antiguedad_empresa", "Antigüedad en la empresa"], ["antiguedad_cargo", "Antigüedad en el cargo"], ["tipo_contrato", "Tipo de contrato"],
     ["horas_diarias_trabajo", "Horas diarias"], ["tipo_salario", "Tipo de salario"],
   ];
   return required.filter(([key]) => {
@@ -1125,7 +1125,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
     <div className="p-5">
       <div className="rounded-3xl border border-violet-100 bg-violet-50/60 p-5">
         <h2 className="text-xl font-black text-slate-950">Ficha de datos generales</h2>
-        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. Los campos de catálogo usan listas controladas para proteger la calidad del dashboard.</p>
+        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. Área y cargo vienen del maestro del colaborador y no cuentan como ficha diligenciada por sí solos.</p>
       </div>
 
       {missing.length > 0 && (
@@ -1168,9 +1168,9 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MunicipioField disabled={completa} label="Ciudad / municipio donde trabaja" query={trabQuery} selectedValue={ficha.ciudad_trabajo || ""} setQuery={(v) => { setTrabQuery(v); if (v !== String(ficha.ciudad_trabajo || "")) { update("ciudad_trabajo", ""); update("departamento_trabajo", ""); } }} options={trabOptions} onSelect={(item) => selectMunicipio("trab", item)} />
             <ReadOnlyField label="Departamento donde trabaja" value={ficha.departamento_trabajo || ""} />
-            <TextField disabled={completa} label="Nombre del cargo" value={ficha.cargo || ""} onChange={(v) => update("cargo", v)} />
+            <ReadOnlyField label="Cargo base del colaborador" value={ficha.cargo || ""} />
             <SelectField disabled={completa} label="Tipo de cargo" value={ficha.tipo_cargo || ""} options={catalogos.tipo_cargo} onChange={(v) => update("tipo_cargo", v)} />
-            <TextField disabled={completa} label="Área / departamento / sección" value={ficha.area || ""} onChange={(v) => update("area", v)} />
+            <ReadOnlyField label="Área base del colaborador" value={ficha.area || ""} />
             <NumberField disabled={completa} label="Antigüedad en la empresa (años)" value={ficha.antiguedad_empresa ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_empresa", v === null ? "" : String(v))} />
             <NumberField disabled={completa} label="Antigüedad en el cargo (años)" value={ficha.antiguedad_cargo ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_cargo", v === null ? "" : String(v))} />
             <SelectField disabled={completa} label="Tipo de contrato" value={ficha.tipo_contrato || ""} options={catalogos.tipo_contrato} onChange={(v) => update("tipo_contrato", v)} />
