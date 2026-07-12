@@ -3,7 +3,9 @@ import {
   applicableQuestionIdsForConditionals,
   batterySummaryProgress,
   calculateInstrumentProgress,
+  isQuestionAnswerValid,
   mergeConditionalRules,
+  questionOptions,
 } from "./PsicoEmpleadoRespuestasPage";
 import type { PreguntaRespuesta, PsicoEvaluacionEmpleado } from "@/features/psicosocial/api/psicoEmpleadoService";
 
@@ -12,6 +14,19 @@ function question(orden: number): PreguntaRespuesta {
     pregunta_id: orden,
     orden,
     texto: `Pregunta ${orden}`,
+  };
+}
+
+function stressQuestion(orden: number, preguntaId = orden): PreguntaRespuesta {
+  return {
+    pregunta_id: preguntaId,
+    orden,
+    texto: `Estrés ${orden}`,
+    parametros: {
+      opciones: ["Siempre", "Casi siempre", "A veces", "Nunca"],
+      valores: [9, 6, 3, 0],
+      instrument_code: "PSICO_ESTRES",
+    },
   };
 }
 
@@ -127,5 +142,31 @@ describe("PsicoEmpleadoRespuestasPage conditional rules", () => {
 
     expect(batterySummaryProgress(ev, 2, { total: 107, answered: 5, pending: 102, progress: 4.7 })).toBe(4.7);
     expect(batterySummaryProgress(ev, 99, { total: 107, answered: 5, pending: 102, progress: 4.7 })).toBe(2.4);
+  });
+
+  it("usa las opciones oficiales de cada pregunta en lugar del fallback global", () => {
+    const pregunta = stressQuestion(1);
+
+    expect(questionOptions(pregunta)).toEqual(["Siempre", "Casi siempre", "A veces", "Nunca"]);
+    expect(isQuestionAnswerValid(pregunta, "A veces")).toBe(true);
+    expect(isQuestionAnswerValid(pregunta, "Casi nunca")).toBe(false);
+  });
+
+  it("no cuenta respuestas fuera de la escala oficial como avance", () => {
+    const preguntas = [stressQuestion(1), stressQuestion(2)];
+
+    const progress = calculateInstrumentProgress(
+      preguntas,
+      [],
+      { 1: "Casi nunca", 2: "Nunca" },
+      {},
+    );
+
+    expect(progress).toEqual({
+      total: 2,
+      answered: 1,
+      pending: 1,
+      progress: 50,
+    });
   });
 });

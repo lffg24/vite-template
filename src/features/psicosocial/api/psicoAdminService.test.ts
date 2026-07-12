@@ -34,6 +34,25 @@ describe("psicoAdminService.importarEmpleados", () => {
   });
 });
 
+describe("psicoAdminService.cerrarAplicacion", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("usa tres participantes completos como mínimo por defecto", async () => {
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true, estado: "FINALIZADA", participantes: 3, evaluacion_ids: [1] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }) as any,
+    );
+
+    await psicoAdminService.cerrarAplicacion("empresa-1", 20);
+
+    expect(String(fetchMock.mock.calls[0][0])).toContain("min_participantes=3");
+  });
+});
+
 describe("psicoAdminService áreas y cargos", () => {
   beforeEach(() => {
     vi.restoreAllMocks();

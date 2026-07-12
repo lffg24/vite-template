@@ -286,7 +286,7 @@ export const psicoAdminService = {
       headers: { "X-Empresa-Id": empresaId },
     }),
 
-  cerrarAplicacion: (empresaId: string, aplicacionId: number, minParticipantes = 1) =>
+  cerrarAplicacion: (empresaId: string, aplicacionId: number, minParticipantes = 3) =>
     requestJson<{ ok: boolean; estado: string; participantes: number; evaluacion_ids: number[] }>(
       `/psicosocial/admin/empresas/${empresaId}/aplicaciones/${aplicacionId}/cerrar?min_participantes=${minParticipantes}`,
       { method: "POST", headers: { "X-Empresa-Id": empresaId } },

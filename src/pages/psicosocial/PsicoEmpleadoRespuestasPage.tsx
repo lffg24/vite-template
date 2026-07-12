@@ -158,6 +158,18 @@ function parseParams(value: any) {
     return {};
   }
 }
+export function questionOptions(pregunta: Partial<PreguntaRespuesta>) {
+  const params = parseParams(pregunta.parametros);
+  const options = Array.isArray(params.opciones)
+    ? params.opciones.map((item: unknown) => String(item || "").trim()).filter(Boolean)
+    : [];
+  return options.length > 0 ? options : LIKERT;
+}
+export function isQuestionAnswerValid(pregunta: Partial<PreguntaRespuesta>, value: unknown) {
+  const answer = String(value || "").trim();
+  if (!answer) return false;
+  return questionOptions(pregunta).includes(answer);
+}
 function prettyDimension(value?: string | null) {
   const raw = String(value || "").trim();
   if (!raw) return "Preguntas";
@@ -203,7 +215,7 @@ export function calculateInstrumentProgress(
   conditionalAnswers: Record<string, boolean | null>,
 ): InstrumentProgress {
   const applicableIds = new Set(applicableQuestionIdsForConditionals(preguntas, rules, conditionalAnswers));
-  const answeredQuestions = preguntas.filter((p) => applicableIds.has(Number(p.pregunta_id)) && Boolean(answers[p.pregunta_id])).length;
+  const answeredQuestions = preguntas.filter((p) => applicableIds.has(Number(p.pregunta_id)) && isQuestionAnswerValid(p, answers[p.pregunta_id])).length;
   const conditionalTotal = rules.length;
   const conditionalAnswered = rules.length;
   const total = applicableIds.size + conditionalTotal;
@@ -429,7 +441,11 @@ export default function PsicoEmpleadoRespuestasPage() {
   }, [empleadoId, aplicacionId, selectedEval?.evaluacion_id]);
 
   const appClosed = ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state));
-  const selectedLocked = appClosed || !selectedEval?.editable || isLockedResponseStatus(selectedEval?.estado_respuestas);
+  const hasInvalidCurrentAnswers = preguntas.some((p) => {
+    const current = answers[p.pregunta_id];
+    return Boolean(current) && !isQuestionAnswerValid(p, current);
+  });
+  const selectedLocked = appClosed || (!hasInvalidCurrentAnswers && (!selectedEval?.editable || isLockedResponseStatus(selectedEval?.estado_respuestas)));
 
   function persistDraft() {
     if (!selectedEval || selectedLocked) return;
@@ -506,13 +522,13 @@ export default function PsicoEmpleadoRespuestasPage() {
       const name = dimensionOf(p);
       const current = map.get(name) || { name, total: 0, answered: 0 };
       current.total += 1;
-      if (answers[p.pregunta_id]) current.answered += 1;
+      if (isQuestionAnswerValid(p, answers[p.pregunta_id])) current.answered += 1;
       map.set(name, current);
     }
     return Array.from(map.values());
   }, [applicableQuestions, answers]);
   const pendingPreview = useMemo(() => {
-    const missing = applicableQuestions.filter((p) => !answers[p.pregunta_id]).map((p) => `Pregunta ${p.orden} · ${dimensionOf(p)}`);
+    const missing = applicableQuestions.filter((p) => !isQuestionAnswerValid(p, answers[p.pregunta_id])).map((p) => `Pregunta ${p.orden} · ${dimensionOf(p)}`);
     return { details: missing.slice(0, 4), moreCount: Math.max(missing.length - 4, 0) };
   }, [applicableQuestions, answers]);
 
@@ -1206,6 +1222,11 @@ function QuestionRow({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
+  const options = questionOptions(pregunta);
+  const invalidAnswer = value && !options.includes(value);
+  const optionGridClass = options.length <= 4
+    ? "sm:grid-cols-2 lg:grid-cols-4 min-[1500px]:grid-cols-4"
+    : "sm:grid-cols-3 lg:grid-cols-5 min-[1500px]:grid-cols-5";
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:border-violet-200 sm:p-4">
       <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(430px,500px)] min-[1500px]:items-center">
@@ -1213,8 +1234,8 @@ function QuestionRow({
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-sm font-black text-violet-700">{pregunta.orden}</span>
           <p className="min-w-0 text-[15px] font-bold leading-snug text-slate-800 sm:text-base min-[1500px]:pr-2">{pregunta.texto}</p>
         </div>
-        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 min-[1500px]:grid-cols-5">
-          {LIKERT.map((opt) => (
+        <div className={`grid min-w-0 grid-cols-2 gap-2 ${optionGridClass}`}>
+          {options.map((opt) => (
             <button
               key={opt}
               type="button"
@@ -1233,6 +1254,11 @@ function QuestionRow({
               {opt}
             </button>
           ))}
+          {invalidAnswer && (
+            <p className="col-span-full rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">
+              Respuesta guardada fuera de la escala oficial: {value}. Selecciona una opción válida para poder finalizar.
+            </p>
+          )}
         </div>
       </div>
     </div>
