@@ -1,9 +1,10 @@
 import { api } from "@/lib/apiClient";
 import type { PsicoAplicacionItem, PsicoDashboardResponse, DimensionDetalleResponse } from "@/types/psicoDashboard";
+import { isReportablePsicoApplicationState } from "@/utils/psicoApplicationState";
 
 export async function listarAplicacionesPsicoDashboard(): Promise<PsicoAplicacionItem[]> {
   const { data } = await api.get("/reportes/psico/oficial/aplicaciones");
-  return data?.items ?? [];
+  return (data?.items ?? []).filter((app: PsicoAplicacionItem) => isReportablePsicoApplicationState(app.estado));
 }
 
 export async function obtenerDashboardPsicoAplicacion(aplicacionId: number): Promise<PsicoDashboardResponse> {

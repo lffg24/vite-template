@@ -1,6 +1,7 @@
 import { api } from "@/lib/apiClient";
 import type { TipoReportePsicoOficial } from "@/types/psicoReportesOficiales";
 import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
+import { isReportablePsicoApplicationState } from "@/utils/psicoApplicationState";
 
 function pathFor(tipo: TipoReportePsicoOficial) {
   if (tipo === "resultados") return "informe-resultados";
@@ -10,7 +11,7 @@ function pathFor(tipo: TipoReportePsicoOficial) {
 
 export async function listarAplicacionesReportesOficiales(): Promise<PsicoAplicacionItem[]> {
   const { data } = await api.get("/reportes/psico/oficial/aplicaciones");
-  return data?.items ?? [];
+  return (data?.items ?? []).filter((app: PsicoAplicacionItem) => isReportablePsicoApplicationState(app.estado));
 }
 
 export async function obtenerHtmlReporteOficial(
