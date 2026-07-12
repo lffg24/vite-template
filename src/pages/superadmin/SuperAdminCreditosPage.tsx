@@ -224,7 +224,7 @@ export default function SuperAdminCreditosPage() {
                     <td className="px-4 py-4 text-center font-semibold text-slate-900">{Number(account.creditos_asignados || 0).toLocaleString("es-CO")}</td>
                     <td className="px-4 py-4 text-center font-black text-violet-700">{Number(account.saldo_actual || 0).toLocaleString("es-CO")}</td>
                     <td className="px-4 py-4">
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{account.estado}</span>
+                      <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{account.estado}</span>
                     </td>
                     <td className="px-4 py-4 text-xs text-slate-500">{account.actualizado_en ? new Date(account.actualizado_en).toLocaleString("es-CO") : "-"}</td>
                   </tr>

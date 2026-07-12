@@ -1474,19 +1474,19 @@ export default function AplicacionDetallePage() {
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                  <th className="w-[21%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
                     {renderParticipantSortHeader("colaborador", "Colaborador")}
                   </th>
-                  <th className="px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                  <th className="w-[19%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
                     {renderParticipantSortHeader("areaCargo", "Área / cargo")}
                   </th>
-                  <th className="px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                  <th className="w-[24%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
                     {renderParticipantSortHeader("instrumentos", "Instrumentos")}
                   </th>
-                  <th className="px-4 py-3" aria-sort={participantSortAria("estado")}>
+                  <th className="w-[14%] px-4 py-3" aria-sort={participantSortAria("estado")}>
                     {renderParticipantSortHeader("estado", "Estado")}
                   </th>
-                  <th className="px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                  <th className="w-[22%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
                     {renderParticipantSortHeader("accion", "Acción", "right")}
                   </th>
                 </tr>
@@ -1543,15 +1543,15 @@ export default function AplicacionDetallePage() {
                     </td>
                     <td className="px-4 py-4">
                       {participantStatusLabel(emp) === "Completo" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
                           <CheckCircle2 className="h-3 w-3" /> Completo
                         </span>
                       ) : participantStatusLabel(emp) === "En captura" ? (
-                        <span className="inline-flex rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
+                        <span className="inline-flex whitespace-nowrap rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
                           En captura
                         </span>
                       ) : (
-                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
+                        <span className="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
                           Por tabular
                         </span>
                       )}

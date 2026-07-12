@@ -335,7 +335,7 @@ export default function AplicacionesBTPage() {
                         <div className="mb-1 font-bold text-slate-800">{row.registrados} / {row.avance}%</div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-violet-700" style={{ width: `${Math.max(0, Math.min(100, row.avance))}%` }} /></div>
                       </td>
-                      <td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${stateClass(row.estado)}`}>{row.estadoLabel}</span></td>
+                      <td className="px-5 py-4"><span className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-black ring-1 ${stateClass(row.estado)}`}>{row.estadoLabel}</span></td>
                       <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" /> {formatDate(row.fechaInicio)}</td>
                       <td className="px-5 py-4"><strong>{row.creditos}</strong><div className="text-xs text-slate-500">créditos</div></td>
                     </tr>

@@ -697,7 +697,7 @@ export default function PsicoEmpleadoRespuestasPage() {
             >
               <FileText className="h-4 w-4" /> Informe individual
             </button>
-            {selectedEval && <span className={`rounded-full border px-3 py-1 text-xs font-black ${statusTone(selectedEval.estado_respuestas)}`}>{String(selectedEval.estado_respuestas || "sin iniciar").replace(/_/g, " ")}</span>}
+            {selectedEval && <span className={`inline-flex whitespace-nowrap rounded-full border px-3 py-1 text-xs font-black ${statusTone(selectedEval.estado_respuestas)}`}>{String(selectedEval.estado_respuestas || "sin iniciar").replace(/_/g, " ")}</span>}
             {selectedLocked && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">Modo solo lectura</span>}
           </div>
         </div>
@@ -799,7 +799,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
                 >
                   <FileText className="h-4 w-4" /> Datos generales
-                  {fichaCompleta ? <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
+                  {fichaCompleta ? <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
                 </button>
               </div>
 
