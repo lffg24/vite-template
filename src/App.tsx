@@ -14,6 +14,8 @@ import { LEGACY_APP_ROUTES, routeByAccess } from "@/lib/accessRoutes";
 import { useAuth } from "@/context/AuthContext";
 
 const Login = lazy(() => import("@/pages/Login"));
+const SolicitarRecuperacionClave = lazy(() => import("@/pages/SolicitarRecuperacionClave"));
+const RestablecerClave = lazy(() => import("@/pages/RestablecerClave"));
 const Logout = lazy(() => import("@/pages/Logout"));
 const SinAcceso = lazy(() => import("@/pages/SinAcceso"));
 const ResponderEvaluacion = lazy(() => import("@/pages/ResponderEvaluacion"));
@@ -66,6 +68,8 @@ function App() {
         <Routes>
           {/* Públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-clave" element={<SolicitarRecuperacionClave />} />
+          <Route path="/restablecer-clave" element={<RestablecerClave />} />
           <Route path="/logout" element={<Logout />} />
 
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}

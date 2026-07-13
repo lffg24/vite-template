@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   BarChart3,
@@ -217,9 +217,9 @@ export default function Login() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="font-bold">Contraseña</Label>
-                    <button type="button" className="text-sm font-semibold text-violet-700 hover:text-violet-800">
+                    <Link to="/recuperar-clave" className="text-sm font-semibold text-violet-700 hover:text-violet-800">
                       ¿Olvidaste tu contraseña?
-                    </button>
+                    </Link>
                   </div>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
