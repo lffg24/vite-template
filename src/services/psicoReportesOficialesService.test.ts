@@ -8,5 +8,6 @@ describe("psicoReportesOficialesService", () => {
     expect(pathFor("sociodemografico")).toBe("informe-sociodemografico");
     expect(pathFor("base_forma_a")).toBe("informe-base-forma-a");
     expect(pathFor("base_forma_b")).toBe("informe-base-forma-b");
+    expect(pathFor("base_general")).toBe("informe-base-general");
   });
 });

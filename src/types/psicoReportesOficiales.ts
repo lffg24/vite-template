@@ -3,7 +3,8 @@ export type TipoReportePsicoOficial =
   | "resultados_areas"
   | "sociodemografico"
   | "base_forma_a"
-  | "base_forma_b";
+  | "base_forma_b"
+  | "base_general";
 
 export interface ReporteAplicacionOption {
   id: number;

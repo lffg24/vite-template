@@ -42,6 +42,11 @@ const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; desc
     label: "Informe base Forma B",
     description: "Reporte base independiente con tablas y gráficas del Formulario B, extralaboral B y estrés B.",
   },
+  {
+    value: "base_general",
+    label: "Informe base general",
+    description: "Reporte base consolidado con Forma A y B cuando existan, manteniendo tablas, contenido y figuras por instrumento.",
+  },
 ];
 
 function saveBlob(filename: string, blob: Blob) {
@@ -84,7 +89,11 @@ export default function ReportesOficialesPsicoPage() {
   const initialAplicacionId = searchParams.get("aplicacionId") || searchParams.get("aplicacion") || "";
   const initialTipoParam = searchParams.get("tipo");
   const initialTipo = (
-    initialTipoParam === "sociodemografico" || initialTipoParam === "resultados_areas"
+    initialTipoParam === "sociodemografico" ||
+    initialTipoParam === "resultados_areas" ||
+    initialTipoParam === "base_forma_a" ||
+    initialTipoParam === "base_forma_b" ||
+    initialTipoParam === "base_general"
       ? initialTipoParam
       : "resultados"
   ) as TipoReportePsicoOficial;
