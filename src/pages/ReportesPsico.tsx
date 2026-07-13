@@ -7,6 +7,8 @@ import {
   CalendarClock,
   CheckCircle2,
   Download,
+  Eye,
+  FileArchive,
   FileText,
   Filter,
   Gauge,
@@ -42,9 +44,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AbrilLoading } from "@/components/common/AbrilLoading";
 import { StandardPagination } from "@/components/common/StandardPagination";
+import {
+  descargarZipInformesIndividuales,
+  type BulkInformeIndividualFormat,
+  type BulkInformeIndividualItem,
+} from "@/features/psicosocial/api/psicoInformesIndividualesService";
 import {
   listarAplicacionesPsicoDashboard,
   obtenerDashboardPsicoAplicacion,
@@ -632,14 +648,68 @@ function nivelBadge(nivel?: string | null) {
   );
 }
 
-function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
+type InstrumentFilter = "ALL" | "INTRA" | "EXTRA" | "ESTRES";
+
+const INSTRUMENT_FILTER_LABELS: Record<InstrumentFilter, string> = {
+  ALL: "Todos los informes",
+  INTRA: "Intralaboral",
+  EXTRA: "Extralaboral",
+  ESTRES: "Estrés",
+};
+
+function normalizeRisk(value?: string | null) {
+  return String(value || "SIN_NIVEL").toUpperCase();
+}
+
+function intraInstrumentCode(item: ParticipantePsico) {
+  if (item.intra === "A") return item.niveles?.a ? "PSICO_INTRA_A" : null;
+  if (item.intra === "B") return item.niveles?.b ? "PSICO_INTRA_B" : null;
+  return null;
+}
+
+function reportsForParticipant(item: ParticipantePsico, filter: InstrumentFilter): BulkInformeIndividualItem[] {
+  const reports: BulkInformeIndividualItem[] = [];
+  const intraCode = intraInstrumentCode(item);
+  if ((filter === "ALL" || filter === "INTRA") && intraCode) {
+    reports.push({ empleado_id: item.empleado_id, instrument_code: intraCode });
+  }
+  if ((filter === "ALL" || filter === "EXTRA") && item.niveles?.extra) {
+    reports.push({ empleado_id: item.empleado_id, instrument_code: "PSICO_EXTRA" });
+  }
+  if ((filter === "ALL" || filter === "ESTRES") && item.niveles?.estres) {
+    reports.push({ empleado_id: item.empleado_id, instrument_code: "PSICO_ESTRES" });
+  }
+  return reports;
+}
+
+function riskForParticipant(item: ParticipantePsico, filter: InstrumentFilter) {
+  if (filter === "INTRA") return item.intra === "A" ? item.niveles?.a : item.niveles?.b;
+  if (filter === "EXTRA") return item.niveles?.extra;
+  if (filter === "ESTRES") return item.niveles?.estres;
+  return item.nivel_critico;
+}
+
+function formatBytes(value: number) {
+  if (!value) return "0 MB";
+  return `${(value / 1024 / 1024).toLocaleString("es-CO", { maximumFractionDigits: 1 })} MB`;
+}
+
+function ParticipantesTable({ items = [], aplicacionId }: { items?: ParticipantePsico[]; aplicacionId?: number }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [riesgo, setRiesgo] = useState("ALL");
   const [estado, setEstado] = useState("ALL");
+  const [instrumento, setInstrumento] = useState<InstrumentFilter>("ALL");
   const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico" | "estado"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkInstrument, setBulkInstrument] = useState<InstrumentFilter>("ALL");
+  const [bulkFormat, setBulkFormat] = useState<BulkInformeIndividualFormat>("doc");
+  const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [bulkBytes, setBulkBytes] = useState(0);
+  const [bulkError, setBulkError] = useState<string | null>(null);
   const riskOrder: Record<string, number> = { MUY_ALTO: 5, ALTO: 4, MEDIO: 3, BAJO: 2, SIN_RIESGO: 1, MUY_BAJO: 1, SIN_NIVEL: 0 };
 
   const filtered = useMemo(() => {
@@ -647,26 +717,32 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
     return items
       .filter((it) => {
         const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
-        const matchesRiesgo = riesgo === "ALL" || it.nivel_critico === riesgo;
+        const matchesInstrument = instrumento === "ALL" || reportsForParticipant(it, instrumento).length > 0;
+        const matchesRiesgo = riesgo === "ALL" || normalizeRisk(riskForParticipant(it, instrumento)) === riesgo;
         const matchesEstado = estado === "ALL" || (estado === "COMPLETA" ? it.bateria_completa : !it.bateria_completa);
-        return matchesQ && matchesRiesgo && matchesEstado;
+        return matchesQ && matchesInstrument && matchesRiesgo && matchesEstado;
       })
       .sort((a, b) => {
         let cmp = 0;
-        if (sort.key === "nivel_critico") cmp = (riskOrder[a.nivel_critico || "SIN_NIVEL"] ?? 0) - (riskOrder[b.nivel_critico || "SIN_NIVEL"] ?? 0);
+        if (sort.key === "nivel_critico") cmp = (riskOrder[normalizeRisk(riskForParticipant(a, instrumento))] ?? 0) - (riskOrder[normalizeRisk(riskForParticipant(b, instrumento))] ?? 0);
         else if (sort.key === "estado") cmp = Number(a.bateria_completa) - Number(b.bateria_completa);
         else cmp = String((a as any)[sort.key] || "").localeCompare(String((b as any)[sort.key] || ""), "es");
         return sort.dir === "asc" ? cmp : -cmp;
       });
-  }, [items, q, riesgo, estado, sort]);
+  }, [items, q, riesgo, estado, instrumento, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [q, riesgo, estado, pageSize, items.length]);
+  }, [q, riesgo, estado, instrumento, pageSize, items.length]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const selectedParticipants = useMemo(() => items.filter((item) => selectedIds.has(item.empleado_id)), [items, selectedIds]);
+  const bulkReports = useMemo(() => selectedParticipants.flatMap((item) => reportsForParticipant(item, bulkInstrument)), [selectedParticipants, bulkInstrument]);
+  const bulkLimit = bulkFormat === "pdf" ? 100 : 500;
+  const bulkCanDownload = Boolean(aplicacionId) && bulkReports.length > 0 && bulkReports.length <= bulkLimit && !bulkDownloading;
+  const pageSelected = paginated.length > 0 && paginated.every((item) => selectedIds.has(item.empleado_id));
 
   const setSortKey = (key: typeof sort.key) => {
     setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -682,12 +758,72 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
     </button>
   );
 
+  const toggleSelected = (id: number, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const setPageSelected = (checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const item of paginated) {
+        if (checked) next.add(item.empleado_id);
+        else next.delete(item.empleado_id);
+      }
+      return next;
+    });
+  };
+
+  const selectFiltered = () => {
+    setSelectedIds(new Set(filtered.map((item) => item.empleado_id)));
+  };
+
+  const openBulkModal = () => {
+    setBulkInstrument(instrumento === "ALL" ? "ALL" : instrumento);
+    setBulkError(null);
+    setBulkBytes(0);
+    setBulkOpen(true);
+  };
+
+  async function downloadBulk() {
+    if (!aplicacionId || !bulkCanDownload) return;
+    setBulkDownloading(true);
+    setBulkError(null);
+    setBulkBytes(0);
+    try {
+      await descargarZipInformesIndividuales(
+        aplicacionId,
+        bulkFormat,
+        bulkReports,
+        `ABRIL360_informes_individuales_${aplicacionId}_${bulkFormat}.zip`,
+        ({ receivedBytes }) => setBulkBytes(receivedBytes),
+      );
+    } catch (err) {
+      setBulkError(err instanceof Error ? err.message : "No fue posible descargar el ZIP.");
+    } finally {
+      setBulkDownloading(false);
+    }
+  }
+
   if (!items.length) return <EmptyState text="Aún no hay participantes con scoring para esta aplicación." />;
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_220px]">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_190px_190px_190px]">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por cédula, nombre, área, cargo..." />
+        <Select value={instrumento} onValueChange={(value) => setInstrumento(value as InstrumentFilter)}>
+          <SelectTrigger><SelectValue placeholder="Instrumento" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Todos los instrumentos</SelectItem>
+            <SelectItem value="INTRA">Intralaboral</SelectItem>
+            <SelectItem value="EXTRA">Extralaboral</SelectItem>
+            <SelectItem value="ESTRES">Estrés</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={riesgo} onValueChange={setRiesgo}>
           <SelectTrigger><SelectValue placeholder="Riesgo" /></SelectTrigger>
           <SelectContent>
@@ -704,10 +840,30 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
           </SelectContent>
         </Select>
       </div>
+      <div className="flex flex-col gap-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-3 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
+        <div>
+          <span className="font-bold text-slate-950">{selectedIds.size}</span> participantes seleccionados · <span className="font-bold text-slate-950">{filtered.length}</span> visibles por filtros
+          <div className="text-xs text-slate-500">La descarga masiva genera un ZIP secuencial sin compresión para ahorrar CPU del servidor.</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" className="rounded-xl bg-white" onClick={selectFiltered} disabled={!filtered.length}>
+            Seleccionar filtrados
+          </Button>
+          <Button type="button" variant="outline" className="rounded-xl bg-white" onClick={() => setSelectedIds(new Set())} disabled={!selectedIds.size}>
+            Limpiar selección
+          </Button>
+          <Button type="button" className="rounded-xl bg-violet-700 hover:bg-violet-800" onClick={openBulkModal} disabled={!selectedIds.size || !aplicacionId}>
+            <FileArchive className="mr-2 h-4 w-4" /> Descargar masivamente
+          </Button>
+        </div>
+      </div>
       <div className="overflow-x-auto rounded-2xl border bg-white">
-        <table className="w-full min-w-[1120px] text-sm">
+        <table className="w-full min-w-[1380px] text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="w-12 px-4 py-3">
+                <Checkbox checked={pageSelected} onCheckedChange={(checked) => setPageSelected(Boolean(checked))} aria-label="Seleccionar página" />
+              </th>
               <th className="px-4 py-3"><SortButton label="Participante" sortKey="nombre" /></th>
               <th className="px-4 py-3"><SortButton label="Área / cargo" sortKey="area" /></th>
               <th className="px-4 py-3 text-center"><SortButton label="Intra" sortKey="intra" align="center" /></th>
@@ -716,6 +872,7 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
               <th className="px-4 py-3 text-center">Estrés</th>
               <th className="px-4 py-3 text-center"><SortButton label="Riesgo más alto" sortKey="nivel_critico" align="center" /></th>
               <th className="px-4 py-3 text-center"><SortButton label="Estado" sortKey="estado" align="center" /></th>
+              <th className="px-4 py-3 text-right">Acción</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -724,6 +881,13 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
               const puntajeIntra = it.intra === "A" ? it.puntajes?.a : it.puntajes?.b;
               return (
                 <tr key={String(it.empleado_id)} className="hover:bg-slate-50/70">
+                  <td className="px-4 py-3">
+                    <Checkbox
+                      checked={selectedIds.has(it.empleado_id)}
+                      onCheckedChange={(checked) => toggleSelected(it.empleado_id, Boolean(checked))}
+                      aria-label={`Seleccionar ${it.nombre}`}
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       type="button"
@@ -748,6 +912,17 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
                   <td className="px-4 py-3 text-center"><div>{nivelBadge(it.niveles?.estres)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.estres ?? undefined)}</div></td>
                   <td className="px-4 py-3 text-center">{nivelBadge(it.nivel_critico)}</td>
                   <td className="px-4 py-3 text-center">{it.bateria_completa ? <span className="text-emerald-700 font-semibold">Completa</span> : <span className="text-red-600 font-semibold">Revisar</span>}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl whitespace-nowrap"
+                      onClick={() => navigate(`/psicosocial/empleados/${it.empleado_id}/aplicaciones/${aplicacionId}/informes`)}
+                      disabled={!aplicacionId || !reportsForParticipant(it, "ALL").length}
+                    >
+                      <Eye className="mr-2 h-4 w-4" /> Informe individual
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
@@ -763,6 +938,108 @@ function ParticipantesTable({ items = [] }: { items?: ParticipantePsico[] }) {
         onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
       />
       <p className="text-xs text-slate-500">El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
+      <Dialog open={bulkOpen} onOpenChange={(open) => !bulkDownloading && setBulkOpen(open)}>
+        <DialogContent className="max-w-4xl rounded-[28px] border-slate-200 p-0 shadow-2xl">
+          <DialogHeader className="border-b bg-gradient-to-r from-violet-50 to-cyan-50 px-6 py-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-violet-700 p-3 text-white shadow-lg shadow-violet-200"><FileArchive className="h-6 w-6" /></div>
+              <div>
+                <DialogTitle className="text-2xl font-black tracking-tight text-slate-950">Descarga masiva de informes individuales</DialogTitle>
+                <DialogDescription className="mt-1 text-slate-600">
+                  Revisa el lote antes de generar el ZIP. El servidor procesa uno por uno para mantener bajo el consumo.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Tipo de informe</label>
+                <Select value={bulkInstrument} onValueChange={(value) => setBulkInstrument(value as InstrumentFilter)} disabled={bulkDownloading}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Todos disponibles</SelectItem>
+                    <SelectItem value="INTRA">Intralaboral</SelectItem>
+                    <SelectItem value="EXTRA">Extralaboral</SelectItem>
+                    <SelectItem value="ESTRES">Estrés</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Formato</label>
+                <Select value={bulkFormat} onValueChange={(value) => setBulkFormat(value as BulkInformeIndividualFormat)} disabled={bulkDownloading}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="doc">DOC editable · hasta 500</SelectItem>
+                    <SelectItem value="pdf">PDF directo · hasta 100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Lote</div>
+                <div className="mt-1 text-2xl font-black text-slate-950">{bulkReports.length}</div>
+                <div className="text-xs text-slate-500">{selectedParticipants.length} participantes · {INSTRUMENT_FILTER_LABELS[bulkInstrument]}</div>
+              </div>
+            </div>
+
+            {bulkReports.length > bulkLimit ? (
+              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                El lote supera el límite para {bulkFormat.toUpperCase()}: {bulkLimit} informes. Reduce la selección o usa un filtro más específico.
+              </div>
+            ) : null}
+            {bulkError ? (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{bulkError}</div>
+            ) : null}
+
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <div>
+                  <div className="font-bold text-slate-950">Informes a descargar</div>
+                  <div className="text-xs text-slate-500">Se incluye un archivo 00_RESUMEN_DESCARGA.txt con generados y no generados.</div>
+                </div>
+                {bulkDownloading ? <Badge className="bg-violet-700">Descargando {formatBytes(bulkBytes)}</Badge> : null}
+              </div>
+              <div className="max-h-72 overflow-y-auto p-2">
+                {!bulkReports.length ? (
+                  <div className="p-6 text-center text-sm text-slate-500">No hay informes disponibles con esta combinación.</div>
+                ) : (
+                  bulkReports.slice(0, 250).map((item, index) => {
+                    const participant = items.find((row) => row.empleado_id === item.empleado_id);
+                    return (
+                      <div key={`${item.empleado_id}-${item.instrument_code}-${index}`} className="grid gap-2 rounded-xl px-3 py-2 text-sm hover:bg-slate-50 md:grid-cols-[1fr_180px]">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-slate-900">{participant?.nombre || `Empleado ${item.empleado_id}`}</div>
+                          <div className="text-xs text-slate-500">CC {participant?.cedula || "Sin dato"} · {participant?.area || "Sin área"}</div>
+                        </div>
+                        <div className="text-xs font-bold text-violet-700">{item.instrument_code.replace("PSICO_", "").replaceAll("_", " ")}</div>
+                      </div>
+                    );
+                  })
+                )}
+                {bulkReports.length > 250 ? <div className="px-3 py-2 text-xs text-slate-500">Y {bulkReports.length - 250} informes adicionales.</div> : null}
+              </div>
+            </div>
+
+            {bulkDownloading ? (
+              <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                <div className="mb-2 flex items-center justify-between text-sm font-bold text-violet-900">
+                  <span>Generando ZIP secuencial</span>
+                  <span>{formatBytes(bulkBytes)}</span>
+                </div>
+                <Progress value={66} />
+                <p className="mt-2 text-xs text-violet-800">No cierres esta ventana hasta que el navegador inicie la descarga.</p>
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter className="border-t bg-white px-6 py-4">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setBulkOpen(false)} disabled={bulkDownloading}>Cancelar</Button>
+            <Button type="button" className="rounded-xl bg-violet-700 hover:bg-violet-800" onClick={downloadBulk} disabled={!bulkCanDownload}>
+              {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Descargar ZIP
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1662,7 +1939,7 @@ export default function ReportesPsico() {
                   <CardDescription>Listado por colaborador con estado de batería, niveles por instrumento y base para informe individual.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ParticipantesTable items={data.participantes?.items ?? []} />
+                  <ParticipantesTable items={data.participantes?.items ?? []} aplicacionId={aplicacionId || undefined} />
                 </CardContent>
               </Card>
             )}

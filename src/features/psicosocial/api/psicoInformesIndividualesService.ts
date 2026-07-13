@@ -52,6 +52,17 @@ export type PsicoInformesIndividualesResponse = {
   fuente_normativa?: string[];
 };
 
+export type BulkInformeIndividualFormat = "doc" | "pdf";
+
+export type BulkInformeIndividualItem = {
+  empleado_id: number;
+  instrument_code: string;
+};
+
+export type BulkInformeIndividualProgress = {
+  receivedBytes: number;
+};
+
 export function obtenerInformesIndividuales(empleadoId: number | string, aplicacionId: number | string) {
   return requestJson<PsicoInformesIndividualesResponse>(
     `/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`,
@@ -93,6 +104,65 @@ export async function descargarInformeIndividualPdf(
   filename: string,
 ) {
   return descargarArchivoInformeIndividual(empleadoId, aplicacionId, instrumentCode, "pdf", filename);
+}
+
+export async function descargarZipInformesIndividuales(
+  aplicacionId: number | string,
+  formato: BulkInformeIndividualFormat,
+  items: BulkInformeIndividualItem[],
+  filename: string,
+  onProgress?: (progress: BulkInformeIndividualProgress) => void,
+) {
+  const response = await fetch(`${API_URL}/psicosocial/aplicaciones/${aplicacionId}/informes-individuales/zip`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Accept: "application/zip",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ formato, items }),
+  });
+  if (!response.ok) {
+    if (response.status === 401) emitSessionExpired();
+    let message = `HTTP ${response.status}`;
+    const raw = await response.text().catch(() => "");
+    try {
+      const body = raw ? JSON.parse(raw) : null;
+      message = typeof body?.detail === "string" ? body.detail : message;
+    } catch {
+      message = raw || message;
+    }
+    throw new Error(message);
+  }
+
+  let blob: Blob;
+  if (response.body?.getReader) {
+    const reader = response.body.getReader();
+    const chunks: BlobPart[] = [];
+    let receivedBytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        chunks.push(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer);
+        receivedBytes += value.byteLength;
+        onProgress?.({ receivedBytes });
+      }
+    }
+    blob = new Blob(chunks, { type: "application/zip" });
+  } else {
+    blob = await response.blob();
+    onProgress?.({ receivedBytes: blob.size });
+  }
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
 }
 
 async function descargarArchivoInformeIndividual(
