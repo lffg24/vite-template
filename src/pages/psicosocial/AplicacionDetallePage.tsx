@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ClipboardCheck,
   Coins,
+  FileArchive,
   FilePenLine,
   FileText,
   Loader2,
@@ -296,6 +297,10 @@ export function participantActionLabel(
   if (emp.completo) return "Ver respuestas";
   if (emp.registrado) return "Actualizar respuesta";
   return "Registrar respuesta";
+}
+
+export function buildParticipantsReportUrl(aplicacionId: number | string) {
+  return `/psicosocial/resultados?aplicacionId=${encodeURIComponent(String(aplicacionId))}&tab=participantes`;
 }
 
 export function participantInstrumentChips(
@@ -1340,6 +1345,16 @@ export default function AplicacionDetallePage() {
               >
                 <BarChart3 className="h-4 w-4" /> Dashboard de resultados
               </button>
+              {finalizada && (
+                <button
+                  onClick={() =>
+                    navigate(buildParticipantsReportUrl(Number(aplicacionId)))
+                  }
+                  className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-bold text-violet-700 hover:bg-violet-100"
+                >
+                  <FileArchive className="h-4 w-4" /> Descarga masiva
+                </button>
+              )}
               {finalizada && (
                 <button
                   onClick={() =>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildApplicationEmployeeSocioDraft,
+  buildParticipantsReportUrl,
   hasApplicationEmployeeSocioData,
   participantActionLabel,
   participantInstrumentChips,
@@ -141,5 +142,9 @@ describe("application participant status chips", () => {
         participantActionLabel(row),
       ),
     ).toEqual(["Actualizar respuesta", "Registrar respuesta", "Ver respuestas"]);
+  });
+
+  it("construye enlace directo a participantes del reporte para descarga masiva", () => {
+    expect(buildParticipantsReportUrl(2)).toBe("/psicosocial/resultados?aplicacionId=2&tab=participantes");
   });
 });

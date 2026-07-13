@@ -5,6 +5,7 @@ import {
   BarChart3,
   Brain,
   CalendarClock,
+  ChevronDown,
   CheckCircle2,
   Download,
   Eye,
@@ -45,6 +46,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -59,8 +61,18 @@ import { StandardPagination } from "@/components/common/StandardPagination";
 import {
   descargarZipInformesIndividuales,
   type BulkInformeIndividualFormat,
-  type BulkInformeIndividualItem,
 } from "@/features/psicosocial/api/psicoInformesIndividualesService";
+import {
+  ALL_INSTRUMENT_FILTERS,
+  ALL_RISK_FILTERS,
+  INSTRUMENT_FILTER_LABELS,
+  RISK_ORDER,
+  highestRiskForFilters,
+  participantMatchesReportFilters,
+  reportsForParticipant,
+  type InstrumentFilter,
+  type RiskFilter,
+} from "@/features/psicosocial/utils/participantReportFilters";
 import {
   listarAplicacionesPsicoDashboard,
   obtenerDashboardPsicoAplicacion,
@@ -100,6 +112,10 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
+
+function tabFromSearchParam(value: string | null): TabKey {
+  return TABS.some((tab) => tab.key === value) ? (value as TabKey) : "resumen";
+}
 
 function fmtPct(value?: number) {
   return `${Number(value ?? 0).toFixed(1)}%`;
@@ -648,101 +664,107 @@ function nivelBadge(nivel?: string | null) {
   );
 }
 
-type InstrumentFilter = "ALL" | "INTRA" | "EXTRA" | "ESTRES";
-
-const INSTRUMENT_FILTER_LABELS: Record<InstrumentFilter, string> = {
-  ALL: "Todos los informes",
-  INTRA: "Intralaboral",
-  EXTRA: "Extralaboral",
-  ESTRES: "Estrés",
-};
-
-function normalizeRisk(value?: string | null) {
-  return String(value || "SIN_NIVEL").toUpperCase();
-}
-
-function intraInstrumentCode(item: ParticipantePsico) {
-  if (item.intra === "A") return item.niveles?.a ? "PSICO_INTRA_A" : null;
-  if (item.intra === "B") return item.niveles?.b ? "PSICO_INTRA_B" : null;
-  return null;
-}
-
-function reportsForParticipant(item: ParticipantePsico, filter: InstrumentFilter): BulkInformeIndividualItem[] {
-  const reports: BulkInformeIndividualItem[] = [];
-  const intraCode = intraInstrumentCode(item);
-  if ((filter === "ALL" || filter === "INTRA") && intraCode) {
-    reports.push({ empleado_id: item.empleado_id, instrument_code: intraCode });
-  }
-  if ((filter === "ALL" || filter === "EXTRA") && item.niveles?.extra) {
-    reports.push({ empleado_id: item.empleado_id, instrument_code: "PSICO_EXTRA" });
-  }
-  if ((filter === "ALL" || filter === "ESTRES") && item.niveles?.estres) {
-    reports.push({ empleado_id: item.empleado_id, instrument_code: "PSICO_ESTRES" });
-  }
-  return reports;
-}
-
-function riskForParticipant(item: ParticipantePsico, filter: InstrumentFilter) {
-  if (filter === "INTRA") return item.intra === "A" ? item.niveles?.a : item.niveles?.b;
-  if (filter === "EXTRA") return item.niveles?.extra;
-  if (filter === "ESTRES") return item.niveles?.estres;
-  return item.nivel_critico;
-}
-
 function formatBytes(value: number) {
   if (!value) return "0 MB";
   return `${(value / 1024 / 1024).toLocaleString("es-CO", { maximumFractionDigits: 1 })} MB`;
 }
 
+function multiSelectLabel<T extends string>(selected: T[], all: readonly T[], labels: Record<T, string>, allLabel: string) {
+  if (selected.length === all.length) return allLabel;
+  if (selected.length === 0) return "Sin selección";
+  if (selected.length === 1) return labels[selected[0]];
+  return `${selected.length} seleccionados`;
+}
+
+function MultiCheckboxFilter<T extends string>({
+  value,
+  options,
+  labels,
+  allLabel,
+  ariaLabel,
+  onChange,
+}: {
+  value: T[];
+  options: readonly T[];
+  labels: Record<T, string>;
+  allLabel: string;
+  ariaLabel: string;
+  onChange: (next: T[]) => void;
+}) {
+  const toggle = (option: T, checked: boolean) => {
+    const next = checked ? Array.from(new Set([...value, option])) : value.filter((item) => item !== option);
+    onChange(next);
+  };
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" className="h-10 w-full justify-between rounded-xl bg-white px-3 font-normal text-slate-700" aria-label={ariaLabel}>
+          <span className="truncate">{multiSelectLabel(value, options, labels, allLabel)}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-72 rounded-2xl p-2">
+        <div className="flex items-center justify-between gap-2 border-b px-2 pb-2">
+          <button type="button" className="text-xs font-bold text-violet-700 hover:text-violet-900" onClick={() => onChange([...options])}>Seleccionar todo</button>
+          <button type="button" className="text-xs font-bold text-slate-500 hover:text-slate-800" onClick={() => onChange([])}>Limpiar</button>
+        </div>
+        <div className="mt-2 space-y-1">
+          {options.map((option) => (
+            <label key={option} className="flex cursor-pointer items-center gap-2 rounded-xl px-2 py-2 text-sm hover:bg-slate-50">
+              <Checkbox checked={value.includes(option)} onCheckedChange={(checked) => toggle(option, Boolean(checked))} />
+              <span>{labels[option]}</span>
+            </label>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ParticipantesTable({ items = [], aplicacionId }: { items?: ParticipantePsico[]; aplicacionId?: number }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const [riesgo, setRiesgo] = useState("ALL");
-  const [estado, setEstado] = useState("ALL");
-  const [instrumento, setInstrumento] = useState<InstrumentFilter>("ALL");
-  const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico" | "estado"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
+  const [riesgos, setRiesgos] = useState<RiskFilter[]>([...ALL_RISK_FILTERS]);
+  const [instrumentos, setInstrumentos] = useState<InstrumentFilter[]>([...ALL_INSTRUMENT_FILTERS]);
+  const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [bulkInstrument, setBulkInstrument] = useState<InstrumentFilter>("ALL");
+  const [bulkInstruments, setBulkInstruments] = useState<InstrumentFilter[]>([...ALL_INSTRUMENT_FILTERS]);
   const [bulkFormat, setBulkFormat] = useState<BulkInformeIndividualFormat>("doc");
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [bulkBytes, setBulkBytes] = useState(0);
   const [bulkError, setBulkError] = useState<string | null>(null);
-  const riskOrder: Record<string, number> = { MUY_ALTO: 5, ALTO: 4, MEDIO: 3, BAJO: 2, SIN_RIESGO: 1, MUY_BAJO: 1, SIN_NIVEL: 0 };
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     return items
       .filter((it) => {
         const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
-        const matchesInstrument = instrumento === "ALL" || reportsForParticipant(it, instrumento).length > 0;
-        const matchesRiesgo = riesgo === "ALL" || normalizeRisk(riskForParticipant(it, instrumento)) === riesgo;
-        const matchesEstado = estado === "ALL" || (estado === "COMPLETA" ? it.bateria_completa : !it.bateria_completa);
-        return matchesQ && matchesInstrument && matchesRiesgo && matchesEstado;
+        return matchesQ && participantMatchesReportFilters(it, { instrumentos, riesgos });
       })
       .sort((a, b) => {
         let cmp = 0;
-        if (sort.key === "nivel_critico") cmp = (riskOrder[normalizeRisk(riskForParticipant(a, instrumento))] ?? 0) - (riskOrder[normalizeRisk(riskForParticipant(b, instrumento))] ?? 0);
-        else if (sort.key === "estado") cmp = Number(a.bateria_completa) - Number(b.bateria_completa);
+        if (sort.key === "nivel_critico") cmp = (RISK_ORDER[highestRiskForFilters(a, instrumentos)] ?? 0) - (RISK_ORDER[highestRiskForFilters(b, instrumentos)] ?? 0);
         else cmp = String((a as any)[sort.key] || "").localeCompare(String((b as any)[sort.key] || ""), "es");
         return sort.dir === "asc" ? cmp : -cmp;
       });
-  }, [items, q, riesgo, estado, instrumento, sort]);
+  }, [items, q, riesgos, instrumentos, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [q, riesgo, estado, instrumento, pageSize, items.length]);
+  }, [q, riesgos, instrumentos, pageSize, items.length]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const selectedParticipants = useMemo(() => items.filter((item) => selectedIds.has(item.empleado_id)), [items, selectedIds]);
-  const bulkReports = useMemo(() => selectedParticipants.flatMap((item) => reportsForParticipant(item, bulkInstrument)), [selectedParticipants, bulkInstrument]);
+  const bulkReports = useMemo(() => selectedParticipants.flatMap((item) => reportsForParticipant(item, bulkInstruments)), [selectedParticipants, bulkInstruments]);
   const bulkLimit = bulkFormat === "pdf" ? 100 : 500;
   const bulkCanDownload = Boolean(aplicacionId) && bulkReports.length > 0 && bulkReports.length <= bulkLimit && !bulkDownloading;
   const pageSelected = paginated.length > 0 && paginated.every((item) => selectedIds.has(item.empleado_id));
+  const riskFilterLabels = useMemo(() => Object.fromEntries(ALL_RISK_FILTERS.map((risk) => [risk, nivelLabel(risk)])) as Record<RiskFilter, string>, []);
 
   const setSortKey = (key: typeof sort.key) => {
     setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -783,7 +805,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
   };
 
   const openBulkModal = () => {
-    setBulkInstrument(instrumento === "ALL" ? "ALL" : instrumento);
+    setBulkInstruments(instrumentos.length ? instrumentos : [...ALL_INSTRUMENT_FILTERS]);
     setBulkError(null);
     setBulkBytes(0);
     setBulkOpen(true);
@@ -813,32 +835,24 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1fr_190px_190px_190px]">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_220px]">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por cédula, nombre, área, cargo..." />
-        <Select value={instrumento} onValueChange={(value) => setInstrumento(value as InstrumentFilter)}>
-          <SelectTrigger><SelectValue placeholder="Instrumento" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todos los instrumentos</SelectItem>
-            <SelectItem value="INTRA">Intralaboral</SelectItem>
-            <SelectItem value="EXTRA">Extralaboral</SelectItem>
-            <SelectItem value="ESTRES">Estrés</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={riesgo} onValueChange={setRiesgo}>
-          <SelectTrigger><SelectValue placeholder="Riesgo" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todos los riesgos</SelectItem>
-            {["SIN_RIESGO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"].map((n) => <SelectItem key={n} value={n}>{nivelLabel(n)}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={estado} onValueChange={setEstado}>
-          <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todos los estados</SelectItem>
-            <SelectItem value="COMPLETA">Batería completa</SelectItem>
-            <SelectItem value="INCOMPLETA">Incompleta</SelectItem>
-          </SelectContent>
-        </Select>
+        <MultiCheckboxFilter
+          value={instrumentos}
+          options={ALL_INSTRUMENT_FILTERS}
+          labels={INSTRUMENT_FILTER_LABELS}
+          allLabel="Todos los instrumentos"
+          ariaLabel="Filtrar instrumentos"
+          onChange={setInstrumentos}
+        />
+        <MultiCheckboxFilter
+          value={riesgos}
+          options={ALL_RISK_FILTERS}
+          labels={riskFilterLabels}
+          allLabel="Todos los riesgos"
+          ariaLabel="Filtrar niveles de riesgo"
+          onChange={setRiesgos}
+        />
       </div>
       <div className="flex flex-col gap-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-3 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
         <div>
@@ -858,21 +872,27 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
         </div>
       </div>
       <div className="overflow-x-auto rounded-2xl border bg-white">
-        <table className="w-full min-w-[1380px] text-sm">
+        <table className="w-full min-w-[1080px] table-fixed text-sm">
+          <colgroup>
+            <col className="w-10" />
+            <col className="w-[24%]" />
+            <col className="w-[18%]" />
+            <col className="w-[22%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
+            <col className="w-[16%]" />
+          </colgroup>
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="w-12 px-4 py-3">
+              <th className="px-3 py-3">
                 <Checkbox checked={pageSelected} onCheckedChange={(checked) => setPageSelected(Boolean(checked))} aria-label="Seleccionar página" />
               </th>
-              <th className="px-4 py-3"><SortButton label="Participante" sortKey="nombre" /></th>
-              <th className="px-4 py-3"><SortButton label="Área / cargo" sortKey="area" /></th>
-              <th className="px-4 py-3 text-center"><SortButton label="Intra" sortKey="intra" align="center" /></th>
-              <th className="px-4 py-3 text-center">Intralaboral</th>
-              <th className="px-4 py-3 text-center">Extra</th>
-              <th className="px-4 py-3 text-center">Estrés</th>
-              <th className="px-4 py-3 text-center"><SortButton label="Riesgo más alto" sortKey="nivel_critico" align="center" /></th>
-              <th className="px-4 py-3 text-center"><SortButton label="Estado" sortKey="estado" align="center" /></th>
-              <th className="px-4 py-3 text-right">Acción</th>
+              <th className="px-3 py-3"><SortButton label="Participante" sortKey="nombre" /></th>
+              <th className="px-3 py-3"><SortButton label="Área / cargo" sortKey="area" /></th>
+              <th className="px-3 py-3 text-center"><SortButton label="Instrumentos" sortKey="intra" align="center" /></th>
+              <th className="px-3 py-3 text-center">Extra</th>
+              <th className="px-3 py-3 text-center">Estrés</th>
+              <th className="sticky right-0 bg-slate-50 px-3 py-3 text-right"><SortButton label="Riesgo / acción" sortKey="nivel_critico" align="center" /></th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -880,15 +900,15 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
               const nivelIntra = it.intra === "A" ? it.niveles?.a : it.niveles?.b;
               const puntajeIntra = it.intra === "A" ? it.puntajes?.a : it.puntajes?.b;
               return (
-                <tr key={String(it.empleado_id)} className="hover:bg-slate-50/70">
-                  <td className="px-4 py-3">
+                <tr key={String(it.empleado_id)} className="group hover:bg-slate-50/70">
+                  <td className="px-3 py-3 align-top">
                     <Checkbox
                       checked={selectedIds.has(it.empleado_id)}
                       onCheckedChange={(checked) => toggleSelected(it.empleado_id, Boolean(checked))}
                       aria-label={`Seleccionar ${it.nombre}`}
                     />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3 align-top">
                     <button
                       type="button"
                       onClick={() => navigate("/psicosocial/empleados/" + it.empleado_id)}
@@ -902,25 +922,27 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                     </button>
                     <div className="mt-1 text-xs text-slate-500">CC {it.cedula || "—"} · {it.sexo || "Sin dato"}</div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3 align-top">
                     <div className="font-medium text-slate-700">{it.area || "Sin área"}</div>
                     <div className="text-xs text-slate-500">{it.cargo || "Sin cargo"}</div>
                   </td>
-                  <td className="px-4 py-3 text-center font-semibold">{it.intra}</td>
-                  <td className="px-4 py-3 text-center"><div>{nivelBadge(nivelIntra)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(puntajeIntra ?? undefined)}</div></td>
-                  <td className="px-4 py-3 text-center"><div>{nivelBadge(it.niveles?.extra)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.extra ?? undefined)}</div></td>
-                  <td className="px-4 py-3 text-center"><div>{nivelBadge(it.niveles?.estres)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.estres ?? undefined)}</div></td>
-                  <td className="px-4 py-3 text-center">{nivelBadge(it.nivel_critico)}</td>
-                  <td className="px-4 py-3 text-center">{it.bateria_completa ? <span className="text-emerald-700 font-semibold">Completa</span> : <span className="text-red-600 font-semibold">Revisar</span>}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 py-3 text-center align-top">
+                    <div className="mb-1 text-xs font-bold text-slate-500">Forma {it.intra}</div>
+                    <div>{nivelBadge(nivelIntra)}</div>
+                    <div className="mt-1 text-xs text-slate-500">{fmtNum(puntajeIntra ?? undefined)}</div>
+                  </td>
+                  <td className="px-3 py-3 text-center align-top"><div>{nivelBadge(it.niveles?.extra)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.extra ?? undefined)}</div></td>
+                  <td className="px-3 py-3 text-center align-top"><div>{nivelBadge(it.niveles?.estres)}</div><div className="mt-1 text-xs text-slate-500">{fmtNum(it.puntajes?.estres ?? undefined)}</div></td>
+                  <td className="sticky right-0 bg-white px-3 py-3 text-right align-top shadow-[-10px_0_18px_-18px_rgba(15,23,42,0.55)] group-hover:bg-slate-50">
+                    <div className="mb-2 flex justify-end">{nivelBadge(highestRiskForFilters(it, instrumentos.length ? instrumentos : ALL_INSTRUMENT_FILTERS))}</div>
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-xl whitespace-nowrap"
+                      className="rounded-xl whitespace-nowrap px-3"
                       onClick={() => navigate(`/psicosocial/empleados/${it.empleado_id}/aplicaciones/${aplicacionId}/informes`)}
-                      disabled={!aplicacionId || !reportsForParticipant(it, "ALL").length}
+                      disabled={!aplicacionId || !reportsForParticipant(it, ALL_INSTRUMENT_FILTERS).length}
                     >
-                      <Eye className="mr-2 h-4 w-4" /> Informe individual
+                      <Eye className="mr-2 h-4 w-4" /> Ver informe
                     </Button>
                   </td>
                 </tr>
@@ -955,15 +977,14 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
             <div className="grid gap-3 md:grid-cols-3">
               <div>
                 <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Tipo de informe</label>
-                <Select value={bulkInstrument} onValueChange={(value) => setBulkInstrument(value as InstrumentFilter)} disabled={bulkDownloading}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">Todos disponibles</SelectItem>
-                    <SelectItem value="INTRA">Intralaboral</SelectItem>
-                    <SelectItem value="EXTRA">Extralaboral</SelectItem>
-                    <SelectItem value="ESTRES">Estrés</SelectItem>
-                  </SelectContent>
-                </Select>
+                <MultiCheckboxFilter
+                  value={bulkInstruments}
+                  options={ALL_INSTRUMENT_FILTERS}
+                  labels={INSTRUMENT_FILTER_LABELS}
+                  allLabel="Todos disponibles"
+                  ariaLabel="Seleccionar tipos de informe para descarga masiva"
+                  onChange={setBulkInstruments}
+                />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Formato</label>
@@ -978,7 +999,9 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                 <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Lote</div>
                 <div className="mt-1 text-2xl font-black text-slate-950">{bulkReports.length}</div>
-                <div className="text-xs text-slate-500">{selectedParticipants.length} participantes · {INSTRUMENT_FILTER_LABELS[bulkInstrument]}</div>
+                <div className="text-xs text-slate-500">
+                  {selectedParticipants.length} participantes · {multiSelectLabel(bulkInstruments, ALL_INSTRUMENT_FILTERS, INSTRUMENT_FILTER_LABELS, "Todos disponibles")}
+                </div>
               </div>
             </div>
 
@@ -1577,7 +1600,7 @@ export default function ReportesPsico() {
   const [apps, setApps] = useState<PsicoAplicacionItem[]>([]);
   const [aplicacionId, setAplicacionId] = useState<number | null>(initialAplicacionId);
   const [data, setData] = useState<PsicoDashboardResponse | null>(null);
-  const [tab, setTab] = useState<TabKey>("resumen");
+  const [tab, setTab] = useState<TabKey>(() => tabFromSearchParam(searchParams.get("tab")));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDimension, setSelectedDimension] = useState<DimensionPsico | null>(null);
@@ -1936,7 +1959,7 @@ export default function ReportesPsico() {
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
                   <CardTitle>Participantes e informes individuales</CardTitle>
-                  <CardDescription>Listado por colaborador con estado de batería, niveles por instrumento y base para informe individual.</CardDescription>
+                  <CardDescription>Listado por colaborador con niveles por instrumento y acceso al informe individual.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ParticipantesTable items={data.participantes?.items ?? []} aplicacionId={aplicacionId || undefined} />
