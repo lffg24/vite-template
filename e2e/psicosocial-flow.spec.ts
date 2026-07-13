@@ -219,7 +219,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, closed ? finalizedApplicationDetail : applicationDetail),
     );
-    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=3`, async (route) => {
       closeRequestUrl = route.request().url();
       closed = true;
       await fulfillJson(route, {
@@ -239,7 +239,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page.getByText("Aplicación cerrada")).toBeVisible();
     await expect(page.getByText("Empresa Andina SAS · Estado Finalizada")).toBeVisible();
     await expect(page.getByRole("button", { name: /reabrir aplicación/i })).toBeVisible();
-    expect(closeRequestUrl).toContain("min_participantes=1");
+    expect(closeRequestUrl).toContain("min_participantes=3");
   });
 
   test("no intenta cerrar cuando no hay participantes completos", async ({ page }) => {
