@@ -32,6 +32,16 @@ const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; desc
     label: "Informe sociodemográfico",
     description: "Ficha de datos generales, gráficas descriptivas y lectura poblacional editable.",
   },
+  {
+    value: "base_forma_a",
+    label: "Informe base Forma A",
+    description: "Reporte base independiente con tablas y gráficas del Formulario A, extralaboral A y estrés A.",
+  },
+  {
+    value: "base_forma_b",
+    label: "Informe base Forma B",
+    description: "Reporte base independiente con tablas y gráficas del Formulario B, extralaboral B y estrés B.",
+  },
 ];
 
 function saveBlob(filename: string, blob: Blob) {

@@ -3,9 +3,11 @@ import type { TipoReportePsicoOficial } from "@/types/psicoReportesOficiales";
 import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
 import { isReportablePsicoApplicationState } from "@/utils/psicoApplicationState";
 
-function pathFor(tipo: TipoReportePsicoOficial) {
+export function pathFor(tipo: TipoReportePsicoOficial) {
   if (tipo === "resultados") return "informe-resultados";
   if (tipo === "resultados_areas") return "informe-resultados-areas";
+  if (tipo === "base_forma_a") return "informe-base-forma-a";
+  if (tipo === "base_forma_b") return "informe-base-forma-b";
   return "informe-sociodemografico";
 }
 
