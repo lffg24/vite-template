@@ -31,6 +31,7 @@ export type SuperPsicologo = {
   nombre: string;
   email?: string;
   empresas_asignadas: number;
+  empresa_ids?: string[];
   empresas_nombres?: string;
   identificacion_profesional?: string;
   profesion?: string;
@@ -57,6 +58,7 @@ export type CrearPsicologoPayload = {
   puede_cargar_respuestas?: boolean;
   puede_crear_aplicaciones?: boolean;
 };
+export type ActualizarPsicologoPayload = Omit<CrearPsicologoPayload, "password">;
 export type CreditAccount = { id: number; psicologo_usuario_id: number; psicologo_nombre?: string; psicologo_email?: string; empresa_id?: string | null; empresa_nombre?: string; saldo_actual: number; creditos_asignados: number; estado: string; actualizado_en?: string };
 export type CreditMovement = { id: number; account_id: number; tipo: string; cantidad: number; saldo_anterior: number; saldo_nuevo: number; descripcion?: string; creado_en: string };
 
@@ -72,6 +74,8 @@ export const superadminService = {
   empresas: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<SuperEmpresa>>(`/superadmin/empresas${qs(p)}`),
   psicologos: (p: { q?: string; page?: number; page_size?: number; empresa_estado?: string; credito_estado?: string }) => request<Paginated<SuperPsicologo>>(`/superadmin/psicologos${qs(p)}`),
   createPsicologo: (payload: CrearPsicologoPayload) => request<{ ok: boolean; item: SuperPsicologo }>("/superadmin/psicologos", { method: "POST", body: JSON.stringify(payload) }),
+  updatePsicologo: (id: number, payload: ActualizarPsicologoPayload) => request<{ ok: boolean; item: SuperPsicologo }>(`/superadmin/psicologos/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  resetPsicologoPassword: (id: number, payload: { password: string; confirm_password: string }) => request<{ ok: boolean; message: string }>(`/superadmin/psicologos/${id}/password-reset`, { method: "POST", body: JSON.stringify(payload) }),
   creditAccounts: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<CreditAccount>>(`/superadmin/creditos/cuentas${qs(p)}`),
   creditMovements: (p: { account_id?: number; page?: number; page_size?: number }) => request<Paginated<CreditMovement>>(`/superadmin/creditos/movimientos${qs(p)}`),
   assignCredits: (payload: { psicologo_usuario_id: number; empresa_id?: string | null; cantidad: number; descripcion: string; idempotency_key?: string }) => request<any>("/superadmin/creditos/asignar", { method: "POST", body: JSON.stringify(payload) }),

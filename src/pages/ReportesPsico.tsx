@@ -11,7 +11,6 @@ import {
   Eye,
   FileArchive,
   FileText,
-  Filter,
   Gauge,
   LayoutDashboard,
   LineChart,
@@ -1746,9 +1745,6 @@ export default function ReportesPsico() {
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
                 Actualizar
               </Button>
-              <Button variant="outline" disabled>
-                <Download className="mr-2 h-4 w-4" /> Exportar
-              </Button>
               <Button
                 className="bg-violet-600 hover:bg-violet-700"
                 disabled={!aplicacionId}
@@ -1757,16 +1753,6 @@ export default function ReportesPsico() {
                 <FileText className="mr-2 h-4 w-4" /> Informe global
               </Button>
             </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-4 lg:grid-cols-7">
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Formulario: Todos" /></SelectTrigger></Select>
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Área: Todas" /></SelectTrigger></Select>
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Cargo: Todos" /></SelectTrigger></Select>
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Género: Todos" /></SelectTrigger></Select>
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Edad: Todas" /></SelectTrigger></Select>
-            <Select disabled><SelectTrigger className="bg-white"><SelectValue placeholder="Antigüedad: Todas" /></SelectTrigger></Select>
-            <Button variant="outline" disabled><Filter className="mr-2 h-4 w-4" /> Más filtros</Button>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 // src/pages/superadmin/SuperAdminPsicologosPage.tsx
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { Building2, Check, Eye, EyeOff, Loader2, Plus, ShieldCheck, UserRound, WalletCards, X } from "lucide-react";
+import { Building2, Check, Eye, EyeOff, KeyRound, Loader2, Pencil, Plus, ShieldCheck, UserRound, WalletCards, X } from "lucide-react";
 
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { StandardPagination } from "@/components/common/StandardPagination";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   superadminService,
+  type ActualizarPsicologoPayload,
   type CrearPsicologoPayload,
   type SuperEmpresa,
   type SuperPsicologo,
@@ -71,7 +72,12 @@ export default function SuperAdminPsicologosPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingCredits, setSavingCredits] = useState(false);
+  const [savingPasswordReset, setSavingPasswordReset] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<SuperPsicologo | null>(null);
+  const [passwordResetTarget, setPasswordResetTarget] = useState<SuperPsicologo | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
   const [creditTarget, setCreditTarget] = useState<SuperPsicologo | null>(null);
   const [creditAmount, setCreditAmount] = useState("");
   const [creditReason, setCreditReason] = useState("");
@@ -132,6 +138,41 @@ export default function SuperAdminPsicologosPage() {
     setFieldErrors((prev) => ({ ...prev, [key]: "" }));
   };
 
+  const openCreateModal = () => {
+    setEditingTarget(null);
+    setForm(emptyForm);
+    setFieldErrors({});
+    setShowPassword(false);
+    setOpenCreate(true);
+  };
+
+  const openEditModal = (psicologo: SuperPsicologo) => {
+    setEditingTarget(psicologo);
+    setForm({
+      ...emptyForm,
+      nombre: psicologo.nombre || "",
+      email: psicologo.email || "",
+      empresa_ids: psicologo.empresa_ids || [],
+      identificacion_profesional: psicologo.identificacion_profesional || "",
+      profesion: psicologo.profesion || "Psicóloga",
+      postgrado: psicologo.postgrado || "",
+      tarjeta_profesional: psicologo.tarjeta_profesional || "",
+      licencia_sst: psicologo.licencia_sst || "",
+      fecha_expedicion_licencia: psicologo.fecha_expedicion_licencia || "",
+      password: "",
+      confirmPassword: "",
+    });
+    setFieldErrors({});
+    setOpenCreate(true);
+  };
+
+  const closeFormModal = () => {
+    setOpenCreate(false);
+    setEditingTarget(null);
+    setForm(emptyForm);
+    setFieldErrors({});
+  };
+
   const toggleEmpresa = (empresaId: string) => {
     setForm((prev) => {
       const exists = prev.empresa_ids.includes(empresaId);
@@ -147,8 +188,10 @@ export default function SuperAdminPsicologosPage() {
     const next: Record<string, string> = {};
     if (!form.nombre.trim()) next.nombre = "El nombre es obligatorio.";
     if (!validateEmail(form.email)) next.email = "Correo inválido.";
-    if (form.password.length < 12) next.password = "La contraseña temporal debe tener mínimo 12 caracteres.";
-    if (form.password !== form.confirmPassword) next.confirmPassword = "Las contraseñas no coinciden.";
+    if (!editingTarget) {
+      if (form.password.length < 12) next.password = "La contraseña temporal debe tener mínimo 12 caracteres.";
+      if (form.password !== form.confirmPassword) next.confirmPassword = "Las contraseñas no coinciden.";
+    }
     if (form.identificacion_profesional.trim() && form.identificacion_profesional.trim().length < 5) {
       next.identificacion_profesional = "La identificación debe tener mínimo 5 caracteres.";
     }
@@ -165,10 +208,9 @@ export default function SuperAdminPsicologosPage() {
     setSaving(true);
     setError(null);
     try {
-      const payload: CrearPsicologoPayload = {
+      const basePayload: ActualizarPsicologoPayload = {
         nombre: form.nombre.trim(),
         email: form.email.trim().toLowerCase(),
-        password: form.password,
         empresa_ids: form.empresa_ids,
         identificacion_profesional: form.identificacion_profesional.trim() || undefined,
         profesion: form.profesion.trim() || undefined,
@@ -181,15 +223,63 @@ export default function SuperAdminPsicologosPage() {
         puede_cargar_respuestas: form.puede_cargar_respuestas,
         puede_crear_aplicaciones: form.puede_crear_aplicaciones,
       };
-      await superadminService.createPsicologo(payload);
+      if (editingTarget) {
+        await superadminService.updatePsicologo(editingTarget.id, basePayload);
+      } else {
+        const payload: CrearPsicologoPayload = { ...basePayload, password: form.password };
+        await superadminService.createPsicologo(payload);
+      }
       setForm(emptyForm);
       setOpenCreate(false);
-      notify({ type: "success", title: "Psicólogo creado", message: "La cuenta quedó activa. Podrá gestionar empresas asignadas o crear las propias." });
+      setEditingTarget(null);
+      notify({
+        type: "success",
+        title: editingTarget ? "Psicólogo actualizado" : "Psicólogo creado",
+        message: editingTarget ? "Los datos profesionales y asignaciones quedaron actualizados." : "La cuenta quedó activa. Podrá gestionar empresas asignadas o crear las propias.",
+      });
       await load();
     } catch (err) {
       notify({ type: "error", title: "No fue posible crear el psicólogo", message: err instanceof Error ? err.message : "Intenta nuevamente." });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openPasswordReset = (psicologo: SuperPsicologo) => {
+    setPasswordResetTarget(psicologo);
+    setResetPassword("");
+    setResetConfirmPassword("");
+  };
+
+  const submitPasswordReset = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!passwordResetTarget) return;
+    if (resetPassword.length < 12) {
+      notify({ type: "warning", title: "Contraseña temporal inválida", message: "Debe tener mínimo 12 caracteres." });
+      return;
+    }
+    if (resetPassword !== resetConfirmPassword) {
+      notify({ type: "warning", title: "Contraseñas distintas", message: "La confirmación no coincide." });
+      return;
+    }
+    setSavingPasswordReset(true);
+    try {
+      await superadminService.resetPsicologoPassword(passwordResetTarget.id, {
+        password: resetPassword,
+        confirm_password: resetConfirmPassword,
+      });
+      notify({
+        type: "success",
+        title: "Contraseña reiniciada",
+        message: "Se asignó una contraseña temporal y se solicitará cambio obligatorio al iniciar sesión.",
+      });
+      setPasswordResetTarget(null);
+      setResetPassword("");
+      setResetConfirmPassword("");
+    } catch (err) {
+      notify({ type: "error", title: "No fue posible reiniciar la contraseña", message: err instanceof Error ? err.message : "Intenta nuevamente." });
+    } finally {
+      setSavingPasswordReset(false);
     }
   };
 
@@ -240,7 +330,7 @@ export default function SuperAdminPsicologosPage() {
         action={
           <button
             type="button"
-            onClick={() => setOpenCreate(true)}
+            onClick={openCreateModal}
             className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-sm transition hover:bg-violet-700"
           >
             <Plus className="h-5 w-5" /> Nuevo psicólogo
@@ -280,11 +370,11 @@ export default function SuperAdminPsicologosPage() {
           </Select>
         </div>
         <div className="overflow-x-auto rounded-2xl border bg-white">
-          <Table className="min-w-[960px] text-left">
+          <Table className="min-w-[1180px] text-left">
             <TableHeader className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <TableRow className="hover:bg-slate-50">
                 <TableHead className="px-4 py-3 font-semibold">Psicólogo</TableHead>
-                <TableHead className="px-4 py-3 font-semibold">Credencial profesional</TableHead>
+                <TableHead className="px-4 py-3 font-semibold">Credenciales profesionales</TableHead>
                 <TableHead className="px-4 py-3 font-semibold">Empresas</TableHead>
                 <TableHead className="px-4 py-3 text-center font-semibold">Asignados</TableHead>
                 <TableHead className="px-4 py-3 text-center font-semibold">Disponibles</TableHead>
@@ -310,7 +400,9 @@ export default function SuperAdminPsicologosPage() {
                   <TableCell className="px-4 py-3">
                     <strong className="block font-semibold text-slate-900">{psicologo.profesion || "Sin profesión"}</strong>
                     <span className="block text-xs text-slate-500">ID {psicologo.identificacion_profesional || "Sin dato"}</span>
+                    <span className="block text-xs text-slate-500">Postgrado: {psicologo.postgrado || "Sin dato"}</span>
                     <span className="block text-xs text-slate-500">TP {psicologo.tarjeta_profesional || "Sin dato"} · Lic. {psicologo.licencia_sst || "Sin dato"}</span>
+                    <span className="block text-xs text-slate-500">Expedición: {psicologo.fecha_expedicion_licencia || "Sin dato"}</span>
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">{psicologo.empresas_asignadas} asignadas</span>
@@ -319,13 +411,29 @@ export default function SuperAdminPsicologosPage() {
                   <TableCell className="px-4 py-3 text-center font-semibold text-slate-900">{psicologo.creditos_asignados ?? 0}</TableCell>
                   <TableCell className="px-4 py-3 text-center font-semibold text-violet-700">{psicologo.creditos_disponibles ?? 0}</TableCell>
                   <TableCell className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => openCreditModal(psicologo)}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
-                    >
-                      <WalletCards className="h-4 w-4" /> Cargar créditos
-                    </button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(psicologo)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                      >
+                        <Pencil className="h-4 w-4" /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openPasswordReset(psicologo)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 font-bold text-amber-800 transition hover:bg-amber-100"
+                      >
+                        <KeyRound className="h-4 w-4" /> Clave
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openCreditModal(psicologo)}
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                      >
+                        <WalletCards className="h-4 w-4" /> Créditos
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -348,10 +456,14 @@ export default function SuperAdminPsicologosPage() {
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-violet-700">SuperAdmin</p>
-                <h2 className="text-2xl font-black text-slate-950">Crear psicólogo</h2>
-                <p className="mt-1 max-w-2xl text-sm text-slate-500">Crea la cuenta de acceso, registra credenciales profesionales y, si aplica, vincula empresas iniciales.</p>
+                <h2 className="text-2xl font-black text-slate-950">{editingTarget ? "Editar psicólogo" : "Crear psicólogo"}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500">
+                  {editingTarget
+                    ? "Actualiza datos de acceso, credenciales profesionales, empresas y permisos. La contraseña se gestiona por reinicio seguro."
+                    : "Crea la cuenta de acceso, registra credenciales profesionales y, si aplica, vincula empresas iniciales."}
+                </p>
               </div>
-              <button type="button" onClick={() => setOpenCreate(false)} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
+              <button type="button" onClick={closeFormModal} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -361,12 +473,16 @@ export default function SuperAdminPsicologosPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Nombre completo *" error={fieldErrors.nombre}><Input value={form.nombre} onChange={(value) => updateForm("nombre", value)} /></Field>
                 <Field label="Correo de acceso *" error={fieldErrors.email}><Input type="email" value={form.email} onChange={(value) => updateForm("email", value)} /></Field>
-                <Field label="Contraseña *" error={fieldErrors.password}>
-                  <PasswordInput value={form.password} onChange={(value) => updateForm("password", value)} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
-                </Field>
-                <Field label="Confirmar contraseña *" error={fieldErrors.confirmPassword}>
-                  <PasswordInput value={form.confirmPassword} onChange={(value) => updateForm("confirmPassword", value)} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
-                </Field>
+                {!editingTarget && (
+                  <>
+                    <Field label="Contraseña *" error={fieldErrors.password}>
+                      <PasswordInput value={form.password} onChange={(value) => updateForm("password", value)} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
+                    </Field>
+                    <Field label="Confirmar contraseña *" error={fieldErrors.confirmPassword}>
+                      <PasswordInput value={form.confirmPassword} onChange={(value) => updateForm("confirmPassword", value)} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
+                    </Field>
+                  </>
+                )}
               </div>
 
               <SectionTitle icon={<ShieldCheck className="h-4 w-4" />} title="Información profesional" />
@@ -417,9 +533,56 @@ export default function SuperAdminPsicologosPage() {
               </div>
 
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-                <button type="button" onClick={() => setOpenCreate(false)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
+                <button type="button" onClick={closeFormModal} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
                 <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />} Crear psicólogo
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />} {editingTarget ? "Guardar cambios" : "Crear psicólogo"}
+                </button>
+              </div>
+            </form>
+          </aside>
+        </div>
+      )}
+
+      {passwordResetTarget && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+          <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-violet-700">Seguridad de acceso</p>
+                <h2 className="text-2xl font-black text-slate-950">Reiniciar contraseña</h2>
+                <p className="mt-1 text-sm text-slate-500">Define una contraseña temporal. El psicólogo deberá cambiarla obligatoriamente al iniciar sesión.</p>
+              </div>
+              <button type="button" onClick={() => setPasswordResetTarget(null)} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mb-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+                  <KeyRound className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <strong className="block truncate text-slate-950">{passwordResetTarget.nombre}</strong>
+                  <span className="block truncate text-sm text-slate-500">{passwordResetTarget.email || "Sin correo"}</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={submitPasswordReset} className="space-y-4">
+              <Field label="Contraseña temporal *">
+                <PasswordInput value={resetPassword} onChange={setResetPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
+              </Field>
+              <Field label="Confirmar contraseña temporal *">
+                <PasswordInput value={resetConfirmPassword} onChange={setResetConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
+              </Field>
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+                Usa una clave temporal robusta y comunícala por un canal seguro. ABRIL-360 no la enviará ni la mostrará después de guardar.
+              </div>
+              <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
+                <button type="button" onClick={() => setPasswordResetTarget(null)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
+                <button disabled={savingPasswordReset} className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-6 py-3 font-bold text-white disabled:opacity-60">
+                  {savingPasswordReset && <Loader2 className="h-4 w-4 animate-spin" />} Reiniciar contraseña
                 </button>
               </div>
             </form>

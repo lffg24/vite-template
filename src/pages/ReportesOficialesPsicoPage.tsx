@@ -16,22 +16,7 @@ import {
 import type { TipoReportePsicoOficial } from "@/types/psicoReportesOficiales";
 import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
 
-const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; description: string }> = [
-  {
-    value: "resultados",
-    label: "Informe general de resultados BRP",
-    description: "Informe general consolidado: resultados A/B, gráficas, NeuroMapa Psicosocial, recomendaciones y plan de intervención.",
-  },
-  {
-    value: "resultados_areas",
-    label: "Informe de resultados por áreas",
-    description: "Entregable independiente con resultados segmentados solo para áreas registradas en el sistema.",
-  },
-  {
-    value: "sociodemografico",
-    label: "Informe sociodemográfico",
-    description: "Ficha de datos generales, gráficas descriptivas y lectura poblacional editable.",
-  },
+export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; description: string }> = [
   {
     value: "base_forma_a",
     label: "Informe base Forma A",
@@ -46,6 +31,21 @@ const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; desc
     value: "base_general",
     label: "Informe base general",
     description: "Reporte base consolidado con Forma A y B cuando existan, manteniendo tablas, contenido y figuras por instrumento.",
+  },
+  {
+    value: "resultados",
+    label: "Informe general de resultados BRP",
+    description: "Informe general consolidado: resultados A/B, gráficas, NeuroMapa Psicosocial, recomendaciones y plan de intervención.",
+  },
+  {
+    value: "resultados_areas",
+    label: "Informe de resultados por áreas",
+    description: "Entregable independiente con resultados segmentados solo para áreas registradas en el sistema.",
+  },
+  {
+    value: "sociodemografico",
+    label: "Informe sociodemográfico",
+    description: "Ficha de datos generales, gráficas descriptivas y lectura poblacional editable.",
   },
 ];
 
