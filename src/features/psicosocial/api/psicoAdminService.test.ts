@@ -39,7 +39,7 @@ describe("psicoAdminService.cerrarAplicacion", () => {
     vi.restoreAllMocks();
   });
 
-  it("usa tres participantes completos como mínimo por defecto", async () => {
+  it("usa un participante completo como mínimo por defecto", async () => {
     const fetchMock = vi.spyOn(global, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify({ ok: true, estado: "FINALIZADA", participantes: 3, evaluacion_ids: [1] }), {
         status: 200,
@@ -49,7 +49,7 @@ describe("psicoAdminService.cerrarAplicacion", () => {
 
     await psicoAdminService.cerrarAplicacion("empresa-1", 20);
 
-    expect(String(fetchMock.mock.calls[0][0])).toContain("min_participantes=3");
+    expect(String(fetchMock.mock.calls[0][0])).toContain("min_participantes=1");
   });
 });
 
