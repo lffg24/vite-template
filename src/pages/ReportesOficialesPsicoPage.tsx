@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Download, FileText, FileType2, Loader2, Printer, RefreshCcw, ShieldCheck, Sparkles } from "lucide-react";
-import evaLogoColor from "@/assets/eva-logo-color.png";
+import { CircleHelp, Download, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   descargarDocReporteOficial,
   descargarPdfReporteOficial,
@@ -35,7 +34,7 @@ export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: strin
   {
     value: "resultados",
     label: "Informe general de resultados BRP",
-    description: "Informe general consolidado: resultados A/B, gráficas, NeuroMapa Psicosocial, recomendaciones y plan de intervención.",
+    description: "Informe general consolidado: resultados A/B, gráficas, recomendaciones y plan de intervención.",
   },
   {
     value: "resultados_areas",
@@ -207,23 +206,6 @@ export default function ReportesOficialesPsicoPage() {
 
       </div>
 
-      <Card className="rounded-2xl border-violet-100 bg-gradient-to-r from-violet-50 to-cyan-50 shadow-sm">
-        <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white p-1 shadow-sm">
-              <img src={evaLogoColor} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-violet-900"><Sparkles className="h-4 w-4" /> NeuroMapa Psicosocial ABRIL-360</div>
-              <p className="mt-1 max-w-4xl text-sm text-slate-700">
-                Motor local de análisis explicable: prioriza dimensiones críticas, propone lecturas técnicas y arma acciones de intervención sin APIs pagas ni recalcular baremos.
-              </p>
-            </div>
-          </div>
-          <Badge className="w-fit bg-violet-700">Sin costo externo</Badge>
-        </CardContent>
-      </Card>
-
       <Card className="rounded-2xl border-slate-200 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base"><FileText className="h-5 w-5 text-violet-700" /> Parámetros del informe</CardTitle>
@@ -239,16 +221,44 @@ export default function ReportesOficialesPsicoPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-black text-slate-700">Tipo de informe</label>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-black text-slate-700">Tipo de informe</label>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-700 transition hover:bg-sky-100"
+                      aria-label="Ver información del informe seleccionado"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-xl rounded-[28px] border-slate-200">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-xl font-black text-slate-950">
+                        <Sparkles className="h-5 w-5 text-violet-700" /> Información del entregable
+                      </DialogTitle>
+                      <DialogDescription className="text-left leading-relaxed text-slate-600">
+                        {currentOption?.description}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4 text-sm leading-relaxed text-slate-700">
+                      <p className="font-black text-violet-900">NeuroMapa Psicosocial ABRIL-360</p>
+                      <p className="mt-1">
+                        Motor local de análisis explicable: prioriza dimensiones críticas, propone lecturas técnicas y arma acciones de intervención sin APIs pagas ni recalcular baremos.
+                      </p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Select value={tipoReporte} onValueChange={(v) => setTipoReporte(v as TipoReportePsicoOficial)}>
                 <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>{reportOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
               </Select>
-              <p className="text-xs leading-relaxed text-slate-500">{currentOption?.description}</p>
+              <p className="flex items-center gap-1 text-xs leading-relaxed text-slate-500"><CircleHelp className="h-3.5 w-3.5" /> Consulta la descripción en el ícono informativo.</p>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end lg:pt-7">
-              <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={loadPreview} disabled={!aplicacionId || loadingHtml}>{loadingHtml ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}Actualizar</Button>
               <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={() => downloadHtml(filename, html)} disabled={!html}><Download className="mr-2 h-4 w-4" />HTML</Button>
               <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable</Button>
               <Button className="h-12 rounded-2xl bg-violet-700 whitespace-nowrap hover:bg-violet-800" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo</Button>

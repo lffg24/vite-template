@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Building2,
+  CircleHelp,
   FileText,
   Home,
   Layers3,
@@ -15,6 +16,7 @@ const items = [
   { label: "Aplicaciones BT", to: "/psicosocial/aplicaciones-bt", icon: Layers3 },
   { label: "Resultados", to: "/psicosocial/resultados", icon: BarChart3 },
   { label: "Informes", to: "/psicosocial/reportes-oficiales", icon: FileText },
+  { label: "Centro de ayuda", to: "/psicosocial/centro-ayuda", icon: CircleHelp },
   { label: "Configuración", to: "/psicosocial/perfil", icon: Settings },
 ];
 

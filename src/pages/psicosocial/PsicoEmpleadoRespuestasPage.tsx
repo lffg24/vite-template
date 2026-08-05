@@ -137,15 +137,29 @@ function instrumentLabel(code?: string | null) {
   return INSTRUMENT_LABELS[String(code || "")] || String(code || "Instrumento");
 }
 
-function normalizeRespuestaLabel(value: unknown) {
+export function normalizeRespuestaLabel(
+  value: unknown,
+  pregunta?: Partial<PreguntaRespuesta>,
+  numericMode: "score" | "index" = "score",
+) {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
   const normalized = raw.toLowerCase().replace(/_/g, " ").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const byText = LIKERT.find((opt) => opt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === normalized);
   if (byText) return byText;
   const n = Number(raw);
-  // Compatibilidad con respuestas históricas guardadas como índice 0..4 de la escala visual.
-  if (Number.isInteger(n) && n >= 0 && n < LIKERT.length) return LIKERT[n];
+  if (Number.isInteger(n) && n >= 0 && n < LIKERT.length) {
+    const options = pregunta ? questionOptions(pregunta) : LIKERT;
+    if (numericMode === "score" && pregunta) {
+      const params = parseParams(pregunta.parametros);
+      const values = Array.isArray(params.valores) ? params.valores.map((item: unknown) => Number(item)) : [];
+      const idx = values.findIndex((item) => item === n);
+      if (idx >= 0 && options[idx]) return options[idx];
+      return raw;
+    }
+    // Compatibilidad con borradores locales históricos guardados como índice visual.
+    return options[n] || raw;
+  }
   return raw;
 }
 
@@ -393,14 +407,14 @@ export default function PsicoEmpleadoRespuestasPage() {
         const rules = mergeConditionalRules(apiRules, selectedEval?.instrument_code);
         setConditionalRules(rules);
         const serverAnswers: Record<number, string> = {};
-        for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta);
+        for (const p of res.preguntas || []) if (p.respuesta) serverAnswers[p.pregunta_id] = normalizeRespuestaLabel(p.respuesta, p, "score");
         const lockedForDraft =
           ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state)) ||
           !selectedEval?.editable ||
           isLockedResponseStatus(selectedEval?.estado_respuestas);
         const draftStorageKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`;
         const local = lockedForDraft ? null : readDraft(draftStorageKey);
-        const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value)]));
+        const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value, undefined, "index")]));
         const nextConditionalAnswers: Record<string, boolean | null> = {};
         for (const rule of rules) {
           const code = String(rule.codigo || "");

@@ -5,6 +5,7 @@ import {
   calculateInstrumentProgress,
   isQuestionAnswerValid,
   mergeConditionalRules,
+  normalizeRespuestaLabel,
   questionOptions,
 } from "./PsicoEmpleadoRespuestasPage";
 import type { PreguntaRespuesta, PsicoEvaluacionEmpleado } from "@/features/psicosocial/api/psicoEmpleadoService";
@@ -150,6 +151,31 @@ describe("PsicoEmpleadoRespuestasPage conditional rules", () => {
     expect(questionOptions(pregunta)).toEqual(["Siempre", "Casi siempre", "A veces", "Nunca"]);
     expect(isQuestionAnswerValid(pregunta, "A veces")).toBe(true);
     expect(isQuestionAnswerValid(pregunta, "Casi nunca")).toBe(false);
+  });
+
+  it("normaliza respuestas numéricas del servidor como valor normativo de la pregunta", () => {
+    const opciones = ["Siempre", "Casi siempre", "Algunas veces", "Casi nunca", "Nunca"];
+    const directa: PreguntaRespuesta = {
+      pregunta_id: 36,
+      orden: 36,
+      texto: "Puedo cambiar el orden de las actividades en mi trabajo",
+      parametros: { opciones, valores: [0, 1, 2, 3, 4] },
+    };
+    const inversa: PreguntaRespuesta = {
+      pregunta_id: 16,
+      orden: 16,
+      texto: "Mi trabajo me exige hacer mucho esfuerzo mental",
+      parametros: { opciones, valores: [4, 3, 2, 1, 0] },
+    };
+
+    expect(normalizeRespuestaLabel("4", directa, "score")).toBe("Nunca");
+    expect(normalizeRespuestaLabel("4", inversa, "score")).toBe("Siempre");
+    expect(normalizeRespuestaLabel("0", inversa, "score")).toBe("Nunca");
+  });
+
+  it("conserva compatibilidad de borradores locales numéricos como índice visual", () => {
+    expect(normalizeRespuestaLabel("0", undefined, "index")).toBe("Siempre");
+    expect(normalizeRespuestaLabel("4", undefined, "index")).toBe("Nunca");
   });
 
   it("no cuenta respuestas fuera de la escala oficial como avance", () => {

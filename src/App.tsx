@@ -19,6 +19,7 @@ const RestablecerClave = lazy(() => import("@/pages/RestablecerClave"));
 const Logout = lazy(() => import("@/pages/Logout"));
 const SinAcceso = lazy(() => import("@/pages/SinAcceso"));
 const ResponderEvaluacion = lazy(() => import("@/pages/ResponderEvaluacion"));
+const RecursosAbril360Page = lazy(() => import("@/pages/RecursosAbril360Page"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -71,6 +72,10 @@ function App() {
           <Route path="/recuperar-clave" element={<SolicitarRecuperacionClave />} />
           <Route path="/restablecer-clave" element={<RestablecerClave />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/recursos/manual-uso" element={<RecursosAbril360Page page="manual-uso" />} />
+          <Route path="/recursos/ficha-tecnica" element={<RecursosAbril360Page page="ficha-tecnica" />} />
+          <Route path="/recursos/seguridad-cumplimiento" element={<RecursosAbril360Page page="seguridad-cumplimiento" />} />
+          <Route path="/recursos/certificacion" element={<RecursosAbril360Page page="certificacion" />} />
 
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
           <Route element={<ProtectedRoute />}>
@@ -166,6 +171,7 @@ function App() {
               <Route path="reportes" element={<ReportesPsico />} />
               <Route path="reportes-oficiales" element={<ReportesOficialesPsicoPage />} />
               <Route path="informes" element={<ReportesOficialesPsicoPage />} />
+              <Route path="centro-ayuda" element={<RecursosAbril360Page page="manual-uso" />} />
             </Route>
           </Route>
 
