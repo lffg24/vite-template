@@ -9,5 +9,6 @@ describe("official psychosocial report options", () => {
       "base_forma_b",
       "base_general",
     ]);
+    expect(reportOptions[3].value).toBe("detallado_excel");
   });
 });

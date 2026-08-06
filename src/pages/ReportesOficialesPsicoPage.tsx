@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CircleHelp, Download, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
+import { CircleHelp, Download, FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import {
   descargarDocReporteOficial,
   descargarPdfReporteOficial,
+  descargarXlsxReporteOficial,
   listarAplicacionesReportesOficiales,
   obtenerHtmlReporteOficial,
 } from "@/services/psicoReportesOficialesService";
@@ -30,6 +31,11 @@ export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: strin
     value: "base_general",
     label: "Informe base general",
     description: "Reporte base consolidado con Forma A y B cuando existan, manteniendo tablas, contenido y figuras por instrumento.",
+  },
+  {
+    value: "detallado_excel",
+    label: "Reporte detallado Excel",
+    description: "Matriz auditada con respuestas registradas y resultados persistidos por participante, instrumento, dominio y dimensión.",
   },
   {
     value: "resultados",
@@ -92,7 +98,8 @@ export default function ReportesOficialesPsicoPage() {
     initialTipoParam === "resultados_areas" ||
     initialTipoParam === "base_forma_a" ||
     initialTipoParam === "base_forma_b" ||
-    initialTipoParam === "base_general"
+    initialTipoParam === "base_general" ||
+    initialTipoParam === "detallado_excel"
       ? initialTipoParam
       : "resultados"
   ) as TipoReportePsicoOficial;
@@ -104,10 +111,12 @@ export default function ReportesOficialesPsicoPage() {
   const [loadingHtml, setLoadingHtml] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingXlsx, setDownloadingXlsx] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedApp = useMemo(() => aplicaciones.find((a) => String(a.id) === aplicacionId), [aplicaciones, aplicacionId]);
   const currentOption = useMemo(() => reportOptions.find((o) => o.value === tipoReporte), [tipoReporte]);
+  const isExcelReport = tipoReporte === "detallado_excel";
 
   useEffect(() => {
     let alive = true;
@@ -135,6 +144,11 @@ export default function ReportesOficialesPsicoPage() {
 
   async function loadPreview() {
     if (!aplicacionId) return;
+    if (isExcelReport) {
+      setHtml("");
+      setError(null);
+      return;
+    }
     setLoadingHtml(true);
     setError(null);
     try {
@@ -173,6 +187,20 @@ export default function ReportesOficialesPsicoPage() {
       setError(err?.response?.data?.detail || err?.message || "No se pudo descargar el PDF directo. Verifica el servicio de generación de informes.");
     } finally {
       setDownloadingPdf(false);
+    }
+  }
+
+  async function downloadXlsx() {
+    if (!aplicacionId) return;
+    setDownloadingXlsx(true);
+    setError(null);
+    try {
+      const blob = await descargarXlsxReporteOficial(Number(aplicacionId), tipoReporte);
+      saveBlob(filename.replace(/\.html$/i, ".xlsx"), blob);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || err?.message || "No se pudo descargar el reporte detallado Excel.");
+    } finally {
+      setDownloadingXlsx(false);
     }
   }
 
@@ -259,14 +287,18 @@ export default function ReportesOficialesPsicoPage() {
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end lg:pt-7">
-              <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={() => downloadHtml(filename, html)} disabled={!html}><Download className="mr-2 h-4 w-4" />HTML</Button>
-              <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable</Button>
-              <Button className="h-12 rounded-2xl bg-violet-700 whitespace-nowrap hover:bg-violet-800" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo</Button>
+              {isExcelReport ? (
+                <Button className="h-12 rounded-2xl bg-violet-700 whitespace-nowrap hover:bg-violet-800" onClick={downloadXlsx} disabled={!aplicacionId || downloadingXlsx}>
+                  {downloadingXlsx ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}Descargar XLSX
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={() => downloadHtml(filename, html)} disabled={!html}><Download className="mr-2 h-4 w-4" />HTML</Button>
+                  <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable</Button>
+                  <Button className="h-12 rounded-2xl bg-violet-700 whitespace-nowrap hover:bg-violet-800" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo</Button>
+                </>
+              )}
             </div>
-          </div>
-
-          <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-xs leading-relaxed text-slate-600">
-            Descarga el informe en PDF para entrega oficial, conserva una copia HTML cuando necesites revisión técnica y usa el DOC editable para ajustes del profesional responsable.
           </div>
         </CardContent>
       </Card>
@@ -279,7 +311,11 @@ export default function ReportesOficialesPsicoPage() {
           {selectedApp ? <p className="text-sm text-slate-500">{selectedApp.nombre}</p> : null}
         </CardHeader>
         <CardContent className="p-0">
-          {loadingHtml ? (
+          {isExcelReport ? (
+            <div className="flex h-[420px] items-center justify-center px-6 text-center text-sm text-slate-500">
+              El reporte detallado se descarga en Excel con hojas de resumen, totales, dominios, dimensiones y respuestas registradas.
+            </div>
+          ) : loadingHtml ? (
             <div className="flex h-[620px] items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generando informe...</div>
           ) : html ? (
             <iframe title="Vista previa de informe" srcDoc={html} className="h-[760px] w-full bg-white" />
