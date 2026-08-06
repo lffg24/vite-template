@@ -79,6 +79,7 @@ export const superadminService = {
   creditAccounts: (p: { q?: string; page?: number; page_size?: number }) => request<Paginated<CreditAccount>>(`/superadmin/creditos/cuentas${qs(p)}`),
   creditMovements: (p: { account_id?: number; page?: number; page_size?: number }) => request<Paginated<CreditMovement>>(`/superadmin/creditos/movimientos${qs(p)}`),
   assignCredits: (payload: { psicologo_usuario_id: number; empresa_id?: string | null; cantidad: number; descripcion: string; idempotency_key?: string }) => request<any>("/superadmin/creditos/asignar", { method: "POST", body: JSON.stringify(payload) }),
+  deductCredits: (payload: { psicologo_usuario_id: number; empresa_id?: string | null; cantidad: number; descripcion: string; idempotency_key?: string }) => request<any>("/superadmin/creditos/descontar", { method: "POST", body: JSON.stringify(payload) }),
   rolesPermisos: () => request<any>("/superadmin/roles-permisos"),
   auditoria: (p: { page?: number; page_size?: number }) => request<Paginated<any>>(`/superadmin/auditoria${qs(p)}`),
 };

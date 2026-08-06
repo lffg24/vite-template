@@ -35,7 +35,7 @@ export default function PsicologoSidebar() {
     <RoleSidebar
       items={items}
       storageKey="abril360.psico.sidebar.collapsed"
-      brandTitle="ABRIL-360"
+      brandTitle="ABRIL360"
       brandSubtitle="Riesgo psicosocial"
       avatarText={initials}
       userTitle={displayName}

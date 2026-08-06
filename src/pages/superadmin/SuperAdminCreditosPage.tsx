@@ -1,6 +1,6 @@
 // src/pages/superadmin/SuperAdminCreditosPage.tsx
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
-import { Check, Loader2, Plus, Search, UserRound, WalletCards, X } from "lucide-react";
+import { Check, Loader2, MinusCircle, Plus, Search, UserRound, WalletCards, X } from "lucide-react";
 
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { StandardPagination } from "@/components/common/StandardPagination";
@@ -13,9 +13,17 @@ import {
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const defaultCreditReason = "Compra de créditos";
+const defaultDeductReason = "Ajuste administrativo de saldo";
 
 export function creditLoadErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "No fue posible cargar créditos.";
+}
+
+export function validateCreditDeductionAmount(rawAmount: string, saldoActual: number) {
+  const cantidad = Number(rawAmount);
+  if (!Number.isInteger(cantidad) || cantidad <= 0) return "Ingresa una cantidad entera mayor a cero.";
+  if (cantidad > saldoActual) return "No puedes descontar más créditos que el saldo disponible.";
+  return null;
 }
 
 export default function SuperAdminCreditosPage() {
@@ -31,6 +39,10 @@ export default function SuperAdminCreditosPage() {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState(defaultCreditReason);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [deductTarget, setDeductTarget] = useState<CreditAccount | null>(null);
+  const [deductAmount, setDeductAmount] = useState("");
+  const [deductReason, setDeductReason] = useState(defaultDeductReason);
+  const [deductOpen, setDeductOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +119,21 @@ export default function SuperAdminCreditosPage() {
     setReason(defaultCreditReason);
   };
 
+  const openDeduct = (target: CreditAccount) => {
+    setDeductTarget(target);
+    setDeductAmount("");
+    setDeductReason(defaultDeductReason);
+    setDeductOpen(true);
+  };
+
+  const closeDeduct = () => {
+    if (saving) return;
+    setDeductOpen(false);
+    setDeductTarget(null);
+    setDeductAmount("");
+    setDeductReason(defaultDeductReason);
+  };
+
   const submitAssign = async (event: FormEvent) => {
     event.preventDefault();
     if (!selected) {
@@ -144,6 +171,53 @@ export default function SuperAdminCreditosPage() {
       await load();
     } catch (err) {
       notify({ type: "error", title: "No fue posible asignar créditos", message: err instanceof Error ? err.message : "Intenta nuevamente." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const submitDeduct = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!deductTarget) return;
+    const saldoActual = Number(deductTarget.saldo_actual || 0);
+    const validationMessage = validateCreditDeductionAmount(deductAmount, saldoActual);
+    if (validationMessage) {
+      notify({ type: "warning", title: "Cantidad inválida", message: validationMessage });
+      return;
+    }
+    const motivo = deductReason.trim();
+    if (motivo.length < 5) {
+      notify({ type: "warning", title: "Motivo requerido", message: "Describe brevemente la razón del descuento para auditoría." });
+      return;
+    }
+
+    const cantidad = Number(deductAmount);
+    setSaving(true);
+    try {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `deduct-${deductTarget.id}-${Date.now()}`;
+      const result = await superadminService.deductCredits({
+        psicologo_usuario_id: deductTarget.psicologo_usuario_id,
+        empresa_id: null,
+        cantidad,
+        descripcion: motivo,
+        idempotency_key: idempotencyKey,
+      });
+      const saldoNuevo = Number(result?.saldo_nuevo ?? saldoActual - cantidad);
+      notify({
+        type: "success",
+        title: "Créditos descontados",
+        message: `${deductTarget.psicologo_nombre || "La cuenta"} quedó con ${saldoNuevo.toLocaleString("es-CO")} créditos disponibles.`,
+      });
+      setDeductOpen(false);
+      setDeductTarget(null);
+      setDeductAmount("");
+      setDeductReason(defaultDeductReason);
+      await load();
+    } catch (err) {
+      notify({ type: "error", title: "No fue posible descontar créditos", message: err instanceof Error ? err.message : "Intenta nuevamente." });
     } finally {
       setSaving(false);
     }
@@ -201,19 +275,20 @@ export default function SuperAdminCreditosPage() {
                 <th className="px-4 py-4 text-center">Saldo</th>
                 <th className="px-4 py-4">Estado</th>
                 <th className="px-4 py-4">Actualizado</th>
+                <th className="px-4 py-4 text-right">Acción</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
                     Cargando créditos...
                   </td>
                 </tr>
               )}
               {!loading && items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
                     No hay cuentas de créditos para los filtros actuales.
                   </td>
                 </tr>
@@ -232,6 +307,17 @@ export default function SuperAdminCreditosPage() {
                       <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{account.estado}</span>
                     </td>
                     <td className="px-4 py-4 text-xs text-slate-500">{account.actualizado_en ? new Date(account.actualizado_en).toLocaleString("es-CO") : "-"}</td>
+                    <td className="px-4 py-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => openDeduct(account)}
+                        disabled={Number(account.saldo_actual || 0) <= 0}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <MinusCircle className="h-4 w-4" />
+                        Descontar
+                      </button>
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -367,6 +453,70 @@ export default function SuperAdminCreditosPage() {
                 <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
                   {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                   Asignar créditos
+                </button>
+              </div>
+            </form>
+          </aside>
+        </div>
+      )}
+
+      {deductOpen && deductTarget && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+          <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-amber-700">Ajuste de saldo</p>
+                <h2 className="text-2xl font-black text-slate-950">Descontar créditos</h2>
+                <p className="mt-1 text-sm text-slate-500">El movimiento quedará registrado y auditado en el ledger.</p>
+              </div>
+              <button type="button" onClick={closeDeduct} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={submitDeduct} className="space-y-5">
+              <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                <p className="text-xs font-black uppercase text-amber-700">Cuenta seleccionada</p>
+                <p className="mt-1 font-black text-slate-950">{deductTarget.psicologo_nombre || `Usuario ${deductTarget.psicologo_usuario_id}`}</p>
+                <p className="text-sm text-slate-600">{deductTarget.psicologo_email || "Sin correo"}</p>
+                <p className="mt-2 text-sm font-bold text-amber-800">
+                  Saldo disponible: {Number(deductTarget.saldo_actual || 0).toLocaleString("es-CO")}
+                </p>
+              </div>
+
+              <Field label="Cantidad a descontar">
+                <input
+                  type="number"
+                  min="1"
+                  max={Number(deductTarget.saldo_actual || 0)}
+                  step="1"
+                  value={deductAmount}
+                  onChange={(event) => setDeductAmount(event.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  placeholder="Ej. 10"
+                />
+              </Field>
+
+              <Field label="Motivo obligatorio">
+                <textarea
+                  value={deductReason}
+                  onChange={(event) => setDeductReason(event.target.value)}
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  placeholder="Ej. Corrección administrativa por compra anulada."
+                />
+              </Field>
+
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                Esta acción no elimina movimientos anteriores ni borra historial. Solo reduce el saldo disponible de la cuenta seleccionada.
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
+                <button type="button" onClick={closeDeduct} className="rounded-2xl border px-5 py-3 font-bold">
+                  Cancelar
+                </button>
+                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-6 py-3 font-bold text-white disabled:opacity-60">
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Descontar créditos
                 </button>
               </div>
             </form>

@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { safeRedirectPath } from "@/lib/accessRoutes";
+import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import evaLogoColor from "@/assets/eva-logo-color.png";
 import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 
@@ -176,7 +177,7 @@ export default function Login() {
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 p-2 shadow-lg">
                 <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
               </div>
-              <div className="text-2xl font-black tracking-tight">ABRIL<span className="text-violet-600">360</span></div>
+              <AbrilWordmark className="text-2xl font-black" accentClassName="text-violet-600" />
             </div>
 
             <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-8 xl:p-9">
@@ -282,12 +283,12 @@ export default function Login() {
                     <p className="text-sm font-black text-slate-900">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
                     <p className="text-sm text-slate-600">Plataforma operada para gestión psicosocial empresarial.</p>
                   </div>
-                  <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-3 py-2 shadow-sm">
+                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-2xl bg-white/80 px-4 py-2 shadow-sm">
                     {!relLogoError ? (
                       <img
                         src={REL_LOGO_URL}
                         alt="REL Consilium SAS"
-                        className="h-10 w-auto object-contain"
+                        className="block h-10 max-w-[150px] object-contain object-center"
                         onError={() => setRelLogoError(true)}
                         referrerPolicy="no-referrer"
                       />

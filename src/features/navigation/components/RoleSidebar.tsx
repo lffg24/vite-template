@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, LogOut, type LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
+import AbrilWordmark from "@/components/brand/AbrilWordmark";
 
 export type RoleSidebarItem = {
   label: string;
@@ -61,7 +62,11 @@ export default function RoleSidebar({
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <div className="truncate text-2xl font-black tracking-tight">{brandTitle}</div>
+                {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
+                  <AbrilWordmark className="block truncate text-2xl font-black" accentClassName="text-violet-300" />
+                ) : (
+                  <div className="truncate text-2xl font-black">{brandTitle}</div>
+                )}
                 {brandSubtitle ? <div className="truncate text-xs text-slate-400">{brandSubtitle}</div> : null}
               </div>
             )}
