@@ -206,6 +206,12 @@ function EmptyState({ text = "Sin datos disponibles." }) {
   return <div className="rounded-xl border border-dashed p-8 text-center text-sm text-slate-500">{text}</div>;
 }
 
+export function reportesDashboardEmptyText(appCount: number) {
+  return appCount > 0
+    ? "Selecciona una aplicación para visualizar el dashboard."
+    : "No hay aplicaciones cerradas con resultados disponibles para reportar.";
+}
+
 function DistributionBars({ data }: { data: DistribucionTotal[] }) {
   const rows = data.flatMap((d) =>
     d.niveles.map((n) => ({
@@ -1609,9 +1615,18 @@ export default function ReportesPsico() {
   const [selectedDomain, setSelectedDomain] = useState<DominioPsico | null>(null);
 
   async function loadApps() {
+    setLoading(true);
+    setError(null);
     const items = await listarAplicacionesPsicoDashboard();
     setApps(items);
-    if (!aplicacionId && items.length) setAplicacionId(items[0].id);
+    if (!aplicacionId && items.length) {
+      setAplicacionId(items[0].id);
+      return;
+    }
+    if (!aplicacionId && !items.length) {
+      setData(null);
+      setLoading(false);
+    }
   }
 
   async function loadDashboard(id: number) {
@@ -1674,8 +1689,12 @@ export default function ReportesPsico() {
     loadApps().catch(() => {
       if (initialAplicacionId) {
         setApps([{ id: initialAplicacionId, nombre: `Aplicación #${initialAplicacionId}` } as PsicoAplicacionItem]);
+        setAplicacionId(initialAplicacionId);
       } else {
         setApps([]);
+        setData(null);
+        setError(null);
+        setLoading(false);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1771,7 +1790,7 @@ export default function ReportesPsico() {
         {loading ? (
           <AbrilLoading title="Preparando dashboard psicosocial" subtitle="Validando sesión, aplicación, maestros normativos y resultados calculados." />
         ) : !data ? (
-          <EmptyState text="Selecciona una aplicación para visualizar el dashboard." />
+          <EmptyState text={reportesDashboardEmptyText(apps.length)} />
         ) : (
           <>
             {tab === "resumen" && (

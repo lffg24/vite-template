@@ -61,6 +61,7 @@ describe("PsicologoPerfilPage", () => {
     expect(screen.getAllByText("Mary Luz Agudelo Test").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("psicologa.demo@eva360.com.co")).toBeInTheDocument();
     expect(screen.getAllByText("Psicologo Evaluador").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Esta información corresponde a las credenciales profesionales registradas para el psicólogo.")).toBeInTheDocument();
     expect(await screen.findByText("123456789")).toBeInTheDocument();
     expect(screen.getByText("Psicóloga")).toBeInTheDocument();
     expect(screen.getByText("Especialista SST")).toBeInTheDocument();
@@ -95,5 +96,7 @@ describe("PsicologoPerfilPage", () => {
     expect(screen.getByText("Por seguridad, actualiza la contraseña temporal antes de continuar.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cerrar" })).not.toBeInTheDocument();
+    expect(getEmpresasAsignadasResponse).not.toHaveBeenCalled();
+    expect(screen.queryByText("PASSWORD_CHANGE_REQUIRED")).not.toBeInTheDocument();
   });
 });

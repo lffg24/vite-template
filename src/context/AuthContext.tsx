@@ -229,7 +229,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       err.status = res.status;
       throw err;
     }
-    setState((current) => ({ ...current, passwordChangeRequired: false }));
+
+    try {
+      const next = await fetchMe();
+      setState(next);
+    } catch {
+      setState((current) => ({ ...current, passwordChangeRequired: false, initialized: true }));
+    }
   }, []);
 
   const value = useMemo<AuthContextType>(

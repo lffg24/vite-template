@@ -6,6 +6,7 @@ import {
   crearEmpresaPsicologo,
   getEmpresasAsignadasResponse,
 } from "@/features/psicosocial/api/psicoAccessService";
+import { useAuth } from "@/context/AuthContext";
 
 type PsicoEmpresaContextValue = {
   empresas: EmpresaAsignada[];
@@ -21,6 +22,7 @@ type PsicoEmpresaContextValue = {
 const PsicoEmpresaActivaContext = createContext<PsicoEmpresaContextValue | null>(null);
 
 export function PsicoEmpresaActivaProvider({ children }: { children: React.ReactNode }) {
+  const { passwordChangeRequired } = useAuth();
   const [empresas, setEmpresas] = useState<EmpresaAsignada[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
@@ -29,6 +31,15 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
   const [message, setMessage] = useState<string | null | undefined>();
 
   const recargarEmpresas = async () => {
+    if (passwordChangeRequired) {
+      setEmpresas([]);
+      setError(undefined);
+      setErrorStatus(undefined);
+      setOnboardingRequired(false);
+      setMessage(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(undefined);
     setErrorStatus(undefined);
@@ -41,9 +52,15 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
     } catch (err) {
       const status = (err as Error & { status?: number })?.status;
       setErrorStatus(status);
-      setError(err instanceof Error ? err.message : "Error cargando empresas vinculadas");
       setEmpresas([]);
-      setOnboardingRequired(status !== 401);
+      if (status === 403 && err instanceof Error && err.message === "PASSWORD_CHANGE_REQUIRED") {
+        setError(undefined);
+        setOnboardingRequired(false);
+        setMessage(null);
+      } else {
+        setError(err instanceof Error ? err.message : "Error cargando empresas vinculadas");
+        setOnboardingRequired(status !== 401);
+      }
     } finally {
       setLoading(false);
     }
@@ -51,7 +68,7 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
 
   useEffect(() => {
     void recargarEmpresas();
-  }, []);
+  }, [passwordChangeRequired]);
 
   const crearEmpresa = async (payload: CrearEmpresaPsicoPayload) => {
     const result = await crearEmpresaPsicologo(payload);

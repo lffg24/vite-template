@@ -57,6 +57,14 @@ export default function PsicologoPerfilPage() {
 
   useEffect(() => {
     let active = true;
+    if (passwordChangeRequired) {
+      setEmpresas([]);
+      setProfileError(null);
+      setProfileLoading(false);
+      return () => {
+        active = false;
+      };
+    }
     setProfileLoading(true);
     setProfileError(null);
     getEmpresasAsignadasResponse()
@@ -74,7 +82,7 @@ export default function PsicologoPerfilPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [passwordChangeRequired]);
 
   useEffect(() => {
     if (passwordChangeRequired) {
@@ -157,7 +165,7 @@ export default function PsicologoPerfilPage() {
               </p>
               <h2 className="mt-2 text-lg font-black text-slate-950">Datos registrados para informes y validaciones</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Esta información se toma de la creación/asignación del psicólogo en SuperAdmin.
+                Esta información corresponde a las credenciales profesionales registradas para el psicólogo.
               </p>
             </div>
             {professionalProfile?.empresaNombre ? (
