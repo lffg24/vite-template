@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, Building2, CalendarDays, ClipboardCheck, Coins, FileText, Loader2, Plus, RefreshCw, Upload, Users, WalletCards } from "lucide-react";
+import { BarChart3, Building2, CalendarDays, ClipboardCheck, FileText, Loader2, MessageCircle, Plus, RefreshCw, Upload, Users, WalletCards } from "lucide-react";
 import { psicoAdminService, type CreditosResumen, type EmpresaPsico } from "@/features/psicosocial/api/psicoAdminService";
 
 function n(value: unknown) { const num = Number(value ?? 0); return Number.isFinite(num) ? num : 0; }
+
+export const CREDIT_PURCHASE_WHATSAPP_URL = "https://wa.me/573002458438";
 
 export default function PsicologoDashboardPage() {
   const navigate = useNavigate();
@@ -58,7 +60,7 @@ export default function PsicologoDashboardPage() {
     <section className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
       <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-black text-slate-950">Créditos para aplicaciones</h2><p className="mt-1 text-sm text-slate-500">Saldos cargados desde el ledger formal de créditos.</p></div><WalletCards className="h-8 w-8 text-violet-700" /></div>
-        <div className="mt-6 grid gap-5 md:grid-cols-[190px_1fr]"><div className="grid h-44 w-44 place-items-center rounded-full border-[18px] border-violet-200 bg-violet-50"><div className="text-center"><p className="text-4xl font-black text-slate-950">{loading ? "—" : stats.creditosDisponibles.toLocaleString("es-CO")}</p><p className="text-sm font-bold text-slate-500">Disponibles</p></div></div><div className="space-y-3 text-sm"><Row label="Asignados" value={loading ? "—" : stats.creditosAsignados.toLocaleString("es-CO")} /><Row label="Consumidos" value={loading ? "—" : stats.creditosUsados.toLocaleString("es-CO")} /><Row label="Disponibles" value={loading ? "—" : stats.creditosDisponibles.toLocaleString("es-CO")} tone="text-emerald-600" /><Row label="Registros consumidos" value={loading ? "—" : stats.registrosConsumidos.toLocaleString("es-CO")} /><button className="mt-3 rounded-2xl bg-violet-700 px-5 py-3 font-black text-white hover:bg-violet-800">Solicitar créditos</button></div></div>
+        <div className="mt-6 grid gap-5 md:grid-cols-[190px_1fr]"><div className="grid h-44 w-44 place-items-center rounded-full border-[18px] border-violet-200 bg-violet-50"><div className="text-center"><p className="text-4xl font-black text-slate-950">{loading ? "—" : stats.creditosDisponibles.toLocaleString("es-CO")}</p><p className="text-sm font-bold text-slate-500">Disponibles</p></div></div><div className="space-y-3 text-sm"><Row label="Asignados" value={loading ? "—" : stats.creditosAsignados.toLocaleString("es-CO")} /><Row label="Consumidos" value={loading ? "—" : stats.creditosUsados.toLocaleString("es-CO")} /><Row label="Disponibles" value={loading ? "—" : stats.creditosDisponibles.toLocaleString("es-CO")} tone="text-emerald-600" /><Row label="Registros consumidos" value={loading ? "—" : stats.registrosConsumidos.toLocaleString("es-CO")} /><a href={CREDIT_PURCHASE_WHATSAPP_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 font-black text-white hover:bg-violet-800"><MessageCircle className="h-4 w-4" /> Comprar más créditos</a></div></div>
       </article>
       <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-black text-slate-950">Mis empresas</h2><button onClick={() => navigate('/psicosocial/empresas')} className="text-sm font-black text-violet-700 hover:underline">Ver todas</button></div>
