@@ -14,6 +14,10 @@ import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const defaultCreditReason = "Compra de créditos";
 
+export function creditLoadErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "No fue posible cargar créditos.";
+}
+
 export default function SuperAdminCreditosPage() {
   const [items, setItems] = useState<CreditAccount[]>([]);
   const [movements, setMovements] = useState<CreditMovement[]>([]);
@@ -42,17 +46,18 @@ export default function SuperAdminCreditosPage() {
     setLoading(true);
     setError(null);
     try {
-      const [accountsRes, movementsRes, psicologosRes] = await Promise.all([
-        superadminService.creditAccounts({ q, page, page_size: pageSize }),
+      const accountsRes = await superadminService.creditAccounts({ q, page, page_size: pageSize });
+      const [movementsRes, psicologosRes] = await Promise.allSettled([
         superadminService.creditMovements({ page: 1, page_size: 8 }),
         superadminService.psicologos({ page: 1, page_size: 100 }),
       ]);
       setItems(accountsRes.items || []);
       setTotal(accountsRes.total || 0);
-      setMovements(movementsRes.items || []);
-      setPsicologos(psicologosRes.items || []);
+      setMovements(movementsRes.status === "fulfilled" ? movementsRes.value.items || [] : []);
+      if (psicologosRes.status === "rejected") throw psicologosRes.reason;
+      setPsicologos(psicologosRes.value.items || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No fue posible cargar créditos.");
+      setError(creditLoadErrorMessage(err));
     } finally {
       setLoading(false);
     }
