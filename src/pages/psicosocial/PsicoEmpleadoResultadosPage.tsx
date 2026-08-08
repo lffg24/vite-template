@@ -430,7 +430,7 @@ export default function PsicoEmpleadoResultadosPage() {
 
       try {
         let response = await fetch(detalleUrl, { credentials: "include", headers });
-        if (response.status === 404) {
+        if (response.status === 404 || response.status === 422) {
           response = await fetch(legacyUrl, { credentials: "include", headers });
         }
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -508,7 +508,7 @@ export default function PsicoEmpleadoResultadosPage() {
               <AlertTriangle className="h-5 w-5" />
               No fue posible cargar el resultado individual
             </div>
-            <p className="mt-1 text-sm">{error}. Verifica que exista el endpoint de resultados-detalle o el endpoint legado de resultados.</p>
+            <p className="mt-1 text-sm">{error}. Si el colaborador no tiene resultados calculados, finaliza y calcula la aplicación antes de consultar esta vista.</p>
           </div>
         ) : null}
 

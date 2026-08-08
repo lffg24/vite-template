@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -20,10 +20,12 @@ import {
 } from "lucide-react";
 
 import {
+  actualizarPerfilBasePsicoEmpleado,
   obtenerPerfilPsicoEmpleado,
   type PsicoAplicacionEmpleado,
   type PsicoEmpleadoPerfil,
 } from "@/features/psicosocial/api/psicoEmpleadoService";
+import { psicoAdminService, type AreaEmpresa, type CargoEmpresa } from "@/features/psicosocial/api/psicoAdminService";
 
 const RISK_CLASS: Record<string, string> = {
   SIN_RIESGO: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -37,6 +39,14 @@ const RISK_CLASS: Record<string, string> = {
 function display(value: unknown, fallback = "Sin dato") {
   if (value === null || value === undefined || value === "") return fallback;
   return String(value);
+}
+
+function digitsOnly(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function validEmail(value: string) {
+  return !value.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 function fmtDate(value?: string | null) {
@@ -195,6 +205,201 @@ function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: 
   );
 }
 
+type BaseEmployeeForm = {
+  nombres: string;
+  apellidos: string;
+  cedula: string;
+  identificador_externo: string;
+  correo: string;
+  telefono: string;
+  area_id: string;
+  cargo_id: string;
+};
+
+function formFromPerfil(perfil: PsicoEmpleadoPerfil): BaseEmployeeForm {
+  return {
+    nombres: perfil.nombres || "",
+    apellidos: perfil.apellidos || "",
+    cedula: perfil.cedula || "",
+    identificador_externo: perfil.identificador_externo || "",
+    correo: perfil.correo || "",
+    telefono: perfil.telefono || "",
+    area_id: perfil.area_id ? String(perfil.area_id) : "",
+    cargo_id: perfil.cargo_id ? String(perfil.cargo_id) : "",
+  };
+}
+
+function TextInput({ value, onChange, type = "text", inputMode }: { value: string; onChange: (value: string) => void; type?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"] }) {
+  return (
+    <input
+      type={type}
+      inputMode={inputMode}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+    />
+  );
+}
+
+function BaseField({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-black text-slate-800">{label}</span>
+      {children}
+      {error ? <span className="mt-1 block text-xs font-semibold text-red-600">{error}</span> : null}
+    </label>
+  );
+}
+
+function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpleadoPerfil; onClose: () => void; onSaved: (perfil: PsicoEmpleadoPerfil) => void }) {
+  const [form, setForm] = useState<BaseEmployeeForm>(() => formFromPerfil(perfil));
+  const [areas, setAreas] = useState<AreaEmpresa[]>([]);
+  const [cargos, setCargos] = useState<CargoEmpresa[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    async function loadCatalogs() {
+      if (!perfil.empresa_id) return;
+      setLoadingCatalogs(true);
+      try {
+        const [areasRes, cargosRes] = await Promise.all([
+          psicoAdminService.listarAreas(perfil.empresa_id),
+          psicoAdminService.listarCargos(perfil.empresa_id),
+        ]);
+        if (!alive) return;
+        setAreas(areasRes.items || []);
+        setCargos(cargosRes.items || []);
+      } catch (err) {
+        if (alive) setSubmitError(err instanceof Error ? err.message : "No fue posible cargar áreas y cargos.");
+      } finally {
+        if (alive) setLoadingCatalogs(false);
+      }
+    }
+    loadCatalogs();
+    return () => {
+      alive = false;
+    };
+  }, [perfil.empresa_id]);
+
+  const visibleCargos = useMemo(
+    () => (!form.area_id ? cargos : cargos.filter((cargo) => !cargo.area_id || String(cargo.area_id) === form.area_id)),
+    [cargos, form.area_id],
+  );
+
+  function update(key: keyof BaseEmployeeForm, value: string) {
+    const clean = key === "cedula" || key === "telefono" ? digitsOnly(value) : value;
+    setForm((prev) => ({ ...prev, [key]: clean, ...(key === "area_id" ? { cargo_id: "" } : {}) }));
+    setErrors((prev) => ({ ...prev, [key]: "" }));
+  }
+
+  function validate() {
+    const next: Record<string, string> = {};
+    if (!form.nombres.trim()) next.nombres = "Nombres es obligatorio.";
+    if (!form.apellidos.trim()) next.apellidos = "Apellidos es obligatorio.";
+    if (!form.cedula.trim()) next.cedula = "Cédula es obligatoria.";
+    if (form.cedula.trim() && form.cedula.trim().length < 5) next.cedula = "Cédula debe tener mínimo 5 dígitos.";
+    if (form.correo.trim() && !validEmail(form.correo)) next.correo = "Correo inválido.";
+    if (form.telefono.trim() && form.telefono.trim().length < 7) next.telefono = "Teléfono debe tener mínimo 7 dígitos.";
+    if (!form.area_id) next.area_id = "Área es obligatoria.";
+    if (!form.cargo_id) next.cargo_id = "Cargo es obligatorio.";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!validate()) return;
+    setSaving(true);
+    setSubmitError(null);
+    try {
+      const updated = await actualizarPerfilBasePsicoEmpleado(
+        perfil.empleado_id,
+        {
+          nombres: form.nombres.trim(),
+          apellidos: form.apellidos.trim(),
+          cedula: form.cedula.trim(),
+          identificador_externo: form.identificador_externo.trim() || null,
+          email: form.correo.trim().toLowerCase() || null,
+          telefono: form.telefono.trim() || null,
+          area_id: form.area_id ? Number(form.area_id) : null,
+          cargo_id: form.cargo_id ? Number(form.cargo_id) : null,
+        },
+        perfil.empresa_id,
+      );
+      onSaved(updated);
+      onClose();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "No fue posible actualizar el perfil base.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+      <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-violet-700">Base del colaborador</p>
+            <h2 className="text-2xl font-black text-slate-950">Editar información transversal</h2>
+            <p className="mt-1 text-sm text-slate-500">Estos datos aplican a Abril360. La ficha sociodemográfica se mantiene por aplicación.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 p-2 hover:bg-slate-50">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {submitError ? <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</div> : null}
+
+        <form onSubmit={submit} className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <BaseField label="Nombres *" error={errors.nombres}><TextInput value={form.nombres} onChange={(value) => update("nombres", value)} /></BaseField>
+            <BaseField label="Apellidos *" error={errors.apellidos}><TextInput value={form.apellidos} onChange={(value) => update("apellidos", value)} /></BaseField>
+            <BaseField label="Cédula *" error={errors.cedula}><TextInput value={form.cedula} onChange={(value) => update("cedula", value)} inputMode="numeric" /></BaseField>
+            <BaseField label="Identificador externo"><TextInput value={form.identificador_externo} onChange={(value) => update("identificador_externo", value)} /></BaseField>
+            <BaseField label="Correo" error={errors.correo}><TextInput type="email" value={form.correo} onChange={(value) => update("correo", value)} /></BaseField>
+            <BaseField label="Teléfono" error={errors.telefono}><TextInput value={form.telefono} onChange={(value) => update("telefono", value)} inputMode="numeric" /></BaseField>
+            <BaseField label="Área *" error={errors.area_id}>
+              <select
+                value={form.area_id}
+                onChange={(event) => update("area_id", event.target.value)}
+                disabled={loadingCatalogs}
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+              >
+                <option value="">{loadingCatalogs ? "Cargando áreas..." : "Selecciona área"}</option>
+                {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
+              </select>
+            </BaseField>
+            <BaseField label="Cargo *" error={errors.cargo_id}>
+              <select
+                value={form.cargo_id}
+                onChange={(event) => update("cargo_id", event.target.value)}
+                disabled={loadingCatalogs || !form.area_id}
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+              >
+                <option value="">{form.area_id ? "Selecciona cargo" : "Selecciona primero un área"}</option>
+                {visibleCargos.map((cargo) => <option key={cargo.id} value={cargo.id}>{cargo.nombre}</option>)}
+              </select>
+            </BaseField>
+          </div>
+
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
+            <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-700 hover:bg-slate-50">Cancelar</button>
+            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white hover:bg-violet-800 disabled:opacity-60">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  );
+}
+
 export default function PsicoEmpleadoPerfilPage() {
   const { empleadoId } = useParams();
   const navigate = useNavigate();
@@ -202,6 +407,7 @@ export default function PsicoEmpleadoPerfilPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAppModal, setShowAppModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [tab, setTab] = useState<"perfil" | "aplicaciones">("perfil");
 
   useEffect(() => {
@@ -257,11 +463,11 @@ export default function PsicoEmpleadoPerfilPage() {
               <ArrowLeft className="h-4 w-4" /> Volver
             </button>
             <h1 className="text-3xl font-black tracking-tight md:text-4xl">Perfil del empleado</h1>
-            <p className="mt-1 text-slate-500">Consulta sociodemográfica, aplicaciones psicosociales, respuestas y resultados individuales.</p>
+            <p className="mt-1 text-slate-500">Consulta la base transversal del colaborador y sus aplicaciones psicosociales.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => setTab("perfil")} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
-              <FileText className="h-4 w-4" /> Editar perfil
+            <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
+              <FileText className="h-4 w-4" /> Editar colaborador
             </button>
             <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 hover:bg-violet-800">
               <ClipboardList className="h-4 w-4" /> Registrar respuestas
@@ -303,7 +509,7 @@ export default function PsicoEmpleadoPerfilPage() {
               </div>
             </div>
             <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between text-sm"><span className="text-slate-500">Completitud del perfil</span><b>{completitudPerfil.toFixed(0)}%</b></div>
+              <div className="mb-2 flex items-center justify-between text-sm"><span className="text-slate-500">Completitud base</span><b>{completitudPerfil.toFixed(0)}%</b></div>
               <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-violet-600" style={{ width: `${Math.min(100, Math.max(0, completitudPerfil))}%` }} /></div>
               <p className="mt-3 text-xs text-slate-500">Baterías: {perfil?.resumen_aplicaciones?.total ?? 0} · Completas: {perfil?.resumen_aplicaciones?.completas ?? 0} · Pendientes: {availableApps.length}</p>
             </div>
@@ -317,14 +523,14 @@ export default function PsicoEmpleadoPerfilPage() {
 
         {tab === "perfil" ? (
           <section className="grid gap-5 lg:grid-cols-3">
-            <SectionCard number={1} title="Información personal">
-              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Sexo" value={perfil?.sexo} /><InfoRow label="Edad" value={perfil?.edad ? `${perfil.edad} años` : null} /><InfoRow label="Año de nacimiento" value={perfil?.anio_nacimiento} /><InfoRow label="Estado civil" value={perfil?.estado_civil} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
+            <SectionCard number={1} title="Identificación y contacto">
+              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Nombres" value={perfil?.nombres} /><InfoRow label="Apellidos" value={perfil?.apellidos} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Identificador externo" value={perfil?.identificador_externo} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
             </SectionCard>
-            <SectionCard number={2} title="Información sociodemográfica">
-              <InfoRow label="Nivel de estudios" value={perfil?.nivel_estudios} /><InfoRow label="Ocupación / profesión" value={perfil?.ocupacion} /><InfoRow label="Estrato" value={perfil?.estrato} /><InfoRow label="Tipo de vivienda" value={perfil?.tipo_vivienda} /><InfoRow label="Personas que dependen económicamente" value={perfil?.personas_dependen} />
+            <SectionCard number={2} title="Asignación organizacional">
+              <InfoRow label="Empresa" value={perfil?.empresa} /><InfoRow label="Área / departamento" value={perfil?.area} /><InfoRow label="Cargo" value={perfil?.cargo} />
             </SectionCard>
-            <SectionCard number={3} title="Información laboral">
-              <InfoRow label="Área / departamento" value={perfil?.area} /><InfoRow label="Cargo" value={perfil?.cargo} /><InfoRow label="Tipo de cargo" value={perfil?.tipo_cargo} /><InfoRow label="Tipo de contrato" value={perfil?.tipo_contrato} /><InfoRow label="Horas diarias de trabajo" value={perfil?.horas_diarias ? `${perfil.horas_diarias} horas` : null} /><InfoRow label="Tipo de salario" value={perfil?.tipo_salario} /><InfoRow label="Antigüedad en la empresa" value={perfil?.antiguedad_empresa_anios != null ? `${perfil.antiguedad_empresa_anios} años` : null} /><InfoRow label="Antigüedad en el cargo" value={perfil?.antiguedad_cargo_anios != null ? `${perfil.antiguedad_cargo_anios} años` : null} />
+            <SectionCard number={3} title="Trazabilidad Abril360">
+              <InfoRow label="Alcance del perfil" value="Base transversal del colaborador" /><InfoRow label="Aplicaciones vinculadas" value={perfil?.resumen_aplicaciones?.total ?? 0} /><InfoRow label="Aplicaciones completas" value={perfil?.resumen_aplicaciones?.completas ?? 0} /><InfoRow label="En curso" value={perfil?.resumen_aplicaciones?.activas ?? 0} /><InfoRow label="Última actualización" value={perfil?.ultima_actualizacion ? fmtDate(perfil.ultima_actualizacion) : null} />
             </SectionCard>
           </section>
         ) : (
@@ -341,6 +547,7 @@ export default function PsicoEmpleadoPerfilPage() {
       </main>
 
       {showAppModal ? <ApplicationSelectModal apps={apps} onClose={() => setShowAppModal(false)} onSelect={goRegister} onResults={goResults} /> : null}
+      {showEditModal && perfil ? <EditBaseEmployeeModal perfil={perfil} onClose={() => setShowEditModal(false)} onSaved={setPerfil} /> : null}
     </div>
   );
 }
