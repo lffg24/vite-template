@@ -67,6 +67,8 @@ describe("PsicologoPerfilPage", () => {
     expect(screen.getByText("Especialista SST")).toBeInTheDocument();
     expect(screen.getByText("TP-456")).toBeInTheDocument();
     expect(screen.getByText("SST-789")).toBeInTheDocument();
+    expect(screen.queryByText(/Fuente:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Demo Company S.A.S")).not.toBeInTheDocument();
   });
 
   it("permite cambiar contraseña cuando cumple la política visual", async () => {

@@ -168,11 +168,6 @@ export default function PsicologoPerfilPage() {
                 Esta información corresponde a las credenciales profesionales registradas para el psicólogo.
               </p>
             </div>
-            {professionalProfile?.empresaNombre ? (
-              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
-                Fuente: {professionalProfile.empresaNombre}
-              </span>
-            ) : null}
           </div>
 
           {profileLoading ? (
@@ -354,7 +349,6 @@ function selectProfessionalProfile(empresas: EmpresaAsignada[]) {
   if (!profile) return null;
 
   return {
-    empresaNombre: profile.nombre,
     identificacionProfesional: profile.identificacion_profesional?.trim(),
     profesion: profile.profesion?.trim(),
     postgrado: profile.postgrado?.trim(),
