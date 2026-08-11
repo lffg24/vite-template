@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { ParticipantePsico } from "@/types/psicoDashboard";
 import {
+  ALL_FORM_FILTERS,
   highestRiskForFilters,
   participantMatchesReportFilters,
   reportsForParticipant,
@@ -38,6 +39,12 @@ describe("participant report filters", () => {
     const item = participant();
     expect(participantMatchesReportFilters(item, { instrumentos: ["INTRA", "EXTRA"], riesgos: ["ALTO"] })).toBe(true);
     expect(participantMatchesReportFilters(item, { instrumentos: ["INTRA"], riesgos: ["ALTO"] })).toBe(false);
+  });
+
+  it("filters participants by intralaboral form before bulk reports are selected", () => {
+    expect(participantMatchesReportFilters(participant({ intra: "A" }), { instrumentos: ["INTRA"], riesgos: ["MEDIO"], formas: ["A"] })).toBe(true);
+    expect(participantMatchesReportFilters(participant({ intra: "A" }), { instrumentos: ["INTRA"], riesgos: ["MEDIO"], formas: ["B"] })).toBe(false);
+    expect(participantMatchesReportFilters(participant({ intra: "B", niveles: { a: null, b: "ALTO", extra: null, estres: null } }), { instrumentos: ["INTRA"], riesgos: ["ALTO"], formas: ALL_FORM_FILTERS })).toBe(true);
   });
 
   it("uses the highest risk among selected instruments for sorting", () => {

@@ -235,6 +235,87 @@ function ScoreTable({ rows, mode }: { rows: ScoreRow[]; mode: "totales" | "domin
     });
   }, [rows, sortKey, mode]);
 
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        key: "puntaje_bruto",
+        label: "Puntaje bruto",
+        className: "w-32 font-semibold text-slate-900",
+        render: (row: ScoreRow) => fmtNumber(row.puntaje_bruto),
+      },
+      {
+        key: "puntaje_transformado",
+        label: "Transformado",
+        className: "w-32 font-black text-slate-950",
+        render: (row: ScoreRow) => fmtNumber(row.puntaje_transformado),
+      },
+      {
+        key: "nivel",
+        label: "Nivel",
+        className: "w-36",
+        render: (row: ScoreRow) => <RiskBadge value={row.nivel_riesgo_key || row.nivel_riesgo} />,
+      },
+    ];
+
+    if (mode === "dimensiones") {
+      return [
+        {
+          key: "dimension",
+          label: "Dimensión",
+          className: "min-w-[250px] max-w-md font-bold text-slate-950",
+          render: (row: ScoreRow) => row.dimension_nombre || prettyCode(row.dimension_code),
+        },
+        {
+          key: "dominio",
+          label: "Dominio",
+          className: "min-w-[220px] text-slate-600",
+          render: (row: ScoreRow) => row.dominio_nombre || prettyCode(row.dominio_code),
+        },
+        {
+          key: "instrumento",
+          label: "Instrumento",
+          className: "min-w-[190px] text-slate-600",
+          render: (row: ScoreRow) => row.instrumento_nombre || prettyCode(row.instrument_code),
+        },
+        ...baseColumns,
+      ];
+    }
+
+    if (mode === "dominios") {
+      return [
+        {
+          key: "dominio",
+          label: "Dominio",
+          className: "min-w-[260px] max-w-md font-bold text-slate-950",
+          render: (row: ScoreRow) => row.dominio_nombre || prettyCode(row.dominio_code),
+        },
+        {
+          key: "instrumento",
+          label: "Instrumento",
+          className: "min-w-[190px] text-slate-600",
+          render: (row: ScoreRow) => row.instrumento_nombre || prettyCode(row.instrument_code),
+        },
+        ...baseColumns,
+      ];
+    }
+
+    return [
+      {
+        key: "instrumento",
+        label: "Instrumento",
+        className: "min-w-[260px] max-w-md font-bold text-slate-950",
+        render: (row: ScoreRow) => row.instrumento_nombre || prettyCode(row.instrument_code),
+      },
+      {
+        key: "codigo",
+        label: "Código normativo",
+        className: "min-w-[170px] text-slate-600",
+        render: (row: ScoreRow) => prettyCode(row.total_code || row.instrument_code),
+      },
+      ...baseColumns,
+    ];
+  }, [mode]);
+
   if (!rows.length) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-600">
@@ -262,36 +343,22 @@ function ScoreTable({ rows, mode }: { rows: ScoreRow[]; mode: "totales" | "domin
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
+        <table className="min-w-[940px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3">{mode === "totales" ? "Instrumento" : mode === "dominios" ? "Dominio" : "Dimensión"}</th>
-              {mode === "dimensiones" ? <th className="px-4 py-3">Dominio</th> : null}
-              <th className="px-4 py-3">Instrumento</th>
-              <th className="px-4 py-3">Puntaje bruto</th>
-              <th className="px-4 py-3">Transformado</th>
-              <th className="px-4 py-3">Nivel</th>
+              {columns.map((column) => (
+                <th key={column.key} className="px-4 py-3">{column.label}</th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {sortedRows.map((row, index) => {
-              const title =
-                mode === "totales"
-                  ? row.instrumento_nombre || prettyCode(row.instrument_code)
-                  : mode === "dominios"
-                    ? row.dominio_nombre || prettyCode(row.dominio_code)
-                    : row.dimension_nombre || prettyCode(row.dimension_code);
-              return (
-                <tr key={`${mode}-${row.evaluacion_id || "x"}-${row.instrument_code || "inst"}-${row.total_code || row.dominio_code || row.dimension_code || index}`} className="hover:bg-slate-50">
-                  <td className="max-w-md px-4 py-4 font-bold text-slate-950">{title}</td>
-                  {mode === "dimensiones" ? <td className="px-4 py-4 text-slate-600">{row.dominio_nombre || prettyCode(row.dominio_code)}</td> : null}
-                  <td className="px-4 py-4 text-slate-600">{row.instrumento_nombre || prettyCode(row.instrument_code)}</td>
-                  <td className="px-4 py-4 font-semibold text-slate-900">{fmtNumber(row.puntaje_bruto)}</td>
-                  <td className="px-4 py-4 font-black text-slate-950">{fmtNumber(row.puntaje_transformado)}</td>
-                  <td className="px-4 py-4"><RiskBadge value={row.nivel_riesgo_key || row.nivel_riesgo} /></td>
-                </tr>
-              );
-            })}
+            {sortedRows.map((row, index) => (
+              <tr key={`${mode}-${row.evaluacion_id || "x"}-${row.instrument_code || "inst"}-${row.total_code || row.dominio_code || row.dimension_code || index}`} className="hover:bg-slate-50">
+                {columns.map((column) => (
+                  <td key={column.key} className={`px-4 py-4 ${column.className}`}>{column.render(row)}</td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

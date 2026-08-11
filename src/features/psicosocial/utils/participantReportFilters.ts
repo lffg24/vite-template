@@ -2,15 +2,22 @@ import type { BulkInformeIndividualItem } from "@/features/psicosocial/api/psico
 import type { ParticipantePsico } from "@/types/psicoDashboard";
 
 export type InstrumentFilter = "INTRA" | "EXTRA" | "ESTRES";
+export type FormFilter = "A" | "B";
 export type RiskFilter = "SIN_RIESGO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | "SIN_NIVEL";
 
 export const ALL_INSTRUMENT_FILTERS: InstrumentFilter[] = ["INTRA", "EXTRA", "ESTRES"];
+export const ALL_FORM_FILTERS: FormFilter[] = ["A", "B"];
 export const ALL_RISK_FILTERS: RiskFilter[] = ["SIN_RIESGO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"];
 
 export const INSTRUMENT_FILTER_LABELS: Record<InstrumentFilter, string> = {
   INTRA: "Intralaboral",
   EXTRA: "Extralaboral",
   ESTRES: "Estrés",
+};
+
+export const FORM_FILTER_LABELS: Record<FormFilter, string> = {
+  A: "Formulario A",
+  B: "Formulario B",
 };
 
 export const RISK_ORDER: Record<string, number> = {
@@ -57,8 +64,9 @@ export function highestRiskForFilters(item: ParticipantePsico, filters: Instrume
 
 export function participantMatchesReportFilters(
   item: ParticipantePsico,
-  filters: { instrumentos: InstrumentFilter[]; riesgos: RiskFilter[] },
+  filters: { instrumentos: InstrumentFilter[]; riesgos: RiskFilter[]; formas?: FormFilter[] },
 ) {
+  if (filters.formas && !filters.formas.includes(item.intra as FormFilter)) return false;
   const availableReports = reportsForParticipant(item, filters.instrumentos);
   if (!availableReports.length) return false;
   if (!filters.riesgos.length) return false;
