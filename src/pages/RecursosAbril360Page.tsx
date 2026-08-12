@@ -838,12 +838,20 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                 <Icon className="h-8 w-8" />
               </span>
               <div className="max-w-4xl">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">{current.eyebrow}</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">
+                    {current.eyebrow}
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
+                    {current.audience}
+                  </span>
+                </div>
                 <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">{current.title}</h1>
                 <p className="mt-4 text-base leading-8 text-slate-600">{current.description}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">{current.audience}</span>
-                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">{current.promise}</span>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600 ring-1 ring-slate-200">
+                    {current.promise}
+                  </span>
                 </div>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {current.quickLinks.map((link) => (
@@ -903,9 +911,6 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                 </span>
                 <span>
                   <span className="block text-sm font-black">{item.title}</span>
-                  <span className={`mt-1 block text-xs leading-6 ${active ? "text-slate-300" : "text-slate-500"}`}>
-                    {item.eyebrow}
-                  </span>
                 </span>
               </Link>
             );
