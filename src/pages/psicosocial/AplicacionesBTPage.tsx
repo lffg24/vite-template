@@ -16,7 +16,6 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
-  Sparkles,
   TimerReset,
   WalletCards,
 } from "lucide-react";
@@ -357,19 +356,6 @@ export default function AplicacionesBTPage() {
                 <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ArrowRight className="h-4 w-4" /></Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[1.75rem] border-violet-100 bg-gradient-to-br from-violet-50 to-white shadow-sm">
-          <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm"><Sparkles className="h-7 w-7" /></div>
-              <div>
-                <h2 className="text-lg font-black text-slate-950">Estados oficiales centralizados</h2>
-                <p className="text-sm text-slate-600">BORRADOR, EN_CAPTURA, CALCULANDO, FINALIZADA, REABIERTA y ERROR_CALCULO. El frontend no decide el estado oficial.</p>
-              </div>
-            </div>
-            <Button asChild className="rounded-xl bg-violet-700 hover:bg-violet-800"><Link to="/psicosocial/informes">Ir a informes</Link></Button>
           </CardContent>
         </Card>
       </div>

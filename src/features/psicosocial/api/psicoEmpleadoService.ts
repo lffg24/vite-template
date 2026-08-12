@@ -42,31 +42,20 @@ export type PsicoEmpleadoPerfil = {
   empleado_id: number;
   empresa_id: string;
   cedula?: string | null;
+  identificador_externo?: string | null;
   nombre_completo?: string | null;
   nombres?: string | null;
   apellidos?: string | null;
   correo?: string | null;
   telefono?: string | null;
-  sexo?: string | null;
-  anio_nacimiento?: number | null;
-  edad?: number | null;
-  estado_civil?: string | null;
-  nivel_estudios?: string | null;
-  ocupacion?: string | null;
-  estrato?: number | string | null;
-  tipo_vivienda?: string | null;
-  personas_dependen?: number | null;
   empresa?: string | null;
+  cargo_id?: number | null;
   cargo?: string | null;
+  area_id?: number | null;
   area?: string | null;
-  tipo_cargo?: string | null;
-  tipo_contrato?: string | null;
-  horas_diarias?: number | null;
-  tipo_salario?: string | null;
-  antiguedad_empresa_anios?: number | null;
-  antiguedad_cargo_anios?: number | null;
   ultima_actualizacion?: string | null;
   completitud_perfil?: number | null;
+  alcance_perfil?: "base_colaborador" | string | null;
   aplicaciones?: PsicoAplicacionEmpleado[];
   resumen_aplicaciones?: { total: number; completas: number; activas: number };
 };
@@ -124,6 +113,29 @@ export type PsicoResultadoIndividual = {
 
 export function obtenerPerfilPsicoEmpleado(empleadoId: number | string) {
   return requestJson<PsicoEmpleadoPerfil>(`/psicosocial/empleados/${empleadoId}/perfil`);
+}
+
+export type ActualizarPerfilBaseEmpleadoPayload = {
+  nombres?: string | null;
+  apellidos?: string | null;
+  cedula?: string | null;
+  identificador_externo?: string | null;
+  email?: string | null;
+  telefono?: string | null;
+  area_id?: number | string | null;
+  cargo_id?: number | string | null;
+};
+
+export function actualizarPerfilBasePsicoEmpleado(
+  empleadoId: number | string,
+  payload: ActualizarPerfilBaseEmpleadoPayload,
+  empresaId?: string | null,
+) {
+  return requestJson<PsicoEmpleadoPerfil>(`/psicosocial/empleados/${empleadoId}/perfil`, {
+    method: "PATCH",
+    headers: empresaId ? { "X-Empresa-Id": empresaId } : undefined,
+    body: JSON.stringify(payload),
+  });
 }
 
 export function obtenerAplicacionesPsicoEmpleado(empleadoId: number | string) {

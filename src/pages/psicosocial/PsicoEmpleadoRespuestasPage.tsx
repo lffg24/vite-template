@@ -29,6 +29,8 @@ import {
   type PsicoEvaluacionEmpleado,
 } from "@/features/psicosocial/api/psicoEmpleadoService";
 import { AbrilApiError } from "@/features/psicosocial/api/httpClient";
+import { CreditGuardDialog } from "@/features/psicosocial/components/credits/CreditGuardDialog";
+import { getCreditGuardInfo, type CreditGuardInfo } from "@/features/psicosocial/utils/creditGuard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import {
@@ -315,6 +317,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const [saving, setSaving] = useState(false);
   const [pageError, setPageError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
+  const [creditGuardDialog, setCreditGuardDialog] = useState<CreditGuardInfo | null>(null);
   const [confirmFinalize, setConfirmFinalize] = useState(false);
   const [showFicha, setShowFicha] = useState(false);
   const [ficha, setFicha] = useState<FichaSociodemografica>(EMPTY_FICHA);
@@ -323,7 +326,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const notify = (payload: Omit<ToastPayload, "id">) => {
     const id = Date.now();
     setToast({ id, ...payload });
-    window.setTimeout(() => setToast((current) => (current?.id === id ? null : current)), 5200);
+    window.setTimeout(() => setToast((current) => (current?.id === id ? null : current)), payload.durationMs ?? 5200);
   };
   const draftKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval?.evaluacion_id || "none"}`;
 
@@ -599,6 +602,11 @@ export default function PsicoEmpleadoRespuestasPage() {
           : "Los datos se guardaron, pero aún faltan campos para completar la ficha.",
       });
     } catch (e) {
+      const creditGuard = getCreditGuardInfo(e);
+      if (creditGuard.isInsufficient) {
+        setCreditGuardDialog(creditGuard);
+        return;
+      }
       notify({ type: "warning", title: "No se pudo guardar la ficha", message: e instanceof Error ? e.message : "Revisa los campos obligatorios." });
     } finally {
       setSaving(false);
@@ -626,6 +634,11 @@ export default function PsicoEmpleadoRespuestasPage() {
     } catch (e) {
       if (e instanceof AbrilApiError && e.status === 401) {
         persistDraft();
+        return;
+      }
+      const creditGuard = getCreditGuardInfo(e);
+      if (creditGuard.isInsufficient) {
+        setCreditGuardDialog(creditGuard);
         return;
       }
       notify({
@@ -701,6 +714,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   return (
     <main className="min-h-screen bg-slate-50 p-4 md:p-6">
       {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
+      <CreditGuardDialog info={creditGuardDialog} onClose={() => setCreditGuardDialog(null)} />
       <ConfirmDialog
         open={confirmFinalize}
         title="Finalizar instrumento"

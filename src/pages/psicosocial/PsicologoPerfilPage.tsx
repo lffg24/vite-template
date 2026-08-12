@@ -168,11 +168,6 @@ export default function PsicologoPerfilPage() {
                 Esta información corresponde a las credenciales profesionales registradas para el psicólogo.
               </p>
             </div>
-            {professionalProfile?.empresaNombre ? (
-              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
-                Fuente: {professionalProfile.empresaNombre}
-              </span>
-            ) : null}
           </div>
 
           {profileLoading ? (
@@ -201,8 +196,8 @@ export default function PsicologoPerfilPage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-black text-slate-950">Alcance de acceso</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Detail label="ID de usuario" value={user?.id || "No disponible"} />
-              <Detail label="Empresa base" value={tenantId || user?.empresaId || "No disponible"} />
+              <Detail label="Estado de sesión" value="Autenticada" />
+              <Detail label="Alcance operativo" value={tenantId || user?.empresaId ? "Empresas asignadas" : "Sin empresa activa"} />
               <Detail label="Roles activos" value={roles.length ? roles.map(formatRole).join(", ") : "Sin roles reportados"} />
               <Detail label="Permisos activos" value={permissions.length ? `${permissions.length} permisos habilitados` : "Sin permisos reportados"} />
             </div>
@@ -354,7 +349,6 @@ function selectProfessionalProfile(empresas: EmpresaAsignada[]) {
   if (!profile) return null;
 
   return {
-    empresaNombre: profile.nombre,
     identificacionProfesional: profile.identificacion_profesional?.trim(),
     profesion: profile.profesion?.trim(),
     postgrado: profile.postgrado?.trim(),

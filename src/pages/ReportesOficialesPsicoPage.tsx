@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { CircleHelp, Download, FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -283,7 +283,6 @@ export default function ReportesOficialesPsicoPage() {
                 <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>{reportOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
               </Select>
-              <p className="flex items-center gap-1 text-xs leading-relaxed text-slate-500"><CircleHelp className="h-3.5 w-3.5" /> Consulta la descripción en el ícono informativo.</p>
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end lg:pt-7">

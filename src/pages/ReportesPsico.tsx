@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   BarChart3,
   Brain,
-  CalendarClock,
   ChevronDown,
   CheckCircle2,
   Download,
@@ -62,13 +61,16 @@ import {
   type BulkInformeIndividualFormat,
 } from "@/features/psicosocial/api/psicoInformesIndividualesService";
 import {
+  ALL_FORM_FILTERS,
   ALL_INSTRUMENT_FILTERS,
   ALL_RISK_FILTERS,
+  FORM_FILTER_LABELS,
   INSTRUMENT_FILTER_LABELS,
   RISK_ORDER,
   highestRiskForFilters,
   participantMatchesReportFilters,
   reportsForParticipant,
+  type FormFilter,
   type InstrumentFilter,
   type RiskFilter,
 } from "@/features/psicosocial/utils/participantReportFilters";
@@ -83,6 +85,7 @@ import type {
   DistribucionTotal,
   DominioPsico,
   AreaDetallePsico,
+  CalidadBateria,
   PsicoAplicacionItem,
   PsicoDashboardResponse,
   ParticipantePsico,
@@ -144,10 +147,10 @@ function nivelLabel(nivel?: string | null) {
 
 function riesgoLabel(value?: number) {
   const v = Number(value ?? 0);
-  if (v >= 35) return "Crítico";
-  if (v >= 15) return "Prioritario";
-  if (v > 0) return "Vigilancia";
-  return "Controlado";
+  if (v >= 35) return "Prioridad muy alta";
+  if (v >= 15) return "Prioridad alta";
+  if (v > 0) return "Seguimiento";
+  return "Sin prioridad operativa";
 }
 
 function riesgoTone(pct?: number) {
@@ -210,6 +213,34 @@ export function reportesDashboardEmptyText(appCount: number) {
   return appCount > 0
     ? "Selecciona una aplicación para visualizar el dashboard."
     : "No hay aplicaciones cerradas con resultados disponibles para reportar.";
+}
+
+export function isTotalGeneralRow(row?: Pick<TotalPsico, "total_code"> | Pick<DistribucionTotal, "total_code"> | null) {
+  return String(row?.total_code ?? "").toUpperCase() === "TOTAL_GENERAL";
+}
+
+export function getInstrumentalTotals(items: TotalPsico[] = []) {
+  return items.filter((item) => !isTotalGeneralRow(item));
+}
+
+export function getTotalGeneralRows(items: TotalPsico[] = []) {
+  return items.filter((item) => isTotalGeneralRow(item));
+}
+
+export function calculateInstrumentalExposure(items: TotalPsico[] = []) {
+  const base = getInstrumentalTotals(items);
+  const totalScores = base.reduce((acc, item) => acc + Number(item.n ?? 0), 0);
+  const altoMuyAlto = base.reduce((acc, item) => acc + Number(item.alto_muy_alto ?? 0), 0);
+  return {
+    totalScores,
+    altoMuyAlto,
+    pctAltoMuyAlto: totalScores ? Number(((altoMuyAlto / totalScores) * 100).toFixed(2)) : 0,
+  };
+}
+
+export function resultQualityLabel(calidad?: Partial<CalidadBateria> | null) {
+  if (!calidad) return "Sin datos";
+  return calidad.estado === "OK" ? "Apta para análisis" : "Revisar calidad";
 }
 
 function DistributionBars({ data }: { data: DistribucionTotal[] }) {
@@ -280,7 +311,7 @@ function DonutGlobal({ data }: { data: DistribucionTotal[] }) {
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div className="text-center">
           <div className="text-3xl font-bold text-slate-950">{total}</div>
-          <div className="text-xs text-slate-500">scores total</div>
+          <div className="text-xs text-slate-500">scores instrumentales</div>
         </div>
       </div>
     </div>
@@ -303,7 +334,7 @@ function normalizeInstrumentSummaries(data: any): InstrumentRiskSummary[] {
     niveles: Array.isArray(x.niveles) ? x.niveles : [],
   }));
   const fallback = Array.isArray(data?.distribucion_totales) ? data.distribucion_totales : [];
-  return fallback.map((x: any) => ({
+  return fallback.filter((x: any) => !isTotalGeneralRow(x)).map((x: any) => ({
     key: `${x.evaluacion_id}-${x.total_code}`,
     label: x.instrument_label ?? x.total_label ?? "Instrumento",
     grupo: x.total_label,
@@ -361,8 +392,8 @@ function InstrumentOverviewSection({ data }: { data: any }) {
       </div>
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Vista comparativa por evaluación</CardTitle>
-          <CardDescription>Resumen visual por Intralaboral A/B, Extralaboral y Estrés. Cuando el backend entrega segmentación por forma, se separa A/B y global.</CardDescription>
+          <CardTitle className="text-base">Vista comparativa por instrumento</CardTitle>
+          <CardDescription>Resumen visual de los resultados oficiales por Intralaboral A/B, Extralaboral y Estrés. El total general se presenta por separado para evitar doble lectura.</CardDescription>
         </CardHeader>
         <CardContent>
           <DistributionBars data={items.map((it: any, idx: number) => ({
@@ -729,6 +760,7 @@ function MultiCheckboxFilter<T extends string>({
 function ParticipantesTable({ items = [], aplicacionId }: { items?: ParticipantePsico[]; aplicacionId?: number }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [formas, setFormas] = useState<FormFilter[]>([...ALL_FORM_FILTERS]);
   const [riesgos, setRiesgos] = useState<RiskFilter[]>([...ALL_RISK_FILTERS]);
   const [instrumentos, setInstrumentos] = useState<InstrumentFilter[]>([...ALL_INSTRUMENT_FILTERS]);
   const [sort, setSort] = useState<{ key: "nombre" | "area" | "intra" | "nivel_critico"; dir: "asc" | "desc" }>({ key: "nivel_critico", dir: "desc" });
@@ -747,7 +779,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
     return items
       .filter((it) => {
         const matchesQ = !query || [it.cedula, it.nombre, it.area, it.cargo, it.tipo_cargo, it.email].some((v) => String(v || "").toLowerCase().includes(query));
-        return matchesQ && participantMatchesReportFilters(it, { instrumentos, riesgos });
+        return matchesQ && participantMatchesReportFilters(it, { instrumentos, riesgos, formas });
       })
       .sort((a, b) => {
         let cmp = 0;
@@ -755,11 +787,11 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
         else cmp = String((a as any)[sort.key] || "").localeCompare(String((b as any)[sort.key] || ""), "es");
         return sort.dir === "asc" ? cmp : -cmp;
       });
-  }, [items, q, riesgos, instrumentos, sort]);
+  }, [items, q, formas, riesgos, instrumentos, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [q, riesgos, instrumentos, pageSize, items.length]);
+  }, [q, formas, riesgos, instrumentos, pageSize, items.length]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -840,8 +872,16 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_220px]">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(260px,1fr)_210px_220px_220px]">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por cédula, nombre, área, cargo..." />
+        <MultiCheckboxFilter
+          value={formas}
+          options={ALL_FORM_FILTERS}
+          labels={FORM_FILTER_LABELS}
+          allLabel="Todas las formas"
+          ariaLabel="Filtrar formulario intralaboral"
+          onChange={setFormas}
+        />
         <MultiCheckboxFilter
           value={instrumentos}
           options={ALL_INSTRUMENT_FILTERS}
@@ -1313,6 +1353,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
   const [instrumento, setInstrumento] = useState("__ALL__");
   const [dominio, setDominio] = useState("__ALL__");
   const [riesgo, setRiesgo] = useState("__ALL__");
+  const [vista, setVista] = useState<"normativa" | "priorizacion">("normativa");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "pct_alto_muy_alto", dir: "desc" });
 
   const instrumentos = useMemo(() => Array.from(new Set(items.map((it) => it.instrument_label).filter(Boolean))).sort(), [items]);
@@ -1335,14 +1376,16 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
         return `${it.dimension_label} ${it.dominio_label} ${it.instrument_label}`.toLowerCase().includes(needle);
       })
       .sort((a, b) => {
+        if (vista === "normativa") return 0;
         const av = a[sort.key] ?? "";
         const bv = b[sort.key] ?? "";
         const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv), "es");
         return sort.dir === "asc" ? cmp : -cmp;
       });
-  }, [items, q, instrumento, dominio, riesgo, sort]);
+  }, [items, q, instrumento, dominio, riesgo, sort, vista]);
 
   const setSortKey = (key: SortKey) => {
+    setVista("priorizacion");
     setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "desc" }));
   };
 
@@ -1364,7 +1407,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.3fr_.8fr_.8fr_.7fr_auto]">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.3fr_.8fr_.8fr_.7fr_.8fr_auto]">
         <Input className="bg-white" placeholder="Buscar dimensión, dominio o instrumento..." value={q} onChange={(e) => setQ(e.target.value)} />
         <Select value={instrumento} onValueChange={setInstrumento}>
           <SelectTrigger className="bg-white"><SelectValue placeholder="Instrumento" /></SelectTrigger>
@@ -1384,9 +1427,16 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
           <SelectTrigger className="bg-white"><SelectValue placeholder="Riesgo" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="__ALL__">Todo riesgo</SelectItem>
-            <SelectItem value="critico">Crítico ≥ 50%</SelectItem>
+            <SelectItem value="critico">Prioridad ≥ 50%</SelectItem>
             <SelectItem value="alto">Con Alto/Muy alto</SelectItem>
             <SelectItem value="sin_riesgo_alto">Sin Alto/Muy alto</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={vista} onValueChange={(value) => setVista(value as "normativa" | "priorizacion")}>
+          <SelectTrigger className="bg-white"><SelectValue placeholder="Vista" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="normativa">Orden normativo</SelectItem>
+            <SelectItem value="priorizacion">Priorizar riesgo</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center justify-end text-sm text-slate-500">{filtered.length} dimensiones</div>
@@ -1443,7 +1493,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
         </div>
       </div>
       <p className="text-xs leading-relaxed text-slate-500">
-        Las columnas de respuestas son conteos agregados de todos los ítems de la dimensión. Por eso pueden superar N cuando la dimensión contiene varias preguntas. La interpretación oficial sigue siendo el puntaje transformado y el nivel de riesgo.
+        En orden normativo se respeta la secuencia del manual por instrumento, dominio y dimensión. Las columnas de respuestas son conteos agregados de todos los ítems de la dimensión; por eso pueden superar N cuando la dimensión contiene varias preguntas.
       </p>
     </div>
   );
@@ -1456,7 +1506,7 @@ function SegmentacionChart({ title, items }: { title: string; items?: Segmentaci
     <Card className="border-slate-200 shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>% de registros en Alto/Muy alto por grupo.</CardDescription>
+        <CardDescription>% de scores instrumentales en Alto/Muy alto por grupo.</CardDescription>
       </CardHeader>
       <CardContent>
         {!data.length ? <EmptyState /> : (
@@ -1465,7 +1515,7 @@ function SegmentacionChart({ title, items }: { title: string; items?: Segmentaci
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tickFormatter={(v) => `${v}%`} />
               <YAxis type="category" dataKey="nombre" width={130} />
-              <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, "Alto/Muy alto"]} />
+              <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, "Scores Alto/Muy alto"]} />
               <Bar dataKey="pct_alto_muy_alto" fill="#7c3aed" radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -1707,19 +1757,23 @@ export default function ReportesPsico() {
   const app = data?.aplicacion;
   const calidad = data?.calidad;
 
-  const totalIntra = data?.totales?.filter((t) => t.total_code === "TOTAL_INTRA") ?? [];
-  const totalExtra = data?.totales?.find((t) => t.total_code === "TOTAL_EXTRA");
-  const totalEstres = data?.totales?.find((t) => t.total_code === "TOTAL_ESTRES");
+  const totals = data?.totales ?? [];
+  const totalGeneralRows = useMemo(() => getTotalGeneralRows(totals), [totals]);
+  const totalGeneral = totalGeneralRows[0];
+  const instrumentalExposure = useMemo(() => calculateInstrumentalExposure(totals), [totals]);
+  const analyticDistribution = useMemo(
+    () => (data?.distribucion_totales ?? []).filter((item) => !isTotalGeneralRow(item)),
+    [data?.distribucion_totales]
+  );
 
   const predominantTotal = useMemo(() => {
-    const all = data?.distribucion_totales.flatMap((d) => d.niveles.map((n) => ({ ...n, instrumento: d.instrument_label }))) ?? [];
+    const all = analyticDistribution.flatMap((d) => d.niveles.map((n) => ({ ...n, instrumento: d.instrument_label })));
     return all.sort((a, b) => b.cantidad - a.cantidad)[0];
-  }, [data]);
+  }, [analyticDistribution]);
 
 
   const dominioCritico = data?.kpis.dominio_mas_critico;
   const dimensionCritica = data?.kpis.dimension_mas_critica;
-  const periodicidad = Number(data?.kpis.pct_global_alto_muy_alto ?? 0) >= 15 ? "12 meses" : "12-24 meses";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -1736,7 +1790,7 @@ export default function ReportesPsico() {
                   {calidad && estadoBadge(calidad.estado)}
                 </div>
                 <p className="mt-1 text-sm text-slate-500">
-                  Dashboard oficial por aplicación: A o B + Extralaboral + Estrés.
+                  Resultados oficiales por aplicación y lectura ejecutiva para orientar el análisis profesional.
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                   <span>Aplicación: <b>{app?.nombre ?? "—"}</b></span>
@@ -1800,13 +1854,13 @@ export default function ReportesPsico() {
                     <KpiCard compact title="Participación" value={`${calidad?.bateria_completa_correcta ?? 0}/${calidad?.personas_unicas ?? 0}`} subtitle={`${fmtPct(calidad?.porcentaje_completitud)} batería completa`} icon={Users} tone="violet" />
                   </div>
                   <div className="xl:col-span-2">
-                    <KpiCard compact title="Riesgo predominante" value={predominantTotal?.label ?? "—"} subtitle="Nivel más frecuente en scores totales" icon={ShieldCheck} tone={data.kpis.pct_global_alto_muy_alto > 0 ? "yellow" : "green"} />
+                    <KpiCard compact title="Calidad del set" value={resultQualityLabel(calidad)} subtitle={`${fmtPct(calidad?.porcentaje_completitud)} con batería completa`} icon={ShieldCheck} tone={calidad?.estado === "OK" ? "green" : "yellow"} />
                   </div>
                   <div className="xl:col-span-2">
-                    <KpiCard compact title="Alto/Muy alto" value={fmtPct(data.kpis.pct_global_alto_muy_alto)} subtitle={`${riesgoLabel(data.kpis.pct_global_alto_muy_alto)} · ponderado por scores`} icon={Gauge} tone={data.kpis.pct_global_alto_muy_alto > 0 ? "red" : "green"} />
+                    <KpiCard compact title="Total general" value={totalGeneral ? fmtNum(totalGeneral.promedio_transformado) : "—"} subtitle={totalGeneral ? `${fmtPct(totalGeneral.pct_alto_muy_alto)} Alto/Muy alto` : "Intra + Extra no disponible"} icon={FileText} tone={totalGeneral ? "violet" : "yellow"} />
                   </div>
                   <div className="xl:col-span-2">
-                    <KpiCard compact title="Próxima evaluación" value={periodicidad} subtitle="Periodicidad sugerida según exposición" icon={CalendarClock} tone="green" />
+                    <KpiCard compact title="Exposición instrumental" value={fmtPct(instrumentalExposure.pctAltoMuyAlto)} subtitle={`${riesgoLabel(instrumentalExposure.pctAltoMuyAlto)} · ${instrumentalExposure.altoMuyAlto}/${instrumentalExposure.totalScores} scores`} icon={Gauge} tone={instrumentalExposure.pctAltoMuyAlto > 0 ? "red" : "green"} />
                   </div>
                   <div className="xl:col-span-2">
                     <KpiCard compact title="Dominio crítico" value={shortText(dominioCritico?.dominio_label, 24)} valueTitle={dominioCritico?.dominio_label} subtitle={`Alto/Muy alto ${fmtPct(dominioCritico?.pct_alto_muy_alto)}`} icon={Target} tone="orange" />
@@ -1818,15 +1872,16 @@ export default function ReportesPsico() {
 
                 <div className="rounded-2xl border border-sky-100 bg-sky-50/60 px-4 py-3 text-xs leading-relaxed text-sky-900">
                   <b>Lectura para el psicólogo:</b> los resultados se interpretan con puntajes transformados de 0 a 100 y niveles de riesgo oficiales. Las frecuencias de respuesta ayudan a reconocer patrones de exposición por ítem, pero la clasificación normativa se mantiene en los baremos del instrumento.
+                  La exposición instrumental resume Intralaboral, Extralaboral y Estrés sin duplicar el total general.
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
                   <Card className="border-slate-200 shadow-sm xl:col-span-4">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Distribución global por nivel</CardTitle>
-                      <CardDescription>Distribución de niveles en scores totales oficiales.</CardDescription>
+                      <CardTitle className="text-base">Distribución instrumental por nivel</CardTitle>
+                      <CardDescription>Lectura analítica de Intralaboral, Extralaboral y Estrés. No duplica el Total General.</CardDescription>
                     </CardHeader>
-                    <CardContent><DonutGlobal data={data.distribucion_totales} /></CardContent>
+                    <CardContent><DonutGlobal data={analyticDistribution} /></CardContent>
                   </Card>
 
                   <Card className="border-slate-200 shadow-sm xl:col-span-4">
@@ -1904,7 +1959,7 @@ export default function ReportesPsico() {
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                   <Card className="border-slate-200 shadow-sm">
-                    <CardHeader><CardTitle>Riesgo por dominios</CardTitle><CardDescription>Ranking ejecutivo por exposición Alto/Muy alto.</CardDescription></CardHeader>
+                    <CardHeader><CardTitle>Riesgo por dominios</CardTitle><CardDescription>Priorización ejecutiva por exposición Alto/Muy alto.</CardDescription></CardHeader>
                     <CardContent><DominioCards dominios={data.ranking_dominios} onOpen={openDomainDetail} /></CardContent>
                   </Card>
                   <Card className="border-slate-200 shadow-sm">
