@@ -40,6 +40,8 @@ import {
   EmpleadoImportResponse,
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
+import { CreditGuardDialog } from "@/features/psicosocial/components/credits/CreditGuardDialog";
+import { getCreditGuardInfo, type CreditGuardInfo } from "@/features/psicosocial/utils/creditGuard";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
 import {
@@ -410,6 +412,7 @@ export default function AplicacionDetallePage() {
   const [confirmReopen, setConfirmReopen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastPayload | null>(null);
+  const [creditGuardDialog, setCreditGuardDialog] = useState<CreditGuardInfo | null>(null);
   const [calcStartedAt, setCalcStartedAt] = useState<number | null>(null);
   const [calcElapsed, setCalcElapsed] = useState(0);
   const [openEmployeeDrawer, setOpenEmployeeDrawer] = useState(false);
@@ -470,7 +473,7 @@ export default function AplicacionDetallePage() {
   const notify = (payload: Omit<ToastPayload, "id">) => {
     const id = Date.now();
     setToast({ id, ...payload });
-    window.setTimeout(() => setToast((t) => (t?.id === id ? null : t)), 5200);
+    window.setTimeout(() => setToast((t) => (t?.id === id ? null : t)), payload.durationMs ?? 5200);
   };
 
   const dismissClosureGuide = () => {
@@ -1091,6 +1094,11 @@ export default function AplicacionDetallePage() {
       });
       await load();
     } catch (e: any) {
+      const creditGuard = getCreditGuardInfo(e);
+      if (creditGuard.isInsufficient) {
+        setCreditGuardDialog(creditGuard);
+        return;
+      }
       notify({
         type: "error",
         title: "No fue posible reabrir",
@@ -1251,6 +1259,7 @@ export default function AplicacionDetallePage() {
       )}
 
       {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
+      <CreditGuardDialog info={creditGuardDialog} onClose={() => setCreditGuardDialog(null)} />
       <ConfirmDialog
         open={confirmClose}
         title="Cerrar y calcular la aplicación"

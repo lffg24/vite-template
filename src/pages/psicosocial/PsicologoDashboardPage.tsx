@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, Building2, CalendarDays, ClipboardCheck, FileText, Loader2, MessageCircle, Plus, RefreshCw, Upload, Users, WalletCards } from "lucide-react";
 import { psicoAdminService, type CreditosResumen, type EmpresaPsico } from "@/features/psicosocial/api/psicoAdminService";
+import { CREDIT_PURCHASE_WHATSAPP_URL as CREDIT_PURCHASE_URL } from "@/features/psicosocial/utils/creditGuard";
 
 function n(value: unknown) { const num = Number(value ?? 0); return Number.isFinite(num) ? num : 0; }
 
-export const CREDIT_PURCHASE_WHATSAPP_URL = "https://wa.me/573002458438";
+export const CREDIT_PURCHASE_WHATSAPP_URL = CREDIT_PURCHASE_URL;
 
 export default function PsicologoDashboardPage() {
   const navigate = useNavigate();

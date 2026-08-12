@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
 
 export type ToastType = "success" | "error" | "warning" | "info";
@@ -10,6 +10,8 @@ export type ToastPayload = {
   details?: string[];
   moreCount?: number;
   icon?: ReactNode;
+  action?: { label: string; href?: string; onClick?: () => void; style?: CSSProperties };
+  durationMs?: number;
 };
 
 const TOAST_THEME: Record<ToastType, { wrapper: string; accent: string; Icon: any }> = {
@@ -74,6 +76,28 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 <p className="mt-2 text-xs font-semibold text-slate-500">y {toast.moreCount} más…</p>
               )}
             </div>
+          )}
+          {toast.action && (
+            toast.action.href ? (
+              <a
+                href={toast.action.href}
+                target="_blank"
+                rel="noreferrer"
+                style={toast.action.style}
+                className="mt-4 inline-flex items-center justify-center rounded-2xl bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+              >
+                {toast.action.label}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={toast.action.onClick}
+                style={toast.action.style}
+                className="mt-4 inline-flex items-center justify-center rounded-2xl bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+              >
+                {toast.action.label}
+              </button>
+            )
           )}
         </div>
       </div>
