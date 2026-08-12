@@ -129,12 +129,13 @@ export default function PsicologoPerfilPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-violet-100 text-xl font-black text-violet-700">
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-xl font-black text-brand-primary">
                 {initials}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-black uppercase text-violet-700">Perfil del psicólogo</p>
-                <h1 className="truncate text-2xl font-black text-slate-950">{nombre}</h1>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-primary">Perfil del psicólogo</p>
+                <h1 className="truncate text-2xl font-black text-slate-950"><span className="marker-highlight">Perfil</span> profesional</h1>
+                <p className="mt-1 text-base font-bold text-slate-950">{nombre}</p>
                 <p className="mt-1 text-sm text-slate-500">Información registrada para la operación psicosocial.</p>
               </div>
             </div>
@@ -142,7 +143,7 @@ export default function PsicologoPerfilPage() {
               type="button"
               onClick={() => setPasswordOpen(true)}
               disabled={passwordChangeRequired}
-              className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-100 hover:bg-violet-800"
+              className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover"
             >
               <KeyRound className="h-4 w-4" />
               Cambiar contraseña
@@ -159,7 +160,7 @@ export default function PsicologoPerfilPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-violet-700">
+              <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-primary">
                 <FileBadge className="h-4 w-4" />
                 Información profesional
               </p>
@@ -225,7 +226,7 @@ export default function PsicologoPerfilPage() {
             <div className="border-b border-slate-100 bg-slate-50 px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase text-violet-700">Seguridad</p>
+                  <p className="text-xs font-black uppercase text-brand-primary">Seguridad</p>
                   <h3 className="text-xl font-black text-slate-950">
                     {passwordChangeRequired ? "Cambio obligatorio de contraseña" : "Cambiar contraseña"}
                   </h3>
@@ -296,7 +297,7 @@ export default function PsicologoPerfilPage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
                 Guardar contraseña
@@ -386,9 +387,13 @@ function getPasswordChecks(password: string, nombre: string, email: string) {
 function InfoCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 grid h-11 w-11 place-items-center rounded-2xl bg-violet-50 text-violet-700">{icon}</div>
-      <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-      <p className="mt-1 break-words text-base font-black text-slate-950">{value}</p>
+      <div className="flex items-start gap-4">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">{icon}</div>
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+          <p className="mt-1 break-words text-base font-black leading-snug text-slate-950">{value}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -397,7 +402,7 @@ function Detail({ icon, label, value }: { icon?: ReactNode; label: string; value
   return (
     <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
       <p className="flex items-center gap-2 text-xs font-bold uppercase text-slate-500">
-        {icon ? <span className="text-violet-600">{icon}</span> : null}
+        {icon ? <span className="text-brand-primary">{icon}</span> : null}
         {label}
       </p>
       <p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p>
@@ -423,7 +428,7 @@ function PasswordField({
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-bold text-slate-700">{label}</span>
-      <span className="flex overflow-hidden rounded-2xl border border-slate-200 bg-white focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-100">
+      <span className="flex overflow-hidden rounded-2xl border border-slate-200 bg-white focus-within:border-input-focus focus-within:ring-4 focus-within:ring-input-focus/20">
         <input
           type={visible ? "text" : "password"}
           value={value}

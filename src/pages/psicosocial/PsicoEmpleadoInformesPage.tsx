@@ -146,7 +146,7 @@ export default function PsicoEmpleadoInformesPage() {
     return (
       <main className="min-h-screen bg-slate-50 p-6">
         <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin text-violet-700" />
+          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
           <span className="font-bold text-slate-700">Cargando informes individuales...</span>
         </div>
       </main>
@@ -158,7 +158,7 @@ export default function PsicoEmpleadoInformesPage() {
       <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-violet-700">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-primary">
               <ShieldCheck className="h-4 w-4" /> Informes individuales
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-950">{empleadoNombre}</h1>
@@ -176,28 +176,28 @@ export default function PsicoEmpleadoInformesPage() {
           </div>
         </div>
 
-        <Card className="rounded-2xl border-violet-100 bg-gradient-to-r from-violet-50 to-cyan-50 shadow-sm">
+        <Card className="rounded-2xl border-accent bg-gradient-to-r from-accent to-brand-canvas shadow-sm">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-violet-900">
+              <div className="flex items-center gap-2 text-sm font-semibold text-brand-primary">
                 <FileText className="h-4 w-4" /> Formato individual BRP
               </div>
               <p className="mt-1 max-w-4xl text-sm text-slate-700">
                 Vista previa y descargas por instrumento usando los puntajes oficiales persistidos para el colaborador.
               </p>
             </div>
-            <Badge className="w-fit bg-violet-700">{disponibles}/{data?.informes.length || 0} disponibles</Badge>
+            <Badge className="w-fit bg-primary text-primary-foreground">{disponibles}/{data?.informes.length || 0} disponibles</Badge>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border-slate-200 shadow-sm">
           <CardContent className="p-3">
-            <div className="grid gap-2 xl:grid-cols-[auto_minmax(260px,1fr)_minmax(180px,0.45fr)_auto] xl:items-center">
-              <CardTitle className="flex h-10 items-center gap-2 whitespace-nowrap px-1 text-sm">
-                <FileText className="h-4 w-4 text-violet-700" /> Parámetros del informe
+            <div className="grid gap-3 2xl:grid-cols-[auto_minmax(260px,1fr)_minmax(180px,0.45fr)] 2xl:items-center">
+              <CardTitle className="flex min-h-10 items-center gap-2 px-1 text-sm">
+                <FileText className="h-4 w-4 text-brand-primary" /> Parámetros del informe
               </CardTitle>
 
-              <div>
+              <div className="min-w-0">
                 <label className="sr-only">Instrumento</label>
                 <Select value={instrumentCode} onValueChange={setInstrumentCode} disabled={!data?.informes.length}>
                   <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Selecciona instrumento" /></SelectTrigger>
@@ -211,7 +211,7 @@ export default function PsicoEmpleadoInformesPage() {
                 </Select>
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <label className="sr-only">Estado</label>
                 <div className="flex h-10 items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm">
                   <span className={`font-black ${selectedReport?.available ? "text-emerald-700" : "text-amber-700"}`}>{statusLabel(selectedReport)}</span>
@@ -219,7 +219,7 @@ export default function PsicoEmpleadoInformesPage() {
                 </div>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4 xl:flex xl:flex-nowrap xl:justify-end">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4 2xl:col-span-3">
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={loadPreview} disabled={!selectedReport?.available || loadingHtml}>
                   {loadingHtml ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}Actualizar
                 </Button>
@@ -229,7 +229,7 @@ export default function PsicoEmpleadoInformesPage() {
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={downloadDoc} disabled={!selectedReport?.available || downloadingDoc}>
                   {downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable
                 </Button>
-                <Button className="h-10 rounded-xl bg-violet-700 whitespace-nowrap px-3 hover:bg-violet-800" onClick={downloadPdf} disabled={!selectedReport?.available || downloadingPdf}>
+                <Button className="h-10 rounded-xl bg-primary whitespace-nowrap px-3 hover:bg-primary-hover" onClick={downloadPdf} disabled={!selectedReport?.available || downloadingPdf}>
                   {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo
                 </Button>
               </div>

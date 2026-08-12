@@ -12,7 +12,7 @@ export function ParticipantNameCell({ row }: { row: { empleado_id: number; nombr
       className="text-left"
       title="Ver perfil del empleado"
     >
-      <span className="block font-bold text-slate-950 underline-offset-4 hover:text-violet-700 hover:underline">
+      <span className="block font-bold text-slate-950 underline-offset-4 hover:text-brand-primary hover:underline">
         {row.nombre_completo || `Colaborador ${row.cedula.slice(-4)} Demo`}
       </span>
       <span className="block text-xs text-slate-500">CC {row.cedula}</span>

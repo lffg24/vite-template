@@ -172,7 +172,7 @@ function estadoBadge(estado?: string) {
 
 function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet", compact = false, valueTitle }: any) {
   const tones: Record<string, string> = {
-    violet: "bg-violet-50 text-violet-700 border-violet-100",
+    violet: "bg-accent text-brand-primary border-accent",
     green: "bg-emerald-50 text-emerald-700 border-emerald-100",
     orange: "bg-orange-50 text-orange-700 border-orange-100",
     red: "bg-red-50 text-red-700 border-red-100",
@@ -437,7 +437,7 @@ function DominioCards({ dominios, onOpen }: { dominios: DominioPsico[]; onOpen?:
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {dominios.slice(0, 8).map((dom) => (
-        <button key={`${dom.evaluacion_id}-${dom.dominio_code}`} type="button" onClick={() => onOpen?.(dom)} className="w-full rounded-2xl border bg-white p-3 text-left shadow-sm transition hover:border-violet-200 hover:bg-violet-50/40 focus:outline-none focus:ring-2 focus:ring-violet-300">
+        <button key={`${dom.evaluacion_id}-${dom.dominio_code}`} type="button" onClick={() => onOpen?.(dom)} className="w-full rounded-2xl border bg-white p-3 text-left shadow-sm transition hover:border-brand-primary/20 hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-input-focus/30">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900" title={dom.dominio_label}>{dom.dominio_label}</div>
@@ -640,10 +640,10 @@ function NormativeRiskTable({ table, compact = false }: { table: NormativaTable;
             {filas.map((row: NormativaRow, idx: number) => {
               const isTotal = row.tipo === "DOMINIO_TOTAL" || row.tipo === "TOTAL";
               return (
-                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-violet-50/50 font-semibold")}> 
+                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-accent/60 font-semibold")}> 
                   <td className="px-4 py-3">
                     <div className="break-words font-medium text-slate-900">{row.nombre ?? row.codigo ?? "Sin nombre"}</div>
-                    {isTotal && <div className="mt-1 text-[11px] uppercase tracking-wide text-violet-600">Resultado consolidado</div>}
+                    {isTotal && <div className="mt-1 text-[11px] uppercase tracking-wide text-brand-primary">Resultado consolidado</div>}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold">{fmtNum(row.puntaje_transformado)}</td>
                   {columnas.map((c: any) => <td key={c.key} className="px-4 py-3 text-right">{normCell(row, c.key)}</td>)}
@@ -661,7 +661,7 @@ function NormativeNarrative({ narrativa }: { narrativa?: Record<string, any> | n
   if (!narrativa) return null;
   const dims = Array.isArray(narrativa.dimensiones_relevantes) ? narrativa.dimensiones_relevantes.filter(Boolean) : [];
   return (
-    <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 text-sm leading-relaxed text-slate-700">
+    <div className="rounded-2xl border border-accent bg-accent/60 p-4 text-sm leading-relaxed text-slate-700">
       <div className="font-bold text-slate-950">Lectura normativa controlada</div>
       <p className="mt-2"><b>Riesgos identificados:</b> {narrativa.riesgos_identificados}</p>
       {!!dims.length && <p className="mt-2"><b>Dimensiones de mayor relevancia:</b> {dims.join(", ")}.</p>}
@@ -741,7 +741,7 @@ function MultiCheckboxFilter<T extends string>({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 rounded-2xl p-2">
         <div className="flex items-center justify-between gap-2 border-b px-2 pb-2">
-          <button type="button" className="text-xs font-bold text-violet-700 hover:text-violet-900" onClick={() => onChange([...options])}>Seleccionar todo</button>
+          <button type="button" className="text-xs font-bold text-brand-primary hover:text-brand-sky" onClick={() => onChange([...options])}>Seleccionar todo</button>
           <button type="button" className="text-xs font-bold text-slate-500 hover:text-slate-800" onClick={() => onChange([])}>Limpiar</button>
         </div>
         <div className="mt-2 space-y-1">
@@ -811,7 +811,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
     <button
       type="button"
       onClick={() => setSortKey(sortKey)}
-      className={cn("inline-flex items-center gap-1 font-semibold hover:text-violet-700", align === "center" && "justify-center")}
+      className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "center" && "justify-center")}
     >
       {label}<span className="text-[10px] text-slate-400">{sort.key === sortKey ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span>
     </button>
@@ -899,7 +899,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
           onChange={setRiesgos}
         />
       </div>
-      <div className="flex flex-col gap-3 rounded-2xl border border-violet-100 bg-violet-50/60 p-3 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-accent bg-accent/60 p-3 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
         <div>
           <span className="font-bold text-slate-950">{selectedIds.size}</span> participantes seleccionados · <span className="font-bold text-slate-950">{filtered.length}</span> visibles por filtros
           <div className="text-xs text-slate-500">La descarga masiva genera un ZIP secuencial sin compresión para ahorrar CPU del servidor.</div>
@@ -911,7 +911,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
           <Button type="button" variant="outline" className="rounded-xl bg-white" onClick={() => setSelectedIds(new Set())} disabled={!selectedIds.size}>
             Limpiar selección
           </Button>
-          <Button type="button" className="rounded-xl bg-violet-700 hover:bg-violet-800" onClick={openBulkModal} disabled={!selectedIds.size || !aplicacionId}>
+          <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={openBulkModal} disabled={!selectedIds.size || !aplicacionId}>
             <FileArchive className="mr-2 h-4 w-4" /> Descargar masivamente
           </Button>
         </div>
@@ -957,13 +957,13 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                     <button
                       type="button"
                       onClick={() => navigate("/psicosocial/empleados/" + it.empleado_id)}
-                      className="group block max-w-[260px] rounded text-left leading-snug text-slate-900 transition hover:text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2"
+                      className="group block max-w-[260px] rounded text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
                       title="Abrir perfil del colaborador"
                     >
-                      <span className="font-semibold underline decoration-slate-300 underline-offset-4 group-hover:decoration-violet-500">
+                      <span className="font-semibold underline decoration-slate-300 underline-offset-4 group-hover:decoration-brand-primary">
                         {it.nombre || "Colaborador " + String(it.cedula || "").slice(-4) + " Demo"}
                       </span>
-                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-violet-500">Ver perfil</span>
+                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-brand-primary">Ver perfil</span>
                     </button>
                     <div className="mt-1 text-xs text-slate-500">CC {it.cedula || "—"} · {it.sexo || "Sin dato"}</div>
                   </td>
@@ -1007,9 +1007,9 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
       <p className="text-xs text-slate-500">El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
       <Dialog open={bulkOpen} onOpenChange={(open) => !bulkDownloading && setBulkOpen(open)}>
         <DialogContent className="max-w-4xl rounded-[28px] border-slate-200 p-0 shadow-2xl">
-          <DialogHeader className="border-b bg-gradient-to-r from-violet-50 to-cyan-50 px-6 py-5">
+          <DialogHeader className="border-b bg-gradient-to-r from-accent to-brand-canvas px-6 py-5">
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-violet-700 p-3 text-white shadow-lg shadow-violet-200"><FileArchive className="h-6 w-6" /></div>
+              <div className="rounded-2xl bg-primary p-3 text-primary-foreground shadow-card"><FileArchive className="h-6 w-6" /></div>
               <div>
                 <DialogTitle className="text-2xl font-black tracking-tight text-slate-950">Descarga masiva de informes individuales</DialogTitle>
                 <DialogDescription className="mt-1 text-slate-600">
@@ -1065,7 +1065,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                   <div className="font-bold text-slate-950">Informes a descargar</div>
                   <div className="text-xs text-slate-500">Se incluye un archivo 00_RESUMEN_DESCARGA.txt con generados y no generados.</div>
                 </div>
-                {bulkDownloading ? <Badge className="bg-violet-700">Descargando {formatBytes(bulkBytes)}</Badge> : null}
+                {bulkDownloading ? <Badge className="bg-primary text-primary-foreground">Descargando {formatBytes(bulkBytes)}</Badge> : null}
               </div>
               <div className="max-h-72 overflow-y-auto p-2">
                 {!bulkReports.length ? (
@@ -1079,7 +1079,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                           <div className="truncate font-semibold text-slate-900">{participant?.nombre || `Empleado ${item.empleado_id}`}</div>
                           <div className="text-xs text-slate-500">CC {participant?.cedula || "Sin dato"} · {participant?.area || "Sin área"}</div>
                         </div>
-                        <div className="text-xs font-bold text-violet-700">{item.instrument_code.replace("PSICO_", "").replaceAll("_", " ")}</div>
+                        <div className="text-xs font-bold text-brand-primary">{item.instrument_code.replace("PSICO_", "").replaceAll("_", " ")}</div>
                       </div>
                     );
                   })
@@ -1089,19 +1089,19 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
             </div>
 
             {bulkDownloading ? (
-              <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 p-4">
-                <div className="mb-2 flex items-center justify-between text-sm font-bold text-violet-900">
+              <div className="mt-4 rounded-2xl border border-accent bg-accent p-4">
+                <div className="mb-2 flex items-center justify-between text-sm font-bold text-brand-primary">
                   <span>Generando ZIP secuencial</span>
                   <span>{formatBytes(bulkBytes)}</span>
                 </div>
                 <Progress value={66} />
-                <p className="mt-2 text-xs text-violet-800">No cierres esta ventana hasta que el navegador inicie la descarga.</p>
+                <p className="mt-2 text-xs text-brand-primary">No cierres esta ventana hasta que el navegador inicie la descarga.</p>
               </div>
             ) : null}
           </div>
           <DialogFooter className="border-t bg-white px-6 py-4">
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => setBulkOpen(false)} disabled={bulkDownloading}>Cancelar</Button>
-            <Button type="button" className="rounded-xl bg-violet-700 hover:bg-violet-800" onClick={downloadBulk} disabled={!bulkCanDownload}>
+            <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={downloadBulk} disabled={!bulkCanDownload}>
               {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               Descargar ZIP
             </Button>
@@ -1136,7 +1136,7 @@ function DomainDetailPanel({
         <div className="border-b bg-white/95 px-6 py-5 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico de dominio</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-brand-primary">Detalle estadístico de dominio</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dominio.dominio_label}>{dominio.dominio_label}</h2>
               <p className="mt-1 text-sm text-slate-500">{dominio.instrument_label} · dominio agregado</p>
             </div>
@@ -1225,7 +1225,7 @@ function DimensionDetailPanel({
         <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-5 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-wide text-violet-600">Detalle estadístico integrado</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-brand-primary">Detalle estadístico integrado</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
               {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
             </div>
@@ -1267,7 +1267,7 @@ function DimensionDetailPanel({
                   </CardContent>
                 </Card>
                 <div className="space-y-3">
-                  <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 text-sm leading-relaxed text-slate-700">
+                  <div className="rounded-2xl border border-accent bg-accent/60 p-4 text-sm leading-relaxed text-slate-700">
                     <div className="font-bold text-slate-950">Lectura integrada</div>
                     {(detail as any).narrativa || (detail as any).normativa?.narrativa ? (
                       <NormativeNarrative narrativa={(detail as any).narrativa ?? (detail as any).normativa?.narrativa} />
@@ -1391,7 +1391,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
 
   const Th = ({ label, sortKey, align = "left" }: { label: string; sortKey: SortKey; align?: "left" | "right" }) => (
     <th className={cn("whitespace-nowrap px-4 py-3", align === "right" && "text-right")}>
-      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-violet-700", align === "right" && "justify-end")}> 
+      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "right" && "justify-end")}> 
         {label}
         <span className="text-[10px] text-slate-400">{sort.key === sortKey ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span>
       </button>
@@ -1468,13 +1468,13 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
                     <button
                       type="button"
                       onClick={() => onOpenDetail(it)}
-                      className="group block max-w-full text-left leading-snug text-slate-900 transition hover:text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:ring-offset-2"
+                      className="group block max-w-full text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
                       title="Abrir detalle estadístico de la dimensión"
                     >
-                      <span className="break-words underline decoration-slate-300 underline-offset-4 group-hover:decoration-violet-500">
+                      <span className="break-words underline decoration-slate-300 underline-offset-4 group-hover:decoration-brand-primary">
                         {it.dimension_label}
                       </span>
-                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-violet-500">Ver detalle</span>
+                      <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-brand-primary">Ver detalle</span>
                     </button>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-600">{it.instrument_label}</td>
@@ -1781,7 +1781,7 @@ export default function ReportesPsico() {
         <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="rounded-2xl bg-violet-100 p-3 text-violet-700">
+              <div className="rounded-2xl bg-accent p-3 text-brand-primary">
                 <LineChart className="h-8 w-8" />
               </div>
               <div>
@@ -1819,7 +1819,7 @@ export default function ReportesPsico() {
                 Actualizar
               </Button>
               <Button
-                className="bg-violet-600 hover:bg-violet-700"
+                className="bg-primary hover:bg-primary-hover"
                 disabled={!aplicacionId}
                 onClick={() => aplicacionId && navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
               >
@@ -1832,7 +1832,7 @@ export default function ReportesPsico() {
         <div className="overflow-x-auto rounded-2xl border bg-white p-1 shadow-sm">
           <div className="flex min-w-max gap-1">
             {TABS.map(({ key, label, icon: Icon }) => (
-              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-violet-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-100")}> 
+              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-primary text-primary-foreground shadow-sm" : "text-slate-600 hover:bg-slate-100")}> 
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}

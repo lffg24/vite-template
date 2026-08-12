@@ -65,9 +65,9 @@ export default function Login() {
 
   if (!initialized) {
     return (
-      <div className="grid h-screen place-items-center overflow-hidden bg-slate-950 px-4 text-sm text-white">
-        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-5 py-4 shadow-2xl backdrop-blur">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-violet-300 border-t-transparent" />
+      <div className="grid h-screen place-items-center overflow-hidden bg-sidebar px-4 text-sm text-sidebar-foreground">
+        <div className="flex items-center gap-3 rounded-2xl border border-sidebar-border bg-sidebar-hover px-5 py-4 shadow-floating backdrop-blur">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-turquoise border-t-transparent" />
           Validando sesión segura...
         </div>
       </div>
@@ -118,32 +118,33 @@ export default function Login() {
   };
 
   return (
-    <main className="relative h-screen overflow-hidden bg-[#f4f6ff] text-slate-950">
-      <div className="pointer-events-none absolute -right-24 -top-36 h-[360px] w-[360px] rounded-full bg-violet-100/80 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-cyan-100/70 blur-3xl" />
+    <main className="relative h-screen overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute -right-24 -top-36 h-[360px] w-[360px] rounded-full bg-brand-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-brand-turquoise/15 blur-3xl" />
 
       <div className="grid h-full lg:grid-cols-[0.92fr_1.08fr]">
-        <section className="relative hidden overflow-hidden bg-[#061126] text-white lg:block">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_16%,rgba(124,58,237,0.38),transparent_28%),radial-gradient(circle_at_85%_78%,rgba(34,211,238,0.20),transparent_32%)]" />
-          <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-violet-400/15 bg-violet-500/10 blur-sm" />
+        <section className="relative hidden overflow-hidden bg-sidebar text-sidebar-foreground lg:block">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_14%,rgba(0,212,184,0.22),transparent_26%),radial-gradient(circle_at_78%_82%,rgba(0,152,214,0.12),transparent_30%),linear-gradient(135deg,rgba(0,212,184,0.06)_0%,transparent_36%)]" />
+          <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-brand-primary/10 bg-brand-turquoise/12 blur-sm" />
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
               <div className="mb-10 flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-3xl border border-white/10 bg-white/10 p-2 shadow-2xl shadow-violet-950/40">
+                <div className="grid h-14 w-14 place-items-center rounded-3xl border border-sidebar-border bg-sidebar-hover p-2 shadow-floating">
                   <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
                 </div>
                 <div>
-                  <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-violet-300">360</span></div>
-                  <div className="text-xs uppercase tracking-[0.32em] text-cyan-100/70">Gestión psicosocial</div>
-                </div>
+                <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-brand-turquoise">360</span></div>
+                <div className="text-xs uppercase tracking-[0.32em] text-sidebar-muted">Gestión psicosocial</div>
               </div>
+            </div>
 
-              <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
-                Evaluamos.<br />Protegemos.<br />
-                <span className="bg-gradient-to-r from-violet-300 to-cyan-200 bg-clip-text text-transparent">Transformamos.</span>
+              <h1 className="max-w-xl text-4xl font-black leading-[1.02] tracking-tight xl:text-5xl">
+                <span className="text-sidebar-foreground/28">Evaluamos.</span><br />
+                <span className="text-sidebar-foreground/22">Protegemos.</span><br />
+                <span className="marker-highlight text-brand-dark">Transformamos.</span>
               </h1>
 
-              <p className="mt-4 max-w-md text-base leading-7 text-slate-300 xl:text-lg">
+              <p className="mt-4 max-w-md text-base leading-7 text-sidebar-muted xl:text-lg">
                 Plataforma integral para evaluaciones, seguridad laboral, bienestar y desarrollo organizacional.
               </p>
 
@@ -151,17 +152,17 @@ export default function Login() {
                 {productCards.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-xl shadow-slate-950/20 backdrop-blur">
-                      <Icon className="mb-3 h-6 w-6 text-cyan-200" />
+                    <div key={item.title} className="rounded-3xl border border-sidebar-border bg-white/[0.055] p-4 shadow-card backdrop-blur">
+                      <Icon className="mb-3 h-6 w-6 text-brand-turquoise" />
                       <div className="text-sm font-black">{item.title}</div>
-                      <div className="mt-1 text-xs text-slate-400">{item.text}</div>
+                      <div className="mt-1 text-xs text-sidebar-muted">{item.text}</div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-sidebar-muted">
               <LockKeyhole className="h-4 w-4" /> Seguridad y confidencialidad de tus datos garantizada
             </div>
           </div>
@@ -169,25 +170,25 @@ export default function Login() {
 
         <section className="relative flex h-full items-center justify-center px-4 py-4 sm:px-6 lg:px-8">
           <div className="absolute right-10 top-10 hidden grid-cols-4 gap-3 opacity-40 md:grid">
-            {Array.from({ length: 20 }).map((_, i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-violet-300" />)}
+            {Array.from({ length: 20 }).map((_, i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-brand-turquoise/50" />)}
           </div>
 
           <div className="w-full max-w-[620px]">
             <div className="mb-4 flex items-center justify-center gap-3 lg:hidden">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 p-2 shadow-lg">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sidebar p-2 shadow-card">
                 <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
               </div>
-              <AbrilWordmark className="text-2xl font-black" accentClassName="text-violet-600" />
+              <AbrilWordmark className="text-2xl font-black text-foreground" accentClassName="text-brand-primary" />
             </div>
 
-            <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-8 xl:p-9">
+            <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-700">
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-accent text-brand-primary">
                   <img src={evaLogoColor} alt="EVA 360" className="h-11 w-11 object-contain" />
                 </div>
-                <h2 className="text-3xl font-black tracking-tight">Bienvenido de nuevo</h2>
-                <p className="mt-1 text-slate-600">
-                  Inicia sesión en tu cuenta de <span className="font-bold text-violet-700">ABRIL360</span>
+                <h2 className="text-3xl font-black tracking-tight">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
+                <p className="mt-1 text-muted-foreground">
+                  Inicia sesión en tu cuenta de <span className="font-bold text-brand-primary">ABRIL360</span>
                 </p>
               </div>
 
@@ -218,7 +219,7 @@ export default function Login() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="font-bold">Contraseña</Label>
-                    <Link to="/recuperar-clave" className="text-sm font-semibold text-violet-700 hover:text-violet-800">
+                    <Link to="/recuperar-clave" className="text-sm font-semibold text-brand-primary hover:text-brand-turquoise">
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
@@ -240,7 +241,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-violet-700"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-brand-primary"
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -262,7 +263,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold shadow-lg shadow-violet-500/25 transition hover:from-violet-700 hover:to-indigo-700"
+                  className="h-14 w-full rounded-2xl bg-gradient-to-r from-brand-primary via-brand-turquoise to-brand-sky text-base font-bold shadow-floating transition hover:from-primary-hover hover:via-brand-primary hover:to-brand-turquoise"
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
@@ -277,13 +278,13 @@ export default function Login() {
                 </Button>
               </form>
 
-              <div className="mt-5 rounded-[1.6rem] border border-violet-100 bg-gradient-to-r from-violet-50 to-cyan-50 px-4 py-3">
+              <div className="mt-5 rounded-[1.6rem] border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm font-black text-slate-900">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
-                    <p className="text-sm text-slate-600">Plataforma operada para gestión psicosocial empresarial.</p>
+                    <p className="text-sm font-black text-foreground">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
+                    <p className="text-sm text-muted-foreground">Plataforma operada para gestión psicosocial empresarial.</p>
                   </div>
-                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-2xl bg-white/80 px-4 py-2 shadow-sm">
+                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-2xl bg-white/80 px-4 py-2 shadow-card">
                     {!relLogoError ? (
                       <img
                         src={REL_LOGO_URL}

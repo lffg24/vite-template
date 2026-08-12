@@ -233,7 +233,7 @@ export default function SuperAdminCreditosPage() {
           <button
             type="button"
             onClick={() => openAssign()}
-            className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-sm transition hover:bg-violet-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-black text-primary-foreground shadow-sm transition hover:bg-primary-hover"
           >
             <Plus className="h-5 w-5" />
             Asignar créditos
@@ -246,7 +246,7 @@ export default function SuperAdminCreditosPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <Metric label="Cuentas visibles" value={total.toLocaleString("es-CO")} />
         <Metric label="Créditos asignados" value={totals.asignados.toLocaleString("es-CO")} />
-        <Metric label="Saldo disponible" value={totals.disponibles.toLocaleString("es-CO")} tone="text-violet-700" />
+        <Metric label="Saldo disponible" value={totals.disponibles.toLocaleString("es-CO")} tone="text-brand-primary" />
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -256,7 +256,7 @@ export default function SuperAdminCreditosPage() {
             <input
               value={q}
               onChange={(event) => setQ(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-slate-200 pl-11 pr-4 text-sm outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+              className="h-12 w-full rounded-2xl border border-slate-200 pl-11 pr-4 text-sm outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
               placeholder="Buscar por psicólogo, correo o empresa..."
             />
           </div>
@@ -302,7 +302,7 @@ export default function SuperAdminCreditosPage() {
                     </td>
                     <td className="px-4 py-4">{account.empresa_nombre || "Cuenta global"}</td>
                     <td className="px-4 py-4 text-center font-semibold text-slate-900">{Number(account.creditos_asignados || 0).toLocaleString("es-CO")}</td>
-                    <td className="px-4 py-4 text-center font-black text-violet-700">{Number(account.saldo_actual || 0).toLocaleString("es-CO")}</td>
+                    <td className="px-4 py-4 text-center font-black text-brand-primary">{Number(account.saldo_actual || 0).toLocaleString("es-CO")}</td>
                     <td className="px-4 py-4">
                       <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{account.estado}</span>
                     </td>
@@ -343,7 +343,7 @@ export default function SuperAdminCreditosPage() {
             <h2 className="text-lg font-black text-slate-950">Últimos movimientos</h2>
             <p className="text-sm text-slate-500">Asignaciones y consumos recientes del ledger.</p>
           </div>
-          <WalletCards className="h-6 w-6 text-violet-700" />
+          <WalletCards className="h-6 w-6 text-brand-primary" />
         </div>
         <div className="divide-y divide-slate-100">
           {movements.length === 0 && <p className="py-4 text-sm text-slate-500">No hay movimientos recientes para mostrar.</p>}
@@ -363,7 +363,7 @@ export default function SuperAdminCreditosPage() {
           <aside className="h-full w-full max-w-2xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">SuperAdmin</p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">SuperAdmin</p>
                 <h2 className="text-2xl font-black text-slate-950">Asignar créditos</h2>
                 <p className="mt-1 text-sm text-slate-500">La asignación se registra en el ledger global del psicólogo.</p>
               </div>
@@ -379,7 +379,7 @@ export default function SuperAdminCreditosPage() {
                     <input
                       value={psicologoQ}
                       onChange={(event) => setPsicologoQ(event.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                      className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                       placeholder="Buscar por nombre o correo..."
                     />
                   </div>
@@ -392,10 +392,10 @@ export default function SuperAdminCreditosPage() {
                           key={psicologo.id}
                           type="button"
                           onClick={() => setSelected(psicologo)}
-                          className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition ${checked ? "bg-violet-50 text-violet-800" : "hover:bg-slate-50"}`}
+                          className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition ${checked ? "bg-accent text-brand-primary" : "hover:bg-slate-50"}`}
                         >
                           <span className="flex min-w-0 items-center gap-3">
-                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-violet-100 text-violet-700">
+                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">
                               <UserRound className="h-5 w-5" />
                             </span>
                             <span className="min-w-0">
@@ -403,7 +403,7 @@ export default function SuperAdminCreditosPage() {
                               <span className="block truncate text-xs text-slate-500">{psicologo.email || "Sin correo"}</span>
                             </span>
                           </span>
-                          <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300"}`}>
+                          <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-primary bg-primary text-primary-foreground" : "border-slate-300"}`}>
                             {checked && <Check className="h-3.5 w-3.5" />}
                           </span>
                         </button>
@@ -414,8 +414,8 @@ export default function SuperAdminCreditosPage() {
               </Field>
 
               {selected && (
-                <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
-                  <p className="text-xs font-black uppercase text-violet-700">Cuenta seleccionada</p>
+                <div className="rounded-2xl border border-accent bg-accent p-4">
+                  <p className="text-xs font-black uppercase text-brand-primary">Cuenta seleccionada</p>
                   <p className="mt-1 font-black text-slate-950">{selected.nombre}</p>
                   <p className="text-sm text-slate-500">Disponibles actuales: {Number(selected.creditos_disponibles || 0).toLocaleString("es-CO")}</p>
                 </div>
@@ -428,7 +428,7 @@ export default function SuperAdminCreditosPage() {
                   step="1"
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                   placeholder="Ej. 100"
                 />
               </Field>
@@ -437,7 +437,7 @@ export default function SuperAdminCreditosPage() {
                 <textarea
                   value={reason}
                   onChange={(event) => setReason(event.target.value)}
-                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                   placeholder="Ej. Compra inicial de paquete de créditos."
                 />
               </Field>
@@ -450,7 +450,7 @@ export default function SuperAdminCreditosPage() {
                 <button type="button" onClick={closeAssign} className="rounded-2xl border px-5 py-3 font-bold">
                   Cancelar
                 </button>
-                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
+                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
                   {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                   Asignar créditos
                 </button>
@@ -492,7 +492,7 @@ export default function SuperAdminCreditosPage() {
                   step="1"
                   value={deductAmount}
                   onChange={(event) => setDeductAmount(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                   placeholder="Ej. 10"
                 />
               </Field>
@@ -501,7 +501,7 @@ export default function SuperAdminCreditosPage() {
                 <textarea
                   value={deductReason}
                   onChange={(event) => setDeductReason(event.target.value)}
-                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                   placeholder="Ej. Corrección administrativa por compra anulada."
                 />
               </Field>

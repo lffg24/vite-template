@@ -148,7 +148,7 @@ export default function EmpresaAreasCargosPage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-violet-700">Configuración de colaboradores</p>
+              <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Configuración de colaboradores</p>
               <h1 className="text-3xl font-black text-slate-950">Áreas y cargos</h1>
               <p className="mt-1 text-sm text-slate-500">Gestiona la estructura base usada al crear colaboradores y aplicaciones.</p>
             </div>
@@ -178,7 +178,7 @@ export default function EmpresaAreasCargosPage() {
             </div>
             <button
               onClick={() => setDrawer(activeTab === "areas" ? { type: "area", mode: "create" } : { type: "cargo", mode: "create" })}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
             >
               <Plus className="h-4 w-4" /> {activeTab === "areas" ? "Nueva área" : "Nuevo cargo"}
             </button>
@@ -262,7 +262,7 @@ function CatalogTabButton({ active, icon, label, count, onClick }: { active: boo
       aria-selected={active}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black transition ${
-        active ? "bg-violet-700 text-white shadow-sm shadow-violet-200" : "bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700"
+        active ? "bg-primary text-primary-foreground shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-accent hover:text-brand-primary"
       }`}
     >
       {icon}
@@ -284,7 +284,7 @@ function RowActions({ active, onEdit, onToggle, onDelete }: { active: boolean; o
   return (
     <div className="flex justify-end gap-2">
       <button onClick={onEdit} className="rounded-xl border p-2 text-slate-600 hover:bg-slate-50" title="Editar"><Edit3 className="h-4 w-4" /></button>
-      <button onClick={onToggle} className="rounded-xl border p-2 text-violet-700 hover:bg-violet-50" title={active ? "Deshabilitar" : "Habilitar"}><Power className="h-4 w-4" /></button>
+      <button onClick={onToggle} className="rounded-xl border border-accent p-2 text-brand-primary hover:bg-accent" title={active ? "Deshabilitar" : "Habilitar"}><Power className="h-4 w-4" /></button>
       <button onClick={onDelete} className="rounded-xl border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100" title="Eliminar"><Trash2 className="h-4 w-4" /></button>
     </div>
   );
@@ -334,7 +334,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
       <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-violet-700">{drawer.mode === "create" ? "Nuevo registro" : "Editar registro"}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-brand-primary">{drawer.mode === "create" ? "Nuevo registro" : "Editar registro"}</p>
             <h2 className="text-2xl font-black text-slate-950">{isArea ? "Área" : "Cargo"}</h2>
           </div>
           <button onClick={onClose} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" /></button>
@@ -346,7 +346,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
           ) : (
             <>
               <Field label="Área *">
-                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100">
+                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20">
                   <option value="">Selecciona área</option>
                   {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
                 </select>
@@ -356,7 +356,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
           )}
           <div className="flex justify-end gap-3 pt-4">
             <button type="button" onClick={onClose} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
-            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
+            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />} Guardar
             </button>
           </div>
@@ -371,5 +371,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Input({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100" />;
+  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" />;
 }

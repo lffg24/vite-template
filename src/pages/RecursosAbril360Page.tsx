@@ -195,15 +195,15 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-3xl">
-            <Link to="/login" className="text-sm font-black text-violet-700 hover:text-violet-900">
+            <Link to="/login" className="text-sm font-black text-brand-primary hover:text-brand-sky">
               ABRIL360
             </Link>
             <div className="mt-5 flex items-start gap-4">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-violet-100 text-violet-700">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">
                 <Icon className="h-7 w-7" />
               </span>
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-violet-700">{current.eyebrow}</p>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-brand-primary">{current.eyebrow}</p>
                 <h1 className="mt-2 text-3xl font-black tracking-tight md:text-5xl">{current.title}</h1>
                 <p className="mt-4 text-base leading-7 text-slate-600">{current.description}</p>
               </div>
@@ -211,7 +211,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
           </div>
           <Link
             to="/login"
-            className="inline-flex h-12 items-center justify-center rounded-2xl bg-violet-700 px-5 text-sm font-black text-white shadow-sm hover:bg-violet-800"
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-black text-primary-foreground shadow-sm hover:bg-primary-hover"
           >
             Ingresar a la plataforma
           </Link>
@@ -228,7 +228,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                 key={item.key}
                 to={`/recursos/${item.key}`}
                 className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition ${
-                  active ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"
+                  active ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50 hover:text-brand-primary"
                 }`}
               >
                 <ItemIcon className="h-4 w-4 shrink-0" />
@@ -250,7 +250,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                     <ul className="mt-4 grid gap-2 text-sm text-slate-700">
                       {section.bullets.map((bullet) => (
                         <li key={bullet} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-600" />
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" />
                           <span>{bullet}</span>
                         </li>
                       ))}
@@ -263,14 +263,14 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
 
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-violet-700" />
+              <FileText className="h-5 w-5 text-brand-primary" />
               <h2 className="text-xl font-black">Referencias y enlaces</h2>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               {current.references.map((reference) => {
                 const external = reference.href.startsWith("http");
                 const className =
-                  "inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-800";
+                  "inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-accent hover:bg-accent hover:text-brand-primary";
                 if (external) {
                   return (
                     <a key={reference.href} href={reference.href} target="_blank" rel="noreferrer" className={className}>

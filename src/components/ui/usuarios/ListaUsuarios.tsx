@@ -63,7 +63,7 @@ export default function ListaUsuarios() {
               <div className="font-medium">{u.nombre}</div>
               <a
                 href={`mailto:${u.correo}`}
-                className="text-sm text-blue-700 hover:underline break-all"
+                className="text-sm text-brand-primary hover:underline break-all"
               >
                 {u.correo}
               </a>

@@ -10,33 +10,33 @@ export default function SuperAdminLayout() {
   const items = filterNavigation(APP_NAVIGATION, roles, permissions, ["platform"]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="flex min-h-screen bg-background">
       <AppSidebar
         items={items}
         brand={
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-sky-400 to-violet-600" />
-            <div className="text-2xl font-black tracking-tight">
-              ABRIL<span className="text-violet-400">360</span>
+            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-brand-turquoise to-brand-primary shadow-card" />
+            <div className="text-2xl font-black tracking-tight text-sidebar-foreground">
+              ABRIL<span className="text-brand-turquoise">360</span>
             </div>
           </div>
         }
         userBlock={
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="font-black">Super Usuario</div>
-            <div className="text-sm text-slate-300">Administrador de plataforma</div>
-            <div className="mt-2 text-xs text-emerald-300">● En línea</div>
+          <div className="rounded-2xl border border-sidebar-border bg-sidebar-hover p-4">
+            <div className="font-black text-sidebar-foreground">Super Usuario</div>
+            <div className="text-sm text-sidebar-muted">Administrador de plataforma</div>
+            <div className="mt-2 text-xs text-brand-turquoise">● En línea</div>
           </div>
         }
         footer={
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-sidebar-muted">
             Seguridad y privacidad<br />
             ABRIL360
           </div>
         }
       />
 
-      <main className="flex-1 min-w-0 p-8">
+      <main className="min-w-0 flex-1 p-8">
         <Outlet />
       </main>
     </div>

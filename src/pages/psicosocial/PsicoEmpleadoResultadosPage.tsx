@@ -202,15 +202,15 @@ function MetricCard({
   helper?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border/70 bg-surface p-5 shadow-card">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent text-brand-primary">
           <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-500">{label}</p>
-          <p className="mt-1 break-words text-2xl font-black text-slate-950">{value}</p>
-          {helper ? <p className="mt-1 text-xs text-slate-500">{helper}</p> : null}
+          <p className="text-sm font-semibold text-muted-foreground">{label}</p>
+          <p className="mt-1 break-words text-2xl font-black text-foreground">{value}</p>
+          {helper ? <p className="mt-1 text-xs text-muted-foreground">{helper}</p> : null}
         </div>
       </div>
     </div>
@@ -417,7 +417,7 @@ function RespuestasTable({ rows }: { rows: RespuestaRow[] }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar pregunta, respuesta o dimensión..."
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200 md:col-span-2"
+          className="rounded-2xl border border-input bg-surface px-4 py-3 text-sm outline-none focus:border-input-focus focus:ring-2 focus:ring-input-focus/20 md:col-span-2"
         />
         <select value={instrumento} onChange={(event) => setInstrumento(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
           <option value="TODOS">Todos los instrumentos</option>
@@ -528,17 +528,17 @@ export default function PsicoEmpleadoResultadosPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <p className="text-sm font-bold uppercase text-violet-700">Resultado individual</p>
-          <h1 className="mt-2 text-3xl font-black text-slate-950">Cargando resultados...</h1>
+      <main className="min-h-screen bg-background p-8">
+        <div className="rounded-3xl border border-border/70 bg-surface p-8 shadow-card">
+          <p className="text-sm font-bold uppercase text-brand-sky">Resultado individual</p>
+          <h1 className="mt-2 text-3xl font-black text-foreground">Cargando resultados...</h1>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-background p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
@@ -561,7 +561,7 @@ export default function PsicoEmpleadoResultadosPage() {
             <button
               type="button"
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
-              className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-violet-800"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover"
             >
               <Download className="h-4 w-4" />
               Informes individuales
@@ -579,28 +579,28 @@ export default function PsicoEmpleadoResultadosPage() {
           </div>
         ) : null}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-border/70 bg-surface p-6 shadow-card">
           <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
             <div className="flex items-start gap-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-violet-100 text-2xl font-black text-violet-700">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-accent text-2xl font-black text-brand-primary">
                 {(data?.empleado?.nombre_completo || "CO").slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-black uppercase tracking-wide text-violet-700">Resultado individual</p>
-                <h1 className="mt-1 break-words text-3xl font-black text-slate-950 lg:text-4xl">
+                <p className="text-sm font-black uppercase tracking-wide text-brand-sky">Resultado individual</p>
+                <h1 className="mt-1 break-words text-3xl font-black text-foreground lg:text-4xl">
                   {data?.empleado?.nombre_completo || `Colaborador ${empleadoId}`}
                 </h1>
-                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600">
-                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-violet-600" />CC {data?.empleado?.cedula || "Sin dato"}</span>
-                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-violet-600" />{data?.empleado?.cargo || "Sin cargo"}</span>
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-brand-primary" />CC {data?.empleado?.cedula || "Sin dato"}</span>
+                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-brand-primary" />{data?.empleado?.cargo || "Sin cargo"}</span>
                   <span>{data?.empleado?.area || "Sin área"}</span>
                 </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-bold uppercase text-slate-500">Aplicación</p>
-              <p className="mt-1 text-xl font-black text-slate-950">{data?.aplicacion?.nombre || `Aplicación #${aplicacionId}`}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+            <div className="rounded-2xl border border-border/70 bg-surface-subtle p-4">
+              <p className="text-xs font-bold uppercase text-muted-foreground">Aplicación</p>
+              <p className="mt-1 text-xl font-black text-foreground">{data?.aplicacion?.nombre || `Aplicación #${aplicacionId}`}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span>Estado: <strong>{data?.aplicacion?.estado || "Sin dato"}</strong></span>
                 {riesgoMayor ? <RiskBadge value={String(riesgoMayor)} /> : null}
               </div>
@@ -615,25 +615,25 @@ export default function PsicoEmpleadoResultadosPage() {
           <MetricCard icon={CheckCircle2} label="Instrumentos calculados" value={`${totales.length}`} helper={`${dominios.length} dominios · ${dimensiones.length} dimensiones`} />
         </section>
 
-        <section className="rounded-3xl border border-violet-100 bg-violet-50/60 p-5">
+        <section className="rounded-3xl border border-accent bg-accent/50 p-5">
           <div className="flex gap-3">
-            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-violet-700" />
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
             <div>
-              <p className="font-black text-slate-950">Lectura normativa</p>
-              <p className="mt-1 text-sm leading-6 text-slate-700">
+              <p className="font-black text-foreground">Lectura normativa</p>
+              <p className="mt-1 text-sm leading-6 text-foreground-soft">
                 La interpretación se basa en puntajes transformados de 0 a 100 y niveles de riesgo definidos por baremos oficiales para cada instrumento, dominio y dimensión. Esta vista resume el resultado individual; las respuestas textuales deben usarse como trazabilidad descriptiva, no como reemplazo del nivel normativo.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-border/70 bg-surface p-5 shadow-card">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black text-slate-950">Detalle normativo</h2>
-              <p className="text-sm text-slate-500">Totales, dominios y dimensiones calculadas para este colaborador.</p>
+              <h2 className="text-2xl font-black text-foreground">Detalle normativo</h2>
+              <p className="text-sm text-muted-foreground">Totales, dominios y dimensiones calculadas para este colaborador.</p>
             </div>
-            <div className="flex rounded-2xl bg-slate-100 p-1">
+            <div className="flex rounded-2xl bg-surface-subtle p-1">
               {([
                 ["totales", "Totales"],
                 ["dominios", "Dominios"],
@@ -643,7 +643,7 @@ export default function PsicoEmpleadoResultadosPage() {
                   key={key}
                   type="button"
                   onClick={() => setTab(key)}
-                  className={`rounded-xl px-4 py-2 text-sm font-black transition ${tab === key ? "bg-violet-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}
+                  className={`rounded-xl px-4 py-2 text-sm font-black transition ${tab === key ? "bg-primary text-primary-foreground shadow-card" : "text-muted-foreground hover:bg-surface hover:text-foreground"}`}
                 >
                   {label}
                 </button>
@@ -652,13 +652,13 @@ export default function PsicoEmpleadoResultadosPage() {
           </div>
           <ScoreTable rows={activeRows} mode={tab} />
         </section>
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-border/70 bg-surface p-5 shadow-card">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black text-slate-950">Respuestas registradas</h2>
-              <p className="text-sm text-slate-500">Vista descriptiva de cómo respondió el colaborador por pregunta, instrumento y dimensión.</p>
+              <h2 className="text-2xl font-black text-foreground">Respuestas registradas</h2>
+              <p className="text-sm text-muted-foreground">Vista descriptiva de cómo respondió el colaborador por pregunta, instrumento y dimensión.</p>
             </div>
-            <span className="rounded-full border border-violet-100 bg-violet-50 px-4 py-2 text-sm font-black text-violet-700">
+            <span className="rounded-full border border-accent bg-accent px-4 py-2 text-sm font-black text-brand-primary">
               {respuestas.length} respuestas
             </span>
           </div>
