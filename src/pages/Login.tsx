@@ -20,12 +20,11 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { safeRedirectPath } from "@/lib/accessRoutes";
-import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import evaLogoColor from "@/assets/eva-logo-color.png";
-import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
@@ -128,19 +127,18 @@ export default function Login() {
           <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-violet-400/15 bg-violet-500/10 blur-sm" />
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
-              <div className="mb-10 flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-3xl border border-white/10 bg-white/10 p-2 shadow-2xl shadow-violet-950/40">
-                  <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-                </div>
-                <div>
-                  <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-violet-300">360</span></div>
-                  <div className="text-xs uppercase tracking-[0.32em] text-cyan-100/70">Gestión psicosocial</div>
-                </div>
-              </div>
+              <AbrilBrandLockup
+                className="mb-10"
+                accentClassName="text-cyan-400"
+                wordmarkClassName="text-3xl font-black tracking-tight text-white"
+              />
 
               <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
-                Evaluamos.<br />Protegemos.<br />
-                <span className="bg-gradient-to-r from-violet-300 to-cyan-200 bg-clip-text text-transparent">Transformamos.</span>
+                <span className="text-white drop-shadow-[0_8px_24px_rgba(2,6,23,0.28)]">Evaluamos.</span><br />
+                <span className="text-white/92 drop-shadow-[0_8px_24px_rgba(2,6,23,0.28)]">Protegemos.</span><br />
+                <span className="inline-block rounded-[0.2em] bg-gradient-to-r from-cyan-100 to-emerald-100 px-3 py-1 text-[#0b1730] shadow-[0_16px_40px_rgba(34,211,238,0.18)]">
+                  Transformamos.
+                </span>
               </h1>
 
               <p className="mt-4 max-w-md text-base leading-7 text-slate-300 xl:text-lg">
@@ -173,12 +171,13 @@ export default function Login() {
           </div>
 
           <div className="w-full max-w-[620px]">
-            <div className="mb-4 flex items-center justify-center gap-3 lg:hidden">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 p-2 shadow-lg">
-                <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-              </div>
-              <AbrilWordmark className="text-2xl font-black" accentClassName="text-violet-600" />
-            </div>
+            <AbrilBrandLockup
+              className="mb-4 justify-center lg:hidden"
+              iconWrapperClassName="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 p-2 shadow-lg"
+              wordmarkClassName="text-2xl font-black text-slate-950"
+              accentClassName="text-violet-600"
+              subtitleClassName="text-[11px] uppercase tracking-[0.28em] text-slate-500"
+            />
 
             <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-2xl shadow-violet-950/10 backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
