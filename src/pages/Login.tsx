@@ -20,12 +20,11 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { safeRedirectPath } from "@/lib/accessRoutes";
-import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import evaLogoColor from "@/assets/eva-logo-color.png";
-import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
@@ -128,19 +127,16 @@ export default function Login() {
           <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-brand-primary/10 bg-brand-turquoise/12 blur-sm" />
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
-              <div className="mb-10 flex items-center gap-4">
-                <div className="grid h-14 w-14 place-items-center rounded-3xl border border-sidebar-border bg-sidebar-hover p-2 shadow-floating">
-                  <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-                </div>
-                <div>
-                <div className="text-3xl font-black tracking-tight">ABRIL<span className="text-brand-turquoise">360</span></div>
-                <div className="text-xs uppercase tracking-[0.32em] text-sidebar-muted">Gestión psicosocial</div>
-              </div>
-            </div>
+              <AbrilBrandLockup
+                className="mb-10"
+                accentClassName="text-brand-turquoise"
+                wordmarkClassName="text-3xl font-black tracking-tight text-sidebar-foreground"
+                subtitleClassName="text-xs uppercase tracking-[0.32em] text-sidebar-muted"
+              />
 
-              <h1 className="max-w-xl text-4xl font-black leading-[1.02] tracking-tight xl:text-5xl">
-                <span className="text-sidebar-foreground/28">Evaluamos.</span><br />
-                <span className="text-sidebar-foreground/22">Protegemos.</span><br />
+              <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
+                <span className="text-sidebar-foreground drop-shadow-[0_8px_24px_rgba(2,6,23,0.32)]">Evaluamos.</span><br />
+                <span className="text-sidebar-foreground/92 drop-shadow-[0_8px_24px_rgba(2,6,23,0.32)]">Protegemos.</span><br />
                 <span className="marker-highlight text-brand-dark">Transformamos.</span>
               </h1>
 
@@ -174,12 +170,13 @@ export default function Login() {
           </div>
 
           <div className="w-full max-w-[620px]">
-            <div className="mb-4 flex items-center justify-center gap-3 lg:hidden">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-sidebar p-2 shadow-card">
-                <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-              </div>
-              <AbrilWordmark className="text-2xl font-black text-foreground" accentClassName="text-brand-primary" />
-            </div>
+            <AbrilBrandLockup
+              className="mb-4 justify-center lg:hidden"
+              iconWrapperClassName="grid h-12 w-12 place-items-center rounded-2xl bg-sidebar p-2 shadow-card"
+              wordmarkClassName="text-2xl font-black text-foreground"
+              accentClassName="text-brand-primary"
+              subtitleClassName="text-[11px] uppercase tracking-[0.28em] text-muted-foreground"
+            />
 
             <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
