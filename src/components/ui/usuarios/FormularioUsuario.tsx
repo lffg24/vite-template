@@ -99,7 +99,7 @@ export default function FormularioUsuario({ onCreated }: Props) {
       <button
         type="submit"
         disabled={!canSubmit || loading}
-        className="bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        className="bg-primary disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2 rounded hover:bg-primary-hover transition"
       >
         {loading ? "Registrando..." : "Registrar Usuario"}
       </button>

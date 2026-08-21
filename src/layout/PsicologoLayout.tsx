@@ -13,17 +13,17 @@ const resourceLinks = [
 export default function PsicologoLayout() {
   return (
     <PsicoEmpresaActivaProvider>
-      <div className="flex min-h-screen bg-slate-50">
+      <div className="flex min-h-screen bg-background">
         <PsicologoSidebar />
         <main className="flex min-w-0 flex-1 flex-col p-6">
           <div className="min-w-0 flex-1">
             <Outlet />
           </div>
-          <footer className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-5 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
-            <span className="font-semibold">ABRIL360 · Recursos profesionales y referencias de uso</span>
+          <footer className="mt-8 flex flex-col gap-3 border-t border-border/70 pt-5 text-sm text-muted-foreground lg:flex-row lg:items-center lg:justify-between">
+            <span className="font-semibold text-foreground-soft">ABRIL360 · Recursos profesionales y referencias de uso</span>
             <nav className="flex flex-wrap gap-3" aria-label="Recursos profesionales ABRIL360">
               {resourceLinks.map((link) => (
-                <Link key={link.to} to={link.to} className="font-bold text-violet-700 hover:text-violet-900">
+                <Link key={link.to} to={link.to} className="font-bold text-brand-primary hover:text-brand-sky">
                   {link.label}
                 </Link>
               ))}

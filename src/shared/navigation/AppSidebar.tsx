@@ -11,12 +11,12 @@ type AppSidebarProps = {
 
 export function AppSidebar({ items, brand, userBlock, footer, className = "" }: AppSidebarProps) {
   return (
-    <aside className={`h-screen w-[280px] bg-slate-950 text-white flex flex-col ${className}`}>
+    <aside className={`flex h-screen w-[280px] flex-col bg-sidebar text-sidebar-foreground shadow-floating ${className}`}>
       <div className="p-6">{brand}</div>
 
       {userBlock ? <div className="px-5 pb-5">{userBlock}</div> : null}
 
-      <nav className="flex-1 px-4 space-y-1">
+      <nav className="flex-1 space-y-1 px-4">
         {items.map((item) => {
           const Icon = item.icon;
           return (
@@ -25,10 +25,10 @@ export function AppSidebar({ items, brand, userBlock, footer, className = "" }: 
               to={item.path}
               className={({ isActive }) =>
                 [
-                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors duration-fast",
                   isActive
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-900/30"
-                    : "text-slate-300 hover:bg-white/10 hover:text-white",
+                    ? "bg-sidebar-active text-sidebar-active-foreground shadow-card"
+                    : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-foreground",
                 ].join(" ")
               }
             >

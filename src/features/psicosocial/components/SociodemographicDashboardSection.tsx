@@ -18,7 +18,7 @@ type SociodemographicDashboardSectionProps = {
 
 function KpiCard({ title, value, tone = "violet" }: { title: string; value: string | number; tone?: "violet" | "emerald" | "sky" | "orange" }) {
   const toneClasses = {
-    violet: "bg-violet-50 text-violet-700 border-violet-100",
+    violet: "bg-accent text-brand-primary border-accent",
     emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
     sky: "bg-sky-50 text-sky-700 border-sky-100",
     orange: "bg-orange-50 text-orange-700 border-orange-100",

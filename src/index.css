@@ -1,124 +1,180 @@
+@import "@fontsource/open-sans/400.css";
+@import "@fontsource/open-sans/600.css";
+@import "@fontsource/open-sans/700.css";
+@import "@fontsource/open-sans/800.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --font-heading: "Open Sans";
+    --font-body: "Open Sans";
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --brand-primary: 173 100% 23%;
+    --brand-turquoise: 172 100% 36%;
+    --brand-sky: 172 100% 41%;
+    --brand-dark: 215 42% 13%;
+    --brand-canvas: 168 43% 94%;
+    --marker: 171 100% 86%;
+
+    --background: 168 41% 96%;
+    --foreground: 215 42% 13%;
+    --foreground-soft: 217 24% 33%;
+
+    --surface: 0 0% 100%;
+    --surface-subtle: 168 25% 97%;
+    --surface-elevated: 0 0% 100%;
+
+    --muted: 168 22% 95%;
+    --muted-foreground: 216 18% 45%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 218 57% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 218 57% 11%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
+    --border: 168 18% 85%;
+    --border-strong: 171 24% 76%;
+    --input: 168 18% 85%;
+    --input-focus: 172 100% 36%;
 
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 172 100% 36%;
+    --primary-hover: 172 100% 32%;
+    --primary-active: 173 100% 23%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 180 24% 98%;
+    --secondary-foreground: 218 57% 11%;
 
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 168 56% 92%;
+    --accent-hover: 168 58% 88%;
+    --accent-foreground: 215 42% 13%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --info: 172 100% 36%;
+    --info-foreground: 0 0% 100%;
+    --success: 158 64% 40%;
+    --success-foreground: 215 42% 13%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 218 57% 11%;
+    --danger: 0 72% 51%;
+    --danger-foreground: 0 0% 100%;
 
-    --ring: 0 0% 3.9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --risk-none: 158 64% 40%;
+    --risk-low: 172 67% 39%;
+    --risk-medium: 38 92% 50%;
+    --risk-high: 24 95% 53%;
+    --risk-very-high: 0 72% 51%;
 
-    --chart-1: 12 76% 61%;
+    --ring: 172 100% 36%;
+    --overlay: 215 42% 13% / 0.58;
 
-    --chart-2: 173 58% 39%;
+    --radius: 0.875rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
 
-    --chart-3: 197 37% 24%;
+    --motion-fast: 160ms;
+    --motion-standard: 220ms;
+    --motion-slow: 300ms;
 
-    --chart-4: 43 74% 66%;
+    --shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
+    --shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
+    --shadow-floating: 0 28px 60px rgba(12, 22, 44, 0.14);
 
-    --chart-5: 27 87% 67%;
+    --chart-1: 172 100% 36%;
+    --chart-2: 173 100% 23%;
+    --chart-3: 172 100% 41%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 72% 51%;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 215 42% 13%;
+    --sidebar-foreground: 180 17% 92%;
+    --sidebar-muted: 214 20% 67%;
+    --sidebar-hover: 214 34% 19%;
+    --sidebar-active: 172 100% 36%;
+    --sidebar-active-foreground: 215 42% 13%;
+    --sidebar-primary: 172 100% 36%;
+    --sidebar-primary-foreground: 215 42% 13%;
+    --sidebar-accent: 214 34% 19%;
+    --sidebar-accent-foreground: 180 17% 92%;
+    --sidebar-border: 217 38% 21%;
+    --sidebar-ring: 172 100% 36%;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 215 35% 10%;
+    --foreground: 180 17% 92%;
+    --foreground-soft: 214 18% 73%;
 
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --surface: 218 39% 11%;
+    --surface-subtle: 218 28% 14%;
+    --surface-elevated: 218 31% 16%;
 
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --muted: 218 24% 18%;
+    --muted-foreground: 214 17% 70%;
 
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --popover: 218 39% 11%;
+    --popover-foreground: 180 17% 92%;
 
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --card: 218 39% 11%;
+    --card-foreground: 180 17% 92%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --border: 217 27% 23%;
+    --border-strong: 214 23% 37%;
+    --input: 217 27% 23%;
+    --input-focus: 172 100% 36%;
 
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 172 100% 36%;
+    --primary-hover: 172 100% 41%;
+    --primary-active: 173 100% 23%;
+    --primary-foreground: 215 42% 13%;
 
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --secondary: 218 24% 18%;
+    --secondary-foreground: 180 17% 92%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 171 39% 23%;
+    --accent-hover: 171 41% 28%;
+    --accent-foreground: 180 17% 92%;
+    --marker: 171 66% 32%;
 
-    --ring: 0 0% 83.1%;
+    --info: 172 100% 36%;
+    --info-foreground: 215 42% 13%;
+    --success: 158 68% 45%;
+    --success-foreground: 215 42% 13%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 218 57% 11%;
+    --danger: 0 78% 60%;
+    --danger-foreground: 218 57% 11%;
 
-    --radius: 0.5rem;
+    --destructive: 0 78% 60%;
+    --destructive-foreground: 218 57% 11%;
 
-    --chart-1: 220 70% 50%;
+    --ring: 172 100% 36%;
+    --overlay: 215 42% 13% / 0.7;
 
-    --chart-2: 160 60% 45%;
+    --chart-1: 172 100% 36%;
+    --chart-2: 173 100% 23%;
+    --chart-3: 172 100% 41%;
+    --chart-4: 38 92% 58%;
+    --chart-5: 0 78% 60%;
 
-    --chart-3: 30 80% 55%;
-
-    --chart-4: 280 65% 60%;
-
-    --chart-5: 340 75% 55%;
-
-    --sidebar-background: 240 5.9% 10%;
-
-    --sidebar-foreground: 240 4.8% 95.9%;
-
-    --sidebar-primary: 224.3 76.3% 48%;
-
-    --sidebar-primary-foreground: 0 0% 100%;
-
-    --sidebar-accent: 240 3.7% 15.9%;
-
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-
-    --sidebar-border: 240 3.7% 15.9%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 215 40% 9%;
+    --sidebar-foreground: 180 17% 92%;
+    --sidebar-muted: 214 18% 73%;
+    --sidebar-hover: 214 28% 18%;
+    --sidebar-active: 172 100% 36%;
+    --sidebar-active-foreground: 215 42% 13%;
+    --sidebar-primary: 172 100% 36%;
+    --sidebar-primary-foreground: 215 42% 13%;
+    --sidebar-accent: 214 28% 18%;
+    --sidebar-accent-foreground: 180 17% 92%;
+    --sidebar-border: 217 31% 20%;
+    --sidebar-ring: 172 100% 36%;
   }
 }
 
@@ -126,8 +182,64 @@
   * {
     @apply border-border;
   }
+
+  html {
+    color-scheme: light;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-body text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading text-foreground;
+    letter-spacing: -0.03em;
+  }
+
+  button,
+  [role="button"] {
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  input,
+  textarea,
+  select,
+  table {
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+}
+
+@layer utilities {
+  .surface-elevated {
+    @apply bg-surface shadow-card;
+  }
+
+  .soft-institutional-glass {
+    background-color: hsl(var(--surface) / 0.86);
+    backdrop-filter: blur(18px);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .marker-highlight {
+    display: inline;
+    padding: 0.02em 0.2em 0.16em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    line-height: 1.08;
+    background-image: linear-gradient(180deg, transparent 6%, hsl(var(--marker)) 6%, hsl(var(--marker)) 96%, transparent 96%);
   }
 }

@@ -83,7 +83,7 @@ function SectionCard({ number, title, children }: { number: number; title: strin
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-sm font-bold text-violet-700">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-bold text-brand-primary">
           {number}
         </div>
         <h2 className="text-lg font-black text-slate-950">{title}</h2>
@@ -98,7 +98,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-wide text-violet-600">Aplicación psicosocial</p>
+          <p className="text-xs font-black uppercase tracking-wide text-brand-primary">Aplicación psicosocial</p>
           <h3 className="mt-1 text-xl font-black text-slate-950">{app.nombre}</h3>
           <p className="mt-1 text-sm text-slate-500">{fmtDate(app.fecha_aplicacion || app.created_at)} · Estado: {display(app.estado)}</p>
         </div>
@@ -116,7 +116,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
           <b>{Number(app.completitud_bateria || 0).toFixed(0)}%</b>
         </div>
         <div className="h-2 rounded-full bg-slate-100">
-          <div className="h-2 rounded-full bg-violet-600" style={{ width: `${Math.min(100, Math.max(0, app.completitud_bateria || 0))}%` }} />
+          <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, app.completitud_bateria || 0))}%` }} />
         </div>
       </div>
 
@@ -149,7 +149,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
           type="button"
           onClick={onRegister}
           disabled={!app.puede_registrar}
-          className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-sm hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
         >
           <ClipboardList className="h-4 w-4" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
         </button>
@@ -164,7 +164,7 @@ function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: 
       <div className="max-h-[88vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-100 p-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-violet-600">Registro de respuestas</p>
+            <p className="text-xs font-black uppercase tracking-wide text-brand-primary">Registro de respuestas</p>
             <h2 className="mt-1 text-2xl font-black text-slate-950">Seleccionar aplicación</h2>
             <p className="mt-1 text-sm text-slate-500">No se permite registrar de nuevo una batería que ya está completa/calculada para este colaborador.</p>
           </div>
@@ -191,7 +191,7 @@ function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: 
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button type="button" onClick={() => onResults(app)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-black text-slate-700 hover:bg-slate-50">Ver resultados</button>
-                      <button type="button" onClick={() => onSelect(app)} disabled={!app.puede_registrar} className="rounded-xl bg-violet-700 px-3 py-2 text-sm font-black text-white hover:bg-violet-800 disabled:bg-slate-200 disabled:text-slate-500">Continuar registro</button>
+                      <button type="button" onClick={() => onSelect(app)} disabled={!app.puede_registrar} className="rounded-xl bg-primary px-3 py-2 text-sm font-black text-primary-foreground hover:bg-primary-hover disabled:bg-slate-200 disabled:text-slate-500">Continuar registro</button>
                     </div>
                   </div>
                   {app.errores?.length ? <p className="mt-2 text-xs text-amber-700">{app.errores.join(" · ")}</p> : null}
@@ -236,7 +236,7 @@ function TextInput({ value, onChange, type = "text", inputMode }: { value: strin
       inputMode={inputMode}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
     />
   );
 }
@@ -344,7 +344,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
       <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-violet-700">Base del colaborador</p>
+            <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Base del colaborador</p>
             <h2 className="text-2xl font-black text-slate-950">Editar información transversal</h2>
             <p className="mt-1 text-sm text-slate-500">Estos datos aplican a ABRIL360. La ficha sociodemográfica se mantiene por aplicación.</p>
           </div>
@@ -368,7 +368,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.area_id}
                 onChange={(event) => update("area_id", event.target.value)}
                 disabled={loadingCatalogs}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{loadingCatalogs ? "Cargando áreas..." : "Selecciona área"}</option>
                 {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
@@ -379,7 +379,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.cargo_id}
                 onChange={(event) => update("cargo_id", event.target.value)}
                 disabled={loadingCatalogs || !form.area_id}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{form.area_id ? "Selecciona cargo" : "Selecciona primero un área"}</option>
                 {visibleCargos.map((cargo) => <option key={cargo.id} value={cargo.id}>{cargo.nombre}</option>)}
@@ -389,7 +389,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-700 hover:bg-slate-50">Cancelar</button>
-            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white hover:bg-violet-800 disabled:opacity-60">
+            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-60">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Guardar cambios
             </button>
@@ -469,7 +469,7 @@ export default function PsicoEmpleadoPerfilPage() {
             <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
               <FileText className="h-4 w-4" /> Editar colaborador
             </button>
-            <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-200 hover:bg-violet-800">
+            <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover">
               <ClipboardList className="h-4 w-4" /> Registrar respuestas
             </button>
           </div>
@@ -480,15 +480,15 @@ export default function PsicoEmpleadoPerfilPage() {
         <section className="grid gap-5 lg:grid-cols-[1fr_430px]">
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-violet-100 text-3xl font-black text-violet-700">
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-accent text-3xl font-black text-brand-primary">
                 {(nombre.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("") || "CE").toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-2xl font-black text-slate-950">{nombre}</h2>
                 <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-violet-600" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-violet-600" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
-                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-violet-600" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
+                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
                 </div>
               </div>
             </div>
@@ -498,7 +498,7 @@ export default function PsicoEmpleadoPerfilPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-slate-500">Última batería</p>
-                <div className="mt-2 inline-flex max-w-full rounded-xl bg-violet-100 px-3 py-2 text-sm font-black text-violet-700">{latestApp?.formulario_intra || "Sin aplicación"}</div>
+                <div className="mt-2 inline-flex max-w-full rounded-xl bg-accent px-3 py-2 text-sm font-black text-brand-primary">{latestApp?.formulario_intra || "Sin aplicación"}</div>
                 <p className="mt-2 text-xs text-slate-500 line-clamp-2">{latestApp?.nombre || "No hay aplicación psicosocial vinculada."}</p>
               </div>
               <div>
@@ -510,15 +510,15 @@ export default function PsicoEmpleadoPerfilPage() {
             </div>
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between text-sm"><span className="text-slate-500">Completitud base</span><b>{completitudPerfil.toFixed(0)}%</b></div>
-              <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-violet-600" style={{ width: `${Math.min(100, Math.max(0, completitudPerfil))}%` }} /></div>
+              <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, completitudPerfil))}%` }} /></div>
               <p className="mt-3 text-xs text-slate-500">Baterías: {perfil?.resumen_aplicaciones?.total ?? 0} · Completas: {perfil?.resumen_aplicaciones?.completas ?? 0} · Pendientes: {availableApps.length}</p>
             </div>
           </div>
         </section>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
-          <button type="button" onClick={() => setTab("perfil")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "perfil" ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Perfil</button>
-          <button type="button" onClick={() => setTab("aplicaciones")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "aplicaciones" ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Aplicaciones y resultados</button>
+          <button type="button" onClick={() => setTab("perfil")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "perfil" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Perfil</button>
+          <button type="button" onClick={() => setTab("aplicaciones")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "aplicaciones" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Aplicaciones y resultados</button>
         </div>
 
         {tab === "perfil" ? (
@@ -541,8 +541,8 @@ export default function PsicoEmpleadoPerfilPage() {
           </section>
         )}
 
-        <section className="rounded-3xl border border-violet-100 bg-violet-50/70 p-5 text-sm text-slate-700">
-          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-violet-700" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
+        <section className="rounded-3xl border border-accent bg-accent/70 p-5 text-sm text-slate-700">
+          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-brand-primary" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
         </section>
       </main>
 

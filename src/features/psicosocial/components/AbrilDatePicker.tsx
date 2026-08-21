@@ -46,10 +46,10 @@ export default function AbrilDatePicker({ value, onChange, label = "Fecha", erro
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`mt-1 flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-left font-normal outline-none transition hover:border-violet-300 ${error ? "border-red-300" : "border-slate-200"}`}
+        className={`mt-1 flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-left font-normal outline-none transition hover:border-brand-primary/30 ${error ? "border-red-300" : "border-slate-200"}`}
       >
         <span className={value ? "text-slate-800" : "text-slate-400"}>{display(value)}</span>
-        <CalendarDays className="h-5 w-5 text-violet-700" />
+        <CalendarDays className="h-5 w-5 text-brand-primary" />
       </button>
       {error && <span className="block text-xs font-semibold text-red-600">{error}</span>}
       {open && (
@@ -73,7 +73,7 @@ export default function AbrilDatePicker({ value, onChange, label = "Fecha", erro
                   type="button"
                   key={iso}
                   onClick={() => { onChange(iso); setOpen(false); }}
-                  className={`h-10 rounded-xl text-sm font-bold transition ${active ? "bg-violet-700 text-white shadow-sm" : today ? "bg-violet-50 text-violet-700" : sameMonth ? "text-slate-700 hover:bg-slate-100" : "text-slate-300 hover:bg-slate-50"}`}
+                  className={`h-10 rounded-xl text-sm font-bold transition ${active ? "bg-primary text-primary-foreground shadow-sm" : today ? "bg-accent text-brand-primary" : sameMonth ? "text-slate-700 hover:bg-slate-100" : "text-slate-300 hover:bg-slate-50"}`}
                 >
                   {d.getDate()}
                 </button>
@@ -82,7 +82,7 @@ export default function AbrilDatePicker({ value, onChange, label = "Fecha", erro
           </div>
           <div className="mt-4 flex justify-between border-t pt-3 text-xs font-bold">
             <button type="button" onClick={() => onChange("")} className="rounded-xl px-3 py-2 text-slate-500 hover:bg-slate-50">Borrar</button>
-            <button type="button" onClick={() => { const today = new Date(); onChange(toISO(today)); setView(new Date(today.getFullYear(), today.getMonth(), 1)); setOpen(false); }} className="rounded-xl px-3 py-2 text-violet-700 hover:bg-violet-50">Hoy</button>
+            <button type="button" onClick={() => { const today = new Date(); onChange(toISO(today)); setView(new Date(today.getFullYear(), today.getMonth(), 1)); setOpen(false); }} className="rounded-xl px-3 py-2 text-brand-primary hover:bg-accent">Hoy</button>
           </div>
         </div>
       )}

@@ -5,7 +5,7 @@ type AbrilWordmarkProps = {
 
 export default function AbrilWordmark({
   className = "text-2xl font-black",
-  accentClassName = "text-violet-500",
+  accentClassName = "text-brand-primary",
 }: AbrilWordmarkProps) {
   return (
     <span className={className} aria-label="ABRIL360">

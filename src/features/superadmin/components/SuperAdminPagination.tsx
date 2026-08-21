@@ -11,7 +11,7 @@ export default function SuperAdminPagination({ page, pageSize, total, onPageChan
         {onPageSizeChange && <select className="h-10 rounded-xl border border-slate-200 bg-white px-3 font-bold" value={pageSize} onChange={(e) => onPageSizeChange(Number(e.target.value))}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option><option value={100}>100</option></select>}
         <button className="rounded-xl border px-3 py-2 disabled:opacity-40" disabled={page <= 1} onClick={() => onPageChange(1)}>Primera</button>
         <button className="rounded-xl border px-3 py-2 disabled:opacity-40" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>Anterior</button>
-        <span className="rounded-xl bg-violet-600 px-4 py-2 font-black text-white">{page}</span>
+        <span className="rounded-xl bg-primary px-4 py-2 font-black text-primary-foreground">{page}</span>
         <button className="rounded-xl border px-3 py-2 disabled:opacity-40" disabled={page >= pages} onClick={() => onPageChange(page + 1)}>Siguiente</button>
         <button className="rounded-xl border px-3 py-2 disabled:opacity-40" disabled={page >= pages} onClick={() => onPageChange(pages)}>Última</button>
       </div>

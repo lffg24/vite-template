@@ -106,11 +106,11 @@ export default function EmpresaPerfilPage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-violet-100 text-violet-700">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-accent text-brand-primary">
                 <Building2 className="h-10 w-10" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">Perfil de empresa</p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Perfil de empresa</p>
                 <h1 className="mt-1 break-words text-3xl font-black text-slate-950">{empresa.nombre}</h1>
                 <p className="mt-1 text-sm text-slate-500">
                   NIT {empresa.nit || "Sin dato"} · {empresa.ciudad || "Sin ciudad"} · {empresa.email || "Sin correo"}
@@ -121,7 +121,7 @@ export default function EmpresaPerfilPage() {
                   </span>
                   <button
                     onClick={() => setEditOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-black text-violet-700 hover:bg-violet-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-accent bg-accent px-4 py-2 text-sm font-black text-brand-primary hover:bg-accent-hover"
                   >
                     <Edit3 className="h-4 w-4" /> Editar información
                   </button>
@@ -172,7 +172,7 @@ export default function EmpresaPerfilPage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-black text-slate-950">Aplicaciones recientes</h2>
-            <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} className="text-sm font-bold text-violet-700 hover:underline">Ver todas</button>
+            <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} className="text-sm font-bold text-brand-primary hover:underline">Ver todas</button>
           </div>
           <div className="overflow-hidden rounded-2xl border border-slate-200">
             <table className="min-w-full text-left text-sm">
@@ -190,7 +190,7 @@ export default function EmpresaPerfilPage() {
                 {apps.map((a) => (
                   <tr key={a.id} className="hover:bg-slate-50">
                     <td className="px-4 py-4">
-                      <Link to={`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`} className="font-black text-slate-950 hover:text-violet-700 hover:underline">
+                      <Link to={`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`} className="font-black text-slate-950 hover:text-brand-primary hover:underline">
                         {a.nombre}
                       </Link>
                       <p className="text-xs text-slate-500">Aplicación #{a.id}</p>
@@ -292,7 +292,7 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsic
       <aside className="relative h-full w-full max-w-2xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-violet-700">Editar empresa</p>
+            <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Editar empresa</p>
             <h2 className="mt-1 text-2xl font-black text-slate-950">Completar información base</h2>
             <p className="mt-2 text-sm text-slate-500">Estos datos identifican a la empresa en ABRIL360. No modifican aplicaciones, resultados ni reportes calculados.</p>
           </div>
@@ -317,13 +317,13 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsic
               value={form.actividad_economica || ""}
               onChange={(event) => setValue("actividad_economica", event.target.value)}
               rows={3}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-brand-primary focus:ring-4 focus:ring-accent"
             />
           </Field>
           {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
           <div className="flex justify-end gap-3 border-t pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border px-5 py-3 font-bold hover:bg-slate-50">Cancelar</button>
-            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
+            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-brand-primary hover:bg-primary-hover px-6 py-3 font-bold text-white disabled:opacity-60">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar cambios
             </button>
           </div>
@@ -348,7 +348,7 @@ function Info({ label, value }: { label: string; value: string }) {
 }
 
 function Action({ icon, title, desc, onClick }: { icon: ReactNode; title: string; desc: string; onClick: () => void }) {
-  return <button onClick={onClick} className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:bg-slate-50"><span className="text-violet-700">{icon}</span><span><strong className="block text-slate-950">{title}</strong><span className="text-xs text-slate-500">{desc}</span></span></button>;
+  return <button onClick={onClick} className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:bg-slate-50"><span className="text-brand-primary">{icon}</span><span><strong className="block text-slate-950">{title}</strong><span className="text-xs text-slate-500">{desc}</span></span></button>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -356,5 +356,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Input({ value, onChange, type = "text" }: { value: string; onChange: (value: string) => void; type?: string }) {
-  return <input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100" />;
+  return <input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-brand-primary focus:ring-4 focus:ring-accent" />;
 }

@@ -42,7 +42,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
   const Icon = theme.Icon;
   return (
     <div className={`fixed right-5 top-5 z-[120] w-full max-w-[420px] overflow-hidden rounded-[26px] border backdrop-blur ${theme.wrapper}`}>
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 opacity-80" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90" />
       <div className="flex gap-4 p-5">
         <div className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${theme.accent}`}>
           {toast.icon || <Icon className="h-5 w-5" />}
@@ -67,7 +67,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
               <ul className="space-y-1.5 text-sm text-slate-700">
                 {toast.details.map((detail) => (
                   <li key={detail} className="flex gap-2 leading-5">
-                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
+                    <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" />
                     <span>{detail}</span>
                   </li>
                 ))}

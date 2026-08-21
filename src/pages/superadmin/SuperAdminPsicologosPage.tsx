@@ -331,7 +331,7 @@ export default function SuperAdminPsicologosPage() {
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-5 py-3 font-black text-white shadow-sm transition hover:bg-violet-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-black text-primary-foreground shadow-sm transition hover:bg-primary-hover"
           >
             <Plus className="h-5 w-5" /> Nuevo psicólogo
           </button>
@@ -388,7 +388,7 @@ export default function SuperAdminPsicologosPage() {
                 <TableRow key={psicologo.id} className="transition hover:bg-slate-50/70">
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-violet-50 text-violet-700">
+                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-accent text-brand-primary">
                         <UserRound className="h-5 w-5" />
                       </span>
                       <span className="min-w-0">
@@ -409,13 +409,13 @@ export default function SuperAdminPsicologosPage() {
                     <p className="mt-1 max-w-[260px] truncate text-xs text-slate-500">{psicologo.empresas_nombres || "Sin empresas vinculadas"}</p>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-center font-semibold text-slate-900">{psicologo.creditos_asignados ?? 0}</TableCell>
-                  <TableCell className="px-4 py-3 text-center font-semibold text-violet-700">{psicologo.creditos_disponibles ?? 0}</TableCell>
+                  <TableCell className="px-4 py-3 text-center font-semibold text-brand-primary">{psicologo.creditos_disponibles ?? 0}</TableCell>
                   <TableCell className="px-4 py-3 text-right">
                     <div className="flex flex-wrap justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => openEditModal(psicologo)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-accent hover:bg-accent hover:text-brand-primary"
                       >
                         <Pencil className="h-4 w-4" /> Editar
                       </button>
@@ -429,7 +429,7 @@ export default function SuperAdminPsicologosPage() {
                       <button
                         type="button"
                         onClick={() => openCreditModal(psicologo)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:border-accent hover:bg-accent hover:text-brand-primary"
                       >
                         <WalletCards className="h-4 w-4" /> Créditos
                       </button>
@@ -455,7 +455,7 @@ export default function SuperAdminPsicologosPage() {
           <aside className="h-full w-full max-w-4xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">SuperAdmin</p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">SuperAdmin</p>
                 <h2 className="text-2xl font-black text-slate-950">{editingTarget ? "Editar psicólogo" : "Crear psicólogo"}</h2>
                 <p className="mt-1 max-w-2xl text-sm text-slate-500">
                   {editingTarget
@@ -502,21 +502,21 @@ export default function SuperAdminPsicologosPage() {
                     <div className="border-b border-slate-100 bg-slate-50/70 p-3">
                       <div className="mb-2 flex items-center justify-between gap-3">
                         <p className="text-xs font-black uppercase tracking-wide text-slate-500">Listado de empresas</p>
-                        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-violet-700">{form.empresa_ids.length} seleccionadas</span>
+                        <span className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-brand-primary">{form.empresa_ids.length} seleccionadas</span>
                       </div>
-                      <input value={empresaQ} onChange={(event) => setEmpresaQ(event.target.value)} className="h-10 w-full rounded-2xl border border-slate-200 px-3 text-sm outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100" placeholder="Buscar empresa..." />
+                      <input value={empresaQ} onChange={(event) => setEmpresaQ(event.target.value)} className="h-10 w-full rounded-2xl border border-slate-200 px-3 text-sm outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" placeholder="Buscar empresa..." />
                     </div>
                     <div className="max-h-72 divide-y divide-slate-100 overflow-auto">
                       {filteredEmpresas.length === 0 && <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-center text-sm text-slate-500">No hay empresas para seleccionar. Puedes crear el psicólogo sin asignaciones iniciales.</div>}
                       {filteredEmpresas.map((empresa) => {
                         const checked = form.empresa_ids.includes(empresa.id);
                         return (
-                          <button key={empresa.id} type="button" onClick={() => toggleEmpresa(empresa.id)} className={`flex w-full items-center justify-between px-3 py-3 text-left text-sm transition ${checked ? "bg-violet-50 text-violet-800" : "hover:bg-slate-50"}`}>
+                          <button key={empresa.id} type="button" onClick={() => toggleEmpresa(empresa.id)} className={`flex w-full items-center justify-between px-3 py-3 text-left text-sm transition ${checked ? "bg-accent text-brand-primary" : "hover:bg-slate-50"}`}>
                             <span className="min-w-0">
                               <strong className="block truncate">{empresa.nombre}</strong>
                               <span className="text-xs text-slate-500">{empresa.nit || empresa.id}</span>
                             </span>
-                            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300"}`}>{checked && <Check className="h-3.5 w-3.5" />}</span>
+                            <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-primary bg-primary text-primary-foreground" : "border-slate-300"}`}>{checked && <Check className="h-3.5 w-3.5" />}</span>
                           </button>
                         );
                       })}
@@ -534,7 +534,7 @@ export default function SuperAdminPsicologosPage() {
 
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button type="button" onClick={closeFormModal} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
-                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
+                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
                   {saving && <Loader2 className="h-4 w-4 animate-spin" />} {editingTarget ? "Guardar cambios" : "Crear psicólogo"}
                 </button>
               </div>
@@ -548,7 +548,7 @@ export default function SuperAdminPsicologosPage() {
           <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">Seguridad de acceso</p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Seguridad de acceso</p>
                 <h2 className="text-2xl font-black text-slate-950">Reiniciar contraseña</h2>
                 <p className="mt-1 text-sm text-slate-500">Define una contraseña temporal. El psicólogo deberá cambiarla obligatoriamente al iniciar sesión.</p>
               </div>
@@ -595,7 +595,7 @@ export default function SuperAdminPsicologosPage() {
           <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">Créditos globales</p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Créditos globales</p>
                 <h2 className="text-2xl font-black text-slate-950">Cargar créditos</h2>
                 <p className="mt-1 text-sm text-slate-500">La asignación aplica al saldo global del psicólogo.</p>
               </div>
@@ -606,7 +606,7 @@ export default function SuperAdminPsicologosPage() {
 
             <div className="mb-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-violet-100 text-violet-700">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-accent text-brand-primary">
                   <UserRound className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -621,7 +621,7 @@ export default function SuperAdminPsicologosPage() {
                 </div>
                 <div className="rounded-2xl bg-white p-3">
                   <p className="text-xs font-bold uppercase text-slate-400">Disponibles</p>
-                  <p className="text-2xl font-black text-violet-700">{Number(creditTarget.creditos_disponibles ?? 0).toLocaleString("es-CO")}</p>
+                  <p className="text-2xl font-black text-brand-primary">{Number(creditTarget.creditos_disponibles ?? 0).toLocaleString("es-CO")}</p>
                 </div>
               </div>
             </div>
@@ -641,7 +641,7 @@ export default function SuperAdminPsicologosPage() {
                 <textarea
                   value={creditReason}
                   onChange={(event) => setCreditReason(event.target.value)}
-                  className="min-h-32 w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                  className="min-h-32 w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                   placeholder="Ej. Compra inicial de paquete de créditos para operación psicosocial."
                 />
               </Field>
@@ -650,7 +650,7 @@ export default function SuperAdminPsicologosPage() {
               </div>
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button type="button" onClick={() => setCreditTarget(null)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
-                <button disabled={savingCredits} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60">
+                <button disabled={savingCredits} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
                   {savingCredits && <Loader2 className="h-4 w-4 animate-spin" />} Asignar créditos
                 </button>
               </div>
@@ -663,7 +663,7 @@ export default function SuperAdminPsicologosPage() {
 }
 
 function SectionTitle({ icon, title }: { icon: ReactNode; title: string }) {
-  return <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-violet-700">{icon}{title}</div>;
+  return <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-brand-primary">{icon}{title}</div>;
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
@@ -671,12 +671,12 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function Input({ value, onChange, className = "", ...props }: any) {
-  return <input {...props} value={value} onChange={(event) => onChange(event.target.value)} className={`w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${className}`} />;
+  return <input {...props} value={value} onChange={(event) => onChange(event.target.value)} className={`w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${className}`} />;
 }
 
 function PasswordInput({ value, onChange, visible, onToggle }: { value: string; onChange: (value: string) => void; visible: boolean; onToggle: () => void }) {
   return (
-    <div className="flex rounded-2xl border border-slate-200 focus-within:border-violet-500 focus-within:ring-4 focus-within:ring-violet-100">
+    <div className="flex rounded-2xl border border-slate-200 focus-within:border-input-focus focus-within:ring-4 focus-within:ring-input-focus/20">
       <input value={value} onChange={(event) => onChange(event.target.value)} type={visible ? "text" : "password"} className="min-w-0 flex-1 rounded-l-2xl px-4 py-3 font-normal outline-none" />
       <button type="button" onClick={onToggle} className="grid w-12 place-items-center rounded-r-2xl text-slate-500 hover:bg-slate-50" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}>
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -689,7 +689,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   return (
     <button type="button" onClick={() => onChange(!checked)} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-left text-sm font-bold">
       <span>{label}</span>
-      <span className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-violet-700" : "bg-slate-300"}`}>
+      <span className={`relative h-6 w-11 rounded-full transition ${checked ? "bg-primary" : "bg-slate-300"}`}>
         <span className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${checked ? "left-6" : "left-1"}`} />
       </span>
     </button>

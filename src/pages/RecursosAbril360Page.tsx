@@ -19,6 +19,7 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
+import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 
 type ResourcePageKey = "manual-uso" | "ficha-tecnica" | "seguridad-cumplimiento" | "certificacion";
 
@@ -827,53 +828,79 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(8,145,178,0.12),_transparent_28%),linear-gradient(180deg,#f8fbff_0%,#f8fafc_45%,#eef2f7_100%)] text-slate-950">
-      <section className="border-b border-slate-200/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto grid max-w-7xl gap-6 px-5 py-10 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="border-b border-slate-200/70 bg-white/80 backdrop-blur">
+        <div className="mx-auto grid max-w-7xl gap-4 px-5 py-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <div>
-            <Link to="/login" className="text-sm font-black tracking-[0.22em] text-cyan-700 hover:text-cyan-900">
-              ABRIL360
+            <Link to="/login" className="inline-flex hover:opacity-90">
+              <AbrilBrandLockup
+                className="items-center"
+                iconWrapperClassName="grid h-11 w-11 place-items-center rounded-[20px] bg-[#0b1730] p-2 shadow-md"
+                wordmarkClassName="text-2xl font-black tracking-tight text-slate-950"
+                accentClassName="text-cyan-500"
+                subtitleClassName="text-[11px] uppercase tracking-[0.3em] text-slate-500"
+              />
             </Link>
-            <div className="mt-5 flex items-start gap-4">
-              <span className="grid h-16 w-16 shrink-0 place-items-center rounded-[22px] bg-cyan-50 text-cyan-700 shadow-sm">
-                <Icon className="h-8 w-8" />
-              </span>
-              <div className="max-w-4xl">
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">
-                    {current.eyebrow}
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
-                    {current.audience}
-                  </span>
-                </div>
-                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 md:text-5xl">{current.title}</h1>
-                <p className="mt-4 text-base leading-8 text-slate-600">{current.description}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-600 ring-1 ring-slate-200">
+            <div className="mt-3 rounded-[30px] border border-slate-200/80 bg-white/92 p-5 shadow-sm">
+              <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)]">
+                <div className="min-w-0">
+                  <div className="flex items-start gap-4">
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-cyan-50 text-cyan-700 shadow-sm">
+                      <Icon className="h-6 w-6" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">
+                          {current.eyebrow}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
+                          {current.audience}
+                        </span>
+                      </div>
+                      <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-[3.15rem] md:leading-[0.95]">
+                        {current.title}
+                      </h1>
+                    </div>
+                  </div>
+
+                  <p className="mt-4 max-w-4xl text-base leading-8 text-slate-600">{current.description}</p>
+
+                  <div className="mt-4 rounded-3xl bg-slate-50 px-4 py-3 text-sm font-bold leading-7 text-slate-700 ring-1 ring-slate-200/80">
                     {current.promise}
-                  </span>
+                  </div>
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {current.quickLinks.map((link) => (
-                    <ResourceLink key={link.href} {...link} />
+
+                <div className="grid gap-3 content-start">
+                  {current.highlights.map((highlight) => (
+                    <article key={highlight} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex gap-3">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-600" />
+                        <p className="text-sm leading-7 text-slate-700">{highlight}</p>
+                      </div>
+                    </article>
                   ))}
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                    {current.quickLinks.map((link) => (
+                      <ResourceLink key={link.href} {...link} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <aside className="rounded-[30px] border border-slate-900/5 bg-slate-950 p-6 text-white shadow-xl shadow-slate-900/10">
+          <aside className="rounded-[30px] border border-slate-900/5 bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/10">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Señales de confianza</p>
-            <div className="mt-5 grid gap-4 md:grid-cols-3 xl:grid-cols-1">
+            <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               {current.stats.map((stat) => (
-                <article key={stat.label} className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-3xl font-black text-white">{stat.value}</p>
-                  <p className="mt-2 text-sm font-bold text-cyan-100">{stat.label}</p>
-                  <p className="mt-1 text-xs leading-6 text-slate-300">{stat.hint}</p>
+                <article key={stat.label} className="rounded-3xl border border-white/10 bg-white/5 p-3.5">
+                  <p className="text-3xl font-black leading-none text-white">{stat.value}</p>
+                  <p className="mt-1.5 text-sm font-bold leading-6 text-cyan-100">{stat.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">{stat.hint}</p>
                 </article>
               ))}
             </div>
-            <div className="mt-5 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-5">
+            <div className="mt-3 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-4">
               <p className="text-sm font-black text-cyan-100">Qué encontrarás en esta página</p>
               <ul className="mt-3 grid gap-2 text-sm leading-7 text-slate-200">
                 {current.highlights.map((highlight) => (
@@ -888,7 +915,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-7xl gap-5 px-5 py-5 lg:grid-cols-[270px_minmax(0,1fr)]">
         <nav className="h-fit rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-6" aria-label="Recursos ABRIL360">
           <p className="px-3 pb-2 text-xs font-black uppercase tracking-[0.22em] text-slate-500">Centro de recursos</p>
           {resourcePages.map((item) => {
@@ -911,6 +938,9 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                 </span>
                 <span>
                   <span className="block text-sm font-black">{item.title}</span>
+                  <span className={`mt-1 block text-xs leading-6 ${active ? "text-slate-300" : "text-slate-500"}`}>
+                    {item.eyebrow}
+                  </span>
                 </span>
               </Link>
             );

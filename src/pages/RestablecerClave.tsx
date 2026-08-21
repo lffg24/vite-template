@@ -49,7 +49,7 @@ export default function RestablecerClave() {
   };
 
   if (!token) {
-    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-2xl bg-violet-600 px-5 py-4 text-center font-bold text-white">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
+    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-2xl bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
   }
 
   return (
@@ -78,7 +78,7 @@ export default function RestablecerClave() {
           ))}
           <p className="text-xs leading-5 text-slate-500">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
           {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
+          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary to-brand-dark text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>
       )}
     </PasswordRecoveryShell>
