@@ -1121,7 +1121,7 @@ export default function AplicacionDetallePage() {
       const cierre = (await psicoAdminService.cerrarAplicacion(
         empresaId,
         Number(aplicacionId),
-        3,
+        1,
       )) as CierreAplicacionResponse;
       if (cierre && cierre.ok === false) {
         const calidad = cierre.scoring_fallidos
