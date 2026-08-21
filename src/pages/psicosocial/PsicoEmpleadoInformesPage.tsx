@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, Download, FileText, FileType2, Loader2, Printer, RefreshCcw, ShieldCheck, UserRound } from "lucide-react";
+import { AlertTriangle, ArrowLeft, FileText, FileType2, Loader2, Printer, RefreshCcw, ShieldCheck, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,10 +38,6 @@ function saveBlob(filename: string, blob: Blob) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-}
-
-function downloadHtml(filename: string, html: string) {
-  saveBlob(filename, new Blob([html], { type: "text/html;charset=utf-8" }));
 }
 
 function statusLabel(item?: PsicoInformeIndividualItem | null) {
@@ -92,7 +88,7 @@ export default function PsicoEmpleadoInformesPage() {
   const empleadoNombre = data?.empleado?.nombre_completo || `Colaborador ${empleadoId}`;
   const disponibles = useMemo(() => (data?.informes || []).filter((item) => item.available).length, [data?.informes]);
   const baseFilename = useMemo(
-    () => safeFilename(`EVA360_Informe_Individual_${instrumentCode || "instrumento"}_${empleadoNombre}_${aplicacionId}`),
+    () => safeFilename(`ABRIL360_Informe_Individual_${instrumentCode || "instrumento"}_${empleadoNombre}_${aplicacionId}`),
     [instrumentCode, empleadoNombre, aplicacionId],
   );
 
@@ -219,12 +215,9 @@ export default function PsicoEmpleadoInformesPage() {
                 </div>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4 2xl:col-span-3">
+              <div className="grid gap-2 sm:grid-cols-3 2xl:col-span-3">
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={loadPreview} disabled={!selectedReport?.available || loadingHtml}>
                   {loadingHtml ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}Actualizar
-                </Button>
-                <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={() => downloadHtml(`${baseFilename}.html`, html)} disabled={!html}>
-                  <Download className="mr-2 h-4 w-4" />HTML
                 </Button>
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={downloadDoc} disabled={!selectedReport?.available || downloadingDoc}>
                   {downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable

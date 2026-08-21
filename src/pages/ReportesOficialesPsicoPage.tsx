@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Download, FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
+import { FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,30 +63,6 @@ function saveBlob(filename: string, blob: Blob) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-}
-
-function downloadHtml(filename: string, html: string) {
-  saveBlob(filename, new Blob([html], { type: "text/html;charset=utf-8" }));
-}
-
-function printHtml(html: string) {
-  // Se abre desde un Blob para conservar mejor el CSS completo del documento.
-  // Para que el PDF no muestre fecha/URL/título del navegador, desactivar "Encabezados y pies de página" en el diálogo de impresión.
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, "_blank", "width=980,height=900");
-  if (!win) {
-    URL.revokeObjectURL(url);
-    return;
-  }
-  const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 5000);
-  win.onload = () => {
-    win.focus();
-    setTimeout(() => {
-      win.print();
-      cleanup();
-    }, 600);
-  };
 }
 
 export default function ReportesOficialesPsicoPage() {
@@ -168,7 +144,7 @@ export default function ReportesOficialesPsicoPage() {
     setError(null);
     try {
       const blob = await descargarDocReporteOficial(Number(aplicacionId), tipoReporte);
-      saveBlob(filename.replace(/\.html$/i, ".doc"), blob);
+      saveBlob(`${filename}.doc`, blob);
     } catch (err: any) {
       setError(err?.response?.data?.detail || err?.message || "No se pudo descargar el documento editable.");
     } finally {
@@ -182,7 +158,7 @@ export default function ReportesOficialesPsicoPage() {
     setError(null);
     try {
       const blob = await descargarPdfReporteOficial(Number(aplicacionId), tipoReporte);
-      saveBlob(filename.replace(/\.html$/i, ".pdf"), blob);
+      saveBlob(`${filename}.pdf`, blob);
     } catch (err: any) {
       setError(err?.response?.data?.detail || err?.message || "No se pudo descargar el PDF directo. Verifica el servicio de generación de informes.");
     } finally {
@@ -196,7 +172,7 @@ export default function ReportesOficialesPsicoPage() {
     setError(null);
     try {
       const blob = await descargarXlsxReporteOficial(Number(aplicacionId), tipoReporte);
-      saveBlob(filename.replace(/\.html$/i, ".xlsx"), blob);
+      saveBlob(`${filename}.xlsx`, blob);
     } catch (err: any) {
       setError(err?.response?.data?.detail || err?.message || "No se pudo descargar el reporte detallado Excel.");
     } finally {
@@ -216,7 +192,7 @@ export default function ReportesOficialesPsicoPage() {
 
   const filename = useMemo(() => {
     const safeApp = (selectedApp?.nombre || `aplicacion-${aplicacionId || ""}`).replace(/[^a-zA-Z0-9_-]+/g, "_");
-    return `ABRIL360_${tipoReporte}_${safeApp}.html`;
+    return `ABRIL360_${tipoReporte}_${safeApp}`;
   }, [selectedApp, aplicacionId, tipoReporte]);
 
   return (
@@ -293,7 +269,6 @@ export default function ReportesOficialesPsicoPage() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={() => downloadHtml(filename, html)} disabled={!html}><Download className="mr-2 h-4 w-4" />HTML</Button>
                   <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable</Button>
                   <Button className="h-12 rounded-2xl bg-primary whitespace-nowrap hover:bg-primary-hover" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo</Button>
                 </>
