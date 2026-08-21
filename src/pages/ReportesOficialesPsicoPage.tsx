@@ -271,7 +271,7 @@ export default function ReportesOficialesPsicoPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4 text-sm leading-relaxed text-slate-700">
-                      <p className="font-black text-violet-900">NeuroMapa Psicosocial ABRIL-360</p>
+                      <p className="font-black text-violet-900">NeuroMapa Psicosocial ABRIL360</p>
                       <p className="mt-1">
                         Motor local de análisis explicable: prioriza dimensiones críticas, propone lecturas técnicas y arma acciones de intervención sin APIs pagas ni recalcular baremos.
                       </p>

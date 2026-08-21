@@ -139,8 +139,11 @@ export default function Login() {
               </div>
 
               <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
-                Evaluamos.<br />Protegemos.<br />
-                <span className="bg-gradient-to-r from-violet-300 to-cyan-200 bg-clip-text text-transparent">Transformamos.</span>
+                <span className="block text-cyan-50">Evaluamos.</span>
+                <span className="block text-cyan-50">Protegemos.</span>
+                <span className="mt-3 block bg-gradient-to-r from-violet-300 to-cyan-200 bg-clip-text pb-1 text-transparent xl:mt-4">
+                  Transformamos.
+                </span>
               </h1>
 
               <p className="mt-4 max-w-md text-base leading-7 text-slate-300 xl:text-lg">

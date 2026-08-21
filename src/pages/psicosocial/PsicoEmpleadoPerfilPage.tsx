@@ -346,7 +346,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-violet-700">Base del colaborador</p>
             <h2 className="text-2xl font-black text-slate-950">Editar información transversal</h2>
-            <p className="mt-1 text-sm text-slate-500">Estos datos aplican a Abril360. La ficha sociodemográfica se mantiene por aplicación.</p>
+            <p className="mt-1 text-sm text-slate-500">Estos datos aplican a ABRIL360. La ficha sociodemográfica se mantiene por aplicación.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 p-2 hover:bg-slate-50">
             <X className="h-5 w-5" />
@@ -529,7 +529,7 @@ export default function PsicoEmpleadoPerfilPage() {
             <SectionCard number={2} title="Asignación organizacional">
               <InfoRow label="Empresa" value={perfil?.empresa} /><InfoRow label="Área / departamento" value={perfil?.area} /><InfoRow label="Cargo" value={perfil?.cargo} />
             </SectionCard>
-            <SectionCard number={3} title="Trazabilidad Abril360">
+            <SectionCard number={3} title="Trazabilidad ABRIL360">
               <InfoRow label="Alcance del perfil" value="Base transversal del colaborador" /><InfoRow label="Aplicaciones vinculadas" value={perfil?.resumen_aplicaciones?.total ?? 0} /><InfoRow label="Aplicaciones completas" value={perfil?.resumen_aplicaciones?.completas ?? 0} /><InfoRow label="En curso" value={perfil?.resumen_aplicaciones?.activas ?? 0} /><InfoRow label="Última actualización" value={perfil?.ultima_actualizacion ? fmtDate(perfil.ultima_actualizacion) : null} />
             </SectionCard>
           </section>

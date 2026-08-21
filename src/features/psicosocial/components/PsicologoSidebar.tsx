@@ -22,7 +22,7 @@ const items = [
 
 export default function PsicologoSidebar() {
   const { user } = useAuth();
-  const displayName = user?.nombre?.trim() || "Usuario Abril360";
+  const displayName = user?.nombre?.trim() || "Usuario ABRIL360";
   const initials = displayName
     .split(/\s+/)
     .filter(Boolean)

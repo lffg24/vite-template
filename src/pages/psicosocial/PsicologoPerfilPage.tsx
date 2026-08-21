@@ -232,7 +232,7 @@ export default function PsicologoPerfilPage() {
                   <p className="mt-1 text-sm text-slate-500">
                     {passwordChangeRequired
                       ? "Por seguridad, actualiza la contraseña temporal antes de continuar."
-                      : "Usa una contraseña única para Abril360."}
+                      : "Usa una contraseña única para ABRIL360."}
                   </p>
                 </div>
                 {!passwordChangeRequired ? (

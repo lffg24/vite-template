@@ -32,7 +32,7 @@ function isMenuActive(currentPath: string, targetPath: string) {
 export default function RoleSidebar({
   items,
   storageKey,
-  brandTitle = "ABRIL-360",
+  brandTitle = "ABRIL360",
   brandSubtitle,
   avatarText,
   userTitle,
@@ -62,7 +62,7 @@ export default function RoleSidebar({
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
+                {brandTitle === "ABRIL360" ? (
                   <AbrilWordmark className="block truncate text-2xl font-black" accentClassName="text-violet-300" />
                 ) : (
                   <div className="truncate text-2xl font-black">{brandTitle}</div>

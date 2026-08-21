@@ -1394,7 +1394,7 @@ export default function AplicacionDetallePage() {
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     Primero registra o valida las respuestas de los
                     colaboradores. Cuando cierres y calcules la aplicación,
-                    ABRIL-360 desbloqueará el dashboard de resultados y los
+                    ABRIL360 desbloqueará el dashboard de resultados y los
                     informes oficiales con esta aplicación precargada.
                   </p>
                 </div>

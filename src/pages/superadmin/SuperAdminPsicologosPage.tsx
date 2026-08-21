@@ -577,7 +577,7 @@ export default function SuperAdminPsicologosPage() {
                 <PasswordInput value={resetConfirmPassword} onChange={setResetConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} />
               </Field>
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
-                Usa una clave temporal robusta y comunícala por un canal seguro. ABRIL-360 no la enviará ni la mostrará después de guardar.
+                Usa una clave temporal robusta y comunícala por un canal seguro. ABRIL360 no la enviará ni la mostrará después de guardar.
               </div>
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button type="button" onClick={() => setPasswordResetTarget(null)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>

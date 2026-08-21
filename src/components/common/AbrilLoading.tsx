@@ -1,6 +1,6 @@
 import { Loader2, Sparkles } from "lucide-react";
 
-export function AbrilLoading({ title = "Procesando información", subtitle = "Estamos validando y preparando los datos de ABRIL-360." }: { title?: string; subtitle?: string }) {
+export function AbrilLoading({ title = "Procesando información", subtitle = "Estamos validando y preparando los datos de ABRIL360." }: { title?: string; subtitle?: string }) {
   return (
     <div className="grid min-h-[360px] place-items-center rounded-3xl border border-violet-100 bg-white/80 p-8 shadow-sm">
       <div className="flex max-w-md flex-col items-center text-center">
