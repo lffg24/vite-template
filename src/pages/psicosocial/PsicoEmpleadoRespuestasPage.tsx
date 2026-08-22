@@ -135,6 +135,11 @@ const DIMENSION_LABELS: Record<string, string> = {
   situacion_economica: "Situación económica del grupo familiar",
 };
 
+export function scrollResponsePageToTop() {
+  if (typeof window === "undefined" || typeof window.scrollTo !== "function") return;
+  window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+}
+
 function instrumentLabel(code?: string | null) {
   return INSTRUMENT_LABELS[String(code || "")] || String(code || "Instrumento");
 }
@@ -601,6 +606,7 @@ export default function PsicoEmpleadoRespuestasPage() {
           ? "La ficha quedó completa y se actualizó el estado del participante."
           : "Los datos se guardaron, pero aún faltan campos para completar la ficha.",
       });
+      if (finalizar && completa) scrollResponsePageToTop();
     } catch (e) {
       const creditGuard = getCreditGuardInfo(e);
       if (creditGuard.isInsufficient) {
@@ -631,6 +637,7 @@ export default function PsicoEmpleadoRespuestasPage() {
         title: finalizar ? "Instrumento finalizado" : "Borrador guardado",
         message: `${res.respondidas}/${res.total} respuestas sincronizadas correctamente.`,
       });
+      if (finalizar) scrollResponsePageToTop();
     } catch (e) {
       if (e instanceof AbrilApiError && e.status === 401) {
         persistDraft();

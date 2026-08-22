@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   applicableQuestionIdsForConditionals,
   batterySummaryProgress,
@@ -7,6 +7,7 @@ import {
   mergeConditionalRules,
   normalizeRespuestaLabel,
   questionOptions,
+  scrollResponsePageToTop,
 } from "./PsicoEmpleadoRespuestasPage";
 import type { PreguntaRespuesta, PsicoEvaluacionEmpleado } from "@/features/psicosocial/api/psicoEmpleadoService";
 
@@ -32,6 +33,15 @@ function stressQuestion(orden: number, preguntaId = orden): PreguntaRespuesta {
 }
 
 describe("PsicoEmpleadoRespuestasPage conditional rules", () => {
+  it("lleva la vista al inicio con desplazamiento suave tras finalizar", () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+
+    scrollResponsePageToTop();
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "smooth" });
+    scrollTo.mockRestore();
+  });
+
   it("agrega los dos bloques oficiales de Forma A cuando el backend no los entrega", () => {
     const rules = mergeConditionalRules([], "PSICO_INTRA_A");
 
