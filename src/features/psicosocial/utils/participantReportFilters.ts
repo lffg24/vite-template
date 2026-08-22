@@ -3,11 +3,11 @@ import type { ParticipantePsico } from "@/types/psicoDashboard";
 
 export type InstrumentFilter = "INTRA" | "EXTRA" | "ESTRES";
 export type FormFilter = "A" | "B";
-export type RiskFilter = "SIN_RIESGO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | "SIN_NIVEL";
+export type RiskFilter = "SIN_RIESGO" | "MUY_BAJO" | "BAJO" | "MEDIO" | "ALTO" | "MUY_ALTO" | "SIN_NIVEL";
 
 export const ALL_INSTRUMENT_FILTERS: InstrumentFilter[] = ["INTRA", "EXTRA", "ESTRES"];
 export const ALL_FORM_FILTERS: FormFilter[] = ["A", "B"];
-export const ALL_RISK_FILTERS: RiskFilter[] = ["SIN_RIESGO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"];
+export const ALL_RISK_FILTERS: RiskFilter[] = ["SIN_RIESGO", "MUY_BAJO", "BAJO", "MEDIO", "ALTO", "MUY_ALTO", "SIN_NIVEL"];
 
 export const INSTRUMENT_FILTER_LABELS: Record<InstrumentFilter, string> = {
   INTRA: "Intralaboral",

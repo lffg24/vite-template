@@ -11,6 +11,7 @@ import {
   FileArchive,
   FileText,
   Gauge,
+  Info,
   LayoutDashboard,
   LineChart,
   Loader2,
@@ -872,7 +873,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(260px,1fr)_210px_220px_220px]">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(260px,1fr)_210px_220px_minmax(220px,250px)]">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por cédula, nombre, área, cargo..." />
         <MultiCheckboxFilter
           value={formas}
@@ -890,14 +891,34 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
           ariaLabel="Filtrar instrumentos"
           onChange={setInstrumentos}
         />
-        <MultiCheckboxFilter
-          value={riesgos}
-          options={ALL_RISK_FILTERS}
-          labels={riskFilterLabels}
-          allLabel="Todos los riesgos"
-          ariaLabel="Filtrar niveles de riesgo"
-          onChange={setRiesgos}
-        />
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <MultiCheckboxFilter
+              value={riesgos}
+              options={ALL_RISK_FILTERS}
+              labels={riskFilterLabels}
+              allLabel="Todos los riesgos"
+              ariaLabel="Filtrar niveles de riesgo total"
+              onChange={setRiesgos}
+            />
+          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 shrink-0 rounded-full bg-white text-brand-primary"
+                aria-label="Cómo funciona el filtro de riesgo"
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 rounded-2xl text-sm leading-relaxed text-slate-600">
+              El filtro usa el nivel de riesgo total del instrumento seleccionado. Al elegir Estrés, compara exclusivamente el resultado total del cuestionario de estrés; no dominios ni dimensiones.
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
       <div className="flex flex-col gap-3 rounded-2xl border border-accent bg-accent/60 p-3 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
         <div>

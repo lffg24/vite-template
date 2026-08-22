@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ParticipantePsico } from "@/types/psicoDashboard";
 import {
   ALL_FORM_FILTERS,
+  ALL_RISK_FILTERS,
   highestRiskForFilters,
   participantMatchesReportFilters,
   reportsForParticipant,
@@ -39,6 +40,16 @@ describe("participant report filters", () => {
     const item = participant();
     expect(participantMatchesReportFilters(item, { instrumentos: ["INTRA", "EXTRA"], riesgos: ["ALTO"] })).toBe(true);
     expect(participantMatchesReportFilters(item, { instrumentos: ["INTRA"], riesgos: ["ALTO"] })).toBe(false);
+  });
+
+  it("keeps participants with very low total stress in the stress filter", () => {
+    const item = participant({ niveles: { a: "MEDIO", b: null, extra: "ALTO", estres: "MUY_BAJO" } });
+
+    expect(participantMatchesReportFilters(item, {
+      instrumentos: ["ESTRES"],
+      riesgos: ALL_RISK_FILTERS,
+      formas: ALL_FORM_FILTERS,
+    })).toBe(true);
   });
 
   it("filters participants by intralaboral form before bulk reports are selected", () => {
