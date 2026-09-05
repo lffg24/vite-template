@@ -40,6 +40,13 @@ const PsicoEmpleadoInformesPage = lazy(() => import("@/pages/psicosocial/PsicoEm
 const ReportesPsico = lazy(() => import("@/pages/ReportesPsico"));
 const ReportesOficialesPsicoPage = lazy(() => import("@/pages/ReportesOficialesPsicoPage"));
 
+const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
+const CapacitacionesCursosPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursosPage"));
+const CapacitacionesCursoDetallePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursoDetallePage"));
+const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAsignacionesPage"));
+const CapacitacionesEnlacesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEnlacesPage"));
+const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEstadoPage"));
+
 const SuperAdminLayout = lazy(() => import("@/layout/SuperAdminLayout"));
 const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdminDashboardPage"));
 const SuperAdminEmpresasPage = lazy(() => import("@/pages/superadmin/SuperAdminEmpresasPage"));
@@ -99,6 +106,35 @@ function App() {
               <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
               <Route path="planes" element={<SuperAdminPlaceholderPage title="Planes y suscripciones" />} />
               <Route path="configuracion" element={<SuperAdminPlaceholderPage title="Configuración global" />} />
+            </Route>
+          </Route>
+
+          {/* Privadas con layout de Capacitaciones.
+              La guarda pide CUALQUIERA de los tres permisos: quien solo redacta
+              contenido tiene que poder entrar al catálogo aunque no pueda
+              asignar. Cada pantalla vuelve a comprobar lo suyo, y el backend
+              decide de verdad — esta guarda solo evita mostrar un shell vacío. */}
+          <Route
+            element={
+              <ProtectedRoute
+                requirePermission={[
+                  "hseq.capacitacion.catalogo.editar",
+                  "hseq.capacitacion.catalogo.publicar",
+                  "hseq.capacitacion.asignar",
+                ]}
+              />
+            }
+          >
+            <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
+              <Route index element={<Navigate to="/capacitaciones/cursos" replace />} />
+              <Route path="cursos" element={<CapacitacionesCursosPage />} />
+              <Route path="cursos/:cursoId" element={<CapacitacionesCursoDetallePage />} />
+              <Route path="asignaciones" element={<CapacitacionesAsignacionesPage />} />
+              <Route
+                path="asignaciones/:asignacionId/enlaces"
+                element={<CapacitacionesEnlacesPage />}
+              />
+              <Route path="estado" element={<CapacitacionesEstadoPage />} />
             </Route>
           </Route>
 

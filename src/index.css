@@ -131,3 +131,85 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
+/* ============================================================================
+   REL Calm Intelligence · capa semantica ADITIVA
+   ----------------------------------------------------------------------------
+   Ver `docs/design/ABRIL360_UI_UX_CONSTITUTION.md` en el repositorio del
+   backend. Estos tokens se AGREGAN; no se redefine ninguno de los de arriba.
+
+   Por que aditiva y no una migracion:
+   la constitucion §24 pide "minimizar impacto en modulos existentes" y §29
+   prohibe "rediseniar todo el producto al resolver una pantalla". Redefinir
+   `--primary` cambiaria de color cada boton de Psicosocial en el mismo commit
+   que agrega Capacitaciones, y esa regresion no seria atribuible.
+
+   Consecuencia: las pantallas de Capacitaciones usan `rel-*`; las existentes
+   siguen exactamente igual. La migracion del resto es un trabajo aparte.
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* --- marca REL Consilium (constitucion §4.1) --- */
+    --rel-primary: 224 100% 50%;          /* #0045FF */
+    --rel-primary-foreground: 0 0% 100%;  /* §4.3: sobre #0045FF, texto blanco */
+    --rel-turquoise: 172 100% 42%;        /* #00D4B8 */
+    --rel-turquoise-foreground: 221 57% 11%; /* §4.3: NO blanco sobre turquesa */
+    --rel-sky: 197 100% 42%;              /* #0098D6 */
+    --rel-sky-foreground: 221 57% 11%;
+    --rel-dark: 221 57% 11%;              /* #0C162C */
+    --rel-canvas: 171 37% 96%;            /* #F2F9F8 */
+    --rel-surface: 0 0% 100%;
+    --rel-surface-subtle: 210 20% 98%;
+    --rel-border: 214 25% 89%;
+    --rel-border-strong: 214 20% 78%;
+    --rel-muted-foreground: 215 16% 42%;
+
+    /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
+       Estos no son los colores corporativos: el turquesa de marca no significa
+       "exito" y el azul de marca no significa "informacion". Colapsarlos
+       dejaria un boton primario indistinguible de una confirmacion. */
+    --rel-success: 152 58% 33%;
+    --rel-success-foreground: 0 0% 100%;
+    --rel-success-subtle: 152 45% 95%;
+    --rel-info: 205 75% 38%;
+    --rel-info-foreground: 0 0% 100%;
+    --rel-info-subtle: 205 60% 95%;
+    --rel-warning: 35 92% 38%;
+    --rel-warning-foreground: 0 0% 100%;
+    --rel-warning-subtle: 40 85% 94%;
+    --rel-danger: 0 68% 42%;
+    --rel-danger-foreground: 0 0% 100%;
+    --rel-danger-subtle: 0 70% 96%;
+    --rel-neutral: 215 16% 47%;
+    --rel-neutral-subtle: 215 25% 95%;
+
+    --rel-focus-ring: 224 100% 50%;
+
+    /* --- tipografia (constitucion §6) ---
+       Montserrat y Open Sans son el objetivo de marca. NO se instalan aqui:
+       agregar `@fontsource/*` es una dependencia nueva y §6 pide no
+       introducirla en silencio. Se declaran primero en la pila para que, el
+       dia que se aprueben, la tipografia cambie sin tocar una sola pantalla. */
+    --rel-font-heading: "Montserrat", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    --rel-font-body: "Open Sans", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+
+    /* --- movimiento (constitucion §15) --- */
+    --rel-motion-micro: 150ms;
+    --rel-motion-panel: 220ms;
+    --rel-motion-context: 280ms;
+  }
+}
+
+@layer base {
+  /* §21: foco visible siempre, y §15: respetar reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .rel-scope *,
+    .rel-scope *::before,
+    .rel-scope *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}

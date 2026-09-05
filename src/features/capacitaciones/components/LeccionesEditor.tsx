@@ -1,0 +1,499 @@
+// src/features/capacitaciones/components/LeccionesEditor.tsx · A-04
+//
+// Constructor de lecciones.
+//
+// Dos cosas que esta pantalla deliberadamente NO hace:
+//
+// - **No reordena.** El orden lo calcula la base dentro del mismo bloqueo que
+//   inserta la lección, y al eliminar lo compacta con `ROW_NUMBER()`. Un
+//   arrastrar-y-soltar aquí necesitaría un endpoint de reordenamiento que no
+//   existe, y fingirlo en el cliente dejaría la pantalla mostrando un orden que
+//   el servidor no tiene.
+// - **No deja elegir un tipo sin reproductor.** Están a la vista y
+//   deshabilitados con su motivo, porque el backend rechaza publicar una
+//   versión que los use. Ocultarlos haría que la limitación se descubriera al
+//   pulsar «Publicar», con la lección ya redactada.
+
+import { useState } from "react";
+import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useToast } from "@/hooks/use-toast";
+import {
+  agregarLeccion,
+  editarLeccion,
+  eliminarLeccion,
+} from "@/services/capacitacionesService";
+import type { BloqueLeccion, ErrorApi, Leccion, TipoLeccion } from "@/types/capacitaciones";
+import {
+  ETIQUETA_TIPO_LECCION,
+  TIPOS_LECCION,
+  TIPOS_LECCION_IMPLEMENTADOS,
+  TIPOS_LECCION_NUNCA_OBLIGATORIOS,
+} from "@/types/capacitaciones";
+import { TipoLeccionBadge } from "./Insignias";
+import { formatearIntensidad } from "../formato";
+import { SinDatos } from "./EstadoPantalla";
+
+function estaImplementado(tipo: TipoLeccion) {
+  return TIPOS_LECCION_IMPLEMENTADOS.includes(tipo);
+}
+
+/**
+ * Los bloques se editan como texto plano separado por líneas en blanco.
+ *
+ * No es una simplificación temporal disfrazada: un editor enriquecido produce
+ * marcado que después hay que sanear antes de pintarlo en el navegador del
+ * participante, y esa decisión no está tomada. Texto plano se puede escapar sin
+ * ambigüedad y se puede migrar a algo más rico sin perder contenido.
+ */
+function bloquesATexto(bloques: BloqueLeccion[] | null | undefined): string {
+  if (!bloques || bloques.length === 0) return "";
+  return bloques.map((b) => b.contenido).join("\n\n");
+}
+
+function textoABloques(texto: string): BloqueLeccion[] {
+  return texto
+    .split(/\n\s*\n/)
+    .map((t) => t.trim())
+    .filter((t) => t !== "")
+    .map((contenido) => ({ tipo: "texto" as const, contenido }));
+}
+
+interface FormLeccion {
+  tipo: TipoLeccion;
+  titulo: string;
+  contenido: string;
+  duracion: string;
+  obligatoria: boolean;
+}
+
+const FORM_VACIO: FormLeccion = {
+  tipo: "NATIVA",
+  titulo: "",
+  contenido: "",
+  duracion: "",
+  obligatoria: true,
+};
+
+export function LeccionesEditor({
+  cursoId,
+  lecciones,
+  editable,
+  alCambiar,
+}: {
+  cursoId: string;
+  lecciones: Leccion[];
+  /** Un curso archivado se consulta pero no se toca. */
+  editable: boolean;
+  alCambiar: () => Promise<void> | void;
+}) {
+  const { toast } = useToast();
+  const [abierto, setAbierto] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormLeccion>(FORM_VACIO);
+  const [guardando, setGuardando] = useState(false);
+  const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
+  const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
+  const [eliminando, setEliminando] = useState(false);
+
+  const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
+
+  function abrirNueva() {
+    setEditandoId(null);
+    setForm(FORM_VACIO);
+    setErrorTitulo(null);
+    setAbierto(true);
+  }
+
+  function abrirEdicion(l: Leccion) {
+    setEditandoId(l.id);
+    setForm({
+      tipo: l.tipo,
+      titulo: l.titulo,
+      contenido: bloquesATexto(l.bloques),
+      duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
+      obligatoria: l.obligatoria,
+    });
+    setErrorTitulo(null);
+    setAbierto(true);
+  }
+
+  async function enviar(e: React.FormEvent) {
+    e.preventDefault();
+    const titulo = form.titulo.trim();
+    if (titulo === "") {
+      setErrorTitulo("La lección necesita un título.");
+      return;
+    }
+    setErrorTitulo(null);
+
+    const duracionNum = form.duracion.trim() === "" ? null : Number(form.duracion);
+    const duracion =
+      duracionNum !== null && Number.isFinite(duracionNum) && duracionNum > 0
+        ? Math.trunc(duracionNum)
+        : null;
+    const bloques = textoABloques(form.contenido);
+
+    setGuardando(true);
+    try {
+      if (editandoId) {
+        await editarLeccion(cursoId, editandoId, {
+          titulo,
+          bloques: bloques.length > 0 ? bloques : null,
+          duracion_estimada_min: duracion,
+          obligatoria: obligatoriedadFijada ? false : form.obligatoria,
+        });
+        toast({ title: "Lección guardada" });
+      } else {
+        await agregarLeccion(cursoId, {
+          tipo: form.tipo,
+          titulo,
+          bloques: bloques.length > 0 ? bloques : null,
+          duracion_estimada_min: duracion,
+          obligatoria: obligatoriedadFijada ? false : form.obligatoria,
+        });
+        toast({ title: "Lección agregada", description: "Se ubicó al final del curso." });
+      }
+      setAbierto(false);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: editandoId ? "No pudimos guardar la lección" : "No pudimos agregar la lección",
+        description: err.message,
+      });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function confirmarEliminacion() {
+    if (!aEliminar) return;
+    setEliminando(true);
+    try {
+      await eliminarLeccion(cursoId, aEliminar.id);
+      toast({
+        title: "Lección eliminada",
+        description: "Las siguientes se renumeraron para no dejar huecos.",
+      });
+      setAEliminar(null);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos eliminar la lección",
+        description: err.message,
+      });
+    } finally {
+      setEliminando(false);
+    }
+  }
+
+  const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
+
+  return (
+    <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
+        <div>
+          <CardTitle className="font-rel-heading text-lg text-rel-dark">Lecciones</CardTitle>
+          {lecciones.length > 0 ? (
+            <p className="mt-1 font-rel-body text-sm text-rel-muted">
+              {lecciones.length} {lecciones.length === 1 ? "lección" : "lecciones"}
+              {totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : null}
+            </p>
+          ) : null}
+        </div>
+        {editable ? (
+          <Button variant="relOutline" size="sm" onClick={abrirNueva}>
+            <Plus aria-hidden="true" />
+            Agregar lección
+          </Button>
+        ) : null}
+      </CardHeader>
+
+      <CardContent>
+        {lecciones.length === 0 ? (
+          <SinDatos
+            titulo="El curso todavía no tiene lecciones"
+            descripcion="Un curso sin lecciones no se puede publicar: produciría una asignación que nadie puede completar."
+            accion={
+              editable ? (
+                <Button variant="rel" onClick={abrirNueva}>
+                  <Plus aria-hidden="true" />
+                  Agregar la primera
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <ol className="space-y-3">
+            {lecciones.map((l) => (
+              <li
+                key={l.id}
+                className="flex flex-wrap items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 sm:flex-nowrap"
+              >
+                <span
+                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rel-canvas font-rel-heading text-sm font-bold tabular-nums text-rel-dark"
+                  aria-hidden="true"
+                >
+                  {l.orden}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-rel-heading text-base font-semibold text-rel-dark">
+                      <span className="sr-only">Lección {l.orden}: </span>
+                      {l.titulo}
+                    </h3>
+                    <TipoLeccionBadge tipo={l.tipo} implementado={estaImplementado(l.tipo)} />
+                    {l.obligatoria ? null : (
+                      <span className="text-xs font-semibold text-rel-muted">
+                        No obligatoria
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 font-rel-body text-sm text-rel-muted">
+                    {l.bloques?.length
+                      ? `${l.bloques.length} ${l.bloques.length === 1 ? "bloque" : "bloques"}`
+                      : "Sin contenido todavía"}
+                    {l.duracion_estimada_min
+                      ? ` · ${formatearIntensidad(l.duracion_estimada_min)}`
+                      : null}
+                  </p>
+                </div>
+                {editable ? (
+                  <div className="flex shrink-0 gap-1">
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      onClick={() => abrirEdicion(l)}
+                      aria-label={`Editar la lección ${l.titulo}`}
+                    >
+                      <Pencil aria-hidden="true" />
+                      <span className="hidden sm:inline">Editar</span>
+                    </Button>
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      className="text-rel-danger hover:bg-rel-danger-subtle"
+                      onClick={() => setAEliminar(l)}
+                      aria-label={`Eliminar la lección ${l.titulo}`}
+                    >
+                      <Trash2 aria-hidden="true" />
+                      <span className="sr-only">Eliminar</span>
+                    </Button>
+                  </div>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        )}
+
+        {lecciones.length > 1 && editable ? (
+          <p className="mt-4 flex items-start gap-2 font-rel-body text-sm text-rel-muted">
+            <GripVertical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            El orden lo lleva el servidor: cada lección nueva va al final, y al
+            eliminar una se renumeran las siguientes. Reordenar todavía no está
+            disponible.
+          </p>
+        ) : null}
+      </CardContent>
+
+      {/* --- alta y edición --- */}
+      <Sheet
+        open={abierto}
+        onOpenChange={(v) => {
+          if (!v) setAbierto(false);
+        }}
+      >
+        <SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle className="font-rel-heading text-rel-dark">
+              {editandoId ? "Editar lección" : "Nueva lección"}
+            </SheetTitle>
+            <SheetDescription className="text-rel-muted">
+              {editandoId
+                ? "El tipo no se puede cambiar: cambiaría la regla de completitud de una lección que quizá ya está publicada en otra versión."
+                : "Se ubicará al final del curso."}
+            </SheetDescription>
+          </SheetHeader>
+
+          <form onSubmit={enviar} className="mt-6 space-y-5" noValidate>
+            <div className="space-y-2">
+              <Label htmlFor="l-tipo" className="text-rel-dark">
+                Tipo de lección
+              </Label>
+              <Select
+                value={form.tipo}
+                onValueChange={(v) => setForm((f) => ({ ...f, tipo: v as TipoLeccion }))}
+                disabled={editandoId !== null}
+              >
+                <SelectTrigger id="l-tipo">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_LECCION.map((t) => (
+                    <SelectItem key={t} value={t} disabled={!estaImplementado(t)}>
+                      {ETIQUETA_TIPO_LECCION[t]}
+                      {estaImplementado(t) ? "" : " · sin reproductor todavía"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-rel-muted">
+                Solo el contenido nativo tiene reproductor hoy. Publicar una
+                versión con otro tipo produciría una asignación imposible de
+                completar, así que el servidor lo rechaza.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="l-titulo" className="text-rel-dark">
+                Título <span className="text-rel-danger">*</span>
+              </Label>
+              <Input
+                id="l-titulo"
+                value={form.titulo}
+                maxLength={250}
+                onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
+                aria-invalid={errorTitulo ? true : undefined}
+                aria-describedby={errorTitulo ? "l-titulo-error" : undefined}
+                autoFocus
+              />
+              {errorTitulo ? (
+                <p id="l-titulo-error" role="alert" className="text-sm text-rel-danger">
+                  {errorTitulo}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="l-contenido" className="text-rel-dark">
+                Contenido
+              </Label>
+              <Textarea
+                id="l-contenido"
+                rows={10}
+                value={form.contenido}
+                onChange={(e) => setForm((f) => ({ ...f, contenido: e.target.value }))}
+                aria-describedby="l-contenido-ayuda"
+              />
+              <p id="l-contenido-ayuda" className="text-sm text-rel-muted">
+                Separa los bloques con una línea en blanco. Cada bloque es una
+                pantalla para el participante.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="l-duracion" className="text-rel-dark">
+                Duración estimada (minutos)
+              </Label>
+              <Input
+                id="l-duracion"
+                inputMode="numeric"
+                value={form.duracion}
+                onChange={(e) => setForm((f) => ({ ...f, duracion: e.target.value }))}
+              />
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="l-obligatoria"
+                checked={obligatoriedadFijada ? false : form.obligatoria}
+                disabled={obligatoriedadFijada}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, obligatoria: v === true }))}
+                className="mt-0.5"
+              />
+              <div>
+                <Label htmlFor="l-obligatoria" className="text-rel-dark">
+                  Obligatoria para completar el curso
+                </Label>
+                {obligatoriedadFijada ? (
+                  <p className="mt-1 text-sm text-rel-muted">
+                    Un recurso externo nunca cuenta para la finalización: no se
+                    puede comprobar que alguien lo consumió.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <SheetFooter className="gap-2 sm:gap-2">
+              <Button
+                type="button"
+                variant="relGhost"
+                onClick={() => setAbierto(false)}
+                disabled={guardando}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" variant="rel" disabled={guardando}>
+                {guardando ? "Guardando…" : editandoId ? "Guardar lección" : "Agregar lección"}
+              </Button>
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
+
+      {/* --- confirmación destructiva --- */}
+      <AlertDialog open={aEliminar !== null} onOpenChange={(v) => !v && setAEliminar(null)}>
+        <AlertDialogContent className="rel-scope font-rel-body">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-rel-heading text-rel-dark">
+              ¿Eliminar «{aEliminar?.titulo}»?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-rel-muted">
+              Se elimina del curso vivo y las lecciones siguientes se renumeran.
+              Las versiones ya publicadas conservan su copia congelada: quien esté
+              cursando una de ellas no se ve afectado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={eliminando}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rel-danger text-rel-danger-foreground hover:bg-rel-danger/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmarEliminacion();
+              }}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar lección"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  );
+}

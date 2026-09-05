@@ -1,6 +1,16 @@
 const SUPERADMIN_ROLES = ["SUPER_ADMIN", "SUPERADMIN"];
 const PSICO_ROLES = ["PSICOLOGO_EVALUADOR"];
 
+// Permisos de Capacitaciones. Se declaran aqui y no se importan desde
+// `features/capacitaciones` a proposito: este archivo lo usa `ProtectedRoute`,
+// que carga en el arranque, y una flecha hacia un modulo de negocio metria el
+// modulo entero en el bundle inicial.
+const CAPACITACIONES_PERMISOS = [
+  "hseq.capacitacion.catalogo.editar",
+  "hseq.capacitacion.catalogo.publicar",
+  "hseq.capacitacion.asignar",
+];
+
 export const NO_ACCESS_ROUTE = "/sin-acceso";
 
 export const LEGACY_APP_ROUTES = [
@@ -47,6 +57,13 @@ export function routeByAccess(roles: string[] = [], permissions: string[] = []) 
     return "/psicosocial/resultados";
   }
 
+  // Ultimo, y es deliberado: colocado antes cambiaria el destino de quien tiene
+  // los dos modulos, que hoy aterriza en Psicosocial. Anadir Capacitaciones no
+  // puede mover a nadie de sitio.
+  if (CAPACITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))) {
+    return "/capacitaciones/cursos";
+  }
+
   return NO_ACCESS_ROUTE;
 }
 
@@ -64,6 +81,13 @@ export function safeRedirectPath(path: unknown, roles: string[] = [], permission
     path.startsWith("/superadmin") &&
     !hasAnyRole(roles, SUPERADMIN_ROLES) &&
     !hasPermission(permissions, "superadmin.dashboard.view")
+  ) {
+    return fallback;
+  }
+
+  if (
+    path.startsWith("/capacitaciones") &&
+    !CAPACITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))
   ) {
     return fallback;
   }

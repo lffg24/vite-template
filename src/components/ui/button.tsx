@@ -19,6 +19,17 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Variantes REL (constitucion §16 y §24: extender antes de duplicar).
+        // Aditivas: ninguna variante existente cambia, asi que Psicosocial se
+        // ve exactamente igual despues de este cambio.
+        rel: "bg-rel-primary text-rel-primary-foreground shadow-sm hover:bg-rel-primary/90 focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+        relOutline:
+          "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:bg-rel-surface-subtle focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+        relGhost:
+          "text-rel-dark hover:bg-rel-surface-subtle focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+        // Destructiva: rojo semantico, NUNCA el azul corporativo (§16).
+        relDanger:
+          "bg-rel-danger text-rel-danger-foreground shadow-sm hover:bg-rel-danger/90 focus-visible:ring-2 focus-visible:ring-rel-danger focus-visible:ring-offset-2",
       },
       size: {
         default: "h-9 px-4 py-2",

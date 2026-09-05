@@ -12,6 +12,58 @@ export default {
   	},
   	extend: {
   		colors: {
+  			/* Espacio de nombres ADITIVO. No se toca ninguna clave existente:
+  			   `bg-primary` sigue siendo el gris de ShadCN en Psicosocial y
+  			   `bg-rel-primary` es el azul REL en Capacitaciones. */
+  			rel: {
+  				primary: {
+  					DEFAULT: 'hsl(var(--rel-primary))',
+  					foreground: 'hsl(var(--rel-primary-foreground))'
+  				},
+  				turquoise: {
+  					DEFAULT: 'hsl(var(--rel-turquoise))',
+  					foreground: 'hsl(var(--rel-turquoise-foreground))'
+  				},
+  				sky: {
+  					DEFAULT: 'hsl(var(--rel-sky))',
+  					foreground: 'hsl(var(--rel-sky-foreground))'
+  				},
+  				dark: 'hsl(var(--rel-dark))',
+  				canvas: 'hsl(var(--rel-canvas))',
+  				surface: {
+  					DEFAULT: 'hsl(var(--rel-surface))',
+  					subtle: 'hsl(var(--rel-surface-subtle))'
+  				},
+  				border: {
+  					DEFAULT: 'hsl(var(--rel-border))',
+  					strong: 'hsl(var(--rel-border-strong))'
+  				},
+  				muted: 'hsl(var(--rel-muted-foreground))',
+  				success: {
+  					DEFAULT: 'hsl(var(--rel-success))',
+  					foreground: 'hsl(var(--rel-success-foreground))',
+  					subtle: 'hsl(var(--rel-success-subtle))'
+  				},
+  				info: {
+  					DEFAULT: 'hsl(var(--rel-info))',
+  					foreground: 'hsl(var(--rel-info-foreground))',
+  					subtle: 'hsl(var(--rel-info-subtle))'
+  				},
+  				warning: {
+  					DEFAULT: 'hsl(var(--rel-warning))',
+  					foreground: 'hsl(var(--rel-warning-foreground))',
+  					subtle: 'hsl(var(--rel-warning-subtle))'
+  				},
+  				danger: {
+  					DEFAULT: 'hsl(var(--rel-danger))',
+  					foreground: 'hsl(var(--rel-danger-foreground))',
+  					subtle: 'hsl(var(--rel-danger-subtle))'
+  				},
+  				neutral: {
+  					DEFAULT: 'hsl(var(--rel-neutral))',
+  					subtle: 'hsl(var(--rel-neutral-subtle))'
+  				}
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -63,10 +115,22 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
+  		fontFamily: {
+  			'rel-heading': 'var(--rel-font-heading)',
+  			'rel-body': 'var(--rel-font-body)'
+  		},
+  		transitionDuration: {
+  			'rel-micro': 'var(--rel-motion-micro)',
+  			'rel-panel': 'var(--rel-motion-panel)',
+  			'rel-context': 'var(--rel-motion-context)'
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			sm: 'calc(var(--radius) - 4px)',
+  			'rel-control': '10px',
+  			'rel-card': '14px',
+  			'rel-panel': '18px'
   		},
   		keyframes: {
   			'accordion-down': {

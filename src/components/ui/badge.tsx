@@ -15,6 +15,17 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
+        // Semantica de estado REL. Separada de la marca a proposito (§5): el
+        // turquesa corporativo no significa "exito" ni el azul "informacion".
+        relSuccess:
+          "border-transparent bg-rel-success-subtle text-rel-success",
+        relInfo: "border-transparent bg-rel-info-subtle text-rel-info",
+        relWarning:
+          "border-transparent bg-rel-warning-subtle text-rel-warning",
+        relDanger: "border-transparent bg-rel-danger-subtle text-rel-danger",
+        relNeutral:
+          "border-transparent bg-rel-neutral-subtle text-rel-neutral",
+        relBrand: "border-rel-border bg-rel-canvas text-rel-dark",
       },
     },
     defaultVariants: {
