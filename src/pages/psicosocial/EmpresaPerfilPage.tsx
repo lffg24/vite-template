@@ -20,6 +20,7 @@ import {
   EmpresaPsico,
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
+import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 
 function n(value: unknown) {
   const num = Number(value ?? 0);
@@ -59,7 +60,13 @@ export default function EmpresaPerfilPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastPayload | null>(null);
+
+  const notify = (payload: Omit<ToastPayload, "id">) => {
+    const id = Date.now();
+    setToast({ id, ...payload });
+    window.setTimeout(() => setToast((current) => (current?.id === id ? null : current)), 4200);
+  };
 
   const load = async () => {
     if (!empresaId) return;
@@ -86,6 +93,7 @@ export default function EmpresaPerfilPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+      {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
       <div className="mx-auto max-w-7xl space-y-6">
         <button
           onClick={() => navigate("/psicosocial/empresas")}
@@ -93,15 +101,6 @@ export default function EmpresaPerfilPage() {
         >
           <ArrowLeft className="h-4 w-4" /> Volver a empresas
         </button>
-
-        {notice && (
-          <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
-            <span>{notice}</span>
-            <button onClick={() => setNotice(null)} className="rounded-full p-1 hover:bg-emerald-100" aria-label="Cerrar mensaje">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
@@ -238,15 +237,20 @@ export default function EmpresaPerfilPage() {
           onSaved={(updated) => {
             setEmpresa(updated);
             setEditOpen(false);
-            setNotice("Información de empresa actualizada correctamente.");
+            notify({
+              type: "success",
+              title: "Empresa actualizada",
+              message: "La información quedó guardada y ya está visible en el perfil.",
+            });
           }}
+          onError={(message) => notify({ type: "error", title: "No fue posible guardar", message })}
         />
       )}
     </main>
   );
 }
 
-function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsico; onClose: () => void; onSaved: (empresa: EmpresaPsico) => void }) {
+function EmpresaEditDrawer({ empresa, onClose, onSaved, onError }: { empresa: EmpresaPsico; onClose: () => void; onSaved: (empresa: EmpresaPsico) => void; onError: (message: string) => void }) {
   const { empresaId = "" } = useParams();
   const [form, setForm] = useState<ActualizarEmpresaPayload>({
     nombre: empresa.nombre || "",
@@ -265,6 +269,7 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsic
   const [error, setError] = useState<string | null>(null);
 
   const setValue = (field: keyof ActualizarEmpresaPayload, value: string) => {
+    setError(null);
     setForm((current) => ({ ...current, [field]: value }));
   };
 
@@ -277,10 +282,14 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsic
     setSaving(true);
     setError(null);
     try {
-      const response = await psicoAdminService.actualizarEmpresa(empresaId, normalizePayload(form));
+      const payload = normalizePayload(form);
+      const response = await psicoAdminService.actualizarEmpresa(empresaId, payload);
+      if (!response?.ok || !response.empresa || !companyUpdateWasPersisted(response.empresa, payload)) {
+        throw new Error("El servidor no confirmó todos los cambios. Intenta nuevamente.");
+      }
       onSaved(response.empresa);
     } catch (err: any) {
-      setError(err?.message || "No fue posible guardar la información.");
+      onError(err?.message || "No fue posible guardar la información.");
     } finally {
       setSaving(false);
     }
@@ -333,10 +342,18 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved }: { empresa: EmpresaPsic
   );
 }
 
-function normalizePayload(payload: ActualizarEmpresaPayload): ActualizarEmpresaPayload {
+export function normalizePayload(payload: ActualizarEmpresaPayload): ActualizarEmpresaPayload {
   return Object.fromEntries(
     Object.entries(payload).map(([key, value]) => [key, typeof value === "string" ? value.trim() || null : value])
   ) as ActualizarEmpresaPayload;
+}
+
+export function companyUpdateWasPersisted(empresa: EmpresaPsico, payload: ActualizarEmpresaPayload) {
+  return Object.entries(payload).every(([field, expected]) => {
+    if (expected == null) return true;
+    const actual = empresa[field as keyof EmpresaPsico];
+    return String(actual ?? "").trim() === String(expected).trim();
+  });
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
