@@ -23,8 +23,23 @@ describe("la ventana que muestra el token una sola vez", () => {
     // convertiría una decisión de diseño en una trampa.
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
 
-    expect(screen.getByRole("alert")).toHaveTextContent(/no se puede volver a ver/i);
-    expect(screen.getByRole("alert")).toHaveTextContent(/se genera uno nuevo/i);
+    const avisos = screen.getAllByRole("alert");
+    const textos = avisos.map((a) => a.textContent ?? "").join(" ");
+    expect(textos).toMatch(/no se puede volver a ver/i);
+    expect(textos).toMatch(/se genera uno nuevo/i);
+  });
+
+  it("advierte de que la pantalla del participante todavía no existe", () => {
+    // `/c/:token` llega con la vertical B. Callarlo dejaría que alguien lo
+    // repartiera por WhatsApp y que el hueco lo descubriera un trabajador en
+    // turno, viendo un inicio de sesión que no puede usar.
+    render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
+
+    const textos = screen
+      .getAllByRole("alert")
+      .map((a) => a.textContent ?? "")
+      .join(" ");
+    expect(textos).toMatch(/todavía no lo repartas/i);
   });
 
   it("el botón de cerrar obliga a afirmar que se copió", () => {

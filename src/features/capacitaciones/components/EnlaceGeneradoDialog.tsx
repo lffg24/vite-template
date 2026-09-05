@@ -26,11 +26,27 @@ import {
 import type { EnlaceCreado } from "@/types/capacitaciones";
 import { formatearFechaHora } from "../formato";
 
-/** La URL pública que recibirá el participante (pantalla D-01). */
+/**
+ * La URL pública que recibirá el participante (pantalla D-01).
+ *
+ * `/c/:token` es la forma acordada aquí; no estaba fijada en ningún contrato
+ * previo. **Esa ruta todavía no existe**: las pantallas D llegan con la
+ * vertical B. Hasta entonces un enlace generado lleva al inicio de sesión, así
+ * que la ventana lo advierte en vez de dejar que alguien lo reparta por
+ * WhatsApp y descubra el hueco un trabajador en turno.
+ */
 export function urlParticipante(token: string): string {
   const base = typeof window !== "undefined" ? window.location.origin : "";
   return `${base}/c/${token}`;
 }
+
+/**
+ * Se apaga con la vertical B, cuando `/c/:token` exista.
+ *
+ * Vive aquí, junto a la funcion que construye la URL, para que quien implemente
+ * esa ruta encuentre las dos cosas a la vez.
+ */
+const PANTALLA_PARTICIPANTE_PENDIENTE = true;
 
 export function EnlaceGeneradoDialog({
   enlace,
@@ -93,6 +109,18 @@ export function EnlaceGeneradoDialog({
             que lo revoques.
           </p>
         </div>
+
+        {PANTALLA_PARTICIPANTE_PENDIENTE ? (
+          <p
+            role="alert"
+            className="rounded-rel-card border border-rel-info/30 bg-rel-info-subtle p-4 text-sm text-rel-dark"
+          >
+            <strong className="font-semibold">Todavía no lo repartas.</strong> La
+            página que abre este enlace llega con la siguiente entrega. Por ahora
+            el enlace es válido pero no tiene a dónde llevar: quien lo abra verá
+            el inicio de sesión.
+          </p>
+        ) : null}
 
         <div className="space-y-2">
           <label htmlFor="enlace-url" className="text-sm font-semibold text-rel-dark">

@@ -256,7 +256,8 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await page.getByRole("dialog").getByRole("button", { name: /^generar enlace$/i }).click();
 
     // El token aparece UNA vez, con el aviso de que no se recupera.
-    await expect(page.getByRole("alert")).toContainText(/no se puede volver a ver/i);
+    await expect(page.getByRole("alert").first()).toContainText(/no se puede volver a ver/i);
+    await expect(page.getByRole("alert").nth(1)).toContainText(/todavía no lo repartas/i);
     await expect(page.getByLabel(/enlace para compartir/i)).toHaveValue(
       /token-de-prueba-no-real/
     );
