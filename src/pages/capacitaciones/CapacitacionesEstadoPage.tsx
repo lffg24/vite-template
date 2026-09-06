@@ -203,18 +203,40 @@ export default function CapacitacionesEstadoPage() {
                   }
                   comoSeArregla="Es una gestión comercial con REL Consilium. No se resuelve desde la aplicación."
                 />
+                {/* El catálogo lo gobierna la bandera GLOBAL, no la de esta
+                    empresa: es contenido editorial que consumen todas. Pintar
+                    aquí el valor con override diría «no cumple» mientras el
+                    catálogo funciona perfectamente — justo el diagnóstico
+                    equivocado que esta pantalla existe para evitar. */}
                 <Condicion
                   titulo="2 · Habilitación del catálogo"
-                  veredicto={veredictoBandera(consulta.datos.bandera_catalogo)}
+                  veredicto={veredictoBandera(consulta.datos.bandera_catalogo_global)}
                   detalle={
-                    consulta.datos.bandera_catalogo === null
+                    consulta.datos.bandera_catalogo_global === null
                       ? "La bandera «capacitaciones.catalogo» no está declarada. Sin declarar bloquea igual que apagada."
-                      : consulta.datos.bandera_catalogo
-                        ? "Redactar y publicar cursos está habilitado."
-                        : "REL apagó la publicación del catálogo para esta empresa."
+                      : consulta.datos.bandera_catalogo_global
+                        ? "Redactar y publicar cursos está habilitado. Es una bandera global: el catálogo no es de ninguna empresa."
+                        : "REL apagó la edición del catálogo para toda la plataforma."
                   }
                   comoSeArregla="La enciende REL desde la configuración técnica. Si dice «sin declarar», falta crear la bandera, no encenderla."
                 />
+                {/* Solo cuando difieren. Que existan dos valores no le importa
+                    a nadie hasta que uno contradice al otro, y entonces esta es
+                    la única pantalla donde se puede ver. */}
+                {consulta.datos.bandera_catalogo !== null &&
+                consulta.datos.bandera_catalogo !== consulta.datos.bandera_catalogo_global ? (
+                  <li className="border-b border-rel-border py-4 last:border-b-0">
+                    <p className="font-rel-body text-sm text-rel-muted">
+                      <span className="font-semibold text-rel-dark">Nota: </span>
+                      esta empresa tiene un ajuste propio de la bandera del
+                      catálogo (
+                      {consulta.datos.bandera_catalogo ? "encendida" : "apagada"}
+                      ), pero <strong>no aplica</strong>: el catálogo es global y
+                      lo decide el valor de toda la plataforma. El ajuste por
+                      empresa solo gobierna las asignaciones.
+                    </p>
+                  </li>
+                ) : null}
                 <Condicion
                   titulo="3 · Habilitación de asignaciones"
                   veredicto={veredictoBandera(consulta.datos.bandera_asignacion)}

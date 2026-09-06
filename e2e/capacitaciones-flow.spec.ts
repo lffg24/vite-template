@@ -304,7 +304,11 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
       json(route, {
         contratado: true,
         vigencia_hasta: "2027-12-31",
+        // La empresa tiene un ajuste propio APAGADO, y la global ENCENDIDA.
+        // El catálogo lo decide la global: si A-08 pintara la de empresa diría
+        // «no cumple» mientras el catálogo funciona.
         bandera_catalogo: false,
+        bandera_catalogo_global: true,
         bandera_asignacion: null,
         operable: false,
       })
@@ -328,7 +332,11 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
       "Cumple"
     );
     await expect(page.getByText("2 · Habilitación del catálogo").locator("..")).toContainText(
-      "No cumple"
+      "Cumple"
+    );
+    // Y la nota explica que el ajuste de la empresa existe pero no aplica.
+    await expect(page.getByText(/ajuste propio de la bandera/i)).toContainText(
+      /no aplica/i
     );
     // «Sin declarar» y «apagada» bloquean igual pero se arreglan distinto: una
     // es configuración que falta, la otra una decisión que alguien tomó.
