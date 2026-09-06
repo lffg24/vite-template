@@ -14,8 +14,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
-import { guardarProgreso, miCurso } from "@/services/participacionService";
-import type { ErrorPublico, EstadoCurso, LeccionEnCurso } from "@/types/participacion";
+import { guardarProgreso, leerLeccion } from "@/services/participacionService";
+import type { ErrorPublico, LeccionCompleta } from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   BotonPrincipal,
@@ -23,34 +23,25 @@ import {
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 
-/**
- * El contenido de los bloques no viaja en el estado del curso.
- *
- * `EstadoCurso` trae metadatos —cuántos bloques, cuáles vistos— pero no el
- * texto: el backend lo tiene en el snapshot y todavía no lo expone por lección.
- * Hasta que lo haga, esta pantalla recorre los bloques por número y muestra el
- * texto que llegue; si no llega, avanza igual y el progreso queda bien.
- *
- * Es una carencia conocida del contrato, no un descuido de la pantalla, y está
- * anotada en el resumen del bloque.
- */
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
   const navegar = useNavigate();
-  const consulta = useConsulta<EstadoCurso>(() => miCurso(), []);
+  // Se pide SOLO esta lección. El índice ya trajo los metadatos; el texto pesa
+  // y no hay razón para descargar el curso entero para leer una parte.
+  const consulta = useConsulta<LeccionCompleta>(() => leerLeccion(leccionId), [leccionId]);
 
   const [bloque, setBloque] = useState(0);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
 
-  const leccion: LeccionEnCurso | undefined = consulta.datos?.lecciones.find(
-    (l) => l.leccion_id === leccionId
-  );
+  const leccion = consulta.datos;
 
   // Se retoma donde quedó, no desde el principio. Volver a empezar cada vez que
   // se abre la lección es la forma más rápida de que alguien la abandone.
   useEffect(() => {
-    if (leccion) setBloque(Math.min(leccion.bloques_vistos, Math.max(0, leccion.bloques_totales - 1)));
+    if (leccion) {
+      setBloque(Math.min(leccion.bloques_vistos, Math.max(0, leccion.bloques.length - 1)));
+    }
   }, [leccion?.leccion_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const guardar = useCallback(
@@ -114,7 +105,7 @@ export default function LeccionPage() {
     );
   }
 
-  const total = Math.max(1, leccion.bloques_totales);
+  const total = Math.max(1, leccion.bloques.length);
   const esUltimo = bloque >= total - 1;
 
   async function siguiente() {
@@ -122,7 +113,6 @@ export default function LeccionPage() {
     const ok = await guardar(vistos);
     if (!ok) return;
     if (esUltimo) {
-      await consulta.refrescar();
       navegar("/c/sesion", { replace: true });
     } else {
       setBloque((b) => b + 1);
@@ -151,11 +141,19 @@ export default function LeccionPage() {
           esto, avanzar no produce ningún cambio audible y parece que el botón
           no hizo nada. */}
       <div
-        className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5 text-base leading-relaxed"
+        className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
         aria-live="polite"
       >
-        <p className="text-rel-muted">
-          Contenido de la parte {bloque + 1}.
+        {leccion.bloques[bloque]?.titulo ? (
+          <h2 className="mb-2 font-rel-heading text-base font-bold">
+            {leccion.bloques[bloque].titulo}
+          </h2>
+        ) : null}
+        {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
+            bloque. El contenido es texto plano por decisión del editor: nada que
+            sanear, nada que pueda inyectar marcado. */}
+        <p className="whitespace-pre-line text-base leading-relaxed">
+          {leccion.bloques[bloque]?.contenido ?? ""}
         </p>
       </div>
 

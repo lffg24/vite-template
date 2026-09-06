@@ -123,6 +123,24 @@ test.describe("Participante · recorrido en el teléfono", () => {
       );
     });
 
+    // El contenido de la leccion viene de su propio endpoint: el indice no
+    // descarga el curso entero.
+    await page.route(`${API}/c/sesion/leccion/${LECCION}`, (route) =>
+      json(route, {
+        leccion_id: LECCION,
+        orden: 1,
+        titulo: "Riesgos del puesto",
+        tipo: "NATIVA",
+        obligatoria: true,
+        bloques: [
+          { tipo: "texto", titulo: null, contenido: "Los riesgos mecánicos son…" },
+          { tipo: "texto", titulo: null, contenido: "El reporte de incidentes…" },
+        ],
+        bloques_vistos: vistos,
+        completada: vistos >= 2,
+      })
+    );
+
     await page.route(`${API}/c/sesion/progreso`, async (route) => {
       const cuerpo = route.request().postDataJSON() as { bloques_vistos: number };
       vistos = Math.max(vistos, cuerpo.bloques_vistos);
@@ -176,8 +194,11 @@ test.describe("Participante · recorrido en el teléfono", () => {
 
     // --- D-06 · la lección, bloque a bloque ---
     await expect(page.getByText("Parte 1 de 2")).toBeVisible();
+    // El texto real del bloque, no un marcador.
+    await expect(page.getByText(/los riesgos mecánicos son/i)).toBeVisible();
     await page.getByRole("button", { name: /siguiente/i }).click();
     await expect(page.getByText("Parte 2 de 2")).toBeVisible();
+    await expect(page.getByText(/el reporte de incidentes/i)).toBeVisible();
     await page.getByRole("button", { name: /terminar la lección/i }).click();
 
     // --- D-08 · asistencia ---

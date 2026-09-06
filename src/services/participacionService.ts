@@ -22,6 +22,7 @@ import type {
   Finalizado,
   Identificacion,
   Inscrito,
+  LeccionCompleta,
   MotivoPublico,
   ProgresoGuardado,
 } from "@/types/participacion";
@@ -142,6 +143,18 @@ export async function reanudar(secreto: string): Promise<EstadoCurso> {
     return data;
   } catch (e) {
     throw errorPublico(e, "No pudimos reanudar con ese código.");
+  }
+}
+
+/** D-06. El contenido de una lección. Una por petición, no el curso entero. */
+export async function leerLeccion(leccionId: string): Promise<LeccionCompleta> {
+  try {
+    const { data } = await publico.get<LeccionCompleta>(
+      `/c/sesion/leccion/${encodeURIComponent(leccionId)}`
+    );
+    return data;
+  } catch (e) {
+    throw errorPublico(e, "No pudimos abrir esta lección.");
   }
 }
 

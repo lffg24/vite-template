@@ -104,6 +104,30 @@ export interface EstadoCurso {
   puede_finalizar: boolean;
 }
 
+export interface BloqueLeccion {
+  tipo: string;
+  titulo: string | null;
+  contenido: string;
+}
+
+/**
+ * El contenido de UNA lección.
+ *
+ * Endpoint aparte y no un campo de `EstadoCurso`: aquel se consulta en cada
+ * pantalla, y llevar el texto de todas las lecciones haría que abrir el índice
+ * descargara el curso entero. En 4G eso se nota.
+ */
+export interface LeccionCompleta {
+  leccion_id: string;
+  orden: number;
+  titulo: string;
+  tipo: string;
+  obligatoria: boolean;
+  bloques: BloqueLeccion[];
+  bloques_vistos: number;
+  completada: boolean;
+}
+
 export interface ProgresoGuardado {
   leccion_id: string;
   bloques_vistos: number;
