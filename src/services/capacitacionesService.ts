@@ -12,6 +12,8 @@ import type {
   AsignacionCreada,
   AsignacionCrear,
   AsignacionResumen,
+  ConstanciaEmitidaAdmin,
+  ConstanciaResumen,
   CursoCrear,
   CursoDetalle,
   CursoEditar,
@@ -285,5 +287,66 @@ export async function revocarEnlace(enlaceId: string): Promise<void> {
     await api.post(`${BASE}/enlaces/${enlaceId}/revocar`);
   } catch (e) {
     throw errorApi(e, "No pudimos revocar el enlace.");
+  }
+}
+
+// --- A-13 · constancias ------------------------------------------------------------------
+
+/**
+ * Las constancias de la empresa, de la más reciente a la más antigua.
+ *
+ * Aquí **sí** llegan los nombres completos, a diferencia del verificador
+ * público. Quien administra su empresa ya tiene esos datos; enmascararlos le
+ * impediría hacer su trabajo. El enmascarado es del verificador, que es otra
+ * audiencia con otro derecho a saber.
+ */
+export async function listarConstancias(): Promise<ConstanciaResumen[]> {
+  try {
+    const { data } = await api.get<ConstanciaResumen[]>(`${BASE}/constancias`);
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos obtener las constancias.");
+  }
+}
+
+/**
+ * Emite la constancia de una inscripción completada.
+ *
+ * Existe además de la emisión automática del recorrido público porque hay casos
+ * en que aquella no ocurrió. Es idempotente: llamarla sobre una que ya tiene
+ * constancia devuelve la misma, no una segunda con otro folio.
+ */
+export async function emitirConstancia(
+  inscripcionId: string
+): Promise<ConstanciaEmitidaAdmin> {
+  try {
+    const { data } = await api.post<ConstanciaEmitidaAdmin>(
+      `${BASE}/inscripciones/${inscripcionId}/constancia`
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos emitir la constancia.");
+  }
+}
+
+/**
+ * Anula una constancia. **No la borra.**
+ *
+ * El folio no se reutiliza y el código sigue verificando: quien tenga el
+ * documento impreso debe poder enterarse de que ya no vale, y solo puede
+ * hacerlo si el verificador se lo dice.
+ */
+export async function anularConstancia(
+  constanciaId: string,
+  motivo: string
+): Promise<ConstanciaResumen> {
+  try {
+    const { data } = await api.post<ConstanciaResumen>(
+      `${BASE}/constancias/${constanciaId}/anular`,
+      { motivo }
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos anular la constancia.");
   }
 }

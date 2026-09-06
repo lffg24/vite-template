@@ -306,3 +306,37 @@ export interface ErrorApi extends Error {
   /** Presente solo en el 422 de publicación. */
   faltantes?: string[];
 }
+
+// --- A-13 · constancias ------------------------------------------------------------------
+
+/**
+ * Una fila del listado administrativo.
+ *
+ * Lleva los nombres **completos**, a diferencia del verificador público: quien
+ * administra su empresa ya tiene esos datos, y enmascararlos le impediría hacer
+ * su trabajo.
+ */
+export interface ConstanciaResumen {
+  id: string;
+  folio: number;
+  codigo_verificacion: string;
+  estado: "VIGENTE" | "ANULADA";
+  nombres: string | null;
+  apellidos: string | null;
+  curso: string | null;
+  emitida_en: string;
+  vence_el: string | null;
+  anulada_en: string | null;
+  anulacion_motivo: string | null;
+}
+
+export interface ConstanciaEmitidaAdmin {
+  id: string;
+  folio: number;
+  codigo_verificacion: string;
+  estado: string;
+  emitida_en: string;
+  vence_el: string | null;
+  /** Emitir es idempotente: `false` significa que ya existía, no que falló. */
+  nueva: boolean;
+}

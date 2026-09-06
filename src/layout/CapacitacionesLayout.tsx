@@ -6,7 +6,14 @@
 // de todos los módulos. Este layout no toca nada existente.
 
 import { NavLink, Outlet } from "react-router-dom";
-import { BookOpen, GraduationCap, LogOut, ShieldCheck, Users } from "lucide-react";
+import {
+  BookOpen,
+  FileBadge,
+  GraduationCap,
+  LogOut,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -34,6 +41,16 @@ const NAVEGACION = [
     etiqueta: "Asignaciones",
     descripcion: "Qué se está dictando",
     Icono: Users,
+    visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
+  },
+  {
+    to: "/capacitaciones/constancias",
+    etiqueta: "Constancias",
+    descripcion: "Evidencia emitida",
+    Icono: FileBadge,
+    // Misma capacidad que asignar: la constancia es del inquilino, no del
+    // catálogo global. Quien solo redacta contenido editorial no tiene por qué
+    // ver la evidencia de las empresas.
     visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
   },
   {
