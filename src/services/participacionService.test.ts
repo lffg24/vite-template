@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { abrirEnlace, inscribirse, miCurso, reanudar } from "./participacionService";
+import {
+  abrirEnlace,
+  inscribirse,
+  miCurso,
+  reanudar,
+  verificarConstancia,
+} from "./participacionService";
 import type { ErrorPublico } from "@/types/participacion";
 
 // `vi.hoisted` porque `vi.mock` se eleva por encima de las declaraciones del
@@ -103,5 +109,63 @@ describe("rutas y credenciales", () => {
     get.mockResolvedValueOnce({ data: {} });
     await miCurso();
     expect(get).toHaveBeenCalledWith("/c/sesion/estado");
+  });
+});
+
+describe("la verificación pública de una constancia", () => {
+  it("manda el código tal como lo tecleó la persona", async () => {
+    // Normalizarlo aquí duplicaría una regla que el servidor ya aplica, y las
+    // dos copias divergirían la primera vez que alguien cambie una sola.
+    get.mockResolvedValueOnce({ data: { folio: 7 } });
+
+    await verificarConstancia("  abcd-2345  ");
+
+    // Solo se recorta el espacio en blanco, que no es parte de ningún código.
+    expect(get).toHaveBeenCalledWith("/c/verificar/abcd-2345");
+  });
+
+  it("escapa el código antes de meterlo en la ruta", async () => {
+    // Es entrada libre de alguien que no se ha autenticado: va a la URL, así que
+    // tiene que salir codificada.
+    get.mockResolvedValueOnce({ data: { folio: 1 } });
+
+    await verificarConstancia("a/b?c");
+
+    expect(get).toHaveBeenCalledWith("/c/verificar/a%2Fb%3Fc");
+  });
+
+  it("conserva el motivo cuando el código no existe", async () => {
+    get.mockRejectedValueOnce(
+      fallo(404, {
+        motivo: "constancia_no_encontrada",
+        mensaje: "No encontramos ninguna constancia con ese código.",
+      })
+    );
+
+    await expect(verificarConstancia("ZZZZ-ZZZZ")).rejects.toMatchObject({
+      motivo: "constancia_no_encontrada",
+      status: 404,
+    });
+  });
+
+  it("distingue el límite de peticiones de un código inexistente", async () => {
+    // Son dos pantallas distintas: una dice «espera un minuto», la otra «revisa
+    // el código». Confundirlas dejaría a alguien reescribiendo un código
+    // correcto una y otra vez.
+    get.mockRejectedValueOnce(
+      fallo(429, { motivo: "demasiadas_peticiones", mensaje: "Demasiados intentos." })
+    );
+
+    const e = (await verificarConstancia("ABCD-2345").catch((x) => x)) as ErrorPublico;
+    expect(e.motivo).toBe("demasiadas_peticiones");
+  });
+
+  it("un fallo de red NO se disfraza de código inexistente", async () => {
+    // El túnel del metro y un código que no existe son cosas distintas para
+    // quien está delante: una se arregla esperando, la otra revisando el papel.
+    get.mockRejectedValueOnce({ message: "Network Error" });
+
+    const e = (await verificarConstancia("ABCD-2345").catch((x) => x)) as ErrorPublico;
+    expect(e.motivo).toBe("desconocido");
   });
 });

@@ -135,11 +135,47 @@ export interface ProgresoGuardado {
   completada_en: string | null;
 }
 
+export interface ConstanciaEmitida {
+  folio: number;
+  codigo_verificacion: string;
+  /** `null` = la formación no vence. */
+  vence_el: string | null;
+}
+
 export interface Finalizado {
   estado: "COMPLETADA";
   /** `null` cuando ya estaba finalizada: no se registra asistencia dos veces. */
   asistencia_id: string | null;
   nueva: boolean;
+  /**
+   * Llega **también al repetir**. Quien reintenta porque se le cayó la conexión
+   * necesita ver su folio, no un hueco que parece un fallo.
+   */
+  constancia: ConstanciaEmitida;
+}
+
+/**
+ * D-10. Lo que devuelve el verificador público.
+ *
+ * El nombre y el documento llegan **ya enmascarados del servidor**. La pantalla
+ * no los recorta: si lo hiciera, los datos completos habrían viajado por la red
+ * y cualquiera con las herramientas del navegador los leería.
+ */
+export interface Verificacion {
+  codigo_verificacion: string;
+  folio: number;
+  /** `VENCIDA` no es `ANULADA`: una se acabó sola, la otra la retiró alguien. */
+  situacion: "VIGENTE" | "VENCIDA" | "ANULADA";
+  participante: string;
+  documento: string;
+  empresa: string | null;
+  curso: string | null;
+  version: number | null;
+  intensidad_horaria_min: number | null;
+  emitida_en: string;
+  vence_el: string | null;
+  anulada_en: string | null;
+  aviso: string | null;
 }
 
 /**
@@ -159,7 +195,8 @@ export type MotivoPublico =
   | "orden_no_respetado"
   | "leccion_no_valida"
   | "texto_cambio"
-  | "demasiadas_peticiones";
+  | "demasiadas_peticiones"
+  | "constancia_no_encontrada";
 
 export interface ErrorPublico extends Error {
   motivo: MotivoPublico | "desconocido";

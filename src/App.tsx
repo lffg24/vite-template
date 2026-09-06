@@ -44,6 +44,7 @@ const AterrizajePage = lazy(() => import("@/pages/participacion/AterrizajePage")
 const CursoPage = lazy(() => import("@/pages/participacion/CursoPage"));
 const LeccionPage = lazy(() => import("@/pages/participacion/LeccionPage"));
 const FinalizarPage = lazy(() => import("@/pages/participacion/FinalizarPage"));
+const VerificarPage = lazy(() => import("@/pages/participacion/VerificarPage"));
 
 const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
 const IndiceCapacitaciones = lazy(() =>
@@ -56,6 +57,7 @@ const CapacitacionesCursoDetallePage = lazy(() => import("@/pages/capacitaciones
 const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAsignacionesPage"));
 const CapacitacionesEnlacesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEnlacesPage"));
 const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEstadoPage"));
+const CapacitacionesConstanciasPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesConstanciasPage"));
 
 const SuperAdminLayout = lazy(() => import("@/layout/SuperAdminLayout"));
 const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdminDashboardPage"));
@@ -104,6 +106,11 @@ function App() {
           <Route path="/c/sesion" element={<CursoPage />} />
           <Route path="/c/sesion/leccion/:leccionId" element={<LeccionPage />} />
           <Route path="/c/sesion/finalizar" element={<FinalizarPage />} />
+          {/* D-10. Con codigo en la ruta (lo que imprimira el QR cuando exista)
+              y sin el, para teclearlo. Las dos ANTES que `/c/:token` por la
+              misma razon que `/c/sesion`. */}
+          <Route path="/c/verificar" element={<VerificarPage />} />
+          <Route path="/c/verificar/:codigo" element={<VerificarPage />} />
           <Route path="/c/:token" element={<AterrizajePage />} />
 
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
@@ -154,6 +161,7 @@ function App() {
                 path="asignaciones/:asignacionId/enlaces"
                 element={<CapacitacionesEnlacesPage />}
               />
+              <Route path="constancias" element={<CapacitacionesConstanciasPage />} />
               <Route path="estado" element={<CapacitacionesEstadoPage />} />
             </Route>
           </Route>

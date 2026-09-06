@@ -25,6 +25,7 @@ import type {
   LeccionCompleta,
   MotivoPublico,
   ProgresoGuardado,
+  Verificacion,
 } from "@/types/participacion";
 
 const publico = axios.create({
@@ -43,6 +44,7 @@ const MOTIVOS: readonly MotivoPublico[] = [
   "leccion_no_valida",
   "texto_cambio",
   "demasiadas_peticiones",
+  "constancia_no_encontrada",
 ];
 
 /**
@@ -184,5 +186,26 @@ export async function finalizar(): Promise<Finalizado> {
     return data;
   } catch (e) {
     throw errorPublico(e, "No pudimos registrar tu asistencia.");
+  }
+}
+
+/**
+ * D-10. Verifica una constancia por su código. **Sin sesión.**
+ *
+ * No usa la instancia autenticada ni ninguna cookie: quien verifica es alguien
+ * ajeno —un inspector con el papel delante— y pedirle que se registre
+ * convertiría la verificación en un trámite que nadie hace.
+ *
+ * El código se manda tal como lo teclearon. Normalizarlo aquí duplicaría una
+ * regla que el servidor ya aplica, y las dos copias divergirían.
+ */
+export async function verificarConstancia(codigo: string): Promise<Verificacion> {
+  try {
+    const { data } = await publico.get<Verificacion>(
+      `/c/verificar/${encodeURIComponent(codigo.trim())}`
+    );
+    return data;
+  } catch (e) {
+    throw errorPublico(e, "No pudimos verificar ese código.");
   }
 }

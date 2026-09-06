@@ -14,12 +14,16 @@
 // probatorio al sello HMAC que el registro ya lleva. Fingir el control aquí
 // dejaría a la gente firmando en algo que se descarta.
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Copy, ShieldCheck } from "lucide-react";
 
 import { finalizar, miCurso } from "@/services/participacionService";
-import type { ErrorPublico, EstadoCurso } from "@/types/participacion";
+import type {
+  ConstanciaEmitida,
+  ErrorPublico,
+  EstadoCurso,
+} from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   BotonPrincipal,
@@ -34,13 +38,15 @@ export default function FinalizarPage() {
   const consulta = useConsulta<EstadoCurso>(() => miCurso(), []);
   const [enviando, setEnviando] = useState(false);
   const [listo, setListo] = useState(false);
+  const [constancia, setConstancia] = useState<ConstanciaEmitida | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const confirmar = useCallback(async () => {
     setEnviando(true);
     setError(null);
     try {
-      await finalizar();
+      const r = await finalizar();
+      setConstancia(r.constancia);
       setListo(true);
     } catch (e) {
       const err = e as ErrorPublico;
@@ -53,6 +59,30 @@ export default function FinalizarPage() {
       setEnviando(false);
     }
   }, []);
+
+  // Al volver a una inscripción YA completada —otro dispositivo, la pestaña
+  // reabierta— no hay `resultado` en memoria y el folio se perdería. Se vuelve a
+  // llamar a `finalizar`, que es idempotente: no registra una segunda asistencia
+  // y devuelve la constancia que ya existe.
+  //
+  // El efecto se declara antes de cualquier salida temprana: las reglas de los
+  // hooks no admiten declararlo dentro de la rama que lo necesita.
+  const yaCompletada = consulta.datos?.estado === "COMPLETADA";
+  useEffect(() => {
+    if (!yaCompletada || constancia) return;
+    let vigente = true;
+    finalizar()
+      .then((r) => {
+        if (vigente) setConstancia(r.constancia);
+      })
+      // Silencioso a propósito: la asistencia ya está registrada, que es lo que
+      // importa. Fallar aquí solo significa mostrar la pantalla sin el folio, y
+      // un error rojo sobre algo que sí salió bien alarmaría sin motivo.
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, [yaCompletada, constancia]);
 
   if (consulta.fase === "cargando") {
     return (
@@ -87,13 +117,14 @@ export default function FinalizarPage() {
             Tu asistencia quedó registrada
           </h1>
           <p className="mt-3 text-base leading-relaxed text-rel-muted">
-            Ya puedes cerrar esta página. Tu empresa verá el registro en su
-            matriz de cumplimiento.
+            Tu empresa verá el registro en su matriz de cumplimiento.
           </p>
-          <p className="mt-6 text-sm text-rel-muted">
-            La constancia descargable llegará más adelante; todavía no está
-            disponible.
-          </p>
+
+          {constancia ? (
+            <ConstanciaEmitidaPanel constancia={constancia} />
+          ) : (
+            <p className="mt-6 text-sm text-rel-muted">Preparando tu constancia…</p>
+          )}
         </div>
       </ParticipanteLayout>
     );
@@ -172,5 +203,83 @@ export default function FinalizarPage() {
         </BotonSecundario>
       </div>
     </ParticipanteLayout>
+  );
+}
+
+
+/**
+ * D-09. El folio y el código, en la misma pantalla en que se terminó.
+ *
+ * **Sin PDF y sin QR**, y no por olvido: falta aprobar las librerías que los
+ * generan. Lo que hay aquí es lo que los sustituye mientras tanto sin fingir
+ * nada — la constancia existe, tiene folio, y cualquiera puede comprobarla
+ * tecleando el código. El papel es una representación de esto, no al revés.
+ */
+function ConstanciaEmitidaPanel({ constancia }: { constancia: ConstanciaEmitida }) {
+  const [copiado, setCopiado] = useState(false);
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(constancia.codigo_verificacion);
+      setCopiado(true);
+      window.setTimeout(() => setCopiado(false), 2500);
+    } catch {
+      // El portapapeles no está disponible en todos los navegadores ni fuera de
+      // HTTPS. El código está a la vista y se puede copiar a mano, así que no se
+      // muestra un error por perder un atajo.
+    }
+  }
+
+  return (
+    <Panel className="mt-6 text-left">
+      <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
+        Tu constancia
+      </p>
+
+      <dl className="mt-3 space-y-3 text-sm">
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-rel-muted">Folio</dt>
+          <dd className="font-semibold tabular-nums">N.º {constancia.folio}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-rel-muted">Vigencia</dt>
+          <dd className="font-semibold">
+            {constancia.vence_el
+              ? `Hasta ${new Date(constancia.vence_el).toLocaleDateString("es-CO")}`
+              : "No vence"}
+          </dd>
+        </div>
+      </dl>
+
+      <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-rel-muted">
+        Código de verificación
+      </p>
+      {/* Grande y monoespaciado: se dicta por teléfono y se copia a mano. El
+          alfabeto ya excluye los caracteres confundibles; la tipografía termina
+          el trabajo. */}
+      <p className="mt-1 font-mono text-2xl font-bold tracking-[0.15em] tabular-nums">
+        {constancia.codigo_verificacion}
+      </p>
+
+      <button
+        type="button"
+        onClick={copiar}
+        className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+      >
+        <Copy className="h-4 w-4" aria-hidden="true" />
+        {copiado ? "Copiado" : "Copiar el código"}
+      </button>
+      {/* `aria-live` para que un lector de pantalla anuncie el resultado: sin
+          esto, pulsar el botón no produce ningún cambio audible. */}
+      <span className="sr-only" aria-live="polite">
+        {copiado ? "Código copiado al portapapeles" : ""}
+      </span>
+
+      <p className="mt-4 border-t border-rel-border pt-3 text-sm leading-relaxed text-rel-muted">
+        Guárdalo. Con ese código, cualquiera puede comprobar tu constancia en{" "}
+        <span className="font-semibold text-rel-dark">/c/verificar</span> sin
+        necesidad de una cuenta.
+      </p>
+    </Panel>
   );
 }
