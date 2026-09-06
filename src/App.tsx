@@ -40,6 +40,11 @@ const PsicoEmpleadoInformesPage = lazy(() => import("@/pages/psicosocial/PsicoEm
 const ReportesPsico = lazy(() => import("@/pages/ReportesPsico"));
 const ReportesOficialesPsicoPage = lazy(() => import("@/pages/ReportesOficialesPsicoPage"));
 
+const AterrizajePage = lazy(() => import("@/pages/participacion/AterrizajePage"));
+const CursoPage = lazy(() => import("@/pages/participacion/CursoPage"));
+const LeccionPage = lazy(() => import("@/pages/participacion/LeccionPage"));
+const FinalizarPage = lazy(() => import("@/pages/participacion/FinalizarPage"));
+
 const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
 const IndiceCapacitaciones = lazy(() =>
   import("@/features/capacitaciones/ContextoCapacitaciones").then((m) => ({
@@ -88,6 +93,18 @@ function App() {
           <Route path="/recursos/ficha-tecnica" element={<RecursosAbril360Page page="ficha-tecnica" />} />
           <Route path="/recursos/seguridad-cumplimiento" element={<RecursosAbril360Page page="seguridad-cumplimiento" />} />
           <Route path="/recursos/certificacion" element={<RecursosAbril360Page page="certificacion" />} />
+
+          {/* Recorrido público del participante. Fuera de `ProtectedRoute` a
+              propósito: su único público es gente sin cuenta, y exigirles sesión
+              lo dejaría inservible. La autorización va por el enlace y por la
+              cookie del participante, que el backend comprueba.
+
+              `/c/sesion` va ANTES que `/c/:token`: si no, «sesion» se leería
+              como un token y la reanudación respondería «enlace no disponible».*/}
+          <Route path="/c/sesion" element={<CursoPage />} />
+          <Route path="/c/sesion/leccion/:leccionId" element={<LeccionPage />} />
+          <Route path="/c/sesion/finalizar" element={<FinalizarPage />} />
+          <Route path="/c/:token" element={<AterrizajePage />} />
 
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
           <Route element={<ProtectedRoute />}>
