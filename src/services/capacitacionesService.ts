@@ -15,6 +15,7 @@ import type {
   CursoCrear,
   CursoDetalle,
   CursoEditar,
+  ContextoCapacidades,
   CursoResumen,
   EnlaceCreado,
   EnlaceCrear,
@@ -68,6 +69,24 @@ function errorApi(e: unknown, fallback: string): ErrorApi {
   err.status = anyErr?.response?.status;
   if (faltantes) err.faltantes = faltantes;
   return err;
+}
+
+// --- contexto · el contrato único de capacidades ------------------------------
+
+/**
+ * Qué puede hacer este usuario, con contrato y banderas ya resueltos.
+ *
+ * Es lo único que la interfaz debe consultar para decidir qué pintar. No exige
+ * permiso —es el endpoint con el que se averigua si se tiene alguno— y devuelve
+ * los campos comerciales en nulo cuando no hay acceso.
+ */
+export async function obtenerContexto(): Promise<ContextoCapacidades> {
+  try {
+    const { data } = await api.get<ContextoCapacidades>(`${BASE}/contexto`);
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos consultar tus permisos en el módulo.");
+  }
 }
 
 // --- A-08 · estado del módulo -------------------------------------------------

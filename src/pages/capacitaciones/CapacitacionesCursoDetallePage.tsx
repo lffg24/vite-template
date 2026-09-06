@@ -14,7 +14,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
 import { obtenerCurso } from "@/services/capacitacionesService";
 import type { CursoDetalle } from "@/types/capacitaciones";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -29,17 +28,19 @@ import {
 import { CursoDatosForm } from "@/features/capacitaciones/components/CursoDatosForm";
 import { LeccionesEditor } from "@/features/capacitaciones/components/LeccionesEditor";
 import { PanelPublicacion } from "@/features/capacitaciones/components/PanelPublicacion";
-import { PERMISOS_CAPACITACIONES } from "@/features/capacitaciones/formato";
+import { useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
 
 export default function CapacitacionesCursoDetallePage() {
   const { cursoId = "" } = useParams<{ cursoId: string }>();
   const navegar = useNavigate();
-  const { hasPermission } = useAuth();
+  const { capacidades } = useCapacitaciones();
 
   const consulta = useConsulta<CursoDetalle>(() => obtenerCurso(cursoId), [cursoId]);
   const recargar = useCallback(() => consulta.refrescar(), [consulta]);
 
-  const puedePublicar = hasPermission(PERMISOS_CAPACITACIONES.publicar);
+  // Del contexto, no del JWT: `hasPermission` lee la lista plana del login,
+  // que no conoce las asignaciones con alcance ni resuelve contrato y bandera.
+  const puedePublicar = Boolean(capacidades?.puede_publicar);
 
   return (
     <div className="space-y-6">

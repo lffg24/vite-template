@@ -10,30 +10,60 @@ import { BookOpen, GraduationCap, LogOut, ShieldCheck, Users } from "lucide-reac
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import {
+  ProveedorCapacitaciones,
+  useCapacitaciones,
+} from "@/features/capacitaciones/ContextoCapacitaciones";
+import type { ContextoCapacidades } from "@/types/capacitaciones";
 
+// Cada entrada decide su propia visibilidad con las capacidades EFECTIVAS.
+//
+// Mostrar una seccion que respondera 403 es peor que no mostrarla: convierte un
+// limite de permisos en algo que parece una averia.
 const NAVEGACION = [
   {
     to: "/capacitaciones/cursos",
     etiqueta: "Catálogo",
     descripcion: "Cursos y versiones",
     Icono: BookOpen,
+    visible: (c: ContextoCapacidades | null) =>
+      Boolean(c?.puede_editar_catalogo || c?.puede_publicar),
   },
   {
     to: "/capacitaciones/asignaciones",
     etiqueta: "Asignaciones",
     descripcion: "Qué se está dictando",
     Icono: Users,
+    visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
   },
   {
     to: "/capacitaciones/estado",
     etiqueta: "Estado del módulo",
     descripcion: "Contrato y habilitación",
     Icono: ShieldCheck,
+    // Siempre visible para quien tiene alguna capacidad: es la pantalla que
+    // explica por que algo no se puede, y esconderla dejaria el diagnostico sin
+    // sitio. A quien no tiene ninguna, el backend le responde 403 y la pantalla
+    // lo dice sin revelar el estado comercial.
+    visible: () => true,
   },
 ];
 
 export default function CapacitacionesLayout() {
+  return (
+    <ProveedorCapacitaciones>
+      <Shell />
+    </ProveedorCapacitaciones>
+  );
+}
+
+function Shell() {
   const { user } = useAuth();
+  const { capacidades, fase } = useCapacitaciones();
+  // Mientras se resuelve el contexto no se pinta navegacion a medias: aparecer
+  // y desaparecer enlaces es peor que esperar un instante.
+  const entradas =
+    fase === "listo" ? NAVEGACION.filter((n) => n.visible(capacidades)) : [];
 
   return (
     <div className="rel-scope min-h-screen bg-rel-canvas font-rel-body text-rel-dark">
@@ -63,7 +93,7 @@ export default function CapacitacionesLayout() {
 
           <nav aria-label="Secciones de Capacitaciones" className="order-3 w-full sm:order-2 sm:w-auto">
             <ul className="flex flex-wrap gap-1">
-              {NAVEGACION.map(({ to, etiqueta, descripcion, Icono }) => (
+              {entradas.map(({ to, etiqueta, descripcion, Icono }) => (
                 <li key={to}>
                   <NavLink
                     to={to}

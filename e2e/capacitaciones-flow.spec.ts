@@ -49,8 +49,32 @@ async function json(route: Route, body: unknown, status = 200) {
   });
 }
 
-async function sesion(page: Page, permisos: string[] = usuario.permissions) {
-  await page.route(`${API_ORIGIN}/auth/me`, (r) => json(r, { ...usuario, permissions: permisos }));
+/** Capacidades EFECTIVAS: lo que el servidor ya resolvió. */
+function capacidades(over: Record<string, unknown> = {}) {
+  return {
+    empresa_id: "empresa-1",
+    roles_plataforma: ["SUPER_ADMIN"],
+    puede_editar_catalogo: true,
+    puede_publicar: true,
+    puede_asignar: true,
+    tiene_acceso: true,
+    permisos_plataforma: usuario.permissions,
+    permisos_empresa: [],
+    contratado: true,
+    vigencia_hasta: "2027-12-31",
+    bandera_catalogo: true,
+    bandera_catalogo_empresa: true,
+    bandera_asignacion: true,
+    ...over,
+  };
+}
+
+async function sesion(page: Page, capacidadesEfectivas = capacidades()) {
+  await page.route(`${API_ORIGIN}/auth/me`, (r) => json(r, usuario));
+  // La interfaz decide con ESTO, no con los permisos del JWT. `auth/me` sigue
+  // simulado porque el guardia de ruta y el shell lo necesitan, pero ninguna
+  // pantalla de Capacitaciones lee ya sus permisos.
+  await page.route(`${CAP}/contexto`, (r) => json(r, capacidadesEfectivas));
   await page.route(`${CAP}/modulo/estado`, (r) => json(r, estadoOperable));
 }
 
@@ -268,7 +292,11 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
   test("un 403 lleva al estado del módulo, que separa las tres condiciones", async ({ page }) => {
     // El 403 cubre contrato, bandera y permiso. La pantalla que los distingue
     // es A-08: repetir «sin permiso» dejaría el diagnóstico por eliminación.
-    await sesion(page);
+    await sesion(page, capacidades({
+      puede_editar_catalogo: false,
+      puede_publicar: false,
+      tiene_acceso: true,
+    }));
     await page.route(`${CAP}/cursos`, (route) =>
       json(route, { detail: "La funcionalidad está deshabilitada." }, 403)
     );
@@ -283,6 +311,16 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     );
 
     await page.goto("/capacitaciones/cursos");
+
+    // La navegación no ofrece el catálogo: mostrar una sección que responderá
+    // 403 convierte un límite de permisos en algo que parece una avería.
+    await expect(
+      page.getByRole("navigation").getByRole("link", { name: "Catálogo" })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("navigation").getByRole("link", { name: "Asignaciones" })
+    ).toBeVisible();
+
     await page.getByRole("link", { name: /ver estado del módulo/i }).click();
 
     await expect(page.getByText("El módulo no está operativo")).toBeVisible();
@@ -300,7 +338,9 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
   });
 
   test("sin permiso de publicar, el módulo se abre pero A-05 lo explica", async ({ page }) => {
-    await sesion(page, ["hseq.capacitacion.catalogo.editar"]);
+    // Puede redactar, no publicar. Es una capacidad efectiva, no un permiso
+    // suelto: el servidor ya resolvió contrato y bandera.
+    await sesion(page, capacidades({ puede_publicar: false }));
     await page.route(`${CAP}/cursos/${CURSO_ID}`, (route) =>
       json(route, {
         curso: cursoBorrador({

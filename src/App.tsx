@@ -41,6 +41,11 @@ const ReportesPsico = lazy(() => import("@/pages/ReportesPsico"));
 const ReportesOficialesPsicoPage = lazy(() => import("@/pages/ReportesOficialesPsicoPage"));
 
 const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
+const IndiceCapacitaciones = lazy(() =>
+  import("@/features/capacitaciones/ContextoCapacitaciones").then((m) => ({
+    default: m.IndiceCapacitaciones,
+  }))
+);
 const CapacitacionesCursosPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursosPage"));
 const CapacitacionesCursoDetallePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursoDetallePage"));
 const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAsignacionesPage"));
@@ -126,7 +131,10 @@ function App() {
             }
           >
             <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
-              <Route index element={<Navigate to="/capacitaciones/cursos" replace />} />
+              {/* El indice lo decide el contexto de capacidades, no una ruta
+                  fija: mandar siempre al catalogo aterrizaba en un 403 a quien
+                  solo puede asignar. */}
+              <Route index element={<IndiceCapacitaciones />} />
               <Route path="cursos" element={<CapacitacionesCursosPage />} />
               <Route path="cursos/:cursoId" element={<CapacitacionesCursoDetallePage />} />
               <Route path="asignaciones" element={<CapacitacionesAsignacionesPage />} />

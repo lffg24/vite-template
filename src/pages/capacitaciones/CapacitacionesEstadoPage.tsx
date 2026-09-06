@@ -15,7 +15,6 @@ import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, XCircle } from "l
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/AuthContext";
 import { obtenerEstadoModulo } from "@/services/capacitacionesService";
 import type { ModuloEstado } from "@/types/capacitaciones";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -27,6 +26,7 @@ import {
   PERMISOS_CAPACITACIONES,
   formatearFecha,
 } from "@/features/capacitaciones/formato";
+import { useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
 
 type Veredicto = "si" | "no" | "indefinido";
 
@@ -127,13 +127,16 @@ function Resumen({ estado }: { estado: ModuloEstado }) {
 }
 
 export default function CapacitacionesEstadoPage() {
-  const { hasPermission } = useAuth();
+  const { capacidades } = useCapacitaciones();
   const consulta = useConsulta<ModuloEstado>(() => obtenerEstadoModulo(), []);
 
-  const permisoEditar = hasPermission(PERMISOS_CAPACITACIONES.editar);
-  const permisoPublicar = hasPermission(PERMISOS_CAPACITACIONES.publicar);
-  const permisoAsignar = hasPermission(PERMISOS_CAPACITACIONES.asignar);
-  const algunPermiso = permisoEditar || permisoPublicar || permisoAsignar;
+  // Del contexto efectivo, no del JWT. Aquí se muestran las capacidades ya
+  // resueltas —permiso + contrato + bandera— porque esta pantalla existe para
+  // explicar por qué algo no se puede, y el permiso suelto no lo explica.
+  const permisoEditar = Boolean(capacidades?.puede_editar_catalogo);
+  const permisoPublicar = Boolean(capacidades?.puede_publicar);
+  const permisoAsignar = Boolean(capacidades?.puede_asignar);
+  const algunPermiso = Boolean(capacidades?.tiene_acceso);
 
   return (
     <div className="space-y-6">
@@ -152,7 +155,12 @@ export default function CapacitacionesEstadoPage() {
       {consulta.fase === "error" && consulta.error ? (
         // Aquí NO se traduce un 403 a la pantalla de permisos: esta ES la
         // pantalla que explica los permisos, y redirigir a sí misma dejaría al
-        // usuario en un bucle. El endpoint de estado, por eso, no exige permiso.
+        // usuario en un bucle.
+        //
+        // El endpoint SÍ exige capacidad —expone estado comercial— así que un
+        // 403 aquí es legítimo y significa «no tienes nada en este módulo». Se
+        // muestra tal cual, y la tarjeta de permisos de abajo, que se pinta con
+        // el contexto y no con esta consulta, dice cuáles faltan.
         <div
           role="alert"
           className="rounded-rel-panel border border-rel-danger/30 bg-rel-danger-subtle p-6"

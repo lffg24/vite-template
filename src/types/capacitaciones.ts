@@ -242,9 +242,53 @@ export interface EnlaceResumen {
 export interface ModuloEstado {
   contratado: boolean;
   vigencia_hasta: string | null;
+  /** Con override de empresa: el que gobierna esta empresa. */
   bandera_catalogo: boolean | null;
+  /**
+   * Sin override: el que gobierna el catálogo, que es global.
+   *
+   * Se muestran los dos porque cuando difieren, A-08 es el único sitio donde
+   * eso se puede ver — y difieren justo cuando alguien apagó el módulo para una
+   * empresa sin tocar el contenido editorial.
+   */
+  bandera_catalogo_global: boolean | null;
   bandera_asignacion: boolean | null;
   operable: boolean;
+}
+
+/**
+ * Lo que la interfaz consulta para saber qué pintar. **Contrato único.**
+ *
+ * Antes había dos verdades: el backend leía `role_assignments` con alcance y
+ * esta interfaz leía la lista plana de permisos que el login dejó en la sesión,
+ * que sale del RBAC global y no conoce las asignaciones con alcance. Divergían
+ * en las dos direcciones, y la peor es la que ofrece una acción que la API va a
+ * rechazar con un 403 que el usuario no puede arreglar.
+ *
+ * Los `puede_*` **no son permisos**: son permiso + contrato + bandera, ya
+ * resueltos por el servidor. Nunca se recombinan aquí.
+ */
+export interface ContextoCapacidades {
+  empresa_id: string;
+  roles_plataforma: string[];
+
+  /** Catálogo: bandera global + permiso de plataforma. Sin contrato. */
+  puede_editar_catalogo: boolean;
+  puede_publicar: boolean;
+  /** Asignaciones: superficie de inquilino. Las tres condiciones. */
+  puede_asignar: boolean;
+  /** Si es falso, el módulo no debe aparecer en la navegación. */
+  tiene_acceso: boolean;
+
+  // --- diagnóstico, para explicar un «no». Nunca para decidirlo. ---
+  permisos_plataforma: string[];
+  permisos_empresa: string[];
+  /** `null` cuando no hay acceso: el estado comercial no lo lee cualquiera. */
+  contratado: boolean | null;
+  vigencia_hasta: string | null;
+  bandera_catalogo: boolean | null;
+  bandera_catalogo_empresa: boolean | null;
+  bandera_asignacion: boolean | null;
 }
 
 // --- errores ----------------------------------------------------------------------
