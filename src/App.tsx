@@ -115,21 +115,16 @@ function App() {
           </Route>
 
           {/* Privadas con layout de Capacitaciones.
-              La guarda pide CUALQUIERA de los tres permisos: quien solo redacta
-              contenido tiene que poder entrar al catálogo aunque no pueda
-              asignar. Cada pantalla vuelve a comprobar lo suyo, y el backend
-              decide de verdad — esta guarda solo evita mostrar un shell vacío. */}
-          <Route
-            element={
-              <ProtectedRoute
-                requirePermission={[
-                  "hseq.capacitacion.catalogo.editar",
-                  "hseq.capacitacion.catalogo.publicar",
-                  "hseq.capacitacion.asignar",
-                ]}
-              />
-            }
-          >
+              La guarda solo exige SESIÓN, no permisos, y es deliberado:
+              `requirePermission` compara contra la lista plana del JWT, que sale
+              del RBAC global y no conoce las asignaciones con alcance de
+              empresa. Un usuario autorizado por el backend habría rebotado aquí
+              antes de llegar a llamar la API — la misma divergencia que este
+              lote elimina, escondida en el enrutador.
+              Quien puede entrar lo decide `GET /capacitaciones/contexto`, y el
+              layout muestra una pantalla que lo explica cuando la respuesta es
+              que no. */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
               {/* El indice lo decide el contexto de capacidades, no una ruta
                   fija: mandar siempre al catalogo aterrizaba en un 403 a quien

@@ -372,6 +372,32 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await expect(page.getByRole("button", { name: /publicar versión 1/i })).toBeDisabled();
   });
 
+  test("sin ninguna capacidad, el módulo lo dice sin revelar el contrato", async ({
+    page,
+  }) => {
+    // Antes esto lo resolvía el guardia de ruta comparando permisos del JWT,
+    // que no conoce las asignaciones con alcance: expulsaba a usuarios que el
+    // backend sí autoriza. Ahora decide el contexto, y la pantalla no dice por
+    // qué —la causa puede ser el contrato de la empresa, que no lee cualquiera.
+    await sesion(
+      page,
+      capacidades({
+        puede_editar_catalogo: false,
+        puede_publicar: false,
+        puede_asignar: false,
+        tiene_acceso: false,
+        roles_plataforma: [],
+        permisos_plataforma: [],
+        contratado: null,
+        vigencia_hasta: null,
+      })
+    );
+
+    await page.goto("/capacitaciones/cursos");
+    await expect(page.getByRole("alert")).toContainText(/no tienes acceso/i);
+    await expect(page.getByText(/contratado|vigencia/i)).toHaveCount(0);
+  });
+
   test("es operable con el teclado y el foco se ve", async ({ page }) => {
     await sesion(page);
     await page.route(`${CAP}/cursos`, (route) => json(route, []));

@@ -134,8 +134,47 @@ function Shell() {
       </header>
 
       <main id="contenido-capacitaciones" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <Outlet />
+        {fase === "listo" && capacidades && !capacidades.tiene_acceso ? (
+          <SinAccesoAlModulo />
+        ) : (
+          <Outlet />
+        )}
       </main>
+    </div>
+  );
+}
+
+/**
+ * Sesión válida, cero capacidades en el módulo.
+ *
+ * Reemplaza al guardia de ruta por permisos del JWT. Aquel comparaba contra una
+ * lista que no conoce las asignaciones con alcance, así que expulsaba a usuarios
+ * que el backend sí autoriza.
+ *
+ * No dice **por qué** no hay acceso, y es a propósito: la causa puede ser que la
+ * empresa no contrató el módulo, y el estado comercial no lo lee cualquiera que
+ * se haya autenticado. El endpoint de contexto tampoco lo revela.
+ */
+function SinAccesoAlModulo() {
+  return (
+    <div
+      role="alert"
+      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center"
+    >
+      <h1 className="font-rel-heading text-xl font-bold text-rel-dark">
+        No tienes acceso a Capacitaciones
+      </h1>
+      <p className="mt-2 font-rel-body text-sm text-rel-muted">
+        Tu cuenta está activa, pero tu rol no incluye ninguna operación de este
+        módulo en esta empresa. Si deberías tenerla, pídesela a quien administra
+        los roles.
+      </p>
+      <a
+        href="/"
+        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-primary px-4 py-2 text-sm font-semibold text-rel-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+      >
+        Volver al inicio
+      </a>
     </div>
   );
 }
