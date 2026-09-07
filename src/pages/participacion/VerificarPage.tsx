@@ -22,7 +22,7 @@
 // muestran**. Que una constancia anulada desapareciera sería lo peor posible:
 // quien tiene el PDF impreso vería «no encontrado» y pensaría que tecleó mal.
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AlertTriangle, BadgeCheck, Clock, Search } from "lucide-react";
 
@@ -48,9 +48,8 @@ const SITUACIONES = {
     color: "text-rel-warning",
     fondo: "bg-rel-warning-subtle",
     titulo: "Constancia vencida",
-    // Se dice explícitamente que fue auténtica: vencer no es lo mismo que ser
-    // falsa, y quien la presenta merece que la diferencia quede clara.
-    titulo_ayuda: "Fue auténtica; su vigencia terminó.",
+    // Dice explícitamente que es auténtica: vencer no es lo mismo que ser falsa,
+    // y quien la presenta merece que la diferencia quede clara.
     detalle: "El documento es auténtico, pero su vigencia ya terminó.",
   },
   ANULADA: {
@@ -80,7 +79,7 @@ export default function VerificarPage() {
   const [error, setError] = useState<string | null>(null);
   const [buscando, setBuscando] = useState(false);
 
-  async function buscar(valor: string) {
+  const buscar = useCallback(async (valor: string) => {
     const limpio = valor.trim();
     if (!limpio) return;
     setBuscando(true);
@@ -101,14 +100,29 @@ export default function VerificarPage() {
     } finally {
       setBuscando(false);
     }
-  }
+  }, []);
 
-  // Si llegó por la ruta con código, se busca en cuanto se monta.
-  const [buscadoDeRuta, setBuscadoDeRuta] = useState(false);
-  if (codigoDeRuta && !buscadoDeRuta) {
-    setBuscadoDeRuta(true);
+  // Si llegó por la ruta con código —lo que abrirá el QR cuando exista—, se
+  // busca al montar.
+  //
+  // Dos cosas, y hacen falta las dos:
+  //
+  // 1. **En un efecto**, no durante el render. Lanzar la petición y llamar a
+  //    `setState` mientras React renderiza es un efecto secundario en el sitio
+  //    equivocado.
+  // 2. **Con guarda por código.** Mover al efecto no basta: Strict Mode monta,
+  //    desmonta y vuelve a montar, así que el efecto corre dos veces igual. La
+  //    `ref` sobrevive a ese ciclo y deja pasar una sola petición por código.
+  //
+  // Importa porque el endpoint tiene límite por IP: duplicar la petición gasta
+  // el doble de cuota de cada visitante, y quien verifica suele ser el que menos
+  // margen tiene para que le digan «espera un minuto».
+  const yaBuscado = useRef<string | null>(null);
+  useEffect(() => {
+    if (!codigoDeRuta || yaBuscado.current === codigoDeRuta) return;
+    yaBuscado.current = codigoDeRuta;
     void buscar(codigoDeRuta);
-  }
+  }, [codigoDeRuta, buscar]);
 
   return (
     <ParticipanteLayout>

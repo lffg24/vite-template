@@ -39,6 +39,7 @@ export default function FinalizarPage() {
   const [enviando, setEnviando] = useState(false);
   const [listo, setListo] = useState(false);
   const [constancia, setConstancia] = useState<ConstanciaEmitida | null>(null);
+  const [falloConstancia, setFalloConstancia] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const confirmar = useCallback(async () => {
@@ -69,20 +70,27 @@ export default function FinalizarPage() {
   // hooks no admiten declararlo dentro de la rama que lo necesita.
   const yaCompletada = consulta.datos?.estado === "COMPLETADA";
   useEffect(() => {
-    if (!yaCompletada || constancia) return;
+    // `falloConstancia` corta el reintento automático: sin él, marcar el fallo
+    // re-dispararía el efecto y quedaría un bucle de peticiones contra un
+    // endpoint con límite por IP. Volver a intentarlo es decisión de la persona.
+    if (!yaCompletada || constancia || falloConstancia) return;
     let vigente = true;
     finalizar()
       .then((r) => {
         if (vigente) setConstancia(r.constancia);
       })
-      // Silencioso a propósito: la asistencia ya está registrada, que es lo que
-      // importa. Fallar aquí solo significa mostrar la pantalla sin el folio, y
-      // un error rojo sobre algo que sí salió bien alarmaría sin motivo.
-      .catch(() => undefined);
+      .catch(() => {
+        // **No se traga el error.** Antes sí, y la pantalla se quedaba en
+        // «Preparando tu constancia…» para siempre: quien acababa de terminar
+        // su curso veía un texto que prometía algo que ya no iba a llegar, sin
+        // nada que pulsar. La asistencia está registrada —eso se dice arriba y
+        // es cierto—, pero el folio necesita otra petición, y esa puede fallar.
+        if (vigente) setFalloConstancia(true);
+      });
     return () => {
       vigente = false;
     };
-  }, [yaCompletada, constancia]);
+  }, [yaCompletada, constancia, falloConstancia]);
 
   if (consulta.fase === "cargando") {
     return (
@@ -122,8 +130,26 @@ export default function FinalizarPage() {
 
           {constancia ? (
             <ConstanciaEmitidaPanel constancia={constancia} />
+          ) : falloConstancia ? (
+            <div className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5 text-left">
+              {/* Dice qué se perdió y qué NO: la asistencia está a salvo. Sin
+                  esa distinción, quien lea esto creerá que hay que repetir el
+                  curso. */}
+              <p className="text-sm leading-relaxed">
+                No pudimos mostrarte el folio de tu constancia.{" "}
+                <strong className="font-semibold">Tu asistencia sí quedó
+                registrada</strong>; esto es solo la consulta del documento.
+              </p>
+              <div className="mt-4">
+                <BotonSecundario onClick={() => setFalloConstancia(false)}>
+                  Volver a intentarlo
+                </BotonSecundario>
+              </div>
+            </div>
           ) : (
-            <p className="mt-6 text-sm text-rel-muted">Preparando tu constancia…</p>
+            <p className="mt-6 text-sm text-rel-muted" aria-live="polite">
+              Preparando tu constancia…
+            </p>
           )}
         </div>
       </ParticipanteLayout>

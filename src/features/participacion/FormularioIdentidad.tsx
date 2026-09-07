@@ -9,7 +9,7 @@
 // vez de «Ir». Envolverlos costaría eso sin aportar nada: no hay dos formularios
 // públicos que compartir.
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { BotonPrincipal } from "./ParticipanteLayout";
 import type {
@@ -51,6 +51,8 @@ export function FormularioIdentidad({
   const [marcados, setMarcados] = useState<Record<string, boolean>>({});
   const [abierto, setAbierto] = useState<string | null>(null);
   const [errores, setErrores] = useState<Errores>({});
+  //: Para llevar el foco al grupo cuando lo único que falta es marcar.
+  const primeraCasilla = useRef<HTMLInputElement>(null);
 
   function validar(): Errores {
     const e: Errores = {};
@@ -68,10 +70,31 @@ export function FormularioIdentidad({
     const e = validar();
     setErrores(e);
     if (Object.keys(e).length > 0) {
-      // El foco va al primer campo con problema. Sin esto, en un teléfono el
-      // error queda fuera de pantalla y parece que el botón no hizo nada.
-      const primero = document.querySelector<HTMLElement>("[aria-invalid='true']");
-      primero?.focus();
+      // El foco va al primer problema. Sin esto, en un teléfono el error queda
+      // fuera de pantalla y parece que el botón no hizo nada.
+      //
+      // Se busca por el ID del campo, **no** por `[aria-invalid='true']`. Aquel
+      // no funcionaba nunca: `setErrores` es asíncrono, así que en el momento de
+      // ejecutar esta línea React todavía no ha repintado y ningún elemento
+      // lleva aún ese atributo. El `querySelector` devolvía `null` en silencio y
+      // el foco se quedaba donde estaba.
+      //
+      // Las casillas van por `ref` y aparte: es el caso más frecuente —los datos
+      // están bien y solo falta marcar— y tampoco movía el foco, porque las
+      // casillas no llevan `aria-invalid`. Quien usa lector de pantalla oía el
+      // aviso y no tenía forma de llegar a lo que había que arreglar.
+      const primerCampo = e.numero_documento
+        ? "num-doc"
+        : e.nombres
+          ? "nombres"
+          : e.apellidos
+            ? "apellidos"
+            : null;
+      if (primerCampo) {
+        document.getElementById(primerCampo)?.focus();
+      } else if (e.aceptaciones) {
+        primeraCasilla.current?.focus();
+      }
       return;
     }
 
@@ -177,7 +200,10 @@ export function FormularioIdentidad({
       <Campo
         id="correo"
         etiqueta="Correo"
-        ayuda="Opcional. Sirve para enviarte la constancia."
+        // No dice «para enviarte la constancia»: no hay envío por correo.
+        // Pedir un dato personal invocando un uso que no existe es pedirlo bajo
+        // un motivo falso, y además es lo que la autorización de datos declara.
+        ayuda="Opcional. Solo para que tu empresa pueda contactarte."
         valor={correo}
         alCambiar={setCorreo}
         tipo="email"
@@ -193,13 +219,21 @@ export function FormularioIdentidad({
         autoComplete="tel"
       />
 
-      <fieldset className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+      {/* El error del grupo se asocia al `fieldset`, no a una casilla suelta:
+          falta marcar LAS DOS, así que el problema es del conjunto. Al recibir
+          el foco una casilla, el lector de pantalla anuncia la leyenda del
+          fieldset y su descripción, y ahí es donde suena el motivo. */}
+      <fieldset
+        className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
+        aria-describedby={errores.aceptaciones ? "err-aceptaciones" : undefined}
+      >
         <legend className="px-1 text-sm font-semibold">Autorizaciones</legend>
         <div className="space-y-4">
-          {textos.map((t) => (
+          {textos.map((t, i) => (
             <div key={t.clave}>
               <label className="flex cursor-pointer items-start gap-3">
                 <input
+                  ref={i === 0 ? primeraCasilla : undefined}
                   type="checkbox"
                   checked={Boolean(marcados[t.clave])}
                   onChange={(e) =>
@@ -208,7 +242,13 @@ export function FormularioIdentidad({
                   // 20 px: una casilla de 13 px por defecto es imposible de dar
                   // con el pulgar.
                   className="mt-0.5 h-5 w-5 shrink-0 accent-[hsl(var(--rel-primary))]"
-                  aria-describedby={`texto-${t.clave}`}
+                  // Solo cuando el texto está DESPLEGADO. `hidden` saca el
+                  // elemento del árbol de accesibilidad, así que apuntar ahí
+                  // estando colapsado deja un `aria-describedby` que no resuelve
+                  // a nada: el lector de pantalla no anuncia descripción alguna
+                  // y además la referencia es inválida. Colapsado, la
+                  // descripción es la etiqueta; para leer el texto está el botón.
+                  aria-describedby={abierto === t.clave ? `texto-${t.clave}` : undefined}
                 />
                 <span className="text-sm leading-relaxed">
                   {t.finalidad ?? "Autorizo el tratamiento de mis datos."}
@@ -220,12 +260,22 @@ export function FormularioIdentidad({
                 className="mt-1 pl-8 text-sm font-semibold text-rel-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
                 aria-expanded={abierto === t.clave}
                 aria-controls={`texto-${t.clave}`}
+                // El texto visible dice «Leer el texto completo» en los dos
+                // botones. Quien navega por botones con un lector de pantalla
+                // oiría lo mismo dos veces y no sabría cuál abre cuál.
+                aria-label={`${
+                  abierto === t.clave ? "Ocultar" : "Leer"
+                } el texto completo de: ${
+                  t.finalidad ?? "Autorizo el tratamiento de mis datos."
+                }`}
               >
                 {abierto === t.clave ? "Ocultar el texto" : "Leer el texto completo"}
               </button>
-              {/* El texto va en el DOM siempre y se oculta con `hidden`, no se
-                  desmonta: así un lector de pantalla puede alcanzarlo por
-                  `aria-describedby` aunque esté colapsado. */}
+              {/* Se oculta con `hidden` y no se desmonta, para que abrirlo no
+                  cueste un renderizado del texto completo. Colapsado NO está en
+                  el árbol de accesibilidad —por eso el `aria-describedby` de
+                  arriba es condicional—, y quien use lector de pantalla llega a
+                  él por el botón, que dice a qué autorización pertenece. */}
               <div
                 id={`texto-${t.clave}`}
                 hidden={abierto !== t.clave}
@@ -238,7 +288,7 @@ export function FormularioIdentidad({
           ))}
         </div>
         {errores.aceptaciones ? (
-          <p role="alert" className="mt-3 text-sm text-rel-danger">
+          <p id="err-aceptaciones" role="alert" className="mt-3 text-sm text-rel-danger">
             {errores.aceptaciones}
           </p>
         ) : null}

@@ -174,10 +174,16 @@ export default function AterrizajePage() {
             className="mt-0.5 h-5 w-5 shrink-0 text-rel-success"
             aria-hidden="true"
           />
+          {/* Ni «descargable» ni «te la enviamos»: no hay PDF ni correo. Se
+              promete exactamente lo que la pantalla de cierre entrega — el folio
+              y el código—, porque prometer aquí lo que no existe convierte el
+              final del curso en una decepción justo donde había que dar
+              confianza. */}
           <p className="text-sm leading-relaxed">
             Al terminar recibes tu{" "}
-            <strong className="font-semibold">constancia de asistencia</strong>{" "}
-            descargable, con código de verificación.
+            <strong className="font-semibold">constancia de asistencia</strong>:
+            un registro con folio y un código con el que cualquiera puede
+            verificarla.
           </p>
         </div>
       </Panel>
