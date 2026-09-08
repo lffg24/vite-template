@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const e2ePort = process.env.PLAYWRIGHT_PORT ?? "4173";
+
 export default defineConfig({
   testDir: "./e2e",
+  expect: { timeout: 10_000 },
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -9,13 +12,13 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: `http://127.0.0.1:${e2ePort}`,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4173",
-    url: "http://127.0.0.1:4173",
+    command: `npm run dev -- --host 127.0.0.1 --port ${e2ePort}`,
+    url: `http://127.0.0.1:${e2ePort}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {

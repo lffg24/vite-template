@@ -43,6 +43,7 @@ export default function RoleSidebar({
   footerLinkLabel = "relconsilium.com",
 }: RoleSidebarProps) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(storageKey) === "1");
+  const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 639px)").matches);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,17 +51,28 @@ export default function RoleSidebar({
     localStorage.setItem(storageKey, collapsed ? "1" : "0");
   }, [collapsed, storageKey]);
 
-  const width = collapsed ? "w-[84px]" : "w-[292px]";
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 639px)");
+    const actualizar = () => setMobile(media.matches);
+    media.addEventListener("change", actualizar);
+    return () => media.removeEventListener("change", actualizar);
+  }, []);
+
+  const compact = collapsed || mobile;
+  const ancho = compact ? (mobile ? 72 : 84) : 292;
 
   return (
-    <aside className={`${width} min-h-screen shrink-0 bg-[#071329] text-white shadow-2xl transition-all duration-300`}>
+    <aside
+      className="min-h-screen shrink-0 overflow-hidden bg-[#071329] text-white shadow-2xl transition-all duration-300"
+      style={{ width: ancho, minWidth: ancho, maxWidth: ancho }}
+    >
       <div className="flex h-full flex-col p-4">
         <div className="mb-6 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg shadow-violet-950/30">
               <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
             </div>
-            {!collapsed && (
+            {!compact && (
               <div className="min-w-0">
                 {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
                   <AbrilWordmark className="block truncate text-2xl font-black" accentClassName="text-violet-300" />
@@ -75,16 +87,16 @@ export default function RoleSidebar({
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-            title={collapsed ? "Expandir menú" : "Contraer menú"}
+            title={compact ? "Expandir menú" : "Contraer menú"}
+            className={`${mobile ? "hidden" : "grid"} h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white`}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {compact ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
 
-        <div className={`${collapsed ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-white/10 bg-white/5`}>
+        <div className={`${compact ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-white/10 bg-white/5`}>
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-violet-600 font-bold">{avatarText}</div>
-          {!collapsed && (
+          {!compact && (
             <div className="min-w-0">
               <div className="truncate font-bold">{userTitle}</div>
               <div className="truncate text-sm text-violet-200">{userSubtitle}</div>
@@ -100,27 +112,27 @@ export default function RoleSidebar({
               <button
                 key={item.to}
                 type="button"
-                title={collapsed ? item.label : undefined}
+                title={compact ? item.label : undefined}
                 aria-current={active ? "page" : undefined}
                 onClick={() => {
                   if (location.pathname !== item.to) navigate(item.to);
                 }}
                 className={[
                   "group flex w-full items-center rounded-2xl text-left text-sm font-semibold transition",
-                  collapsed ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
+                  compact ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
                   active
                     ? "bg-violet-600 text-white shadow-lg shadow-violet-950/30"
                     : "text-slate-300 hover:bg-white/10 hover:text-white",
                 ].join(" ")}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="truncate">{item.label}</span>}
+                {!compact && <span className="truncate">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
-        {!collapsed && (
+        {!compact && (
           <div className="mt-5 border-t border-white/10 pt-4 text-xs leading-5 text-slate-400">
             <div>{footerTitle}</div>
             {footerLink ? (
@@ -133,11 +145,11 @@ export default function RoleSidebar({
 
         <NavLink
           to="/logout"
-          title={collapsed ? "Cerrar sesión" : undefined}
-          className={`${collapsed ? "justify-center px-0" : "gap-3 px-4"} mt-4 flex items-center rounded-2xl py-3 text-sm font-semibold text-slate-300 hover:bg-white/10`}
+          title={compact ? "Cerrar sesión" : undefined}
+          className={`${compact ? "justify-center px-0" : "gap-3 px-4"} mt-4 flex items-center rounded-2xl py-3 text-sm font-semibold text-slate-300 hover:bg-white/10`}
         >
           <LogOut className="h-5 w-5" />
-          {!collapsed && "Cerrar sesión"}
+          {!compact && "Cerrar sesión"}
         </NavLink>
       </div>
     </aside>
