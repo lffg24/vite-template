@@ -6,7 +6,7 @@
 // hacer si no.
 
 import type { ReactNode } from "react";
-import { AlertTriangle, Loader2, WifiOff } from "lucide-react";
+import { AlertTriangle, Loader2, Mail, WifiOff } from "lucide-react";
 
 import { BotonSecundario, Panel } from "./ParticipanteLayout";
 import type { ErrorPublico, MotivoPublico } from "@/types/participacion";
@@ -129,6 +129,53 @@ export function DemasiadasPeticiones({ reintentar }: { reintentar: () => void })
 }
 
 /**
+ * El enlace del grupo llegó, pero esta capacitación se hace con invitación
+ * personal.
+ *
+ * **No dice si esta persona está en la lista de la empresa**, ni le ofrece
+ * escribir su documento para comprobarlo: cualquiera de las dos cosas
+ * convertiría la pantalla en una forma de averiguar quién trabaja allí. Solo
+ * dice a quién pedirla.
+ */
+function RequiereInvitacion() {
+  return (
+    <div className="flex flex-1 flex-col justify-center text-center">
+      <Mail className="mx-auto h-12 w-12 text-rel-info" aria-hidden="true" />
+      <h1 className="mt-4 font-rel-heading text-xl font-bold">
+        Necesitas tu invitación personal
+      </h1>
+      <p className="mt-3 text-base leading-relaxed text-rel-muted">
+        Esta capacitación se hace con un enlace individual, para que la
+        constancia quede a nombre de quien de verdad la hizo.
+      </p>
+      <p className="mt-3 text-base leading-relaxed text-rel-muted">
+        Pídesela a quien organiza la capacitación en tu empresa.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * La invitación no sirve. **Los cuatro casos dicen lo mismo**, a propósito:
+ * «ya se usó» confirmaría que se acertó un código, y «caducó» confirmaría que
+ * existió.
+ */
+function InvitacionNoDisponible() {
+  return (
+    <div className="flex flex-1 flex-col justify-center text-center">
+      <AlertTriangle className="mx-auto h-12 w-12 text-rel-warning" aria-hidden="true" />
+      <h1 className="mt-4 font-rel-heading text-xl font-bold">
+        Esta invitación no está disponible
+      </h1>
+      <p className="mt-3 text-base leading-relaxed text-rel-muted">
+        Puede que ya la hayas usado o que haya caducado. Pídele una nueva a quien
+        organiza la capacitación en tu empresa.
+      </p>
+    </div>
+  );
+}
+
+/**
  * Elige la pantalla a partir del `motivo` que decidió el servidor.
  *
  * Por el código y **nunca por el mensaje**: el texto se puede reescribir sin
@@ -148,6 +195,8 @@ export function PantallaDeError({
   if (motivo === "participacion_cerrada") return <ParticipacionCerrada />;
   if (motivo === "demasiadas_peticiones")
     return <DemasiadasPeticiones reintentar={reintentar} />;
+  if (motivo === "requiere_invitacion") return <RequiereInvitacion />;
+  if (motivo === "invitacion_no_disponible") return <InvitacionNoDisponible />;
 
   // `sesion_invalida` no llega aquí: lo maneja la pantalla de reanudación, que
   // sabe ofrecer el código. Tratarlo como error genérico dejaría a la persona

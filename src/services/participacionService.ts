@@ -16,7 +16,9 @@ import axios from "axios";
 
 import { API_URL } from "@/lib/config";
 import type {
+  AceptacionEnviada,
   Aterrizaje,
+  AterrizajeInvitacion,
   ErrorPublico,
   EstadoCurso,
   Finalizado,
@@ -45,6 +47,8 @@ const MOTIVOS: readonly MotivoPublico[] = [
   "texto_cambio",
   "demasiadas_peticiones",
   "constancia_no_encontrada",
+  "requiere_invitacion",
+  "invitacion_no_disponible",
 ];
 
 /**
@@ -207,5 +211,38 @@ export async function verificarConstancia(codigo: string): Promise<Verificacion>
     return data;
   } catch (e) {
     throw errorPublico(e, "No pudimos verificar ese código.");
+  }
+}
+
+/** D-01b. Abre una invitación personal. **No la consume.** */
+export async function abrirInvitacion(token: string): Promise<AterrizajeInvitacion> {
+  try {
+    const { data } = await publico.get<AterrizajeInvitacion>(
+      `/c/i/${encodeURIComponent(token)}`
+    );
+    return data;
+  } catch (e) {
+    throw errorPublico(e, "No pudimos abrir esta invitación.");
+  }
+}
+
+/**
+ * D-02c. Consume la invitación e inscribe.
+ *
+ * **Solo manda las aceptaciones.** Ningún dato de identidad: la persona sale de
+ * la invitación, no de este cuerpo, y por eso no hay forma de afirmar ser otro.
+ */
+export async function aceptarInvitacion(
+  token: string,
+  aceptaciones: AceptacionEnviada[]
+): Promise<Inscrito> {
+  try {
+    const { data } = await publico.post<Inscrito>(
+      `/c/i/${encodeURIComponent(token)}/aceptar`,
+      { aceptaciones }
+    );
+    return data;
+  } catch (e) {
+    throw errorPublico(e, "No pudimos completar tu inscripción.");
   }
 }

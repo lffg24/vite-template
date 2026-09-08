@@ -45,6 +45,7 @@ const CursoPage = lazy(() => import("@/pages/participacion/CursoPage"));
 const LeccionPage = lazy(() => import("@/pages/participacion/LeccionPage"));
 const FinalizarPage = lazy(() => import("@/pages/participacion/FinalizarPage"));
 const VerificarPage = lazy(() => import("@/pages/participacion/VerificarPage"));
+const InvitacionPage = lazy(() => import("@/pages/participacion/InvitacionPage"));
 
 const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
 const IndiceCapacitaciones = lazy(() =>
@@ -109,6 +110,9 @@ function App() {
           {/* D-10. Con codigo en la ruta (lo que imprimira el QR cuando exista)
               y sin el, para teclearlo. Las dos ANTES que `/c/:token` por la
               misma razon que `/c/sesion`. */}
+          {/* D-01b. La invitacion personal. Dos segmentos, asi que no compite
+              con `/c/:token`. */}
+          <Route path="/c/i/:token" element={<InvitacionPage />} />
           <Route path="/c/verificar" element={<VerificarPage />} />
           <Route path="/c/verificar/:codigo" element={<VerificarPage />} />
           <Route path="/c/:token" element={<AterrizajePage />} />

@@ -196,11 +196,38 @@ export type MotivoPublico =
   | "leccion_no_valida"
   | "texto_cambio"
   | "demasiadas_peticiones"
-  | "constancia_no_encontrada";
+  | "constancia_no_encontrada"
+  /** La asignación exige invitación personal y se llegó por el enlace del grupo. */
+  | "requiere_invitacion"
+  /** Inexistente, caducada, revocada o ya usada. Las cuatro dicen lo mismo. */
+  | "invitacion_no_disponible";
 
 export interface ErrorPublico extends Error {
   motivo: MotivoPublico | "desconocido";
   status?: number;
   /** Solo en `texto_cambio`: la redacción nueva, para volver a presentarla. */
   texto_vigente?: Record<string, unknown> | null;
+}
+
+/**
+ * D-01b. La portada de una invitación personal.
+ *
+ * **No hay campos de identidad**, y esa ausencia es el arreglo: no es que se
+ * validen mejor, es que no existe dónde afirmar ser otro. La persona ve su
+ * propio nombre —enmascarado— y solo confirma.
+ */
+export interface IdentidadDeLaInvitacion {
+  nombre: string;
+  documento: string;
+}
+
+export interface AterrizajeInvitacion {
+  curso: string;
+  empresa: string;
+  numero_version: number;
+  lecciones: number;
+  duracion_estimada_min: number | null;
+  identidad: IdentidadDeLaInvitacion;
+  expira_en: string;
+  textos: TextoPresentado[];
 }
