@@ -10,7 +10,7 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Link2, Plus } from "lucide-react";
+import { AlertTriangle, Link2, Send, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -186,6 +186,20 @@ export default function CapacitacionesAsignacionesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        {/* Las invitaciones van ANTES que los enlaces: en modo
+                            individual son la via por la que se entra, y el
+                            enlace de grupo solo sirve para mirar. */}
+                        <Button
+                          variant="relOutline"
+                          size="sm"
+                          onClick={() =>
+                            navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)
+                          }
+                        >
+                          <Send aria-hidden="true" />
+                          Invitaciones
+                          <span className="sr-only"> de {a.curso_titulo}</span>
+                        </Button>
                         <Button
                           variant="relOutline"
                           size="sm"

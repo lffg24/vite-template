@@ -1,0 +1,424 @@
+// src/pages/capacitaciones/CapacitacionesConstanciasPage.tsx · B-05
+//
+// **Se llamaba A-13, que era un nombre inventado.** En el inventario de
+// pantallas las constancias son `B-05`, una superficie de EMPRESA, no de
+// plataforma. El número importa porque dice de quién es la pantalla: quien
+// administra su empresa ve sus constancias; la plataforma no tiene un listado
+// global de constancias de todo el mundo, ni debe tenerlo.
+//
+// Rol: quien responde ante una auditoría.
+// Trabajo a resolver: «demuéstrame que esta persona hizo esta capacitación» y
+// «esta constancia salió mal, quítala».
+//
+// ## Dos decisiones gobiernan la pantalla
+//
+// **Aquí sí van los nombres completos.** El verificador público los enmascara;
+// este listado no. Quien administra su empresa ya tiene esos datos, y
+// ocultárselos le impediría cotejar la constancia con su nómina — que es
+// justamente para lo que abre esta pantalla.
+//
+// **Anular no borra.** Por eso la fila anulada sigue en la lista, con su folio y
+// su motivo a la vista. Un expediente del que desaparecen renglones es peor que
+// uno que registra sus propias correcciones.
+//
+// ## Lo que esta pantalla NO tiene
+//
+// **No hay botón de descargar el PDF.** Falta aprobar la librería que lo genera.
+// Poner el botón para que no hiciera nada, o para que descargara un documento a
+// medias, sería peor que decir dónde está el límite: la constancia ya existe,
+// tiene folio y se puede verificar tecleando el código.
+
+import { useMemo, useState } from "react";
+import { Copy, Search, ShieldOff } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
+import { anularConstancia, listarConstancias } from "@/services/capacitacionesService";
+import type { ConstanciaResumen, ErrorApi } from "@/types/capacitaciones";
+import { useConsulta } from "@/features/capacitaciones/useConsulta";
+import {
+  CargandoTabla,
+  ErrorConsulta,
+  SinDatos,
+} from "@/features/capacitaciones/components/EstadoPantalla";
+import { formatearFecha, formatearFechaHora } from "@/features/capacitaciones/formato";
+
+/** El motivo de la anulación es obligatorio, y el servidor exige cinco caracteres. */
+const MOTIVO_MINIMO = 5;
+
+function nombre(c: ConstanciaResumen): string {
+  return [c.nombres, c.apellidos].filter(Boolean).join(" ") || "—";
+}
+
+function vigencia(c: ConstanciaResumen): string {
+  return c.vence_el ? `Hasta ${formatearFecha(c.vence_el)}` : "No vence";
+}
+
+/**
+ * La insignia de estado, con el motivo **accesible de verdad**.
+ *
+ * Antes el motivo vivía solo en un `title`, que no llega a quien navega con
+ * teclado ni se anuncia de forma fiable con un lector de pantalla — y «¿por
+ * qué?» es la única pregunta que se hace ante una fila anulada. Ahora va en un
+ * texto adyacente asociado por `aria-describedby`, visible en el listado móvil y
+ * en la tabla.
+ */
+function EstadoConstancia({ c, idMotivo }: { c: ConstanciaResumen; idMotivo: string }) {
+  if (c.estado !== "ANULADA") {
+    return <Badge variant="secondary">Vigente</Badge>;
+  }
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      <Badge variant="destructive" aria-describedby={c.anulacion_motivo ? idMotivo : undefined}>
+        Anulada
+      </Badge>
+      {c.anulacion_motivo ? (
+        <span id={idMotivo} className="text-xs leading-snug text-rel-muted">
+          {c.anulacion_motivo}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+export default function CapacitacionesConstanciasPage() {
+  const { toast } = useToast();
+  const consulta = useConsulta<ConstanciaResumen[]>(() => listarConstancias(), []);
+
+  const [filtro, setFiltro] = useState("");
+  const [aAnular, setAAnular] = useState<ConstanciaResumen | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [anulando, setAnulando] = useState(false);
+
+  const constancias = consulta.datos ?? [];
+
+  // Filtro en cliente: el listado es de una empresa y cabe entero. Un endpoint
+  // de búsqueda sería una segunda forma de leer lo mismo, con su propia guarda
+  // que mantener.
+  const visibles = useMemo(() => {
+    const q = filtro.trim().toLowerCase();
+    if (!q) return constancias;
+    return constancias.filter((c) =>
+      [nombre(c), c.curso ?? "", c.codigo_verificacion, String(c.folio)]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [constancias, filtro]);
+
+  const vigentes = constancias.filter((c) => c.estado === "VIGENTE").length;
+
+  async function copiarCodigo(codigo: string) {
+    try {
+      await navigator.clipboard.writeText(codigo);
+      toast({ title: "Código copiado" });
+    } catch {
+      // Sin portapapeles el código sigue a la vista y se copia a mano. No se
+      // muestra un error por perder un atajo.
+    }
+  }
+
+  async function confirmarAnulacion() {
+    if (!aAnular) return;
+    setAnulando(true);
+    try {
+      await anularConstancia(aAnular.id, motivo.trim());
+      toast({
+        title: `Constancia N.º ${aAnular.folio} anulada`,
+        description:
+          "Sigue verificándose, y ahora dice que fue anulada. Quien tenga el documento impreso puede enterarse.",
+      });
+      setAAnular(null);
+      setMotivo("");
+      await consulta.refrescar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos anular la constancia",
+        description: err.message,
+      });
+    } finally {
+      setAnulando(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-rel-dark">Constancias</h1>
+        <p className="text-sm text-rel-muted">
+          {vigentes} vigente{vigentes === 1 ? "" : "s"} de {constancias.length}.
+          Cada una lleva su folio y un código con el que cualquiera puede
+          comprobarla sin necesidad de una cuenta.
+        </p>
+      </header>
+
+      <div className="relative max-w-sm">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-rel-muted"
+          aria-hidden="true"
+        />
+        <Label htmlFor="filtro" className="sr-only">
+          Buscar por persona, curso, folio o código
+        </Label>
+        <Input
+          id="filtro"
+          value={filtro}
+          onChange={(e) => setFiltro(e.target.value)}
+          placeholder="Buscar por persona, curso, folio o código"
+          className="border-rel-border pl-9"
+        />
+      </div>
+
+      {consulta.fase === "cargando" ? <CargandoTabla /> : null}
+      {consulta.fase === "error" && consulta.error ? (
+        <ErrorConsulta error={consulta.error} reintentar={consulta.refrescar} />
+      ) : null}
+
+      {consulta.fase === "listo" && constancias.length === 0 ? (
+        <SinDatos
+          titulo="Todavía no hay constancias"
+          descripcion="Se emiten solas cuando alguien termina una capacitación asignada."
+        />
+      ) : null}
+
+      {/* «Sin resultados» NO es «sin datos», y confundirlos es lo que hace que
+          alguien crea que perdió su información. Aquí sí hay constancias: lo que
+          no encaja es la búsqueda, así que la salida es borrar el filtro. */}
+      {consulta.fase === "listo" && constancias.length > 0 && visibles.length === 0 ? (
+        <div
+          role="status"
+          className="rounded-rel-card border border-rel-border bg-rel-surface p-8 text-center"
+        >
+          <p className="font-semibold text-rel-dark">
+            Ninguna constancia coincide con «{filtro.trim()}»
+          </p>
+          <p className="mt-1 text-sm text-rel-muted">
+            Hay {constancias.length} en total. Prueba con el folio, el código o
+            parte del nombre.
+          </p>
+          <div className="mt-4">
+            <Button variant="relOutline" size="sm" onClick={() => setFiltro("")}>
+              Quitar el filtro
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {consulta.fase === "listo" && visibles.length > 0 ? (
+        <>
+          {/* Tabla en escritorio. En móvil una tabla de ocho columnas obliga a
+              desplazar en horizontal para leer una sola fila, así que abajo hay
+              tarjetas con los mismos datos. */}
+          <div className="hidden overflow-x-auto rounded-rel-card border border-rel-border md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-rel-border">
+                  <TableHead className="w-20 text-rel-dark">Folio</TableHead>
+                  <TableHead className="text-rel-dark">Persona</TableHead>
+                  <TableHead className="text-rel-dark">Capacitación</TableHead>
+                  <TableHead className="text-rel-dark">Código</TableHead>
+                  <TableHead className="text-rel-dark">Emitida</TableHead>
+                  <TableHead className="text-rel-dark">Vigencia</TableHead>
+                  <TableHead className="text-rel-dark">Estado</TableHead>
+                  <TableHead className="text-right text-rel-dark">
+                    <span className="sr-only">Acciones</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibles.map((c) => (
+                  <TableRow key={c.id} className="border-rel-border">
+                    <TableCell className="font-semibold tabular-nums text-rel-dark">
+                      {c.folio}
+                    </TableCell>
+                    <TableCell className="font-medium text-rel-dark">{nombre(c)}</TableCell>
+                    <TableCell className="text-rel-muted">{c.curso ?? "—"}</TableCell>
+                    <TableCell>
+                      <BotonCodigo c={c} alCopiar={copiarCodigo} />
+                    </TableCell>
+                    <TableCell className="text-rel-muted">
+                      {formatearFecha(c.emitida_en)}
+                    </TableCell>
+                    <TableCell className="text-rel-muted">{vigencia(c)}</TableCell>
+                    <TableCell>
+                      <EstadoConstancia c={c} idMotivo={`motivo-t-${c.id}`} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {c.estado === "VIGENTE" ? (
+                        <Button
+                          variant="relOutline"
+                          size="sm"
+                          onClick={() => {
+                            setAAnular(c);
+                            setMotivo("");
+                          }}
+                        >
+                          <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                          Anular
+                          <span className="sr-only"> la constancia {c.folio}</span>
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-rel-muted">
+                          {formatearFechaHora(c.anulada_en)}
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <ul className="space-y-3 md:hidden">
+            {visibles.map((c) => (
+              <li
+                key={c.id}
+                className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-rel-dark">{nombre(c)}</p>
+                    <p className="truncate text-sm text-rel-muted">{c.curso ?? "—"}</p>
+                  </div>
+                  <EstadoConstancia c={c} idMotivo={`motivo-m-${c.id}`} />
+                </div>
+
+                <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <dt className="text-xs text-rel-muted">Folio</dt>
+                    <dd className="font-semibold tabular-nums text-rel-dark">
+                      N.º {c.folio}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-rel-muted">Emitida</dt>
+                    <dd className="text-rel-dark">{formatearFecha(c.emitida_en)}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-xs text-rel-muted">Vigencia</dt>
+                    <dd className="text-rel-dark">{vigencia(c)}</dd>
+                  </div>
+                </dl>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-rel-border pt-3">
+                  <BotonCodigo c={c} alCopiar={copiarCodigo} />
+                  {c.estado === "VIGENTE" ? (
+                    <Button
+                      variant="relOutline"
+                      size="sm"
+                      onClick={() => {
+                        setAAnular(c);
+                        setMotivo("");
+                      }}
+                    >
+                      <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                      Anular
+                      <span className="sr-only"> la constancia {c.folio}</span>
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-rel-muted">
+                      Anulada el {formatearFechaHora(c.anulada_en)}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
+      <AlertDialog open={aAnular !== null} onOpenChange={(o) => !o && setAAnular(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Anular la constancia N.º {aAnular?.folio}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              No se borra. Seguirá verificándose con su código y dirá que fue
+              anulada, para que quien tenga el documento impreso pueda enterarse
+              de que ya no vale. El folio no se reutiliza, y esta acción no se
+              puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="motivo">Motivo de la anulación</Label>
+            <Input
+              id="motivo"
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              placeholder="Se emitió con el curso equivocado"
+              aria-describedby="ayuda-motivo"
+              className="border-rel-border"
+            />
+            {/* Obligatorio, y dicho antes de intentarlo. Una anulación sin
+                explicación deja el expediente con una pregunta abierta que
+                nadie podrá responder después. */}
+            <p id="ayuda-motivo" className="text-xs text-rel-muted">
+              Queda registrado junto a la constancia y se muestra en este
+              listado. Es lo que responderá a la pregunta «¿por qué se anuló?»
+              dentro de dos años.
+            </p>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={anulando}>Cancelar</AlertDialogCancel>
+            {/* Botón normal y no `AlertDialogAction`: aquel cierra el diálogo al
+                pulsarlo, y aquí hay que poder quedarse abierto si el servidor
+                rechaza el motivo. */}
+            <Button
+              variant="destructive"
+              disabled={anulando || motivo.trim().length < MOTIVO_MINIMO}
+              onClick={() => void confirmarAnulacion()}
+            >
+              {anulando ? "Anulando…" : "Anular la constancia"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+/** El código, copiable. Mismo control en la tabla y en la tarjeta. */
+function BotonCodigo({
+  c,
+  alCopiar,
+}: {
+  c: ConstanciaResumen;
+  alCopiar: (codigo: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => alCopiar(c.codigo_verificacion)}
+      className="inline-flex min-h-11 items-center gap-1.5 font-mono text-xs tracking-wider text-rel-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary md:min-h-0"
+      aria-label={`Copiar el código ${c.codigo_verificacion}`}
+    >
+      {c.codigo_verificacion}
+      <Copy className="h-3 w-3" aria-hidden="true" />
+    </button>
+  );
+}

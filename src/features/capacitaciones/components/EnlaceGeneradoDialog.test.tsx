@@ -29,17 +29,19 @@ describe("la ventana que muestra el token una sola vez", () => {
     expect(textos).toMatch(/se genera uno nuevo/i);
   });
 
-  it("advierte de que la pantalla del participante todavía no existe", () => {
-    // `/c/:token` llega con la vertical B. Callarlo dejaría que alguien lo
-    // repartiera por WhatsApp y que el hueco lo descubriera un trabajador en
-    // turno, viendo un inicio de sesión que no puede usar.
+  it("ya NO advierte de que la pantalla del participante falte", () => {
+    // Lo advertía mientras `/c/:token` no existía. Con la vertical B entregada,
+    // ese aviso pasó de proteger a mentir: decirle a alguien que no reparta un
+    // enlace que funciona es tan dañino como dejarle repartir uno que no.
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
 
     const textos = screen
-      .getAllByRole("alert")
+      .queryAllByRole("alert")
       .map((a) => a.textContent ?? "")
       .join(" ");
-    expect(textos).toMatch(/todavía no lo repartas/i);
+    expect(textos).not.toMatch(/todavía no lo repartas/i);
+    // Y la advertencia que SÍ sigue siendo cierta no se fue con ella.
+    expect(textos).toMatch(/no se puede volver a ver/i);
   });
 
   it("el botón de cerrar obliga a afirmar que se copió", () => {
