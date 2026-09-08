@@ -418,9 +418,14 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await page.goto("/capacitaciones/cursos");
     await expect(page.getByText(/todavía no hay cursos/i)).toBeVisible();
 
-    // El primer tabulador cae en el salto al contenido, no en un enlace de
-    // navegación: es lo que evita tabular la cabecera en cada pantalla.
-    await page.keyboard.press("Tab");
-    await expect(page.getByRole("link", { name: /saltar al contenido/i })).toBeFocused();
+    // El salto es el primer control del DOM y acepta foco de teclado. No se usa
+    // `keyboard.press("Tab")` como origen: WebKit puede conservar el foco en el
+    // chrome del navegador, fuera del documento, y volvería no determinista una
+    // propiedad que sí pertenece a la página.
+    const salto = page.getByRole("link", { name: /saltar al contenido/i });
+    const primerControl = page.locator("a[href], button:not([disabled]), input, select, textarea").first();
+    await expect(primerControl).toHaveText(/saltar al contenido/i);
+    await salto.focus();
+    await expect(salto).toBeFocused();
   });
 });
