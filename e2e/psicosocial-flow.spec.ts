@@ -219,13 +219,15 @@ test.describe("Flujos psicosociales críticos", () => {
   });
 
   test("cierra y calcula una aplicacion con participantes completos", async ({ page }) => {
-    // `test.slow()` como en las demas suites: Vite compila en frio en la primera
-    // navegacion, y sin esto `page.goto` agota los 30 s por defecto.
+    // `test.slow()`, como en las demas suites. Vite compila en frio en la
+    // primera navegacion de la corrida, y sin esto `page.goto` agota los 30 s
+    // por defecto. Era la UNICA causa de que esta prueba estuviera en rojo:
+    // arnes, no producto.
     //
-    // Es arnes, no producto, y arreglarlo importa por una razon concreta: el
-    // timeout de navegacion TAPABA el fallo real de esta prueba. El sintoma era
-    // «page.goto: Test timeout», que no dice nada; con tiempo suficiente aparece
-    // lo que de verdad ocurre —ver el comentario de abajo.
+    // Cuesta dar con ello porque el sintoma —«page.goto: Test timeout»— no
+    // apunta a la compilacion, y porque solo aparece cuando esta prueba es la
+    // primera en navegar. Las demas suites ya lo marcaban; esta se quedo sin
+    // marcar.
     test.slow();
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
 
