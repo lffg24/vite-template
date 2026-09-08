@@ -280,8 +280,13 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await page.getByRole("dialog").getByRole("button", { name: /^generar enlace$/i }).click();
 
     // El token aparece UNA vez, con el aviso de que no se recupera.
+    //
+    // Ya NO hay un segundo aviso de «todavía no lo repartas»: se retiró cuando
+    // `/c/:token` empezó a existir. Se comprueba que no volvió, porque decirle a
+    // alguien que no reparta un enlace que funciona hace tanto daño como
+    // dejarle repartir uno que no.
     await expect(page.getByRole("alert").first()).toContainText(/no se puede volver a ver/i);
-    await expect(page.getByRole("alert").nth(1)).toContainText(/todavía no lo repartas/i);
+    await expect(page.getByRole("alert")).toHaveCount(1);
     await expect(page.getByLabel(/enlace para compartir/i)).toHaveValue(
       /token-de-prueba-no-real/
     );

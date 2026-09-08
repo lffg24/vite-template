@@ -307,7 +307,7 @@ export interface ErrorApi extends Error {
   faltantes?: string[];
 }
 
-// --- A-13 · constancias ------------------------------------------------------------------
+// --- B-05 · constancias ------------------------------------------------------------------
 
 /**
  * Una fila del listado administrativo.

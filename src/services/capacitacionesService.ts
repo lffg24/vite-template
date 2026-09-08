@@ -290,7 +290,7 @@ export async function revocarEnlace(enlaceId: string): Promise<void> {
   }
 }
 
-// --- A-13 · constancias ------------------------------------------------------------------
+// --- B-05 · constancias ------------------------------------------------------------------
 
 /**
  * Las constancias de la empresa, de la más reciente a la más antigua.
