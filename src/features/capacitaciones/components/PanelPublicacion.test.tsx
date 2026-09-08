@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { PanelPublicacion } from "./PanelPublicacion";
 import { publicarCurso } from "@/services/capacitacionesService";
@@ -93,10 +93,16 @@ describe("A-05 · publicación", () => {
     expect(await screen.findByText(/queda congelada e inmutable/i)).toBeInTheDocument();
     expect(publicarCurso).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: /^publicar$/i }));
+    // `act` envolviendo el clic: publicar es asincrono, y su `setState` de
+    // respuesta caia despues de terminar la prueba. `waitFor` no basta porque no
+    // envuelve en `act`; esto si, y ademas deja la prueba comprobando el estado
+    // ya asentado.
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /^publicar$/i }));
+    });
 
-    await vi.waitFor(() => expect(publicarCurso).toHaveBeenCalledWith("c1"));
-    await vi.waitFor(() => expect(alPublicar).toHaveBeenCalled());
+    expect(publicarCurso).toHaveBeenCalledWith("c1");
+    expect(alPublicar).toHaveBeenCalled();
   });
 
   it("si el estado cambió bajo los pies, manda la lista del servidor", async () => {

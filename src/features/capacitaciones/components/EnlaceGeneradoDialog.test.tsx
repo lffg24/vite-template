@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { EnlaceGeneradoDialog, urlParticipante } from "./EnlaceGeneradoDialog";
 import type { EnlaceCreado } from "@/types/capacitaciones";
@@ -57,12 +57,14 @@ describe("la ventana que muestra el token una sola vez", () => {
     Object.assign(navigator, { clipboard: { writeText } });
 
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /copiar/i }));
+    // `act` envolviendo el clic: copiar es asincrono y su `setState` de
+    // confirmacion caia despues de terminar la prueba.
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /copiar/i }));
+    });
 
-    await vi.waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith(urlParticipante("tok3n-de-prueba"))
-    );
-    expect(await screen.findByText(/enlace copiado al portapapeles/i)).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith(urlParticipante("tok3n-de-prueba"));
+    expect(screen.getByText(/enlace copiado al portapapeles/i)).toBeInTheDocument();
   });
 
   it("sigue sirviendo cuando el portapapeles no está disponible", async () => {

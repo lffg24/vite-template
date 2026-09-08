@@ -86,7 +86,13 @@ describe("lo que la pantalla NO pide", () => {
     await marcarTodo();
     fireEvent.click(screen.getByRole("button", { name: /confirmar y empezar/i }));
 
-    await vi.waitFor(() => expect(aceptarInvitacion).toHaveBeenCalledTimes(1));
+    // Se espera la pantalla RESULTANTE, no solo la llamada. Asertar contra el
+    // mock deja el `setState` de la respuesta cayendo fuera de `act`, y React
+    // avisa — con razon: la prueba estaria terminando antes de que la interfaz
+    // reaccione, asi que no comprueba lo que la persona ve.
+    await screen.findByRole("button", { name: /ya lo copie|continuar|empezar/i });
+
+    expect(aceptarInvitacion).toHaveBeenCalledTimes(1);
     const [token, aceptaciones] = vi.mocked(aceptarInvitacion).mock.calls[0];
     expect(token).toBe("tok3n");
     // Solo las aceptaciones, con la versión exacta presentada.

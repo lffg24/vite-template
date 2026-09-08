@@ -200,7 +200,14 @@ describe("la anulación", () => {
   });
 
   it("manda el motivo recortado al servidor", async () => {
-    vi.mocked(listarConstancias).mockResolvedValue([constancia()]);
+    // El primer listado la trae vigente; tras anular, el refresco la trae
+    // anulada. Sin esa segunda respuesta la pantalla no cambiaria y la prueba
+    // estaria comprobando menos de lo que dice.
+    vi.mocked(listarConstancias)
+      .mockResolvedValueOnce([constancia()])
+      .mockResolvedValue([
+        constancia({ estado: "ANULADA", anulada_en: "2026-06-01T10:00:00Z" }),
+      ]);
     vi.mocked(anularConstancia).mockResolvedValue(
       constancia({ estado: "ANULADA", anulada_en: "2026-06-01T10:00:00Z" })
     );
@@ -215,9 +222,17 @@ describe("la anulación", () => {
     });
     fireEvent.click(within(dialogo).getByRole("button", { name: /anular la constancia/i }));
 
-    await vi.waitFor(() =>
-      expect(anularConstancia).toHaveBeenCalledWith("k1", "curso equivocado")
-    );
+    // Se espera al estado FINAL de la pantalla, no solo a la llamada.
+    //
+    // Anular cierra el diálogo y además refresca el listado, y ese segundo
+    // `setState` cae fuera de `act` si la prueba termina antes. Esperar a que la
+    // fila aparezca ya anulada cubre las dos cosas — y de paso comprueba lo que
+    // de verdad importa: que el listado refleja el cambio.
+    // `findAllBy*` y no `waitFor`: aquel envuelve la espera en `act`, y este
+    // no. Son dos porque la pantalla pinta tabla y tarjetas.
+    expect(await screen.findAllByText("Anulada")).toHaveLength(2);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(anularConstancia).toHaveBeenCalledWith("k1", "curso equivocado");
   });
 });
 
