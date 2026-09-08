@@ -212,6 +212,14 @@ test.describe("Flujos psicosociales críticos", () => {
   });
 
   test("cierra y calcula una aplicacion con participantes completos", async ({ page }) => {
+    // `test.slow()` como en las demas suites: Vite compila en frio en la primera
+    // navegacion, y sin esto `page.goto` agota los 30 s por defecto.
+    //
+    // Es arnes, no producto, y arreglarlo importa por una razon concreta: el
+    // timeout de navegacion TAPABA el fallo real de esta prueba. El sintoma era
+    // «page.goto: Test timeout», que no dice nada; con tiempo suficiente aparece
+    // lo que de verdad ocurre —ver el comentario de abajo.
+    test.slow();
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
 
     let closed = false;
@@ -219,7 +227,9 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, closed ? finalizedApplicationDetail : applicationDetail),
     );
-    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
+    // La pantalla certificada envia explicitamente 3. La prueba debe observar
+    // ese contrato real, no el valor por defecto interno de otro llamador.
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=3`, async (route) => {
       closeRequestUrl = route.request().url();
       closed = true;
       await fulfillJson(route, {
@@ -239,8 +249,12 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page.getByText("Aplicación cerrada")).toBeVisible();
     await expect(page.getByText("Empresa Andina SAS · Estado Finalizada")).toBeVisible();
     await expect(page.getByRole("button", { name: /reabrir aplicación/i })).toBeVisible();
-    expect(closeRequestUrl).toContain("min_participantes=1");
+    expect(closeRequestUrl).toContain("min_participantes=3");
   });
+
+  // El servicio conserva un valor por defecto distinto para otros llamadores.
+  // Esta convergencia no modifica esa decision ni el comportamiento de la
+  // pantalla certificada; solo evita que el doble de red contradiga a la UI.
 
   test("no intenta cerrar cuando no hay participantes completos", async ({ page }) => {
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
@@ -249,7 +263,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, applicationDetailWithoutCompleteParticipants),
     );
-    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=3`, async (route) => {
       closeCalled = true;
       await fulfillJson(route, { ok: false, error: "MINIMO_PARTICIPANTES" }, 422);
     });
