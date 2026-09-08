@@ -13,6 +13,7 @@ import {
   LogOut,
   ShieldCheck,
   Users,
+  Users2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -42,6 +43,17 @@ const NAVEGACION = [
     descripcion: "Qué se está dictando",
     Icono: Users,
     visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
+  },
+  {
+    to: "/capacitaciones/participantes",
+    etiqueta: "Participantes",
+    descripcion: "A quien se invita",
+    Icono: Users2,
+    // Permiso PROPIO: mantener la nomina suele ser gestion humana y asignar
+    // cursos es del responsable de SST. La navegacion refleja esa separacion,
+    // pero quien autoriza es el backend — mostrar u ocultar no es un control.
+    visible: (c: ContextoCapacidades | null) =>
+      Boolean(c?.puede_gestionar_participantes),
   },
   {
     to: "/capacitaciones/constancias",

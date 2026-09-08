@@ -277,6 +277,8 @@ export interface ContextoCapacidades {
   puede_publicar: boolean;
   /** Asignaciones: superficie de inquilino. Las tres condiciones. */
   puede_asignar: boolean;
+  /** Mantener la nómina. Permiso propio: es otro trabajo. */
+  puede_gestionar_participantes: boolean;
   /** Si es falso, el módulo no debe aparecer en la navegación. */
   tiene_acceso: boolean;
 
@@ -339,4 +341,117 @@ export interface ConstanciaEmitidaAdmin {
   vence_el: string | null;
   /** Emitir es idempotente: `false` significa que ya existía, no que falló. */
   nueva: boolean;
+}
+
+// --- A-09 · participantes ------------------------------------------------------------
+
+export interface ParticipanteResumen {
+  id: string;
+  tipo_documento: string;
+  numero_documento: string;
+  nombres: string;
+  apellidos: string;
+  cargo: string | null;
+  correo: string | null;
+  telefono: string | null;
+  /**
+   * `PUBLICO` = se autodeclaró por el enlace del grupo; `ADMIN` / `IMPORTACION`
+   * = lo afirmó la empresa. Cambia lo que su constancia puede acreditar, así que
+   * se muestra.
+   */
+  origen: "PUBLICO" | "ADMIN" | "IMPORTACION";
+  creado_en: string;
+  actualizado_en: string | null;
+  inscripciones: number;
+}
+
+export interface ParticipanteCrear {
+  tipo_documento: string;
+  numero_documento: string;
+  nombres: string;
+  apellidos: string;
+  cargo?: string | null;
+  correo?: string | null;
+  telefono?: string | null;
+}
+
+export interface ParticipanteEditar {
+  nombres?: string;
+  apellidos?: string;
+  cargo?: string | null;
+  correo?: string | null;
+  telefono?: string | null;
+}
+
+// --- A-09.1 / A-09.2 · importación -----------------------------------------------------
+
+export interface FilaAnalizada {
+  fila: number;
+  /**
+   * `DUPLICADA` no es `ACTUALIZA`: el documento se repite DENTRO del archivo, y
+   * ninguna de las dos filas se escribe.
+   */
+  resultado: "CREA" | "ACTUALIZA" | "RECHAZADA" | "DUPLICADA";
+  errores: string[];
+  datos: Record<string, string | null>;
+  cambios: string[];
+}
+
+export interface VistaPreviaImportacion {
+  resumen: {
+    crea: number;
+    actualiza: number;
+    rechazadas: number;
+    duplicadas: number;
+    total: number;
+  };
+  filas: FilaAnalizada[];
+  archivo_hash: string;
+  columnas_opcionales: string[];
+}
+
+export interface ResultadoImportacion {
+  creados: number;
+  actualizados: number;
+  rechazados: number;
+  duplicados: number;
+  total: number;
+}
+
+// --- invitaciones individuales ----------------------------------------------------------
+
+export interface InvitacionEmitida {
+  invitacion_id: string;
+  participante_id: string;
+  nombre: string;
+  tipo_documento: string;
+  numero_documento: string;
+  /** **La única vez que llega.** El servidor guarda solo su SHA-256. */
+  token: string;
+  expira_en: string;
+}
+
+export interface InvitacionesGeneradas {
+  curso: string;
+  modo_identidad: string;
+  emitidas: InvitacionEmitida[];
+  /** Quien ya tenía una viva. No es un error. */
+  omitidas: { participante_id: string; nombre: string; motivo: string }[];
+}
+
+export interface InvitacionResumen {
+  id: string;
+  participante_id: string;
+  nombres: string;
+  apellidos: string;
+  tipo_documento: string;
+  numero_documento: string;
+  estado: "PENDIENTE" | "CONSUMIDA" | "REVOCADA";
+  /** Caducada NO es revocada: una se acabó sola, la otra la retiró alguien. */
+  utilizable: boolean;
+  expira_en: string;
+  creado_en: string;
+  consumida_en: string | null;
+  revocada_en: string | null;
+  revocacion_motivo: string | null;
 }

@@ -14,6 +14,13 @@ import type {
   AsignacionResumen,
   ConstanciaEmitidaAdmin,
   ConstanciaResumen,
+  InvitacionResumen,
+  InvitacionesGeneradas,
+  ParticipanteCrear,
+  ParticipanteEditar,
+  ParticipanteResumen,
+  ResultadoImportacion,
+  VistaPreviaImportacion,
   CursoCrear,
   CursoDetalle,
   CursoEditar,
@@ -348,5 +355,136 @@ export async function anularConstancia(
     return data;
   } catch (e) {
     throw errorApi(e, "No pudimos anular la constancia.");
+  }
+}
+
+
+// --- A-09 · participantes ------------------------------------------------------------
+
+/** La nómina de la empresa. Es a quién se puede invitar. */
+export async function listarParticipantes(): Promise<ParticipanteResumen[]> {
+  try {
+    const { data } = await api.get<ParticipanteResumen[]>(`${BASE}/participantes`);
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos obtener los participantes.");
+  }
+}
+
+/** Da de alta a una persona. **La empresa afirma su identidad.** */
+export async function crearParticipante(
+  payload: ParticipanteCrear
+): Promise<ParticipanteResumen> {
+  try {
+    const { data } = await api.post<ParticipanteResumen>(`${BASE}/participantes`, payload);
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos dar de alta a esa persona.");
+  }
+}
+
+/**
+ * Corrige los datos de una persona. **Autenticado y auditado.**
+ *
+ * El documento no está en el contrato: cambiarlo no es corregir a alguien, es
+ * señalar a otra persona.
+ */
+export async function editarParticipante(
+  participanteId: string,
+  cambios: ParticipanteEditar
+): Promise<ParticipanteResumen> {
+  try {
+    const { data } = await api.patch<ParticipanteResumen>(
+      `${BASE}/participantes/${participanteId}`,
+      cambios
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos guardar los cambios.");
+  }
+}
+
+/** La vista previa del CSV. **No escribe nada.** */
+export async function analizarImportacion(
+  archivo: File
+): Promise<VistaPreviaImportacion> {
+  const cuerpo = new FormData();
+  cuerpo.append("archivo", archivo);
+  try {
+    const { data } = await api.post<VistaPreviaImportacion>(
+      `${BASE}/participantes/importar/analizar`,
+      cuerpo
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos leer el archivo.");
+  }
+}
+
+/**
+ * Aplica el archivo. **Todo o nada.**
+ *
+ * Se manda el archivo otra vez, no las filas ya clasificadas: si el servidor
+ * aceptara la clasificación del cliente, esta podría saltarse la validación. La
+ * vista previa es para que una persona decida, no un contrato de datos.
+ */
+export async function confirmarImportacion(
+  archivo: File
+): Promise<ResultadoImportacion> {
+  const cuerpo = new FormData();
+  cuerpo.append("archivo", archivo);
+  try {
+    const { data } = await api.post<ResultadoImportacion>(
+      `${BASE}/participantes/importar`,
+      cuerpo
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos importar el archivo.");
+  }
+}
+
+// --- invitaciones individuales ------------------------------------------------------
+
+/** **Nunca trae el token.** Solo se puede generar uno nuevo. */
+export async function listarInvitaciones(
+  asignacionId: string
+): Promise<InvitacionResumen[]> {
+  try {
+    const { data } = await api.get<InvitacionResumen[]>(
+      `${BASE}/asignaciones/${asignacionId}/invitaciones`
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos obtener las invitaciones.");
+  }
+}
+
+/** Emite una por persona y devuelve los tokens **una sola vez**. */
+export async function generarInvitaciones(
+  asignacionId: string,
+  participanteIds: string[],
+  vigenciaDias?: number
+): Promise<InvitacionesGeneradas> {
+  try {
+    const { data } = await api.post<InvitacionesGeneradas>(
+      `${BASE}/asignaciones/${asignacionId}/invitaciones`,
+      { participante_ids: participanteIds, ...(vigenciaDias ? { vigencia_dias: vigenciaDias } : {}) }
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos generar las invitaciones.");
+  }
+}
+
+/** Retira una invitación **que todavía no se usó**. */
+export async function revocarInvitacion(
+  invitacionId: string,
+  motivo: string
+): Promise<void> {
+  try {
+    await api.post(`${BASE}/invitaciones/${invitacionId}/revocar`, { motivo });
+  } catch (e) {
+    throw errorApi(e, "No pudimos revocar la invitación.");
   }
 }
