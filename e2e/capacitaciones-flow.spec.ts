@@ -98,11 +98,11 @@ function cursoBorrador(over: Record<string, unknown> = {}) {
 
 test.describe("Capacitaciones · recorrido administrativo", () => {
   test("del catálogo vacío al enlace generado", async ({ page }) => {
-    // `test.slow()` porque es la PRIMERA navegación de la suite y paga la
-    // compilación en frío de Vite del módulo entero. No es lentitud del
-    // producto: las pruebas siguientes, con el servidor ya caliente, tardan
-    // segundos. Subir el tiempo global escondería una lentitud real.
-    test.slow();
+    // Este único recorrido atraviesa seis pantallas y además paga la
+    // compilación en frío de Vite. WebKit puede superar los 90 s sin que una
+    // operación individual sea lenta; el límite ampliado queda acotado a esta
+    // historia completa y no relaja el tiempo global de las demás pruebas.
+    test.setTimeout(180_000);
     await sesion(page);
 
     // El servidor va cambiando de estado a medida que la interfaz opera, para
@@ -290,7 +290,10 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await expect(page.getByLabel(/enlace para compartir/i)).toHaveValue(
       /token-de-prueba-no-real/
     );
-    await page.getByRole("button", { name: /ya lo copié/i }).click();
+    const cerrarEnlace = page.getByRole("button", { name: /ya lo copié/i });
+    await cerrarEnlace.focus();
+    await expect(cerrarEnlace).toBeFocused();
+    await page.keyboard.press("Enter");
     await expect(page.getByLabel(/enlace para compartir/i)).toHaveCount(0);
   });
 

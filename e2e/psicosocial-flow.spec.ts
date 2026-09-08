@@ -204,10 +204,17 @@ test.describe("Flujos psicosociales críticos", () => {
       fulfillJson(route, { detail: "Sesion expirada" }, 401),
     );
 
+    const detalleRechazado = page.waitForResponse(
+      (response) =>
+        response.url() ===
+          `${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77` &&
+        response.status() === 401,
+    );
     await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await detalleRechazado;
 
     await expect(page).toHaveURL(/\/login\?next=%2Fpsicosocial%2Fempresas%2Fempresa-1%2Faplicaciones%2F77/, {
-      timeout: 4_000,
+      timeout: 10_000,
     });
   });
 

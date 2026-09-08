@@ -27,7 +27,14 @@ export default function ProtectedRoute({ requireRole, requirePermission }: Props
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    const from = `${location.pathname}${location.search}`;
+    return (
+      <Navigate
+        to={`/login?next=${encodeURIComponent(from)}`}
+        replace
+        state={{ from }}
+      />
+    );
   }
 
   if (passwordChangeRequired && location.pathname !== "/psicosocial/perfil") {
