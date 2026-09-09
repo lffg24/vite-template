@@ -16,6 +16,8 @@ describe("psicoReportesOficialesService", () => {
     expect(pathFor("base_forma_a")).toBe("informe-base-forma-a");
     expect(pathFor("base_forma_b")).toBe("informe-base-forma-b");
     expect(pathFor("base_general")).toBe("informe-base-general");
+    expect(pathFor("consolidado_base")).toBe("informe-consolidado-base");
+    expect(pathFor("consolidado_analisis")).toBe("informe-consolidado-analisis");
     expect(pathFor("detallado_excel")).toBe("informe-detallado");
   });
 

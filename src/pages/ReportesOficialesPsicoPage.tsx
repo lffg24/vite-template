@@ -38,6 +38,16 @@ export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: strin
     description: "Matriz auditada con respuestas registradas y resultados persistidos por participante, instrumento, dominio y dimensión.",
   },
   {
+    value: "consolidado_base",
+    label: "Informe base consolidado transversal",
+    description: "Contexto técnico y distribuciones unificadas A/B mediante suma de frecuencias ya clasificadas, conservando separados los puntajes normativos por forma.",
+  },
+  {
+    value: "consolidado_analisis",
+    label: "Análisis consolidado transversal",
+    description: "Lectura y priorización organizacional unificada A/B basada en categorías de riesgo, sin crear ni promediar un puntaje normativo A+B.",
+  },
+  {
     value: "resultados",
     label: "Informe general de resultados BRP",
     description: "Informe general consolidado: resultados A/B, gráficas, recomendaciones y plan de intervención.",
@@ -75,6 +85,8 @@ export default function ReportesOficialesPsicoPage() {
     initialTipoParam === "base_forma_a" ||
     initialTipoParam === "base_forma_b" ||
     initialTipoParam === "base_general" ||
+    initialTipoParam === "consolidado_base" ||
+    initialTipoParam === "consolidado_analisis" ||
     initialTipoParam === "detallado_excel"
       ? initialTipoParam
       : "resultados"
