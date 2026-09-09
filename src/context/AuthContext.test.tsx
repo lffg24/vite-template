@@ -15,9 +15,10 @@ function meResponse(passwordChangeRequired: boolean, nombre = "Psicologa QA") {
 }
 
 function Harness() {
-  const { user, passwordChangeRequired, changePassword } = useAuth();
+  const { user, passwordChangeRequired, changePassword, login } = useAuth();
   return (
     <div>
+      <button onClick={() => login("qa@example.com", "Test-password", { remember: true })}>recordarme</button>
       <span>{user?.nombre || "Sin usuario"}</span>
       <span>{passwordChangeRequired ? "pendiente" : "libre"}</span>
       <button
@@ -39,6 +40,19 @@ function Harness() {
 describe("AuthContext", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("envia recordarme al backend sin almacenar credenciales en el navegador", async () => {
+    const fetchMock = vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response("{}", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(false)), { status: 200 }));
+    render(<AuthProvider><Harness /></AuthProvider>);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByText("recordarme"));
+    await screen.findByText("Psicologa QA");
+    const body = fetchMock.mock.calls[1][1]?.body as URLSearchParams;
+    expect(body.get("remember")).toBe("true");
+    expect(fetchMock.mock.calls[1][1]?.credentials).toBe("include");
   });
 
   it("refresca auth/me despues de cambiar la contraseña obligatoria", async () => {
