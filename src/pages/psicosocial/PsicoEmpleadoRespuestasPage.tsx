@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useCaptureDraft } from "@/hooks/useCaptureDraft";
+import { DRAFT_PREFIX } from "@/lib/captureDraft";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -301,6 +304,7 @@ function chooseInitialEvaluation(app?: PsicoAplicacionEmpleado | null, preferred
 }
 
 export default function PsicoEmpleadoRespuestasPage() {
+  const { userId, tenantId } = useAuth();
   const { empleadoId = "", aplicacionId = "" } = useParams();
   const navigate = useNavigate();
   const [perfil, setPerfil] = useState<PsicoEmpleadoPerfil | null>(null);
@@ -328,7 +332,16 @@ export default function PsicoEmpleadoRespuestasPage() {
     setToast({ id, ...payload });
     window.setTimeout(() => setToast((current) => (current?.id === id ? null : current)), payload.durationMs ?? 5200);
   };
-  const draftKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval?.evaluacion_id || "none"}`;
+  const draftScope = `${DRAFT_PREFIX}${tenantId}:${userId}:${empleadoId}:${aplicacionId}`;
+  const draftKey = `${draftScope}:${selectedEval?.evaluacion_id || "none"}`;
+  const captureValue = useMemo(() => ({ answers, conditionalAnswers, observaciones }), [answers, conditionalAnswers, observaciones]);
+  const captureDraft = useCaptureDraft(draftKey, captureValue);
+  const fichaDraft = useCaptureDraft(`${draftScope}:ficha`, ficha);
+  useEffect(() => {
+    if (!captureDraft.storageAvailable || !fichaDraft.storageAvailable) {
+      notify({ type: "warning", title: "Borrador temporal no disponible", message: "El navegador no permite conservar el avance local. Usa Guardar antes de salir de esta pantalla." });
+    }
+  }, [captureDraft.storageAvailable, fichaDraft.storageAvailable]);
 
   const refreshContext = async (preferredEvalId?: number) => {
     if (!empleadoId || !aplicacionId) return;
@@ -338,21 +351,6 @@ export default function PsicoEmpleadoRespuestasPage() {
     setApp(selected);
     setSelectedEval(chooseInitialEvaluation(selected, preferredEvalId));
   };
-
-  useEffect(() => {
-    const onExpired = () => {
-      persistDraft();
-      notify({
-        type: "warning",
-        title: "Sesión vencida",
-        message: "Guardé un borrador local temporal para evitar pérdida de información. Te redirigiremos al login.",
-      });
-      window.setTimeout(() => navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`), 1800);
-    };
-    window.addEventListener("abril360:session-expired", onExpired);
-    return () => window.removeEventListener("abril360:session-expired", onExpired);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, answers, conditionalAnswers, observaciones, draftKey]);
 
   useEffect(() => {
     let mounted = true;
@@ -386,7 +384,10 @@ export default function PsicoEmpleadoRespuestasPage() {
       try {
         const res = await obtenerFichaSociodemografica(empleadoId, aplicacionId);
         if (!mounted) return;
-        setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
+        const baseFicha = { ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) };
+        const restoredFicha = fichaDraft.restore(`${draftScope}:ficha`, baseFicha, Boolean(res.completa));
+        setFicha(restoredFicha);
+        if (restoredFicha !== baseFicha) notify({ type: "info", title: "Datos generales recuperados", message: "Recuperamos el avance temporal de esta pestaña. Guarda para enviarlo al sistema." });
         setFichaCompleta(Boolean(res.completa));
       } catch {
         // Datos generales se cargan desde empleados. No requiere migración sociodemográfica nueva.
@@ -415,29 +416,22 @@ export default function PsicoEmpleadoRespuestasPage() {
           ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state)) ||
           !selectedEval?.editable ||
           isLockedResponseStatus(selectedEval?.estado_respuestas);
-        const draftStorageKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`;
-        const local = lockedForDraft ? null : readDraft(draftStorageKey);
-        const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value, undefined, "index")]));
         const nextConditionalAnswers: Record<string, boolean | null> = {};
         for (const rule of rules) {
           const code = String(rule.codigo || "");
           if (!code) continue;
           const fromServer = typeof rule.respuesta === "boolean" ? rule.respuesta : null;
-          const fromLocal = typeof local?.conditionalAnswers?.[code] === "boolean" ? local.conditionalAnswers[code] : undefined;
           const blockOrders = new Set((rule.ordenes || []).map(Number));
           const hasBlockAnswers = (res.preguntas || []).some((p) => blockOrders.has(Number(p.orden)) && Boolean(serverAnswers[p.pregunta_id]));
-          nextConditionalAnswers[code] = fromLocal ?? fromServer ?? (hasBlockAnswers ? true : false);
+          nextConditionalAnswers[code] = fromServer ?? (hasBlockAnswers ? true : false);
         }
-        setAnswers({ ...serverAnswers, ...localAnswers });
-        setConditionalAnswers(nextConditionalAnswers);
-        setConditionalBlockOpen(Object.fromEntries(rules.map((rule) => [rule.codigo, Boolean(nextConditionalAnswers[rule.codigo])])));
-        setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
-        if (lockedForDraft) {
-          try {
-            sessionStorage.removeItem(draftStorageKey);
-          } catch {}
-        }
-        if (local?.answers) {
+        const baseline = { answers: serverAnswers, conditionalAnswers: nextConditionalAnswers, observaciones: String(res.observaciones ?? "") };
+        const restored = captureDraft.restore(`${draftScope}:${selectedEval.evaluacion_id}`, baseline, lockedForDraft);
+        setAnswers(restored.answers);
+        setConditionalAnswers(restored.conditionalAnswers);
+        setConditionalBlockOpen(Object.fromEntries(rules.map((rule) => [rule.codigo, Boolean(restored.conditionalAnswers[rule.codigo])])));
+        setObservaciones(restored.observaciones);
+        if (restored !== baseline) {
           notify({
             type: "info",
             title: "Borrador local recuperado",
@@ -466,15 +460,8 @@ export default function PsicoEmpleadoRespuestasPage() {
 
   function persistDraft() {
     if (!selectedEval || selectedLocked) return;
-    try {
-      sessionStorage.setItem(draftKey, JSON.stringify({ answers, conditionalAnswers, observaciones, updatedAt: new Date().toISOString() }));
-    } catch {}
+    captureDraft.flush();
   }
-  useEffect(() => {
-    const t = window.setTimeout(() => persistDraft(), 450);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, conditionalAnswers, observaciones, draftKey]);
 
   const conditionalOrders = useMemo(() => new Set(conditionalRules.flatMap((rule) => (rule.ordenes || []).map(Number))), [conditionalRules]);
   const omittedConditionalOrders = useMemo(() => {
@@ -590,9 +577,11 @@ export default function PsicoEmpleadoRespuestasPage() {
     setSaving(true);
     try {
       const res = await guardarFichaSociodemografica(empleadoId, aplicacionId, { ...ficha, finalizar });
+      const savedFicha = (res as any).item ? { ...EMPTY_FICHA, ...((res as any).item as Partial<FichaSociodemografica>) } : ficha;
+      fichaDraft.acknowledge(`${draftScope}:ficha`, savedFicha);
       const completa = Boolean(res.completa);
       setFichaCompleta(completa);
-      if ((res as any).item) setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
+      setFicha(savedFicha);
       await refreshContext(selectedEval?.evaluacion_id);
       notify({
         type: completa || !finalizar ? "success" : "warning",
@@ -622,9 +611,7 @@ export default function PsicoEmpleadoRespuestasPage() {
       const payload = applicableQuestions.map((p) => ({ pregunta_id: p.pregunta_id, orden: p.orden, respuesta: answers[p.pregunta_id] || null }));
       const condicionales = conditionalRules.map((rule) => ({ codigo: rule.codigo, respuesta: Boolean(conditionalAnswers[rule.codigo]) }));
       const res = await guardarRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id, payload, finalizar, observaciones, condicionales);
-      try {
-        sessionStorage.removeItem(draftKey);
-      } catch {}
+      captureDraft.acknowledge(draftKey, captureValue);
       await refreshContext(selectedEval.evaluacion_id);
       notify({
         type: "success",
@@ -822,7 +809,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   return (
                     <button
                       key={ev.evaluacion_id}
-                      onClick={() => { if (!meta.blockedBySibling) { setSelectedEval(ev); setShowFicha(false); } }}
+                      onClick={() => { if (!meta.blockedBySibling) { captureDraft.flush(); setSelectedEval(ev); setShowFicha(false); } }}
                       disabled={meta.blockedBySibling}
                       className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${
                         active
@@ -969,15 +956,6 @@ export default function PsicoEmpleadoRespuestasPage() {
       </div>
     </main>
   );
-}
-
-function readDraft(key: string): { answers?: Record<number, string>; conditionalAnswers?: Record<string, boolean | null>; observaciones?: string } | null {
-  try {
-    const raw = sessionStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
 }
 
 function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: number | string; tone?: string }) {
