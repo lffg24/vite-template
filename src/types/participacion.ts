@@ -44,6 +44,14 @@ export interface Aterrizaje {
   lecciones: number;
   duracion_estimada_min: number | null;
   textos: TextoPresentado[];
+  /**
+   * Si por ESTE enlace no se puede entrar y hace falta la invitación personal.
+   *
+   * Sin esto la portada ofrecía «Comenzar», pedía el documento y el backend
+   * respondía 403. Es la misma condición que decide ese 403, calculada en el
+   * servidor y traída aquí — no una regla reimplementada en el cliente.
+   */
+  exige_invitacion: boolean;
 }
 
 export interface AceptacionEnviada {

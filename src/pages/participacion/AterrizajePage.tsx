@@ -9,7 +9,7 @@
 
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, Clock, FileText } from "lucide-react";
+import { CheckCircle2, Clock, FileText, Mail } from "lucide-react";
 
 import {
   abrirEnlace,
@@ -188,12 +188,46 @@ export default function AterrizajePage() {
         </div>
       </Panel>
 
-      <div className="mt-auto space-y-3 pt-6">
-        <BotonPrincipal onClick={() => setPaso("datos")}>Comenzar</BotonPrincipal>
-        <BotonSecundario onClick={() => navegar("/c/sesion")}>
-          Ya había empezado
-        </BotonSecundario>
-      </div>
+      {datos.exige_invitacion ? (
+        // Este enlace es escaparate, no puerta.
+        //
+        // Antes aquí había un «Comenzar» que llevaba al formulario, pedía el
+        // documento y terminaba en un 403. El enlace de grupo sigue sirviendo
+        // —explica de qué va el curso, y es adonde llega quien perdió el suyo—,
+        // pero decirlo ANTES es la diferencia entre una portada y una trampa.
+        //
+        // No dice si esta persona está o no en la lista de la empresa: eso
+        // revelaría quién trabaja allí a cualquiera que abra el enlace.
+        <div className="mt-auto pt-6">
+          <Panel>
+            <div className="flex items-start gap-3">
+              <Mail className="mt-0.5 h-5 w-5 shrink-0 text-rel-primary" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold leading-relaxed">
+                  Esta capacitación se hace con una invitación personal.
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-rel-muted">
+                  Por este enlace puedes ver de qué se trata, pero no inscribirte.
+                  Quien organiza la capacitación en tu empresa te envía un enlace
+                  propio, solo tuyo. Si no te ha llegado, pídeselo.
+                </p>
+              </div>
+            </div>
+          </Panel>
+          <div className="mt-3">
+            <BotonSecundario onClick={() => navegar("/c/sesion")}>
+              Ya había empezado
+            </BotonSecundario>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-auto space-y-3 pt-6">
+          <BotonPrincipal onClick={() => setPaso("datos")}>Comenzar</BotonPrincipal>
+          <BotonSecundario onClick={() => navegar("/c/sesion")}>
+            Ya había empezado
+          </BotonSecundario>
+        </div>
+      )}
     </ParticipanteLayout>
   );
 }
