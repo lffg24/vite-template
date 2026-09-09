@@ -25,6 +25,8 @@ import {
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
 
 type Destino = "invitaciones" | "enlaces";
 
@@ -70,23 +72,9 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
 
   return (
     <div className="space-y-6">
-      <section className="rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-rel-card bg-rel-accent-subtle text-rel-primary">
-            <Icono className="h-7 w-7" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="font-rel-heading text-3xl font-black text-rel-dark">{titulo}</h1>
-            <p className="max-w-prose text-sm text-rel-muted">{descripcion}</p>
-          </div>
-        </div>
-      </section>
+      <PageHeader titulo={titulo} icono={Icono} descripcion={descripcion} />
 
-      <section className="rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-sm">
-        <h2 className="mb-4 font-rel-heading text-base font-bold text-rel-dark">
-          Elige la asignación
-        </h2>
-
+      <Panel titulo="Elige la asignación">
         {consulta.fase === "cargando" ? <CargandoTabla /> : null}
 
         {consulta.fase === "error" && consulta.error ? (
@@ -106,9 +94,9 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
         ) : null}
 
         {consulta.fase === "listo" && lista.length > 0 ? (
-          <div className="overflow-hidden rounded-rel-card border border-rel-border">
+          <TablaPanel>
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-rel-surface-subtle text-xs uppercase tracking-wide text-rel-muted">
+              <TablaHead>
                 <tr>
                   <th scope="col" className="px-4 py-3">Curso</th>
                   <th scope="col" className="px-4 py-3">Estado</th>
@@ -117,8 +105,8 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
                     <span className="sr-only">Acciones</span>
                   </th>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-rel-border">
+              </TablaHead>
+              <TablaBody>
                 {lista.map((a) => (
                   <tr key={a.id} className="hover:bg-rel-surface-subtle">
                     <td className="px-4 py-4">
@@ -145,11 +133,11 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
                     </td>
                   </tr>
                 ))}
-              </tbody>
+              </TablaBody>
             </table>
-          </div>
+          </TablaPanel>
         ) : null}
-      </section>
+      </Panel>
     </div>
   );
 }
