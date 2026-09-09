@@ -13,12 +13,20 @@ export default {
   	extend: {
   		colors: {
   			/* Espacio de nombres ADITIVO. No se toca ninguna clave existente:
-  			   `bg-primary` sigue siendo el gris de ShadCN en Psicosocial y
-  			   `bg-rel-primary` es el azul REL en Capacitaciones. */
+  			   `bg-primary` sigue siendo el gris de ShadCN.
+
+  			   Los valores viven en `index.css` y son los de la casa: violeta
+  			   sobre lienzo slate, los mismos que Psicosocial escribe a mano en
+  			   su marcado. Este namespace es lo que permite que manana se migre
+  			   el resto sin tocar pantalla por pantalla. */
   			rel: {
   				primary: {
   					DEFAULT: 'hsl(var(--rel-primary))',
   					foreground: 'hsl(var(--rel-primary-foreground))'
+  				},
+  				accent: {
+  					DEFAULT: 'hsl(var(--rel-accent))',
+  					subtle: 'hsl(var(--rel-accent-subtle))'
   				},
   				turquoise: {
   					DEFAULT: 'hsl(var(--rel-turquoise))',
@@ -128,9 +136,9 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)',
-  			'rel-control': '10px',
-  			'rel-card': '14px',
-  			'rel-panel': '18px'
+  			'rel-control': '12px',
+  			'rel-card': '16px',
+  			'rel-panel': '28px'
   		},
   		keyframes: {
   			'accordion-down': {

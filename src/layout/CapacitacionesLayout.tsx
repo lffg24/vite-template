@@ -1,82 +1,123 @@
 // src/layout/CapacitacionesLayout.tsx
 //
-// Shell del módulo. Es propio y no una rama del shell de Psicosocial a
-// propósito: `RoleSidebar` y `AppSidebar` son componentes compartidos y
-// meterles un caso más los volvería el sitio donde se acumulan las excepciones
-// de todos los módulos. Este layout no toca nada existente.
+// Shell del módulo, sobre `RoleSidebar` — el mismo componente que usa
+// Psicosocial.
+//
+// Aquí había antes una barra horizontal propia, con este razonamiento escrito:
+// «`RoleSidebar` es compartido y meterle un caso más lo volvería el sitio donde
+// se acumulan las excepciones de todos los módulos». El razonamiento se
+// sostiene; el resultado no. Capacitaciones acabó pareciendo otro producto
+// abierto en la misma pestaña: barra arriba en vez de al lado, sin plegar y sin
+// recordar si estaba plegada.
+//
+// Y resulta que no hacía falta ninguna excepción: `RoleSidebar` recibe la lista
+// de entradas ya filtrada, así que el módulo decide qué se ve y el componente
+// solo lo pinta. No se le añadió ni un parámetro.
 
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import {
   BookOpen,
   FileBadge,
-  GraduationCap,
-  LogOut,
+  Link2,
+  Send,
   ShieldCheck,
   Users,
   Users2,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import RoleSidebar, {
+  type RoleSidebarItem,
+} from "@/features/navigation/components/RoleSidebar";
 import {
   ProveedorCapacitaciones,
   useCapacitaciones,
 } from "@/features/capacitaciones/ContextoCapacitaciones";
 import type { ContextoCapacidades } from "@/types/capacitaciones";
 
+type EntradaDelMenu = RoleSidebarItem & {
+  visible: (c: ContextoCapacidades | null) => boolean;
+};
+
 // Cada entrada decide su propia visibilidad con las capacidades EFECTIVAS.
 //
-// Mostrar una seccion que respondera 403 es peor que no mostrarla: convierte un
-// limite de permisos en algo que parece una averia.
-const NAVEGACION = [
+// Mostrar una sección que responderá 403 es peor que no mostrarla: convierte un
+// límite de permisos en algo que parece una avería. Y al revés —que es el
+// defecto que este cambio corrige— esconder una sección que el usuario SÍ puede
+// operar la vuelve inencontrable.
+const NAVEGACION: EntradaDelMenu[] = [
   {
     to: "/capacitaciones/cursos",
-    etiqueta: "Catálogo",
-    descripcion: "Cursos y versiones",
-    Icono: BookOpen,
-    visible: (c: ContextoCapacidades | null) =>
-      Boolean(c?.puede_editar_catalogo || c?.puede_publicar),
+    label: "Catálogo",
+    icon: BookOpen,
+    visible: (c) => Boolean(c?.puede_editar_catalogo || c?.puede_publicar),
   },
   {
     to: "/capacitaciones/asignaciones",
-    etiqueta: "Asignaciones",
-    descripcion: "Qué se está dictando",
-    Icono: Users,
-    visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
+    label: "Asignaciones",
+    icon: Users,
+    visible: (c) => Boolean(c?.puede_asignar),
   },
   {
     to: "/capacitaciones/participantes",
-    etiqueta: "Participantes",
-    descripcion: "A quien se invita",
-    Icono: Users2,
-    // Permiso PROPIO: mantener la nomina suele ser gestion humana y asignar
-    // cursos es del responsable de SST. La navegacion refleja esa separacion,
+    label: "Participantes",
+    icon: Users2,
+    // Permiso PROPIO: mantener la nómina suele ser gestión humana y asignar
+    // cursos es del responsable de SST. La navegación refleja esa separación,
     // pero quien autoriza es el backend — mostrar u ocultar no es un control.
-    visible: (c: ContextoCapacidades | null) =>
-      Boolean(c?.puede_gestionar_participantes),
+    visible: (c) => Boolean(c?.puede_gestionar_participantes),
+  },
+  {
+    to: "/capacitaciones/invitaciones",
+    label: "Invitaciones",
+    icon: Send,
+    // ESTABA ENRUTADA Y NO ESTABA EN EL MENÚ. Solo se llegaba por un botón
+    // dentro de una fila de Asignaciones, así que había que saber de antemano
+    // que existía. Con la invitación individual como modo por defecto, esta es
+    // **la** pantalla que produce lo que se reparte: sin ella, quien organiza
+    // acaba mandando el enlace de grupo, que ya no sirve para inscribirse.
+    visible: (c) => Boolean(c?.puede_asignar),
+  },
+  {
+    to: "/capacitaciones/enlaces",
+    label: "Enlaces de grupo",
+    icon: Link2,
+    // Misma historia que Invitaciones. El nombre dice «de grupo» a propósito:
+    // el menú es el sitio más barato para que no se confunda con la invitación
+    // personal.
+    visible: (c) => Boolean(c?.puede_asignar),
   },
   {
     to: "/capacitaciones/constancias",
-    etiqueta: "Constancias",
-    descripcion: "Evidencia emitida",
-    Icono: FileBadge,
+    label: "Constancias",
+    icon: FileBadge,
     // Misma capacidad que asignar: la constancia es del inquilino, no del
     // catálogo global. Quien solo redacta contenido editorial no tiene por qué
     // ver la evidencia de las empresas.
-    visible: (c: ContextoCapacidades | null) => Boolean(c?.puede_asignar),
+    visible: (c) => Boolean(c?.puede_asignar),
   },
   {
     to: "/capacitaciones/estado",
-    etiqueta: "Estado del módulo",
-    descripcion: "Contrato y habilitación",
-    Icono: ShieldCheck,
+    label: "Estado del módulo",
+    icon: ShieldCheck,
     // Siempre visible para quien tiene alguna capacidad: es la pantalla que
-    // explica por que algo no se puede, y esconderla dejaria el diagnostico sin
+    // explica por qué algo no se puede, y esconderla dejaría el diagnóstico sin
     // sitio. A quien no tiene ninguna, el backend le responde 403 y la pantalla
     // lo dice sin revelar el estado comercial.
     visible: () => true,
   },
 ];
+
+function iniciales(nombre: string): string {
+  const letras = nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((parte) => parte[0])
+    .join("")
+    .toUpperCase();
+  return letras || "CA";
+}
 
 export default function CapacitacionesLayout() {
   return (
@@ -89,85 +130,43 @@ export default function CapacitacionesLayout() {
 function Shell() {
   const { user } = useAuth();
   const { capacidades, fase } = useCapacitaciones();
-  // Mientras se resuelve el contexto no se pinta navegacion a medias: aparecer
+
+  // Mientras se resuelve el contexto no se pinta navegación a medias: aparecer
   // y desaparecer enlaces es peor que esperar un instante.
-  const entradas =
-    fase === "listo" ? NAVEGACION.filter((n) => n.visible(capacidades)) : [];
+  const entradas = fase === "listo" ? NAVEGACION.filter((n) => n.visible(capacidades)) : [];
+  const nombre = user?.nombre?.trim() || user?.email || "Usuario ABRIL360";
 
   return (
-    <div className="rel-scope min-h-screen bg-rel-canvas font-rel-body text-rel-dark">
-      {/* Salto directo al contenido: la navegación tiene tres enlaces y
-          tabularlos en cada pantalla es exactamente el tipo de fricción que
-          §21 pide evitar. */}
-      <a
-        href="#contenido-capacitaciones"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-rel-primary-foreground"
-      >
-        Saltar al contenido
-      </a>
+    <div className="rel-scope flex min-h-screen bg-rel-canvas font-rel-body text-rel-dark">
+      <RoleSidebar
+        items={entradas}
+        storageKey="abril360.capacitaciones.sidebar.collapsed"
+        brandTitle="ABRIL360"
+        brandSubtitle="Capacitaciones"
+        avatarText={iniciales(nombre)}
+        userTitle={nombre}
+        userSubtitle="Gestión de capacitaciones"
+        navLabel="Navegación de Capacitaciones"
+      />
 
-      <header className="border-b border-rel-border bg-rel-surface">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-rel-control bg-rel-primary text-rel-primary-foreground">
-              <GraduationCap className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div className="leading-tight">
-              <p className="font-rel-heading text-sm font-bold tracking-tight text-rel-dark">
-                Capacitaciones
-              </p>
-              <p className="text-xs text-rel-muted">ABRIL-360 by REL Consilium</p>
-            </div>
-          </div>
+      <main className="flex min-w-0 flex-1 flex-col p-6">
+        {/* El salto al contenido queda DENTRO del main: la barra lateral ya es
+            navegación por puntos de referencia, y el enlace existe para no
+            tabularla entera en cada pantalla. */}
+        <a
+          href="#contenido-capacitaciones"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-rel-primary-foreground"
+        >
+          Saltar al contenido
+        </a>
 
-          <nav aria-label="Secciones de Capacitaciones" className="order-3 w-full sm:order-2 sm:w-auto">
-            <ul className="flex flex-wrap gap-1">
-              {entradas.map(({ to, etiqueta, descripcion, Icono }) => (
-                <li key={to}>
-                  <NavLink
-                    to={to}
-                    title={descripcion}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-2 rounded-rel-control px-3 py-2 text-sm font-semibold transition-colors duration-rel-micro",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
-                        isActive
-                          ? "bg-rel-canvas text-rel-primary"
-                          : "text-rel-muted hover:bg-rel-surface-subtle hover:text-rel-dark"
-                      )
-                    }
-                  >
-                    <Icono className="h-4 w-4" aria-hidden="true" />
-                    {etiqueta}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className="order-2 ml-auto flex items-center gap-3 sm:order-3">
-            {user?.nombre || user?.email ? (
-              <span className="hidden text-sm text-rel-muted md:inline">
-                {user.nombre || user.email}
-              </span>
-            ) : null}
-            <a
-              href="/logout"
-              className="inline-flex items-center gap-1.5 rounded-rel-control px-2.5 py-2 text-sm font-semibold text-rel-muted transition-colors duration-rel-micro hover:bg-rel-surface-subtle hover:text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only">Salir</span>
-            </a>
-          </div>
+        <div id="contenido-capacitaciones" className="min-w-0 flex-1">
+          {fase === "listo" && capacidades && !capacidades.tiene_acceso ? (
+            <SinAccesoAlModulo />
+          ) : (
+            <Outlet />
+          )}
         </div>
-      </header>
-
-      <main id="contenido-capacitaciones" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        {fase === "listo" && capacidades && !capacidades.tiene_acceso ? (
-          <SinAccesoAlModulo />
-        ) : (
-          <Outlet />
-        )}
       </main>
     </div>
   );
@@ -188,9 +187,9 @@ function SinAccesoAlModulo() {
   return (
     <div
       role="alert"
-      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center"
+      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center shadow-sm"
     >
-      <h1 className="font-rel-heading text-xl font-bold text-rel-dark">
+      <h1 className="font-rel-heading text-xl font-black text-rel-dark">
         No tienes acceso a Capacitaciones
       </h1>
       <p className="mt-2 font-rel-body text-sm text-rel-muted">
@@ -200,7 +199,7 @@ function SinAccesoAlModulo() {
       </p>
       <a
         href="/"
-        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-primary px-4 py-2 text-sm font-semibold text-rel-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-primary px-4 py-2 text-sm font-bold text-rel-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
       >
         Volver al inicio
       </a>

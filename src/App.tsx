@@ -61,6 +61,9 @@ const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/Capac
 const CapacitacionesConstanciasPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesConstanciasPage"));
 const CapacitacionesParticipantesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesParticipantesPage"));
 const CapacitacionesInvitacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInvitacionesPage"));
+const SeleccionDeAsignacion = lazy(
+  () => import("@/features/capacitaciones/components/SeleccionDeAsignacion")
+);
 
 const SuperAdminLayout = lazy(() => import("@/layout/SuperAdminLayout"));
 const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdminDashboardPage"));
@@ -172,6 +175,15 @@ function App() {
                 path="asignaciones/:asignacionId/invitaciones"
                 element={<CapacitacionesInvitacionesPage />}
               />
+              {/* Las dos entradas del menú a lo que antes solo se alcanzaba
+                  desde una fila de la tabla de Asignaciones. La ruta profunda
+                  sigue siendo la que se comparte; estas eligen a qué asignación
+                  y redirigen allí. */}
+              <Route
+                path="invitaciones"
+                element={<SeleccionDeAsignacion destino="invitaciones" />}
+              />
+              <Route path="enlaces" element={<SeleccionDeAsignacion destino="enlaces" />} />
               <Route path="constancias" element={<CapacitacionesConstanciasPage />} />
               <Route path="estado" element={<CapacitacionesEstadoPage />} />
             </Route>
