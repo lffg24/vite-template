@@ -10,5 +10,7 @@ describe("official psychosocial report options", () => {
       "base_general",
     ]);
     expect(reportOptions[3].value).toBe("detallado_excel");
+    expect(reportOptions.map((option) => option.value)).toContain("consolidado_base");
+    expect(reportOptions.map((option) => option.value)).toContain("consolidado_analisis");
   });
 });
