@@ -274,7 +274,11 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
 
     // --- 6 · A-12 · generar el enlace ------------------------------------------
     await expect(page.getByText(/sin acceso/i).first()).toBeVisible();
-    await page.getByRole("button", { name: /enlaces/i }).first().click();
+    // Se busca DENTRO de la tabla: desde que el menú tiene su propia entrada
+    // «Enlaces de grupo», un `/enlaces/i` suelto empata con las dos y el primer
+    // resultado es el de la barra lateral, que lleva al selector en vez de a
+    // esta asignación.
+    await page.getByRole("table").getByRole("button", { name: /enlaces/i }).first().click();
     await expect(page.getByText(/nadie puede entrar todavía/i)).toBeVisible();
     await page.getByRole("button", { name: /generar el primero/i }).click();
     await page.getByRole("dialog").getByRole("button", { name: /^generar enlace$/i }).click();
@@ -326,11 +330,14 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
 
     // La navegación no ofrece el catálogo: mostrar una sección que responderá
     // 403 convierte un límite de permisos en algo que parece una avería.
+    // `RoleSidebar` —el componente de la casa— pinta cada entrada como
+    // `button`, no como `link`. Lo que se comprueba es lo mismo: una sección sin
+    // capacidad no aparece, y una con capacidad sí.
     await expect(
-      page.getByRole("navigation").getByRole("link", { name: "Catálogo" })
+      page.getByRole("navigation").getByRole("button", { name: "Catálogo" })
     ).toHaveCount(0);
     await expect(
-      page.getByRole("navigation").getByRole("link", { name: "Asignaciones" })
+      page.getByRole("navigation").getByRole("button", { name: "Asignaciones" })
     ).toBeVisible();
 
     await page.getByRole("link", { name: /ver estado del módulo/i }).click();

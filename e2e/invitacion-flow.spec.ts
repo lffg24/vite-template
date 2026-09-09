@@ -353,9 +353,11 @@ test.describe("Administración · importar participantes", () => {
     await page.route(`${API}/capacitaciones/asignaciones`, (r) => json(r, []));
 
     await page.goto("/capacitaciones/asignaciones");
+    // `button` y no `link`: las entradas de `RoleSidebar` son botones. La
+    // afirmación no cambia — sin la capacidad, Participantes no está en el menú.
     await expect(
-      page.getByRole("link", { name: /asignaciones/i }).first()
+      page.getByRole("button", { name: /asignaciones/i }).first()
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /participantes/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /participantes/i })).toHaveCount(0);
   });
 });

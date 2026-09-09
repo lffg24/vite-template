@@ -138,6 +138,18 @@ function Shell() {
 
   return (
     <div className="rel-scope flex min-h-screen bg-rel-canvas font-rel-body text-rel-dark">
+      {/* PRIMER elemento enfocable del documento, antes de la barra lateral.
+          Tiene que ir aquí y no dentro del `main`: el enlace existe para saltar
+          POR ENCIMA de la navegación, y colocarlo después la deja entera por
+          delante — con lo que no salta nada. Con la barra horizontal anterior
+          eran tres enlaces; ahora son siete botones más la marca y el avatar. */}
+      <a
+        href="#contenido-capacitaciones"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-rel-primary-foreground"
+      >
+        Saltar al contenido
+      </a>
+
       <RoleSidebar
         items={entradas}
         storageKey="abril360.capacitaciones.sidebar.collapsed"
@@ -150,16 +162,6 @@ function Shell() {
       />
 
       <main className="flex min-w-0 flex-1 flex-col p-6">
-        {/* El salto al contenido queda DENTRO del main: la barra lateral ya es
-            navegación por puntos de referencia, y el enlace existe para no
-            tabularla entera en cada pantalla. */}
-        <a
-          href="#contenido-capacitaciones"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-rel-primary-foreground"
-        >
-          Saltar al contenido
-        </a>
-
         <div id="contenido-capacitaciones" className="min-w-0 flex-1">
           {fase === "listo" && capacidades && !capacidades.tiene_acceso ? (
             <SinAccesoAlModulo />

@@ -34,6 +34,12 @@ function aterrizaje() {
     numero_version: 1,
     lecciones: 1,
     duracion_estimada_min: 20,
+    // EXPLÍCITO aunque `false` sea el valor por defecto del backend: este
+    // recorrido es el del enlace de grupo que SÍ inscribe, y con el campo
+    // omitido la prueba pasaría por `undefined` sin declarar qué está probando.
+    // Un mock que calla un campo del contrato deja de describirlo justo el día
+    // que el contrato cambia.
+    exige_invitacion: false,
     textos: [
       {
         clave: "autorizacion_datos_participante",
