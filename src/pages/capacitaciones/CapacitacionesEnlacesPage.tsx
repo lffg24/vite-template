@@ -12,7 +12,9 @@
 
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Link2, Plus } from "lucide-react";
+
+import { PageHeader } from "@/shared/ui/PageHeader";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -170,24 +172,23 @@ export default function CapacitacionesEnlacesPage() {
         </Link>
       </Button>
 
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-rel-heading text-2xl font-bold tracking-tight text-rel-dark sm:text-3xl">
-            Enlaces de acceso
-          </h1>
-          <p className="mt-1 font-rel-body text-sm text-rel-muted">
-            {asignacion
-              ? `${asignacion.curso_titulo} · versión ${asignacion.numero_version}`
-              : "De esta asignación."}
-          </p>
-        </div>
-        {asignacion?.estado === "CERRADA" ? null : (
-          <Button variant="rel" onClick={() => setGenerando(true)}>
-            <Plus aria-hidden="true" />
-            Generar enlace
-          </Button>
-        )}
-      </header>
+      <PageHeader
+        titulo="Enlaces de grupo"
+        icono={Link2}
+        descripcion={
+          asignacion
+            ? `${asignacion.curso_titulo} · versión ${asignacion.numero_version}`
+            : "De esta asignación."
+        }
+        accion={
+          asignacion?.estado === "CERRADA" ? null : (
+            <Button variant="rel" onClick={() => setGenerando(true)}>
+              <Plus aria-hidden="true" />
+              Generar enlace
+            </Button>
+          )
+        }
+      />
 
       {asignacion?.estado === "CERRADA" ? (
         <p

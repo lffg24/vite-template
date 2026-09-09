@@ -19,6 +19,8 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Printer, Send, ShieldOff } from "lucide-react";
 
+import { PageHeader } from "@/shared/ui/PageHeader";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -179,15 +181,11 @@ export default function CapacitacionesInvitacionesPage() {
         Volver a las asignaciones
       </Link>
 
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-rel-dark">
-          Invitaciones personales
-        </h1>
-        <p className="text-sm text-rel-muted">
-          Cada persona entra con la suya, y sirve una sola vez. Es lo que hace que
-          la constancia quede a nombre de quien de verdad hizo el curso.
-        </p>
-      </header>
+      <PageHeader
+        titulo="Invitaciones personales"
+        icono={Send}
+        descripcion="Cada persona entra con la suya, y sirve una sola vez. Es lo que hace que la constancia quede a nombre de quien de verdad hizo el curso."
+      />
 
       {/* Generar. Solo se ofrece a quien no tiene una viva. */}
       <section className="rounded-rel-card border border-rel-border bg-rel-surface p-4">

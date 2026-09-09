@@ -29,9 +29,10 @@
 // tiene folio y se puede verificar tecleando el código.
 
 import { useMemo, useState } from "react";
-import { Copy, Search, ShieldOff } from "lucide-react";
+import { Copy, FileBadge, Search, ShieldOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -165,14 +166,11 @@ export default function CapacitacionesConstanciasPage() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-rel-dark">Constancias</h1>
-        <p className="text-sm text-rel-muted">
-          {vigentes} vigente{vigentes === 1 ? "" : "s"} de {constancias.length}.
-          Cada una lleva su folio y un código con el que cualquiera puede
-          comprobarla sin necesidad de una cuenta.
-        </p>
-      </header>
+      <PageHeader
+        titulo="Constancias"
+        icono={FileBadge}
+        descripcion={`${vigentes} vigente${vigentes === 1 ? "" : "s"} de ${constancias.length}. Cada una lleva su folio y un código con el que cualquiera puede comprobarla sin necesidad de una cuenta.`}
+      />
 
       <div className="relative max-w-sm">
         <Search

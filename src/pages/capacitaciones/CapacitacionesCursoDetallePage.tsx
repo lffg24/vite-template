@@ -78,7 +78,10 @@ export default function CapacitacionesCursoDetallePage() {
 
       {consulta.fase === "listo" && consulta.datos ? (
         <>
-          <header className="flex flex-wrap items-start justify-between gap-4">
+          {/* No usa `PageHeader` porque el estado y la categoría van ENCIMA del
+              título: en esta pantalla lo primero que hay que saber es si lo que
+              se está editando ya está publicado. La carcasa sí es la misma. */}
+          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-sm">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <EstadoCursoBadge estado={consulta.datos.curso.estado} />
@@ -87,7 +90,7 @@ export default function CapacitacionesCursoDetallePage() {
                   restringida={consulta.datos.curso.categoria_restringida}
                 />
               </div>
-              <h1 className="mt-2 font-rel-heading text-2xl font-bold tracking-tight text-rel-dark sm:text-3xl">
+              <h1 className="mt-2 font-rel-heading text-3xl font-black tracking-tight text-rel-dark">
                 {consulta.datos.curso.titulo}
               </h1>
               <p className="mt-1 font-rel-body text-sm text-rel-muted">

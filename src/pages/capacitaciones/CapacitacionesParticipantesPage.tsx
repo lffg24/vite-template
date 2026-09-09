@@ -14,9 +14,10 @@
 // mano.
 
 import { useMemo, useRef, useState } from "react";
-import { Pencil, Search, Upload, UserPlus } from "lucide-react";
+import { Pencil, Search, Upload, UserPlus, Users2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -95,26 +96,23 @@ export default function CapacitacionesParticipantesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-rel-dark">Participantes</h1>
-          <p className="text-sm text-rel-muted">
-            {personas.length} en la nómina. Es a quién puedes invitar a una
-            capacitación: la invitación personal es lo que hace que la constancia
-            quede a nombre de quien de verdad la hizo.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="relOutline" onClick={() => setImportando(true)}>
-            <Upload className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Importar CSV
-          </Button>
-          <Button variant="rel" onClick={() => setCreando(true)}>
-            <UserPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Agregar persona
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        titulo="Participantes"
+        icono={Users2}
+        descripcion={`${personas.length} en la nómina. Es a quién puedes invitar a una capacitación: la invitación personal es lo que hace que la constancia quede a nombre de quien de verdad la hizo.`}
+        accion={
+          <>
+            <Button variant="relOutline" onClick={() => setImportando(true)}>
+              <Upload className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Importar CSV
+            </Button>
+            <Button variant="rel" onClick={() => setCreando(true)}>
+              <UserPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              Agregar persona
+            </Button>
+          </>
+        }
+      />
 
       <div className="relative max-w-sm">
         <Search

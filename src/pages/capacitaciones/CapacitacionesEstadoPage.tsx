@@ -10,7 +10,16 @@
 // separado aquí, porque se arreglan por caminos distintos: una es comercial,
 // otra es un interruptor de REL, y la tercera es el rol del usuario.
 
-import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleSlash,
+  HelpCircle,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
+
+import { PageHeader } from "@/shared/ui/PageHeader";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -140,15 +149,11 @@ export default function CapacitacionesEstadoPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-rel-heading text-2xl font-bold tracking-tight text-rel-dark sm:text-3xl">
-          Estado del módulo
-        </h1>
-        <p className="mt-1 max-w-prose font-rel-body text-sm text-rel-muted">
-          Capacitaciones exige tres condiciones independientes. Se comprueban por
-          separado para que un bloqueo se pueda atribuir en vez de adivinarse.
-        </p>
-      </header>
+      <PageHeader
+        titulo="Estado del módulo"
+        icono={ShieldCheck}
+        descripcion="Capacitaciones exige tres condiciones independientes. Se comprueban por separado para que un bloqueo se pueda atribuir en vez de adivinarse."
+      />
 
       {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Consultando el estado…" /> : null}
 

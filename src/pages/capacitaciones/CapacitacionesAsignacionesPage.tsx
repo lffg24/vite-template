@@ -10,9 +10,10 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Link2, Send, Plus } from "lucide-react";
+import { AlertTriangle, Link2, Send, Plus, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,20 +97,17 @@ export default function CapacitacionesAsignacionesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-rel-heading text-2xl font-bold tracking-tight text-rel-dark sm:text-3xl">
-            Asignaciones
-          </h1>
-          <p className="mt-1 font-rel-body text-sm text-rel-muted">
-            Qué versión se está dictando en esta empresa y por dónde se entra.
-          </p>
-        </div>
-        <Button variant="rel" onClick={() => setAsignando(true)}>
-          <Plus aria-hidden="true" />
-          Asignar curso
-        </Button>
-      </header>
+      <PageHeader
+        titulo="Asignaciones"
+        icono={Users}
+        descripcion="Qué versión se está dictando en esta empresa y por dónde se entra."
+        accion={
+          <Button variant="rel" onClick={() => setAsignando(true)}>
+            <Plus aria-hidden="true" />
+            Asignar curso
+          </Button>
+        }
+      />
 
       {detenidas > 0 ? (
         <div

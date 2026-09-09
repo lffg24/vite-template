@@ -12,7 +12,9 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
+import { BookOpen, Plus, Search } from "lucide-react";
+
+import { PageHeader } from "@/shared/ui/PageHeader";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,24 +95,23 @@ export default function CapacitacionesCursosPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-rel-heading text-2xl font-bold tracking-tight text-rel-dark sm:text-3xl">
-            Catálogo de cursos
-          </h1>
-          <p className="mt-1 font-rel-body text-sm text-rel-muted">
-            {consulta.fase === "listo"
-              ? borradores > 0
-                ? `${total} ${total === 1 ? "curso" : "cursos"} · ${borradores} sin publicar`
-                : `${total} ${total === 1 ? "curso" : "cursos"} · todos publicados`
-              : "Cursos, versiones y estado de publicación."}
-          </p>
-        </div>
-        <Button variant="rel" onClick={() => setCreando(true)}>
-          <Plus aria-hidden="true" />
-          Nuevo curso
-        </Button>
-      </header>
+      <PageHeader
+        titulo="Catálogo de cursos"
+        icono={BookOpen}
+        descripcion={
+          consulta.fase === "listo"
+            ? borradores > 0
+              ? `${total} ${total === 1 ? "curso" : "cursos"} · ${borradores} sin publicar`
+              : `${total} ${total === 1 ? "curso" : "cursos"} · todos publicados`
+            : "Cursos, versiones y estado de publicación."
+        }
+        accion={
+          <Button variant="rel" onClick={() => setCreando(true)}>
+            <Plus aria-hidden="true" />
+            Nuevo curso
+          </Button>
+        }
+      />
 
       {consulta.fase === "cargando" ? <CargandoTabla /> : null}
 
