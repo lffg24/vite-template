@@ -538,7 +538,7 @@ export default function PsicoEmpleadoResultadosPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background p-6 lg:p-8">
+    <main className="min-h-screen bg-background px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button

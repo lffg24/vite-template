@@ -126,7 +126,7 @@ export default function EmpresaAplicacionesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-slate-50 px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       <div className="mx-auto max-w-7xl space-y-6">
         <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm">
           <ArrowLeft className="h-4 w-4" /> Volver a empresa
