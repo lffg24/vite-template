@@ -456,7 +456,7 @@ export default function PsicoEmpleadoPerfilPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
-      <main className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
+      <main className="mx-auto max-w-[1500px] space-y-5 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50">

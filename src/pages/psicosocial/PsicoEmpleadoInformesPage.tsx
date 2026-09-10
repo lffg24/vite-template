@@ -151,7 +151,7 @@ export default function PsicoEmpleadoInformesPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-primary">

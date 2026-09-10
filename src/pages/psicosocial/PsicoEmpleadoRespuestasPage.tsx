@@ -699,7 +699,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const nombre = perfil?.nombre_completo || `Colaborador ${empleadoId}`;
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <main className="min-h-screen bg-slate-50 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
       {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
       <CreditGuardDialog info={creditGuardDialog} onClose={() => setCreditGuardDialog(null)} />
       <ConfirmDialog

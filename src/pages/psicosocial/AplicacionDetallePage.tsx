@@ -986,7 +986,7 @@ export default function AplicacionDetallePage() {
       <button
         type="button"
         onClick={() => toggleParticipantSort(key)}
-        className={`inline-flex items-center gap-1 rounded-lg px-1 py-1 font-black uppercase tracking-normal transition hover:bg-slate-100 hover:text-slate-800 ${
+        className={`inline-flex min-w-0 items-center gap-1 whitespace-normal rounded-lg px-1 py-1 text-left font-black uppercase tracking-normal transition hover:bg-slate-100 hover:text-slate-800 ${
           active ? "text-brand-primary" : "text-slate-500"
         } ${align === "right" ? "ml-auto" : ""}`}
       >
@@ -1221,7 +1221,7 @@ export default function AplicacionDetallePage() {
   );
 
   return (
-    <main className="min-h-screen bg-background p-6 lg:p-8">
+    <main className="min-h-screen bg-background px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       {closing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
           <div className="w-full max-w-xl rounded-3xl border border-accent bg-white p-6 shadow-floating">
@@ -1494,23 +1494,23 @@ export default function AplicacionDetallePage() {
             />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[1180px] table-fixed text-left text-sm">
+          <div className="overflow-x-hidden rounded-2xl border border-slate-200">
+            <table className="w-full table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="w-[21%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                  <th className="w-[21%] px-3 py-3" aria-sort={participantSortAria("colaborador")}>
                     {renderParticipantSortHeader("colaborador", "Colaborador")}
                   </th>
-                  <th className="w-[17%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                  <th className="w-[17%] px-3 py-3" aria-sort={participantSortAria("areaCargo")}>
                     {renderParticipantSortHeader("areaCargo", "Área / cargo")}
                   </th>
-                  <th className="w-[20%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                  <th className="w-[20%] px-3 py-3" aria-sort={participantSortAria("instrumentos")}>
                     {renderParticipantSortHeader("instrumentos", "Instrumentos")}
                   </th>
-                  <th className="w-[10%] px-4 py-3" aria-sort={participantSortAria("estado")}>
+                  <th className="w-[10%] px-3 py-3" aria-sort={participantSortAria("estado")}>
                     {renderParticipantSortHeader("estado", "Estado")}
                   </th>
-                  <th className="w-[32%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                  <th className="w-[32%] px-3 py-3 text-right" aria-sort={participantSortAria("accion")}>
                     {renderParticipantSortHeader("accion", "Acción", "right")}
                   </th>
                 </tr>
@@ -1528,24 +1528,24 @@ export default function AplicacionDetallePage() {
                 )}
                 {paginatedEmpleados.map((emp) => (
                   <tr key={emp.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-4">
-                      <strong className="block text-slate-950">
+                    <td className="break-words px-3 py-4">
+                      <strong className="block break-words text-slate-950">
                         {emp.nombre}
                       </strong>
-                      <span className="text-xs text-slate-500">
+                      <span className="break-all text-xs text-slate-500">
                         CC {emp.cedula}
                         {emp.email ? ` · ${emp.email}` : ""}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
-                      <span className="block font-bold">
+                    <td className="break-words px-3 py-4">
+                      <span className="block break-words font-bold">
                         {emp.area || "Sin área"}
                       </span>
                       <span className="text-xs text-slate-500">
                         {emp.cargo || "Sin cargo"}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         {participantInstrumentChips(data.instrumentos, emp).map((chip) => {
                           const chipClass =
@@ -1557,7 +1557,7 @@ export default function AplicacionDetallePage() {
                           return (
                             <span
                               key={`${emp.id}-${chip.code}`}
-                              className={`rounded-full px-3 py-1 text-xs font-black ${chipClass}`}
+                              className={`rounded-full px-2 py-1 text-xs font-black ${chipClass}`}
                             >
                               {chip.label}
                             </span>
@@ -1565,7 +1565,7 @@ export default function AplicacionDetallePage() {
                         })}
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-3 py-4">
                       {participantStatusLabel(emp) === "Completo" ? (
                         <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
                           <CheckCircle2 className="h-3 w-3" /> Completo
@@ -1580,13 +1580,13 @@ export default function AplicacionDetallePage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-2 py-4 text-right">
                       {(() => {
                         const enabled = canOpenParticipant(emp);
                         const label = participantActionLabel(emp, finalizada);
                         const reportEnabled = finalizada && enabled;
                         return (
-                          <div className="flex flex-wrap justify-end gap-2">
+                          <div className="flex min-w-0 flex-wrap justify-end gap-1.5">
                             <button
                               onClick={() => {
                                 if (enabled)
@@ -1600,7 +1600,7 @@ export default function AplicacionDetallePage() {
                                   ? label
                                   : "La aplicación ya fue cerrada/calculada y este participante no tiene respuestas registradas."
                               }
-                              className={`inline-flex min-w-[150px] items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 font-bold ${enabled ? "bg-primary text-primary-foreground hover:bg-primary-hover" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
+                              className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl px-2.5 py-2 text-xs font-bold 2xl:px-3 2xl:text-sm ${enabled ? "bg-primary text-primary-foreground hover:bg-primary-hover" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
                             >
                               {finalizada ? (
                                 <Lock className="h-4 w-4" />
@@ -1624,7 +1624,7 @@ export default function AplicacionDetallePage() {
                                     ? "Ver informes individuales del colaborador"
                                     : "Disponible para participantes con respuestas/resultados en aplicaciones finalizadas."
                                 }
-                                className={`inline-flex min-w-[122px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 font-bold ${
+                                className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl border px-2.5 py-2 text-xs font-bold 2xl:px-3 2xl:text-sm ${
                                   reportEnabled
                                     ? "border-accent bg-accent text-brand-primary hover:bg-accent-hover"
                                     : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
@@ -1646,7 +1646,7 @@ export default function AplicacionDetallePage() {
                                     ? "No disponible en aplicaciones finalizadas o en cálculo."
                                     : "Eliminar respuestas y resultados de este colaborador en esta aplicación."
                                 }
-                                className="inline-flex min-w-[120px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-red-100 bg-red-50 px-3 py-2 font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl border border-red-100 bg-red-50 px-2.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40 2xl:px-3 2xl:text-sm"
                               >
                                 <Trash2 className="h-4 w-4" /> Limpiar
                               </button>

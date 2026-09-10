@@ -198,6 +198,34 @@ test.describe("Flujos psicosociales críticos", () => {
     expect(tenantHeader).toBe("empresa-1");
   });
 
+  test("detalle de aplicacion ajusta la tabla al ancho disponible con el menu abierto", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await mockPsicologoSession(page, { initiallyAuthenticated: true });
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
+      fulfillJson(route, finalizedApplicationDetail),
+    );
+
+    await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+
+    const participantTable = page.getByRole("table").filter({ hasText: "Laura Gomez" });
+    await expect(participantTable).toBeVisible();
+    const tableContainer = participantTable.locator("..");
+    expect(
+      await tableContainer.evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+    ).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+
+    const backButton = page.getByRole("button", { name: "Volver a aplicaciones" });
+    const backButtonBox = await backButton.boundingBox();
+    expect(backButtonBox?.y ?? 999).toBeLessThan(48);
+
+    await page.setViewportSize({ width: 1024, height: 900 });
+    expect(
+      await tableContainer.evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+    ).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  });
+
   test("sesion vencida en una ruta protegida redirige al login con next seguro", async ({ page }) => {
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
