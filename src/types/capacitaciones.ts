@@ -153,10 +153,20 @@ export interface VersionPublicada {
 
 // --- asignaciones -------------------------------------------------------------
 
+/**
+ * Quién afirma la identidad de cada participante. Decide qué se reparte.
+ *
+ * Se manda SIEMPRE, aunque el backend tenga defecto: omitirlo dejaba todas las
+ * asignaciones en `INVITACION_INDIVIDUAL` sin que nadie lo hubiera elegido, y
+ * con ese modo el enlace de grupo no sirve para inscribirse.
+ */
+export type ModoIdentidad = "INVITACION_INDIVIDUAL" | "AUTODECLARADA";
+
 export interface AsignacionCrear {
   curso_version_id: string;
   fecha_objetivo?: string | null;
   vigencia_meses?: number | null;
+  modo_identidad: ModoIdentidad;
 }
 
 export interface AsignacionCreada {
@@ -196,6 +206,7 @@ export interface AsignacionResumen {
   fecha_objetivo: string | null;
   vigencia_meses: number | null;
   estado: EstadoAsignacion;
+  modo_identidad: ModoIdentidad;
   enlaces_activos: number;
   creado_en: string;
 }

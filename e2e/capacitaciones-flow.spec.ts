@@ -210,6 +210,9 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
                 fecha_objetivo: null,
                 vigencia_meses: 12,
                 estado: "ACTIVA",
+                // Explicito: si el simulacro lo omite, la prueba pasa sobre
+                // `undefined` y deja de comprobar el contrato real.
+                modo_identidad: "INVITACION_INDIVIDUAL",
                 enlaces_activos: 0,
                 creado_en: "2026-09-05T12:00:00Z",
               },

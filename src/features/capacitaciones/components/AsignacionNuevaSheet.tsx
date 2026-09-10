@@ -33,10 +33,35 @@ import {
   crearAsignacion,
   listarVersionesAsignables,
 } from "@/services/capacitacionesService";
-import type { ErrorApi, VersionAsignable } from "@/types/capacitaciones";
+import type { ErrorApi, ModoIdentidad, VersionAsignable } from "@/types/capacitaciones";
+import { OpcionesExcluyentes, type OpcionExcluyente } from "@/shared/ui/OpcionesExcluyentes";
 import { useConsulta } from "../useConsulta";
 import { CargandoPanel, ErrorConsulta, SinDatos } from "./EstadoPantalla";
 import { formatearIntensidad, formatearVigenciaMeses } from "../formato";
+
+/**
+ * Los dos modos, explicados por su CONSECUENCIA y no por su nombre.
+ *
+ * «Invitación individual» y «autodeclarada» no le dicen nada a quien organiza
+ * una capacitación. Lo que necesita saber es qué va a tener que repartir y si
+ * hace falta cargar la nómina antes, así que eso es lo que se lee.
+ */
+const MODOS: OpcionExcluyente<ModoIdentidad>[] = [
+  {
+    valor: "INVITACION_INDIVIDUAL",
+    titulo: "Solo quien esté en la nómina, con invitación personal",
+    descripcion:
+      "Cargas la lista de participantes y cada persona recibe un enlace propio. Nadie más puede entrar.",
+    nota: "El enlace de grupo seguirá existiendo, pero solo para mirar de qué va el curso: por ahí no se puede inscribir nadie.",
+  },
+  {
+    valor: "AUTODECLARADA",
+    titulo: "Cualquiera con el enlace, escribiendo sus datos",
+    descripcion:
+      "Un solo enlace que circula. Quien entra escribe su documento y su nombre, sin cuenta ni contraseña.",
+    nota: "Nadie verifica esos datos. La constancia deja constancia de ello, porque no es lo mismo como evidencia.",
+  },
+];
 
 export function AsignacionNuevaSheet({
   abierto,
@@ -54,6 +79,7 @@ export function AsignacionNuevaSheet({
   const [seleccion, setSeleccion] = useState<string>("");
   const [fechaObjetivo, setFechaObjetivo] = useState("");
   const [vigencia, setVigencia] = useState("");
+  const [modo, setModo] = useState<ModoIdentidad>("INVITACION_INDIVIDUAL");
   const [guardando, setGuardando] = useState(false);
 
   const disponibles = (versiones.datos ?? []).filter((v) => !v.ya_asignada);
@@ -72,14 +98,19 @@ export function AsignacionNuevaSheet({
           vigenciaNum !== null && Number.isFinite(vigenciaNum) && vigenciaNum > 0
             ? Math.trunc(vigenciaNum)
             : null,
+        modo_identidad: modo,
       });
       toast({
         title: "Curso asignado",
-        description: "Ya se le pueden generar enlaces de acceso.",
+        description:
+          modo === "INVITACION_INDIVIDUAL"
+            ? "Carga la nómina y emite las invitaciones: es lo que se reparte."
+            : "Genera el enlace de grupo: con este modo sirve para inscribirse.",
       });
       setSeleccion("");
       setFechaObjetivo("");
       setVigencia("");
+      setModo("INVITACION_INDIVIDUAL");
       await versiones.refrescar();
       await alCrear();
     } catch (e) {
@@ -126,6 +157,7 @@ export function AsignacionNuevaSheet({
         {versiones.fase === "listo" && (versiones.datos ?? []).length === 0 ? (
           <div className="mt-6">
             <SinDatos
+              ilustracion="capacitacion"
               titulo="No hay versiones publicadas"
               descripcion="Solo se puede asignar una versión congelada. Publica un curso del catálogo y vuelve aquí."
             />
@@ -196,6 +228,15 @@ export function AsignacionNuevaSheet({
                 Cuándo debería estar hecha. No bloquea nada: es seguimiento.
               </p>
             </div>
+
+            <OpcionesExcluyentes<ModoIdentidad>
+              nombre="a-modo"
+              leyenda="Quién dice quién es cada participante"
+              ayuda="Decide qué se reparte, y no se puede cambiar después de crear la asignación."
+              valor={modo}
+              alCambiar={setModo}
+              opciones={MODOS}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="a-vigencia" className="text-rel-dark">

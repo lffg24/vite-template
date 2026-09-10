@@ -11,6 +11,7 @@ import type {
   EstadoAsignacion,
   EstadoCurso,
   EnlaceResumen,
+  ModoIdentidad,
   TipoLeccion,
 } from "@/types/capacitaciones";
 import { ETIQUETA_CATEGORIA, ETIQUETA_TIPO_LECCION } from "@/types/capacitaciones";
@@ -109,6 +110,47 @@ export function TipoLeccionBadge({
     >
       {ETIQUETA_TIPO_LECCION[tipo]}
       {implementado ? "" : " · sin reproductor"}
+    </Badge>
+  );
+}
+
+/**
+ * Qué se reparte en esta asignación.
+ *
+ * No es decoración: dos asignaciones del mismo curso pueden tener modos
+ * distintos, y de eso depende si el enlace de grupo sirve para inscribirse o si
+ * hay que emitir invitaciones. Antes esta información no salía del backend y
+ * quien organizaba tenía que acordarse.
+ */
+export function ModoIdentidadBadge({ modo }: { modo: ModoIdentidad }) {
+  if (modo === "INVITACION_INDIVIDUAL") {
+    return (
+      <Badge
+        variant="relBrand"
+        title="Solo entra quien esté en la nómina, por su enlace personal. El enlace de grupo solo sirve para mirar."
+      >
+        Invitación personal
+      </Badge>
+    );
+  }
+  if (modo === "AUTODECLARADA") {
+    return (
+      <Badge
+        variant="relInfo"
+        title="Cualquiera con el enlace puede inscribirse escribiendo sus datos. Nadie los verifica."
+      >
+        Enlace abierto
+      </Badge>
+    );
+  }
+
+  // Ni `else` ni valor por defecto, y es deliberado: si la respuesta no trae el
+  // modo —un `undefined` de un contrato desactualizado— el `else` habría dicho
+  // «enlace abierto», que es justo la afirmación peligrosa. Un modo que no se
+  // reconoce se muestra como lo que es.
+  return (
+    <Badge variant="relNeutral" title="La respuesta del servidor no trae el modo de esta asignación.">
+      Modo sin determinar
     </Badge>
   );
 }

@@ -41,7 +41,7 @@ import {
   ErrorConsulta,
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
-import { EstadoAsignacionBadge } from "@/features/capacitaciones/components/Insignias";
+import { EstadoAsignacionBadge, ModoIdentidadBadge } from "@/features/capacitaciones/components/Insignias";
 import { AsignacionNuevaSheet } from "@/features/capacitaciones/components/AsignacionNuevaSheet";
 import { formatearFecha, formatearVigenciaMeses } from "@/features/capacitaciones/formato";
 
@@ -131,6 +131,7 @@ export default function CapacitacionesAsignacionesPage() {
 
       {consulta.fase === "listo" && filas.length === 0 ? (
         <SinDatos
+          ilustracion="capacitacion"
           titulo="Todavía no se ha asignado ningún curso"
           descripcion="Asignar una versión publicada es lo que permite generar enlaces y que la gente entre a hacerla."
           accion={
@@ -150,6 +151,7 @@ export default function CapacitacionesAsignacionesPage() {
                 <TableRow className="border-rel-border hover:bg-transparent">
                   <TableHead className="text-rel-dark">Curso</TableHead>
                   <TableHead className="text-rel-dark">Estado</TableHead>
+                  <TableHead className="text-rel-dark">Cómo se entra</TableHead>
                   <TableHead className="text-right text-rel-dark">Enlaces activos</TableHead>
                   <TableHead className="text-rel-dark">Fecha objetivo</TableHead>
                   <TableHead className="text-rel-dark">Vigencia</TableHead>
@@ -167,6 +169,9 @@ export default function CapacitacionesAsignacionesPage() {
                     </TableCell>
                     <TableCell>
                       <EstadoAsignacionBadge estado={a.estado} />
+                    </TableCell>
+                    <TableCell>
+                      <ModoIdentidadBadge modo={a.modo_identidad} />
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       <span className={detenida(a) ? "font-semibold text-rel-warning" : "text-rel-dark"}>
@@ -231,6 +236,9 @@ export default function CapacitacionesAsignacionesPage() {
                   </h2>
                   <EstadoAsignacionBadge estado={a.estado} />
                 </div>
+                <div className="mt-2">
+                  <ModoIdentidadBadge modo={a.modo_identidad} />
+                </div>
                 <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-rel-body text-sm">
                   <dt className="text-rel-muted">Enlaces activos</dt>
                   <dd
@@ -249,6 +257,15 @@ export default function CapacitacionesAsignacionesPage() {
                   </dd>
                 </dl>
                 <div className="mt-4 flex gap-2">
+                  <Button
+                    variant="relOutline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)}
+                  >
+                    <Send aria-hidden="true" />
+                    Invitaciones
+                  </Button>
                   <Button
                     variant="relOutline"
                     size="sm"

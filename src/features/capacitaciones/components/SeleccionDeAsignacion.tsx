@@ -18,7 +18,10 @@ import { listarAsignaciones } from "@/services/capacitacionesService";
 import type { AsignacionResumen } from "@/types/capacitaciones";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import { formatearFecha } from "@/features/capacitaciones/formato";
-import { EstadoAsignacionBadge } from "@/features/capacitaciones/components/Insignias";
+import {
+  EstadoAsignacionBadge,
+  ModoIdentidadBadge,
+} from "@/features/capacitaciones/components/Insignias";
 import {
   CargandoTabla,
   ErrorConsulta,
@@ -27,12 +30,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
+import type { NombreIlustracion } from "@/shared/ui/ilustraciones";
 
 type Destino = "invitaciones" | "enlaces";
 
 const COPIA: Record<
   Destino,
-  { titulo: string; descripcion: string; accion: string; vacio: string; Icono: typeof Send }
+  {
+    titulo: string;
+    descripcion: string;
+    accion: string;
+    vacio: string;
+    Icono: typeof Send;
+    ilustracion: NombreIlustracion;
+  }
 > = {
   invitaciones: {
     titulo: "Invitaciones",
@@ -42,6 +53,7 @@ const COPIA: Record<
     vacio:
       "Las invitaciones se emiten sobre una asignación. Asigna primero una versión publicada a la empresa y vuelve aquí.",
     Icono: Send,
+    ilustracion: "invitacion",
   },
   enlaces: {
     titulo: "Enlaces de grupo",
@@ -51,6 +63,7 @@ const COPIA: Record<
     vacio:
       "Los enlaces se generan sobre una asignación. Asigna primero una versión publicada a la empresa y vuelve aquí.",
     Icono: Link2,
+    ilustracion: "enlace",
   },
 };
 
@@ -64,7 +77,7 @@ function urgencia(a: AsignacionResumen): number {
 export default function SeleccionDeAsignacion({ destino }: { destino: Destino }) {
   const navegar = useNavigate();
   const consulta = useConsulta<AsignacionResumen[]>(() => listarAsignaciones(), []);
-  const { titulo, descripcion, accion, vacio, Icono } = COPIA[destino];
+  const { titulo, descripcion, accion, vacio, Icono, ilustracion } = COPIA[destino];
 
   const lista = [...(consulta.datos ?? [])].sort(
     (a, b) => urgencia(a) - urgencia(b) || a.curso_titulo.localeCompare(b.curso_titulo, "es")
@@ -83,6 +96,7 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
 
         {consulta.fase === "listo" && lista.length === 0 ? (
           <SinDatos
+            ilustracion={ilustracion}
             titulo="Todavía no hay ninguna asignación"
             descripcion={vacio}
             accion={
@@ -114,7 +128,13 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
                       <p className="text-xs text-rel-muted">Versión {a.numero_version}</p>
                     </td>
                     <td className="px-4 py-4">
-                      <EstadoAsignacionBadge estado={a.estado} />
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <EstadoAsignacionBadge estado={a.estado} />
+                        {/* Aquí es donde más falta hace: elegir «enlaces» sobre
+                            una asignación con invitación personal lleva a
+                            generar algo que no sirve para inscribir a nadie. */}
+                        <ModoIdentidadBadge modo={a.modo_identidad} />
+                      </div>
                     </td>
                     <td className="px-4 py-4 text-rel-muted">
                       {formatearFecha(a.fecha_objetivo)}
