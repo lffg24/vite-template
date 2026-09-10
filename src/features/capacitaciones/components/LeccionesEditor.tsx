@@ -247,6 +247,7 @@ export function LeccionesEditor({
       <CardContent>
         {lecciones.length === 0 ? (
           <SinDatos
+            ilustracion="documento"
             titulo="El curso todavía no tiene lecciones"
             descripcion="Un curso sin lecciones no se puede publicar: produciría una asignación que nadie puede completar."
             accion={

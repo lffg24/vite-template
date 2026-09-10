@@ -138,6 +138,7 @@ export default function CapacitacionesParticipantesPage() {
 
       {consulta.fase === "listo" && personas.length === 0 ? (
         <SinDatos
+          ilustracion="participantes"
           titulo="Todavía no hay nadie en la nómina"
           descripcion="Agrega personas una a una o importa un CSV. Sin ellas no puedes generar invitaciones."
         />

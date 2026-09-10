@@ -6,9 +6,10 @@
 // no inventen cada una su propio «Ocurrió un error».
 
 import type { ReactNode } from "react";
-import { AlertTriangle, Inbox, Lock, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Ilustracion, type NombreIlustracion } from "@/shared/ui/ilustraciones";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ErrorApi } from "@/types/capacitaciones";
 
@@ -64,19 +65,25 @@ export function CargandoPanel({ etiqueta = "Cargando información…" }: { etiqu
  *
  * Lleva siempre la acción que lo resuelve. Un vacío sin salida deja al usuario
  * mirando una ilustración sin saber qué hacer.
+ *
+ * `ilustracion` se elige por pantalla porque el vacío de Participantes y el de
+ * Constancias no son el mismo vacío. El defecto genérico existe para que nadie
+ * tenga que pensarlo cuando da igual.
  */
 export function SinDatos({
   titulo,
   descripcion,
   accion,
+  ilustracion = "vacio",
 }: {
   titulo: string;
   descripcion: string;
   accion?: ReactNode;
+  ilustracion?: NombreIlustracion;
 }) {
   return (
     <div className="rounded-rel-panel border border-dashed border-rel-border-strong bg-rel-surface-subtle px-6 py-12 text-center">
-      <Inbox className="mx-auto h-8 w-8 text-rel-neutral" aria-hidden="true" />
+      <Ilustracion nombre={ilustracion} tamano="md" className="mx-auto" />
       <h3 className="mt-4 font-rel-heading text-lg font-bold text-rel-dark">{titulo}</h3>
       <p className="mx-auto mt-2 max-w-prose font-rel-body text-sm text-rel-muted">
         {descripcion}
@@ -90,6 +97,7 @@ export function SinDatos({
 export function SinResultados({ limpiar }: { limpiar: () => void }) {
   return (
     <div className="rounded-rel-card border border-rel-border bg-rel-surface px-6 py-10 text-center">
+      <Ilustracion nombre="busqueda" tamano="sm" className="mx-auto mb-4" />
       <h3 className="font-rel-heading text-base font-bold text-rel-dark">
         Ningún curso coincide con el filtro
       </h3>
@@ -126,7 +134,7 @@ export function ErrorConsulta({
       className="rounded-rel-panel border border-rel-danger/30 bg-rel-danger-subtle p-6"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rel-danger" aria-hidden="true" />
+        <Ilustracion nombre="error" tamano="sm" className="shrink-0" />
         <div className="min-w-0">
           <h3 className="font-rel-heading text-base font-bold text-rel-dark">
             No pudimos cargar esta información
@@ -157,7 +165,7 @@ export function SinPermiso({ mensaje }: { mensaje?: string }) {
       className="rounded-rel-panel border border-rel-warning/30 bg-rel-warning-subtle p-6"
     >
       <div className="flex items-start gap-3">
-        <Lock className="mt-0.5 h-5 w-5 shrink-0 text-rel-warning" aria-hidden="true" />
+        <Ilustracion nombre="bloqueado" tamano="sm" className="shrink-0" />
         <div className="min-w-0">
           <h3 className="font-rel-heading text-base font-bold text-rel-dark">
             Esta acción no está disponible

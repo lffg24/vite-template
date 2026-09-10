@@ -209,6 +209,7 @@ export default function CapacitacionesEnlacesPage() {
 
       {enlaces.fase === "listo" && (enlaces.datos ?? []).length === 0 ? (
         <SinDatos
+          ilustracion="enlace"
           titulo="Nadie puede entrar todavía"
           descripcion="La asignación existe, pero sin un enlace no hay por dónde acceder. El enlace se muestra una sola vez al generarlo."
           accion={

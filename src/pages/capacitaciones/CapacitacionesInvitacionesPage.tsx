@@ -260,6 +260,7 @@ export default function CapacitacionesInvitacionesPage() {
 
       {invitaciones.fase === "listo" && lista.length === 0 ? (
         <SinDatos
+          ilustracion="invitacion"
           titulo="Todavía no has generado invitaciones"
           descripcion="Selecciona arriba a quién invitar. Sin invitación nadie puede entrar a esta capacitación."
         />

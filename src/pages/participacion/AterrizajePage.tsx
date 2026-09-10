@@ -9,7 +9,7 @@
 
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, Clock, FileText, Mail } from "lucide-react";
+import { CheckCircle2, Clock, FileText } from "lucide-react";
 
 import {
   abrirEnlace,
@@ -17,6 +17,7 @@ import {
 } from "@/services/participacionService";
 import type { Aterrizaje, ErrorPublico, Identificacion } from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
+import { Ilustracion } from "@/shared/ui/ilustraciones";
 import {
   BotonPrincipal,
   BotonSecundario,
@@ -201,7 +202,7 @@ export default function AterrizajePage() {
         <div className="mt-auto pt-6">
           <Panel>
             <div className="flex items-start gap-3">
-              <Mail className="mt-0.5 h-5 w-5 shrink-0 text-rel-primary" aria-hidden="true" />
+              <Ilustracion nombre="invitacion" tamano="sm" className="shrink-0" />
               <div>
                 <p className="text-sm font-semibold leading-relaxed">
                   Esta capacitación se hace con una invitación personal.
