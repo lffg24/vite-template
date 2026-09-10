@@ -4,7 +4,7 @@ import { FileSpreadsheet, FileText, FileType2, Info, Loader2, Printer, ShieldChe
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   descargarDocReporteOficial,
@@ -16,53 +16,72 @@ import {
 import type { TipoReportePsicoOficial } from "@/types/psicoReportesOficiales";
 import type { PsicoAplicacionItem } from "@/types/psicoDashboard";
 
-export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: string; description: string }> = [
+type ReportOption = { value: TipoReportePsicoOficial; label: string; description: string };
+
+export const reportGroups: Array<{ label: string; options: ReportOption[] }> = [
   {
-    value: "base_forma_a",
-    label: "Informe base Forma A",
-    description: "Reporte base independiente con tablas y gráficas del Formulario A, extralaboral A y estrés A.",
+    label: "Informes base",
+    options: [
+      {
+        value: "base_forma_a",
+        label: "Informe base · Forma A",
+        description: "Presenta únicamente los cálculos, tablas, distribuciones y gráficas de la Forma A, extralaboral A y estrés A. No incluye interpretación NeuroMapa ni plan de intervención.",
+      },
+      {
+        value: "base_forma_b",
+        label: "Informe base · Forma B",
+        description: "Presenta únicamente los cálculos, tablas, distribuciones y gráficas de la Forma B, extralaboral B y estrés B. No incluye interpretación NeuroMapa ni plan de intervención.",
+      },
+      {
+        value: "base_general",
+        label: "Informe base · General A/B",
+        description: "Reúne en un documento los resultados base de las Formas A y B, manteniendo cada formulario y su P(T) por separado. No unifica categorías A+B ni incluye análisis o plan de intervención.",
+      },
+      {
+        value: "consolidado_base",
+        label: "Informe base · Transversal A+B",
+        description: "Unifica las frecuencias y porcentajes ya clasificados de las Formas A y B. Conserva los P(T) separados y contiene solo tablas, distribuciones y gráficas, sin análisis NeuroMapa ni plan de intervención.",
+      },
+    ],
   },
   {
-    value: "base_forma_b",
-    label: "Informe base Forma B",
-    description: "Reporte base independiente con tablas y gráficas del Formulario B, extralaboral B y estrés B.",
+    label: "Informes BTR con análisis",
+    options: [
+      {
+        value: "resultados",
+        label: "Informe BTR · General A/B",
+        description: "Informe técnico completo por formulario: contenido transversal, resultados A y B separados, análisis NeuroMapa por instrumento, recomendaciones y plan de intervención sugerido.",
+      },
+      {
+        value: "consolidado_analisis",
+        label: "Informe BTR · Transversal A+B",
+        description: "Informe técnico completo con distribución categórica unificada A+B, P(T) por forma, análisis NeuroMapa por dominio y dimensión, gráficas esenciales y plan de intervención sugerido.",
+      },
+      {
+        value: "resultados_areas",
+        label: "Informe BTR · Por áreas",
+        description: "Presenta resultados agregados por las áreas registradas en la aplicación. Permite comparar focos de gestión sin exponer respuestas ni resultados individuales.",
+      },
+    ],
   },
   {
-    value: "base_general",
-    label: "Informe base general",
-    description: "Reporte base consolidado con Forma A y B cuando existan, manteniendo tablas, contenido y figuras por instrumento.",
-  },
-  {
-    value: "detallado_excel",
-    label: "Reporte detallado Excel",
-    description: "Matriz auditada con respuestas registradas y resultados persistidos por participante, instrumento, dominio y dimensión.",
-  },
-  {
-    value: "consolidado_base",
-    label: "Informe base consolidado transversal",
-    description: "Tablas de cálculo, P(T) por formulario, distribuciones porcentuales y gráficas unificadas A+B.",
-  },
-  {
-    value: "consolidado_analisis",
-    label: "Informe BTR consolidado transversal",
-    description: "Informe completo con introducción, marco teórico, NeuroMapa, tablas, gráficas, análisis, recomendaciones y plan de intervención A+B.",
-  },
-  {
-    value: "resultados",
-    label: "Informe general de resultados BRP",
-    description: "Informe general consolidado: resultados A/B, gráficas, recomendaciones y plan de intervención.",
-  },
-  {
-    value: "resultados_areas",
-    label: "Informe de resultados por áreas",
-    description: "Entregable independiente con resultados segmentados solo para áreas registradas en el sistema.",
-  },
-  {
-    value: "sociodemografico",
-    label: "Informe sociodemográfico",
-    description: "Ficha de datos generales, gráficas descriptivas y lectura poblacional editable.",
+    label: "Informes complementarios y datos",
+    options: [
+      {
+        value: "sociodemografico",
+        label: "Informe complementario · Sociodemográfico",
+        description: "Describe el perfil poblacional y ocupacional mediante tablas y gráficas. Sirve como contexto y no clasifica por sí mismo el riesgo psicosocial.",
+      },
+      {
+        value: "detallado_excel",
+        label: "Reporte de datos · Excel detallado",
+        description: "Matriz auditable con respuestas y resultados persistidos por participante, instrumento, dominio y dimensión. No contiene narrativa técnica ni plan de intervención.",
+      },
+    ],
   },
 ];
+
+export const reportOptions = reportGroups.flatMap((group) => group.options);
 
 function saveBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
@@ -217,7 +236,7 @@ export default function ReportesOficialesPsicoPage() {
           </div>
           <h1 className="text-4xl font-black tracking-tight text-foreground">Generador de <span className="marker-highlight">informes BRP</span></h1>
           <p className="mt-2 max-w-4xl text-muted-foreground">
-            Genera entregables oficiales separados: informe general, informe por áreas e informe sociodemográfico. Incluye vista previa, DOC editable y descarga directa en PDF.
+            Genera informes base, BTR con análisis y entregables complementarios. Incluye vista previa, DOC editable y descarga directa en PDF.
           </p>
         </div>
         </div>
@@ -250,15 +269,35 @@ export default function ReportesOficialesPsicoPage() {
                       <Info className="h-4 w-4" />
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-xl rounded-[28px] border-slate-200">
+                  <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto rounded-[28px] border-slate-200">
                     <DialogHeader>
                       <DialogTitle className="flex items-center gap-2 text-xl font-black text-slate-950">
                         <Sparkles className="h-5 w-5 text-brand-primary" /> Información del entregable
                       </DialogTitle>
                       <DialogDescription className="text-left leading-relaxed text-slate-600">
-                        {currentOption?.description}
+                        Consulta el contenido y alcance de cada tipo de informe. Seleccionaste: <strong>{currentOption?.label}</strong>.
                       </DialogDescription>
                     </DialogHeader>
+                    <div className="space-y-5">
+                      {reportGroups.map((group) => (
+                        <section key={group.label} aria-labelledby={`report-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`}>
+                          <h3 id={`report-group-${group.label.replace(/\s+/g, "-").toLowerCase()}`} className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-brand-primary">
+                            {group.label}
+                          </h3>
+                          <div className="space-y-2">
+                            {group.options.map((option) => (
+                              <article
+                                key={option.value}
+                                className={`rounded-2xl border p-3 ${option.value === tipoReporte ? "border-brand-primary bg-accent/70" : "border-slate-200 bg-white"}`}
+                              >
+                                <p className="font-black text-slate-950">{option.label}</p>
+                                <p className="mt-1 text-sm leading-relaxed text-slate-600">{option.description}</p>
+                              </article>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
                     <div className="rounded-2xl border border-accent bg-accent/70 p-4 text-sm leading-relaxed text-slate-700">
                       <p className="font-black text-brand-primary">NeuroMapa Psicosocial ABRIL360</p>
                       <p className="mt-1">
@@ -270,7 +309,17 @@ export default function ReportesOficialesPsicoPage() {
               </div>
               <Select value={tipoReporte} onValueChange={(v) => setTipoReporte(v as TipoReportePsicoOficial)}>
                 <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>{reportOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  {reportGroups.map((group, index) => (
+                    <div key={group.label}>
+                      {index > 0 ? <SelectSeparator /> : null}
+                      <SelectGroup>
+                        <SelectLabel className="text-xs font-black uppercase tracking-[0.12em] text-brand-primary">{group.label}</SelectLabel>
+                        {group.options.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                      </SelectGroup>
+                    </div>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
 
