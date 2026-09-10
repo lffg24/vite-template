@@ -12,5 +12,8 @@ describe("official psychosocial report options", () => {
     expect(reportOptions[3].value).toBe("detallado_excel");
     expect(reportOptions.map((option) => option.value)).toContain("consolidado_base");
     expect(reportOptions.map((option) => option.value)).toContain("consolidado_analisis");
+    expect(reportOptions.find((option) => option.value === "consolidado_analisis")?.label).toBe(
+      "Informe BTR consolidado transversal",
+    );
   });
 });

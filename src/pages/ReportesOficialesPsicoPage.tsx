@@ -40,12 +40,12 @@ export const reportOptions: Array<{ value: TipoReportePsicoOficial; label: strin
   {
     value: "consolidado_base",
     label: "Informe base consolidado transversal",
-    description: "Contexto técnico y distribuciones unificadas A/B mediante suma de frecuencias ya clasificadas, conservando separados los puntajes normativos por forma.",
+    description: "Tablas de cálculo, P(T) por formulario, distribuciones porcentuales y gráficas unificadas A+B.",
   },
   {
     value: "consolidado_analisis",
-    label: "Análisis consolidado transversal",
-    description: "Lectura y priorización organizacional unificada A/B basada en categorías de riesgo, sin crear ni promediar un puntaje normativo A+B.",
+    label: "Informe BTR consolidado transversal",
+    description: "Informe completo con introducción, marco teórico, NeuroMapa, tablas, gráficas, análisis, recomendaciones y plan de intervención A+B.",
   },
   {
     value: "resultados",
