@@ -97,6 +97,39 @@ function cursoBorrador(over: Record<string, unknown> = {}) {
 }
 
 test.describe("Capacitaciones · recorrido administrativo", () => {
+  test("las acciones de una asignación caben en móvil sin scroll horizontal", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await sesion(page);
+    await page.route(`${CAP}/asignaciones`, (route) =>
+      json(route, [
+        {
+          id: ASIGNACION_ID,
+          curso_id: CURSO_ID,
+          curso_titulo: "Inducción en Seguridad y Salud en el Trabajo",
+          curso_version_id: VERSION_ID,
+          numero_version: 1,
+          fecha_objetivo: "2026-09-07",
+          vigencia_meses: null,
+          estado: "ACTIVA",
+          modo_identidad: "INVITACION_INDIVIDUAL",
+          enlaces_activos: 1,
+          creado_en: "2026-09-05T12:00:00Z",
+        },
+      ])
+    );
+
+    await page.goto("/capacitaciones/asignaciones");
+    const cerrar = page.getByRole("button", { name: /^cerrar$/i });
+    await expect(cerrar).toBeVisible();
+    await expect(cerrar).toBeInViewport();
+
+    const medidas = await page.evaluate(() => ({
+      anchoVisible: document.documentElement.clientWidth,
+      anchoTotal: document.documentElement.scrollWidth,
+    }));
+    expect(medidas.anchoTotal).toBeLessThanOrEqual(medidas.anchoVisible);
+  });
+
   test("del catálogo vacío al enlace generado", async ({ page }) => {
     // Este único recorrido atraviesa seis pantallas y además paga la
     // compilación en frío de Vite. WebKit puede superar los 90 s sin que una

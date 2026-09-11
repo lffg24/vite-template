@@ -18,7 +18,8 @@
 // Son planas a propósito. Las referencias de producto muestran ilustraciones
 // con volumen y personajes, que es material de ilustrador; esto es la capa que
 // SÍ puede vivir en el repositorio: vectorial, sin binarios, sin peso, y que
-// cambia de color sola cuando cambia el tema o la paleta.
+// cambia con la paleta. El tema oscuro requiere overrides explícitos de los
+// tokens `rel-*`; hoy no existen y no se debe prometer esa adaptación.
 
 import { PALETA as C } from "./paleta";
 

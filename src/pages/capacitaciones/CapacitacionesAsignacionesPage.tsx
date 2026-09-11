@@ -256,11 +256,11 @@ export default function CapacitacionesAsignacionesPage() {
                     {formatearVigenciaMeses(a.vigencia_meses)}
                   </dd>
                 </dl>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-2">
                   <Button
                     variant="relOutline"
                     size="sm"
-                    className="flex-1"
+                    className="w-full"
                     onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)}
                   >
                     <Send aria-hidden="true" />
@@ -269,14 +269,19 @@ export default function CapacitacionesAsignacionesPage() {
                   <Button
                     variant="relOutline"
                     size="sm"
-                    className="flex-1"
+                    className="w-full"
                     onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
                   >
                     <Link2 aria-hidden="true" />
                     Enlaces
                   </Button>
                   {a.estado === "ACTIVA" ? (
-                    <Button variant="relGhost" size="sm" onClick={() => setACerrar(a)}>
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      className="col-span-2 w-full"
+                      onClick={() => setACerrar(a)}
+                    >
                       Cerrar
                     </Button>
                   ) : null}
