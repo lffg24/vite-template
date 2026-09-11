@@ -15,6 +15,7 @@ import { Link, useParams } from "react-router-dom";
 import { Link2, Plus } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
 
 import { Button } from "@/components/ui/button";
@@ -38,14 +39,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   generarEnlace,
@@ -228,58 +221,76 @@ export default function CapacitacionesEnlacesPage() {
             Los enlaces no se pueden volver a ver: el sistema guarda solo su huella.
           </p>
 
-          <div className="hidden overflow-x-auto rounded-rel-panel border border-rel-border bg-rel-surface md:block">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-rel-border hover:bg-transparent">
-                  <TableHead className="text-rel-dark">Estado</TableHead>
-                  <TableHead className="text-rel-dark">Generado</TableHead>
-                  <TableHead className="text-rel-dark">Vence</TableHead>
-                  <TableHead className="text-right text-rel-dark">Usos</TableHead>
-                  <TableHead className="text-right text-rel-dark">
-                    <span className="sr-only">Acciones</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(enlaces.datos ?? []).map((e) => (
-                  <TableRow key={e.id} className="border-rel-border">
-                    <TableCell>
-                      <EstadoEnlaceBadge enlace={e} />
-                    </TableCell>
-                    <TableCell className="text-rel-dark">
-                      {formatearFechaHora(e.creado_en)}
-                    </TableCell>
-                    <TableCell className="text-rel-dark">
-                      {formatearFechaHora(e.expira_en)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums text-rel-dark">
+          <div className="hidden md:block">
+            <TablaDatos<EnlaceResumen>
+              filas={enlaces.datos ?? []}
+              claveFila={(e) => e.id}
+              etiquetaElemento="enlaces"
+              etiquetaTabla="Enlaces de grupo de la asignación"
+              columnas={[
+                {
+                  clave: "estado",
+                  titulo: "Estado",
+                  // Ordena por el estado crudo y no por lo que pinta la
+                  // insignia: «Caduca en 2 días» es texto calculado, y ordenar
+                  // por él mezclaría caducidades con revocaciones.
+                  valor: (e) => e.estado,
+                  celda: (e) => <EstadoEnlaceBadge enlace={e} />,
+                },
+                {
+                  clave: "creado",
+                  titulo: "Generado",
+                  valor: (e) => e.creado_en,
+                  celda: (e) => (
+                    <span className="text-rel-dark">{formatearFechaHora(e.creado_en)}</span>
+                  ),
+                },
+                {
+                  clave: "expira",
+                  titulo: "Vence",
+                  valor: (e) => e.expira_en,
+                  celda: (e) => (
+                    <span className="text-rel-dark">{formatearFechaHora(e.expira_en)}</span>
+                  ),
+                },
+                {
+                  clave: "usos",
+                  titulo: "Usos",
+                  alineacion: "derecha",
+                  valor: (e) => e.usos,
+                  celda: (e) => (
+                    <span className="tabular-nums text-rel-dark">
                       {formatearCupo(e.usos, e.cupo_max)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {e.estado === "ACTIVO" ? (
-                        <Button
-                          variant="relGhost"
-                          size="sm"
-                          className="text-rel-danger hover:bg-rel-danger-subtle"
-                          onClick={() => setARevocar(e)}
-                        >
-                          Revocar
-                          <span className="sr-only">
-                            {" "}
-                            el enlace generado el {formatearFechaHora(e.creado_en)}
-                          </span>
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-rel-muted">
-                          Revocado el {formatearFechaHora(e.revocado_en)}
+                    </span>
+                  ),
+                },
+                {
+                  clave: "acciones",
+                  titulo: "Acciones",
+                  alineacion: "derecha",
+                  soloAcciones: true,
+                  celda: (e) =>
+                    e.estado === "ACTIVO" ? (
+                      <Button
+                        variant="relGhost"
+                        size="sm"
+                        className="text-rel-danger hover:bg-rel-danger-subtle"
+                        onClick={() => setARevocar(e)}
+                      >
+                        Revocar
+                        <span className="sr-only">
+                          {" "}
+                          el enlace generado el {formatearFechaHora(e.creado_en)}
                         </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </Button>
+                    ) : (
+                      <span className="text-sm text-rel-muted">
+                        Revocado el {formatearFechaHora(e.revocado_en)}
+                      </span>
+                    ),
+                },
+              ]}
+            />
           </div>
 
           <ul className="space-y-3 md:hidden">

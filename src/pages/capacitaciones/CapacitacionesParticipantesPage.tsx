@@ -18,6 +18,8 @@ import { Pencil, Search, Upload, UserPlus, Users2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
+import { TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -29,14 +31,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   analizarImportacion,
@@ -165,50 +159,71 @@ export default function CapacitacionesParticipantesPage() {
 
       {consulta.fase === "listo" && visibles.length > 0 ? (
         <>
-          <div className="hidden overflow-x-auto rounded-rel-card border border-rel-border md:block">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-rel-border">
-                  <TableHead className="text-rel-dark">Persona</TableHead>
-                  <TableHead className="text-rel-dark">Documento</TableHead>
-                  <TableHead className="text-rel-dark">Cargo</TableHead>
-                  <TableHead className="text-rel-dark">Identidad</TableHead>
-                  <TableHead className="text-right text-rel-dark">Cursos</TableHead>
-                  <TableHead className="text-right text-rel-dark">
-                    <span className="sr-only">Acciones</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibles.map((p) => (
-                  <TableRow key={p.id} className="border-rel-border">
-                    <TableCell className="font-medium text-rel-dark">
-                      {p.nombres} {p.apellidos}
-                    </TableCell>
-                    <TableCell className="tabular-nums text-rel-muted">
+          <div className="hidden md:block">
+            <TablaDatos<ParticipanteResumen>
+              filas={visibles}
+              claveFila={(p) => p.id}
+              etiquetaElemento="personas"
+              etiquetaTabla="Nómina de participantes"
+              ordenInicial={{ clave: "persona" }}
+              columnas={[
+                {
+                  clave: "persona",
+                  titulo: "Persona",
+                  // Ordena por apellidos: una nómina se busca por apellido, y
+                  // ordenarla por nombre de pila la deja donde nadie la busca.
+                  valor: (p) => `${p.apellidos} ${p.nombres}`,
+                  celda: (p) => (
+                    <CeldaPrincipal
+                      alAbrir={() => setEditando(p)}
+                      titulo={`${p.nombres} ${p.apellidos}`}
+                      apoyo={p.cargo ?? "Sin cargo"}
+                    />
+                  ),
+                },
+                {
+                  clave: "documento",
+                  titulo: "Documento",
+                  valor: (p) => p.numero_documento,
+                  celda: (p) => (
+                    <span className="tabular-nums text-rel-muted">
                       {p.tipo_documento} {p.numero_documento}
-                    </TableCell>
-                    <TableCell className="text-rel-muted">{p.cargo ?? "—"}</TableCell>
-                    <TableCell>
-                      <OrigenBadge origen={p.origen} />
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums text-rel-dark">
-                      {p.inscripciones}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="relOutline" size="sm" onClick={() => setEditando(p)}>
-                        <Pencil className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                        Corregir
-                        <span className="sr-only">
-                          {" "}
-                          los datos de {p.nombres} {p.apellidos}
-                        </span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </span>
+                  ),
+                },
+                {
+                  clave: "origen",
+                  titulo: "Identidad",
+                  valor: (p) => p.origen,
+                  celda: (p) => <OrigenBadge origen={p.origen} />,
+                },
+                {
+                  clave: "inscripciones",
+                  titulo: "Cursos",
+                  alineacion: "derecha",
+                  valor: (p) => p.inscripciones,
+                  celda: (p) => (
+                    <span className="tabular-nums text-rel-dark">{p.inscripciones}</span>
+                  ),
+                },
+                {
+                  clave: "acciones",
+                  titulo: "Acciones",
+                  alineacion: "derecha",
+                  soloAcciones: true,
+                  celda: (p) => (
+                    <Button variant="relOutline" size="sm" onClick={() => setEditando(p)}>
+                      <Pencil className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                      Corregir
+                      <span className="sr-only">
+                        {" "}
+                        los datos de {p.nombres} {p.apellidos}
+                      </span>
+                    </Button>
+                  ),
+                },
+              ]}
+            />
           </div>
 
           <ul className="space-y-3 md:hidden">
@@ -219,9 +234,13 @@ export default function CapacitacionesParticipantesPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-rel-dark">
+                    <button
+                      type="button"
+                      onClick={() => setEditando(p)}
+                      className="truncate text-left font-semibold text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline"
+                    >
                       {p.nombres} {p.apellidos}
-                    </p>
+                    </button>
                     <p className="text-sm tabular-nums text-rel-muted">
                       {p.tipo_documento} {p.numero_documento}
                     </p>
@@ -673,33 +692,33 @@ function PanelImportacion({
                 </p>
               ) : null}
 
-              <div className="overflow-x-auto rounded-rel-card border border-rel-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-rel-border">
-                      <TableHead className="w-16 text-rel-dark">Fila</TableHead>
-                      <TableHead className="text-rel-dark">Persona</TableHead>
-                      <TableHead className="text-rel-dark">Qué pasará</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+              <TablaPanel>
+                <table className="min-w-full text-left text-sm">
+                  <TablaHead>
+                    <tr>
+                      <th scope="col" className="w-16 px-4 py-3">Fila</th>
+                      <th scope="col" className="px-4 py-3">Persona</th>
+                      <th scope="col" className="px-4 py-3">Qué pasará</th>
+                    </tr>
+                  </TablaHead>
+                  <TablaBody>
                     {previa.filas.map((f) => (
-                      <TableRow key={f.fila} className="border-rel-border">
-                        <TableCell className="tabular-nums text-rel-muted">{f.fila}</TableCell>
-                        <TableCell className="text-rel-dark">
+                      <tr key={f.fila}>
+                        <td className="px-4 py-3 tabular-nums text-rel-muted">{f.fila}</td>
+                        <td className="px-4 py-3 text-rel-dark">
                           {f.datos.nombres} {f.datos.apellidos}
                           <span className="ml-2 text-xs text-rel-muted">
                             {f.datos.tipo_documento} {f.datos.numero_documento}
                           </span>
-                        </TableCell>
-                        <TableCell className="text-sm">
+                        </td>
+                        <td className="px-4 py-3 text-sm">
                           <ResultadoFila fila={f} />
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  </TablaBody>
+                </table>
+              </TablaPanel>
             </>
           ) : null}
         </div>

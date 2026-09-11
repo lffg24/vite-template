@@ -210,25 +210,33 @@ export function TablaDatos<T>({
  * Se usa en TODAS las tablas para que el nombre sea siempre la forma de entrar
  * al detalle. Que en una tabla se entre por el nombre y en otra por un botón al
  * final de la fila obliga a aprender cada pantalla por separado.
+ *
+ * `a` es una ruta y es lo que se debe usar: un enlace se abre en otra pestaña,
+ * se copia y se comparte. `alAbrir` existe SOLO para las filas que todavía no
+ * tienen página propia —hoy, Participantes— y abren un panel lateral. No es una
+ * alternativa de estilo: cuando esa fila tenga ruta, pasa a `a`. Por eso son
+ * excluyentes en el tipo y no dos props opcionales que alguien pueda mezclar.
  */
-export function CeldaPrincipal({
-  a,
-  titulo,
-  apoyo,
-}: {
-  /** Ruta del detalle. */
-  a: string;
+type CeldaPrincipalProps = {
   titulo: string;
   apoyo?: ReactNode;
-}) {
+} & ({ a: string; alAbrir?: never } | { a?: never; alAbrir: () => void });
+
+const CLASES_PRINCIPAL =
+  "text-left font-black text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2";
+
+export function CeldaPrincipal({ a, alAbrir, titulo, apoyo }: CeldaPrincipalProps) {
   return (
     <>
-      <Link
-        to={a}
-        className="font-black text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
-      >
-        {titulo}
-      </Link>
+      {a ? (
+        <Link to={a} className={CLASES_PRINCIPAL}>
+          {titulo}
+        </Link>
+      ) : (
+        <button type="button" onClick={alAbrir} className={CLASES_PRINCIPAL}>
+          {titulo}
+        </button>
+      )}
       {apoyo ? <p className="mt-0.5 text-xs text-rel-muted">{apoyo}</p> : null}
     </>
   );

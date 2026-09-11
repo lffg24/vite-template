@@ -33,6 +33,7 @@ import { Copy, FileBadge, Search, ShieldOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -45,14 +46,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { anularConstancia, listarConstancias } from "@/services/capacitacionesService";
 import type { ConstanciaResumen, ErrorApi } from "@/types/capacitaciones";
@@ -230,64 +223,86 @@ export default function CapacitacionesConstanciasPage() {
           {/* Tabla en escritorio. En móvil una tabla de ocho columnas obliga a
               desplazar en horizontal para leer una sola fila, así que abajo hay
               tarjetas con los mismos datos. */}
-          <div className="hidden overflow-x-auto rounded-rel-card border border-rel-border md:block">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-rel-border">
-                  <TableHead className="w-20 text-rel-dark">Folio</TableHead>
-                  <TableHead className="text-rel-dark">Persona</TableHead>
-                  <TableHead className="text-rel-dark">Capacitación</TableHead>
-                  <TableHead className="text-rel-dark">Código</TableHead>
-                  <TableHead className="text-rel-dark">Emitida</TableHead>
-                  <TableHead className="text-rel-dark">Vigencia</TableHead>
-                  <TableHead className="text-rel-dark">Estado</TableHead>
-                  <TableHead className="text-right text-rel-dark">
-                    <span className="sr-only">Acciones</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibles.map((c) => (
-                  <TableRow key={c.id} className="border-rel-border">
-                    <TableCell className="font-semibold tabular-nums text-rel-dark">
-                      {c.folio}
-                    </TableCell>
-                    <TableCell className="font-medium text-rel-dark">{nombre(c)}</TableCell>
-                    <TableCell className="text-rel-muted">{c.curso ?? "—"}</TableCell>
-                    <TableCell>
-                      <BotonCodigo c={c} alCopiar={copiarCodigo} />
-                    </TableCell>
-                    <TableCell className="text-rel-muted">
-                      {formatearFecha(c.emitida_en)}
-                    </TableCell>
-                    <TableCell className="text-rel-muted">{vigencia(c)}</TableCell>
-                    <TableCell>
-                      <EstadoConstancia c={c} idMotivo={`motivo-t-${c.id}`} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {c.estado === "VIGENTE" ? (
-                        <Button
-                          variant="relOutline"
-                          size="sm"
-                          onClick={() => {
-                            setAAnular(c);
-                            setMotivo("");
-                          }}
-                        >
-                          <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                          Anular
-                          <span className="sr-only"> la constancia {c.folio}</span>
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-rel-muted">
-                          {formatearFechaHora(c.anulada_en)}
-                        </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="hidden md:block">
+            <TablaDatos<ConstanciaResumen>
+              filas={visibles}
+              claveFila={(c) => c.id}
+              etiquetaElemento="constancias"
+              etiquetaTabla="Constancias emitidas"
+              columnas={[
+                {
+                  clave: "folio",
+                  titulo: "Folio",
+                  valor: (c) => c.folio,
+                  celda: (c) => (
+                    <span className="font-semibold tabular-nums text-rel-dark">{c.folio}</span>
+                  ),
+                },
+                {
+                  clave: "persona",
+                  titulo: "Persona",
+                  valor: (c) => nombre(c),
+                  celda: (c) => (
+                    <span className="font-medium text-rel-dark">{nombre(c)}</span>
+                  ),
+                },
+                {
+                  clave: "curso",
+                  titulo: "Capacitación",
+                  valor: (c) => c.curso,
+                  celda: (c) => <span className="text-rel-muted">{c.curso ?? "—"}</span>,
+                },
+                {
+                  clave: "codigo",
+                  titulo: "Código",
+                  celda: (c) => <BotonCodigo c={c} alCopiar={copiarCodigo} />,
+                },
+                {
+                  clave: "emitida",
+                  titulo: "Emitida",
+                  valor: (c) => c.emitida_en,
+                  celda: (c) => (
+                    <span className="text-rel-muted">{formatearFecha(c.emitida_en)}</span>
+                  ),
+                },
+                {
+                  clave: "vigencia",
+                  titulo: "Vigencia",
+                  celda: (c) => <span className="text-rel-muted">{vigencia(c)}</span>,
+                },
+                {
+                  clave: "estado",
+                  titulo: "Estado",
+                  valor: (c) => c.estado,
+                  celda: (c) => <EstadoConstancia c={c} idMotivo={`motivo-t-${c.id}`} />,
+                },
+                {
+                  clave: "acciones",
+                  titulo: "Acciones",
+                  alineacion: "derecha",
+                  soloAcciones: true,
+                  celda: (c) =>
+                    c.estado === "VIGENTE" ? (
+                      <Button
+                        variant="relOutline"
+                        size="sm"
+                        onClick={() => {
+                          setAAnular(c);
+                          setMotivo("");
+                        }}
+                      >
+                        <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                        Anular
+                        <span className="sr-only"> la constancia {c.folio}</span>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-rel-muted">
+                        {formatearFechaHora(c.anulada_en)}
+                      </span>
+                    ),
+                },
+              ]}
+            />
           </div>
 
           <ul className="space-y-3 md:hidden">
