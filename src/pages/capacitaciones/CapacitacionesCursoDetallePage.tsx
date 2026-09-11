@@ -11,9 +11,10 @@
 
 import { useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BotonVolver } from "@/shared/ui/BotonVolver";
 import { obtenerCurso } from "@/services/capacitacionesService";
 import type { CursoDetalle } from "@/types/capacitaciones";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -44,12 +45,7 @@ export default function CapacitacionesCursoDetallePage() {
 
   return (
     <div className="space-y-6">
-      <Button variant="relGhost" size="sm" asChild className="-ml-3">
-        <Link to="/capacitaciones/cursos">
-          <ArrowLeft aria-hidden="true" />
-          Volver al catálogo
-        </Link>
-      </Button>
+      <BotonVolver a="/capacitaciones/cursos">Volver al catálogo</BotonVolver>
 
       {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Abriendo el curso…" /> : null}
 

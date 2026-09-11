@@ -17,9 +17,10 @@
 
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Printer, Send, ShieldOff } from "lucide-react";
+import { Printer, Send, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { BotonVolver } from "@/shared/ui/BotonVolver";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -173,13 +174,7 @@ export default function CapacitacionesInvitacionesPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/capacitaciones/asignaciones"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-rel-primary hover:underline"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Volver a las asignaciones
-      </Link>
+      <BotonVolver a="/capacitaciones/asignaciones">Volver a asignaciones</BotonVolver>
 
       <PageHeader
         titulo="Invitaciones personales"

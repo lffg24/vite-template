@@ -12,9 +12,10 @@
 
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Link2, Plus } from "lucide-react";
+import { Link2, Plus } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { BotonVolver } from "@/shared/ui/BotonVolver";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,12 +166,7 @@ export default function CapacitacionesEnlacesPage() {
 
   return (
     <div className="space-y-6">
-      <Button variant="relGhost" size="sm" asChild className="-ml-3">
-        <Link to="/capacitaciones/asignaciones">
-          <ArrowLeft aria-hidden="true" />
-          Volver a asignaciones
-        </Link>
-      </Button>
+      <BotonVolver a="/capacitaciones/asignaciones">Volver a asignaciones</BotonVolver>
 
       <PageHeader
         titulo="Enlaces de grupo"
