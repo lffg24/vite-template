@@ -195,7 +195,7 @@ export async function guardarProgreso(
  */
 export async function enviarIntento(
   leccionId: string,
-  respuestas: number[]
+  respuestas: (number | number[])[]
 ): Promise<IntentoCalificado> {
   try {
     const { data } = await publico.post<IntentoCalificado>(

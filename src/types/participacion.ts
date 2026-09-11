@@ -142,8 +142,19 @@ export interface RecursoPublico {
  * alguien a leerla.
  */
 export interface PreguntaPublica {
+  /** Decide la forma de la respuesta: un índice, o una lista de índices. */
+  tipo: "OPCION_UNICA" | "OPCION_MULTIPLE" | "VERDADERO_FALSO";
   enunciado: string;
+  /** Ya resueltas: un verdadero/falso no las guarda, las pone el sistema. */
   opciones: string[];
+  puntos: number;
+}
+
+/** Lo que se muestra al terminar, cuando ya no queda reintento. */
+export interface RetroalimentacionPublica {
+  enunciado: string;
+  acierto: boolean;
+  texto: string | null;
 }
 
 export interface EvaluacionPublica {
@@ -166,6 +177,11 @@ export interface IntentoCalificado {
   intentos_max: number;
   intentos_usados: number;
   puede_reintentar: boolean;
+  /**
+   * Vacía mientras queden intentos: con otro por delante, decir qué se falló
+   * convierte el segundo en copiar la corrección del primero.
+   */
+  retroalimentacion: RetroalimentacionPublica[];
 }
 
 export interface LeccionCompleta {

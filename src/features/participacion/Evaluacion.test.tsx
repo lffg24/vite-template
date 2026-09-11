@@ -13,8 +13,8 @@ function evaluacion(parcial: Partial<EvaluacionPublica> = {}): EvaluacionPublica
     aprobado: false,
     mejor_puntaje: null,
     preguntas: [
-      { enunciado: "¿Uno?", opciones: ["a", "b"] },
-      { enunciado: "¿Dos?", opciones: ["c", "d"] },
+      { tipo: "OPCION_UNICA" as const, enunciado: "¿Uno?", opciones: ["a", "b"], puntos: 1 },
+      { tipo: "OPCION_UNICA" as const, enunciado: "¿Dos?", opciones: ["c", "d"], puntos: 1 },
     ],
     ...parcial,
   };
@@ -31,6 +31,9 @@ function intento(parcial: Partial<IntentoCalificado> = {}): IntentoCalificado {
     intentos_max: 2,
     intentos_usados: 1,
     puede_reintentar: true,
+    // Explícita: omitida, la prueba pasaría sobre `undefined` y dejaría de
+    // comprobar que el veredicto no revela nada mientras queden intentos.
+    retroalimentacion: [],
     ...parcial,
   };
 }
@@ -96,6 +99,23 @@ describe("la evaluación del participante", () => {
     expect(screen.getByText(/1 de 2 correctas/i)).toBeInTheDocument();
     expect(screen.queryByText("¿Uno?")).not.toBeInTheDocument();
     expect(screen.queryByText("¿Dos?")).not.toBeInTheDocument();
+  });
+
+  it("cuando ya no hay reintento, muestra la retroalimentación que llegue", () => {
+    // El servidor la manda vacía mientras queden intentos; esta pantalla solo
+    // pinta lo que le llega. Si algún día llegara de más, se vería aquí.
+    pintar({
+      resultado: intento({
+        puede_reintentar: false,
+        retroalimentacion: [
+          { enunciado: "¿Uno?", acierto: true, texto: "Bien visto." },
+          { enunciado: "¿Dos?", acierto: false, texto: null },
+        ],
+      }),
+    });
+
+    expect(screen.getByText(/bien visto/i)).toBeInTheDocument();
+    expect(screen.getByText(/incorrecta · ¿dos\?/i)).toBeInTheDocument();
   });
 
   it("aprobado ofrece volver al curso, no reintentar", () => {

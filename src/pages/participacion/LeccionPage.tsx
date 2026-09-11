@@ -85,7 +85,7 @@ export default function LeccionPage() {
     [leccionId]
   );
 
-  async function enviar(respuestas: number[]) {
+  async function enviar(respuestas: (number | number[])[]) {
     setGuardando(true);
     setErrorGuardado(null);
     try {

@@ -21,6 +21,7 @@ import { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
+import { OpcionesMultiples } from "@/shared/ui/OpcionesMultiples";
 import { BotonPrincipal } from "@/features/participacion/ParticipanteLayout";
 import type { EvaluacionPublica, IntentoCalificado } from "@/types/participacion";
 
@@ -41,16 +42,23 @@ export function Evaluacion({
   error: string | null;
   /** El del envío recién hecho. `null` mientras no se haya enviado nada. */
   resultado: IntentoCalificado | null;
-  alEnviar: (respuestas: number[]) => void;
+  alEnviar: (respuestas: (number | number[])[]) => void;
   alReintentar: () => void;
   alTerminar: () => void;
 }) {
   const [actual, setActual] = useState(0);
-  const [respuestas, setRespuestas] = useState<Record<number, number>>({});
+  // Un índice, o varios si la pregunta admite varias. La forma la decide el
+  // TIPO, no la pantalla: mandar un índice suelto donde se esperan varios es
+  // un envío que el servidor rechaza.
+  const [respuestas, setRespuestas] = useState<Record<number, number | number[]>>({});
 
   const total = evaluacion.preguntas.length;
   const pregunta = evaluacion.preguntas[actual];
-  const respondidas = Object.keys(respuestas).length;
+  const respondida = (i: number) => {
+    const r = respuestas[i];
+    return Array.isArray(r) ? r.length > 0 : r !== undefined;
+  };
+  const respondidas = evaluacion.preguntas.filter((_, i) => respondida(i)).length;
   const esUltima = actual >= total - 1;
 
   // --- ya hay veredicto ------------------------------------------------------
@@ -124,17 +132,35 @@ export function Evaluacion({
         </div>
       </div>
 
-      <OpcionesExcluyentes
-        nombre={`pregunta-${actual}`}
-        leyenda={pregunta.enunciado}
-        valor={respuestas[actual] === undefined ? "" : clave(respuestas[actual])}
-        alCambiar={(v) => setRespuestas((r) => ({ ...r, [actual]: Number(v) }))}
-        opciones={pregunta.opciones.map((texto, i) => ({
-          valor: clave(i),
-          titulo: texto,
-          descripcion: "",
-        }))}
-      />
+      {pregunta.tipo === "OPCION_MULTIPLE" ? (
+        <OpcionesMultiples
+          nombre={`pregunta-${actual}`}
+          leyenda={pregunta.enunciado}
+          ayuda="Marca todas las que apliquen."
+          valores={((respuestas[actual] as number[]) ?? []).map(clave)}
+          alCambiar={(v) =>
+            setRespuestas((r) => ({ ...r, [actual]: v.map(Number).sort((a, b) => a - b) }))
+          }
+          opciones={pregunta.opciones.map((texto, i) => ({
+            valor: clave(i),
+            titulo: texto,
+          }))}
+        />
+      ) : (
+        <OpcionesExcluyentes
+          nombre={`pregunta-${actual}`}
+          leyenda={pregunta.enunciado}
+          valor={
+            respuestas[actual] === undefined ? "" : clave(respuestas[actual] as number)
+          }
+          alCambiar={(v) => setRespuestas((r) => ({ ...r, [actual]: Number(v) }))}
+          opciones={pregunta.opciones.map((texto, i) => ({
+            valor: clave(i),
+            titulo: texto,
+            descripcion: "",
+          }))}
+        />
+      )}
 
       {error ? (
         <p
@@ -176,7 +202,7 @@ export function Evaluacion({
           </BotonPrincipal>
         ) : (
           <BotonPrincipal
-            disabled={respuestas[actual] === undefined}
+            disabled={!respondida(actual)}
             onClick={() => setActual((a) => a + 1)}
           >
             Siguiente
@@ -227,9 +253,33 @@ function Veredicto({
               ? "Todavía no. Puedes volver a intentarlo."
               : "No alcanzaste la nota y se acabaron los intentos."}
         </p>
-        {/* No se dice CUÁLES se fallaron. Con intentos restantes, señalarlas
-            convierte el segundo intento en copiar la corrección del primero. */}
       </div>
+
+      {/* La retroalimentación llega VACÍA mientras queden intentos: con otro por
+          delante, señalar los fallos convierte el segundo en copiar la
+          corrección del primero. Cuando ya no hay reintento, el texto es
+          material de enseñanza y esconderlo no protege nada. */}
+      {resultado.retroalimentacion.length > 0 ? (
+        <ol className="space-y-3">
+          {resultado.retroalimentacion.map((r, i) => (
+            <li
+              key={i}
+              className={`rounded-rel-card border p-4 ${
+                r.acierto
+                  ? "border-rel-success/30 bg-rel-success-subtle"
+                  : "border-rel-danger/30 bg-rel-danger-subtle"
+              }`}
+            >
+              <p className="text-sm font-semibold">
+                {r.acierto ? "Correcta" : "Incorrecta"} · {r.enunciado}
+              </p>
+              {r.texto ? (
+                <p className="mt-1 text-sm text-rel-muted">{r.texto}</p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      ) : null}
 
       {resultado.puede_reintentar ? (
         <BotonPrincipal onClick={alReintentar}>
