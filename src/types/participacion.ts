@@ -125,6 +125,15 @@ export interface BloqueLeccion {
  * pantalla, y llevar el texto de todas las lecciones haría que abrir el índice
  * descargara el curso entero. En 4G eso se nota.
  */
+/** El material congelado en la versión que se está cursando. */
+export interface RecursoPublico {
+  proveedor: string;
+  url: string;
+  titulo: string;
+  duracion_seg?: number | null;
+  paginas?: number | null;
+}
+
 export interface LeccionCompleta {
   leccion_id: string;
   orden: number;
@@ -132,6 +141,8 @@ export interface LeccionCompleta {
   tipo: string;
   obligatoria: boolean;
   bloques: BloqueLeccion[];
+  /** Solo en las lecciones que se reproducen desde una URL. */
+  recurso: RecursoPublico | null;
   bloques_vistos: number;
   completada: boolean;
 }

@@ -1,6 +1,9 @@
-// src/pages/participacion/LeccionPage.tsx · D-06
+// src/pages/participacion/LeccionPage.tsx · D-05 y D-06
 //
-// La lección nativa: bloques de texto que se recorren de uno en uno.
+// Dos formas de lección en la misma pantalla, y a propósito: para quien cursa,
+// «la lección 3» es un sitio, no dos rutas distintas según de qué esté hecha.
+//
+// La nativa: bloques de texto que se recorren de uno en uno.
 //
 // De uno en uno y no en una página larga con scroll, y la razón no es estética.
 // El progreso se guarda por bloque, así que un solo scroll no permitiría saber
@@ -22,6 +25,7 @@ import {
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
+import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -31,6 +35,11 @@ export default function LeccionPage() {
   const consulta = useConsulta<LeccionCompleta>(() => leerLeccion(leccionId), [leccionId]);
 
   const [bloque, setBloque] = useState(0);
+  // La confirmación de haber visto el material. Empieza SIEMPRE en falso,
+  // también al volver a abrir una lección ya completada: es una afirmación de
+  // la persona, y darla por hecha porque el servidor guardó un 1 convertiría el
+  // control en decorado.
+  const [confirmado, setConfirmado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
 
@@ -105,7 +114,10 @@ export default function LeccionPage() {
     );
   }
 
-  const total = Math.max(1, leccion.bloques.length);
+  // Una lección de material tiene UNA unidad de avance: la confirmación. El
+  // denominador lo calcula igual el servidor; aquí solo se pinta lo mismo.
+  const recurso = leccion.recurso;
+  const total = recurso ? 1 : Math.max(1, leccion.bloques.length);
   const esUltimo = bloque >= total - 1;
 
   async function siguiente() {
@@ -131,7 +143,11 @@ export default function LeccionPage() {
       </button>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        Parte {bloque + 1} de {total}
+        {recurso
+          ? leccion.tipo === "VIDEO"
+            ? "Video"
+            : "Documento"
+          : `Parte ${bloque + 1} de ${total}`}
       </p>
       <h1 className="mt-1 font-rel-heading text-xl font-bold leading-tight">
         {leccion.titulo}
@@ -140,22 +156,51 @@ export default function LeccionPage() {
       {/* `aria-live` para que un lector de pantalla anuncie el bloque nuevo: sin
           esto, avanzar no produce ningún cambio audible y parece que el botón
           no hizo nada. */}
-      <div
-        className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
-        aria-live="polite"
-      >
-        {leccion.bloques[bloque]?.titulo ? (
-          <h2 className="mb-2 font-rel-heading text-base font-bold">
-            {leccion.bloques[bloque].titulo}
-          </h2>
-        ) : null}
-        {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
-            bloque. El contenido es texto plano por decisión del editor: nada que
-            sanear, nada que pueda inyectar marcado. */}
-        <p className="whitespace-pre-line text-base leading-relaxed">
-          {leccion.bloques[bloque]?.contenido ?? ""}
-        </p>
-      </div>
+      {recurso ? (
+        <div className="mt-5 flex-1 space-y-4">
+          <ReproductorRecurso recurso={recurso} tipo={leccion.tipo} />
+
+          {/* La confirmación es lo que cuenta, y la pantalla dice por qué en
+              vez de fingir una barra de reproducción: de un incrustado de
+              terceros no se puede medir cuánto se vio sin la API del proveedor,
+              y un porcentaje calculado en el navegador sería inventado. */}
+          <label className="flex cursor-pointer items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-4">
+            <input
+              type="checkbox"
+              checked={confirmado}
+              onChange={(e) => setConfirmado(e.target.checked)}
+              className="mt-1 h-5 w-5 shrink-0 accent-rel-primary"
+            />
+            <span>
+              <span className="block text-base font-semibold">
+                {leccion.tipo === "VIDEO"
+                  ? "He visto el video completo"
+                  : "He revisado el documento"}
+              </span>
+              <span className="mt-1 block text-sm text-rel-muted">
+                Con esto queda registrada tu participación en esta lección.
+              </span>
+            </span>
+          </label>
+        </div>
+      ) : (
+        <div
+          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
+          aria-live="polite"
+        >
+          {leccion.bloques[bloque]?.titulo ? (
+            <h2 className="mb-2 font-rel-heading text-base font-bold">
+              {leccion.bloques[bloque].titulo}
+            </h2>
+          ) : null}
+          {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
+              bloque. El contenido es texto plano por decisión del editor: nada
+              que sanear, nada que pueda inyectar marcado. */}
+          <p className="whitespace-pre-line text-base leading-relaxed">
+            {leccion.bloques[bloque]?.contenido ?? ""}
+          </p>
+        </div>
+      )}
 
       {errorGuardado ? (
         <p
@@ -167,7 +212,7 @@ export default function LeccionPage() {
       ) : null}
 
       <div className="mt-6 flex gap-3">
-        {bloque > 0 ? (
+        {!recurso && bloque > 0 ? (
           <button
             type="button"
             onClick={() => setBloque((b) => b - 1)}
@@ -177,7 +222,7 @@ export default function LeccionPage() {
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : null}
-        <BotonPrincipal onClick={siguiente} disabled={guardando}>
+        <BotonPrincipal onClick={siguiente} disabled={guardando || (Boolean(recurso) && !confirmado)}>
           {guardando ? (
             "Guardando…"
           ) : esUltimo ? (

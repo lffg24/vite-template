@@ -35,7 +35,37 @@ export type TipoLeccion = (typeof TIPOS_LECCION)[number];
  * La interfaz lo refleja deshabilitando la opción con su motivo a la vista,
  * en vez de dejar que el usuario descubra el límite al pulsar «Publicar».
  */
-export const TIPOS_LECCION_IMPLEMENTADOS: readonly TipoLeccion[] = ["NATIVA"];
+export const TIPOS_LECCION_IMPLEMENTADOS: readonly TipoLeccion[] = [
+  "NATIVA",
+  "VIDEO",
+  "DOCUMENTO",
+];
+
+/** Los que se reproducen desde una URL externa y por tanto exigen material. */
+export const TIPOS_LECCION_CON_RECURSO: readonly TipoLeccion[] = [
+  "VIDEO",
+  "DOCUMENTO",
+  "RECURSO_EXTERNO",
+];
+
+export const PROVEEDORES_RECURSO = ["YOUTUBE", "VIMEO", "DRIVE", "URL"] as const;
+export type ProveedorRecurso = (typeof PROVEEDORES_RECURSO)[number];
+
+/** Lo que lee quien redacta, no la clave que viaja. */
+export const ETIQUETA_PROVEEDOR: Record<ProveedorRecurso, string> = {
+  YOUTUBE: "YouTube",
+  VIMEO: "Vimeo",
+  DRIVE: "Google Drive",
+  URL: "Enlace directo",
+};
+
+export interface RecursoLeccion {
+  proveedor: ProveedorRecurso;
+  url: string;
+  titulo: string;
+  duracion_seg?: number | null;
+  paginas?: number | null;
+}
 
 export const ETIQUETA_TIPO_LECCION: Record<TipoLeccion, string> = {
   NATIVA: "Contenido nativo",
@@ -110,6 +140,8 @@ export interface Leccion {
   tipo: TipoLeccion;
   titulo: string;
   bloques: BloqueLeccion[] | null;
+  /** Solo en los tipos que se reproducen desde una URL. */
+  recurso: RecursoLeccion | null;
   duracion_estimada_min: number | null;
   obligatoria: boolean;
 }
@@ -140,6 +172,12 @@ export interface LeccionCrear {
   tipo: TipoLeccion;
   titulo: string;
   bloques?: BloqueLeccion[] | null;
+  /**
+   * El material. Se manda entero y el servidor registra uno NUEVO cada vez, en
+   * vez de actualizar el anterior: una versión publicada congeló la URL que
+   * tenía, y reescribir la fila cambiaría también lo que ya se publicó.
+   */
+  recurso?: RecursoLeccion | null;
   duracion_estimada_min?: number | null;
   obligatoria?: boolean;
 }

@@ -56,10 +56,19 @@ import {
   eliminarLeccion,
   moverLeccion,
 } from "@/services/capacitacionesService";
-import type { BloqueLeccion, ErrorApi, Leccion, TipoLeccion } from "@/types/capacitaciones";
+import type {
+  BloqueLeccion,
+  ErrorApi,
+  Leccion,
+  ProveedorRecurso,
+  TipoLeccion,
+} from "@/types/capacitaciones";
 import {
   ETIQUETA_TIPO_LECCION,
+  ETIQUETA_PROVEEDOR,
+  PROVEEDORES_RECURSO,
   TIPOS_LECCION,
+  TIPOS_LECCION_CON_RECURSO,
   TIPOS_LECCION_IMPLEMENTADOS,
   TIPOS_LECCION_NUNCA_OBLIGATORIOS,
 } from "@/types/capacitaciones";
@@ -96,6 +105,9 @@ interface FormLeccion {
   tipo: TipoLeccion;
   titulo: string;
   contenido: string;
+  proveedor: ProveedorRecurso;
+  url: string;
+  tituloRecurso: string;
   duracion: string;
   obligatoria: boolean;
 }
@@ -104,9 +116,17 @@ const FORM_VACIO: FormLeccion = {
   tipo: "NATIVA",
   titulo: "",
   contenido: "",
+  proveedor: "YOUTUBE",
+  url: "",
+  tituloRecurso: "",
   duracion: "",
   obligatoria: true,
 };
+
+/** Este tipo se reproduce desde una URL, asi que exige material. */
+function usaRecurso(tipo: TipoLeccion) {
+  return TIPOS_LECCION_CON_RECURSO.includes(tipo);
+}
 
 export function LeccionesEditor({
   cursoId,
@@ -126,6 +146,7 @@ export function LeccionesEditor({
   const [form, setForm] = useState<FormLeccion>(FORM_VACIO);
   const [guardando, setGuardando] = useState(false);
   const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
   const [moviendo, setMoviendo] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState(false);
@@ -136,6 +157,7 @@ export function LeccionesEditor({
     setEditandoId(null);
     setForm(FORM_VACIO);
     setErrorTitulo(null);
+    setErrorUrl(null);
     setAbierto(true);
   }
 
@@ -145,10 +167,14 @@ export function LeccionesEditor({
       tipo: l.tipo,
       titulo: l.titulo,
       contenido: bloquesATexto(l.bloques),
+      proveedor: l.recurso?.proveedor ?? "YOUTUBE",
+      url: l.recurso?.url ?? "",
+      tituloRecurso: l.recurso?.titulo ?? "",
       duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
       obligatoria: l.obligatoria,
     });
     setErrorTitulo(null);
+    setErrorUrl(null);
     setAbierto(true);
   }
 
@@ -168,11 +194,31 @@ export function LeccionesEditor({
         : null;
     const bloques = textoABloques(form.contenido);
 
+    // El material solo viaja si la leccion es de las que lo usan Y hay URL. Sin
+    // la segunda condicion, editar el titulo de una leccion de video volveria a
+    // registrar el mismo recurso en cada guardado.
+    const urlLimpia = form.url.trim();
+    if (usaRecurso(form.tipo) && urlLimpia === "" && !editandoId) {
+      setErrorUrl("Esta leccion se reproduce desde una direccion: hace falta.");
+      return;
+    }
+    setErrorUrl(null);
+
+    const recurso =
+      usaRecurso(form.tipo) && urlLimpia !== ""
+        ? {
+            proveedor: form.proveedor,
+            url: urlLimpia,
+            titulo: form.tituloRecurso.trim() || titulo,
+          }
+        : null;
+
     setGuardando(true);
     try {
       if (editandoId) {
         await editarLeccion(cursoId, editandoId, {
           titulo,
+          recurso,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -182,6 +228,7 @@ export function LeccionesEditor({
         await agregarLeccion(cursoId, {
           tipo: form.tipo,
           titulo,
+          recurso,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -311,7 +358,9 @@ export function LeccionesEditor({
                     )}
                   </div>
                   <p className="mt-1 font-rel-body text-sm text-rel-muted">
-                    {l.bloques?.length
+                    {l.recurso
+                      ? `${ETIQUETA_PROVEEDOR[l.recurso.proveedor]} · ${l.recurso.titulo}`
+                      : l.bloques?.length
                       ? `${l.bloques.length} ${l.bloques.length === 1 ? "bloque" : "bloques"}`
                       : "Sin contenido todavía"}
                     {l.duracion_estimada_min
@@ -423,9 +472,9 @@ export function LeccionesEditor({
                 </SelectContent>
               </Select>
               <p className="text-sm text-rel-muted">
-                Solo el contenido nativo tiene reproductor hoy. Publicar una
-                versión con otro tipo produciría una asignación imposible de
-                completar, así que el servidor lo rechaza.
+                El contenido nativo se escribe aquí. El video y el documento se
+                reproducen desde una dirección externa. El recurso externo sigue
+                sin reproductor, y por eso no se puede publicar con él.
               </p>
             </div>
 
@@ -449,6 +498,89 @@ export function LeccionesEditor({
               ) : null}
             </div>
 
+            {usaRecurso(form.tipo) ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Material
+                </legend>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-proveedor" className="text-rel-dark">
+                    Dónde está
+                  </Label>
+                  <Select
+                    value={form.proveedor}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, proveedor: v as ProveedorRecurso }))
+                    }
+                  >
+                    <SelectTrigger id="l-proveedor">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROVEEDORES_RECURSO.map((prov) => (
+                        <SelectItem key={prov} value={prov}>
+                          {ETIQUETA_PROVEEDOR[prov]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-url" className="text-rel-dark">
+                    Dirección <span className="text-rel-danger">*</span>
+                  </Label>
+                  <Input
+                    id="l-url"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://…"
+                    value={form.url}
+                    maxLength={2000}
+                    onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                    aria-invalid={errorUrl ? true : undefined}
+                    aria-describedby={errorUrl ? "l-url-error" : "l-url-ayuda"}
+                  />
+                  {errorUrl ? (
+                    <p id="l-url-error" role="alert" className="text-sm text-rel-danger">
+                      {errorUrl}
+                    </p>
+                  ) : (
+                    <p id="l-url-ayuda" className="text-sm text-rel-muted">
+                      Tiene que empezar por https:// y el dominio debe
+                      corresponder al proveedor elegido; el servidor comprueba
+                      las dos cosas. El material tiene que quedar visible para
+                      cualquiera con el enlace: el participante entra sin cuenta.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-titulo-recurso" className="text-rel-dark">
+                    Nombre del material
+                  </Label>
+                  <Input
+                    id="l-titulo-recurso"
+                    value={form.tituloRecurso}
+                    maxLength={250}
+                    placeholder="Si lo dejas vacío, se usa el título de la lección"
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, tituloRecurso: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <p className="text-sm text-rel-muted">
+                  Se dará por vista cuando el participante lo confirme. De un
+                  video incrustado no se puede medir cuánto se reprodujo sin la
+                  API del proveedor, y mostrar un porcentaje calculado en el
+                  navegador sería inventarlo.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "NATIVA" ? (
             <div className="space-y-2">
               <Label htmlFor="l-contenido" className="text-rel-dark">
                 Contenido
@@ -465,6 +597,7 @@ export function LeccionesEditor({
                 pantalla para el participante.
               </p>
             </div>
+            ) : null}
 
             <div className="space-y-2">
               <Label htmlFor="l-duracion" className="text-rel-dark">
