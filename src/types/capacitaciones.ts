@@ -24,6 +24,7 @@ export const TIPOS_LECCION = [
   "VIDEO",
   "DOCUMENTO",
   "RECURSO_EXTERNO",
+  "EVALUACION",
 ] as const;
 export type TipoLeccion = (typeof TIPOS_LECCION)[number];
 
@@ -35,13 +36,101 @@ export type TipoLeccion = (typeof TIPOS_LECCION)[number];
  * La interfaz lo refleja deshabilitando la opción con su motivo a la vista,
  * en vez de dejar que el usuario descubra el límite al pulsar «Publicar».
  */
-export const TIPOS_LECCION_IMPLEMENTADOS: readonly TipoLeccion[] = ["NATIVA"];
+export const TIPOS_LECCION_IMPLEMENTADOS: readonly TipoLeccion[] = [
+  "NATIVA",
+  "VIDEO",
+  "DOCUMENTO",
+  "EVALUACION",
+];
+
+/** Los que se reproducen desde una URL externa y por tanto exigen material. */
+export const TIPOS_LECCION_CON_RECURSO: readonly TipoLeccion[] = [
+  "VIDEO",
+  "DOCUMENTO",
+  "RECURSO_EXTERNO",
+];
+
+export const PROVEEDORES_RECURSO = ["YOUTUBE", "VIMEO", "DRIVE", "URL"] as const;
+export type ProveedorRecurso = (typeof PROVEEDORES_RECURSO)[number];
+
+/** Lo que lee quien redacta, no la clave que viaja. */
+export const ETIQUETA_PROVEEDOR: Record<ProveedorRecurso, string> = {
+  YOUTUBE: "YouTube",
+  VIMEO: "Vimeo",
+  DRIVE: "Google Drive",
+  URL: "Enlace directo",
+};
+
+/**
+ * Una pregunta del cuestionario, con su respuesta correcta.
+ *
+ * Este tipo es de la superficie AUTENTICADA — quien lo lee es quien redacta el
+ * curso. Lo que ve el participante es otro tipo, en `types/participacion.ts`, y
+ * no lleva `correcta`. Son dos tipos y no uno con el campo opcional a
+ * propósito: un opcional se olvida de rellenar y también de quitar.
+ */
+export const TIPOS_PREGUNTA = [
+  "OPCION_UNICA",
+  "OPCION_MULTIPLE",
+  "VERDADERO_FALSO",
+] as const;
+export type TipoPregunta = (typeof TIPOS_PREGUNTA)[number];
+
+export const ETIQUETA_TIPO_PREGUNTA: Record<TipoPregunta, string> = {
+  OPCION_UNICA: "Selección única",
+  OPCION_MULTIPLE: "Selección múltiple",
+  VERDADERO_FALSO: "Verdadero / Falso",
+};
+
+export const AYUDA_TIPO_PREGUNTA: Record<TipoPregunta, string> = {
+  OPCION_UNICA: "Una sola respuesta",
+  OPCION_MULTIPLE: "Varias respuestas",
+  VERDADERO_FALSO: "Dos opciones",
+};
+
+/** Las pone el sistema, no quien redacta. El índice 0 es «Verdadero» siempre. */
+export const OPCIONES_VERDADERO_FALSO = ["Verdadero", "Falso"] as const;
+
+export interface PreguntaLeccion {
+  tipo: TipoPregunta;
+  enunciado: string;
+  /** Ausente en verdadero/falso: sus opciones las pone el sistema. */
+  opciones?: string[];
+  /** Índices correctos, desde 0. Uno solo salvo en selección múltiple. */
+  correctas: number[];
+  /** Cuánto pesa en la nota. La nota sale de puntos, no de preguntas. */
+  puntos: number;
+  retroalimentacion_correcta?: string;
+  retroalimentacion_incorrecta?: string;
+}
+
+export interface EvaluacionLeccion {
+  nota_minima: number;
+  intentos_max: number;
+  preguntas: PreguntaLeccion[];
+}
+
+export const NOTA_MINIMA_DEFECTO = 70;
+export const INTENTOS_DEFECTO = 1;
+export const PUNTOS_DEFECTO = 1;
+export const OPCIONES_MIN = 2;
+export const OPCIONES_MAX = 6;
+export const PREGUNTAS_MAX = 50;
+
+export interface RecursoLeccion {
+  proveedor: ProveedorRecurso;
+  url: string;
+  titulo: string;
+  duracion_seg?: number | null;
+  paginas?: number | null;
+}
 
 export const ETIQUETA_TIPO_LECCION: Record<TipoLeccion, string> = {
   NATIVA: "Contenido nativo",
   VIDEO: "Video",
   DOCUMENTO: "Documento",
   RECURSO_EXTERNO: "Recurso externo",
+  EVALUACION: "Evaluación",
 };
 
 /** Un recurso externo nunca cuenta para la finalización (PRD §10). */
@@ -110,6 +199,10 @@ export interface Leccion {
   tipo: TipoLeccion;
   titulo: string;
   bloques: BloqueLeccion[] | null;
+  /** Solo en los tipos que se reproducen desde una URL. */
+  recurso: RecursoLeccion | null;
+  /** Solo en las lecciones de evaluación. */
+  evaluacion: EvaluacionLeccion | null;
   duracion_estimada_min: number | null;
   obligatoria: boolean;
 }
@@ -140,6 +233,13 @@ export interface LeccionCrear {
   tipo: TipoLeccion;
   titulo: string;
   bloques?: BloqueLeccion[] | null;
+  /**
+   * El material. Se manda entero y el servidor registra uno NUEVO cada vez, en
+   * vez de actualizar el anterior: una versión publicada congeló la URL que
+   * tenía, y reescribir la fila cambiaría también lo que ya se publicó.
+   */
+  recurso?: RecursoLeccion | null;
+  evaluacion?: EvaluacionLeccion | null;
   duracion_estimada_min?: number | null;
   obligatoria?: boolean;
 }

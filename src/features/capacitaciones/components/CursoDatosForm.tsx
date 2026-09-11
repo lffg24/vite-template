@@ -11,7 +11,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,13 +151,21 @@ export function CursoDatosForm({
   }
 
   return (
-    <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
-      <CardHeader>
-        <CardTitle className="font-rel-heading text-lg text-rel-dark">
-          Datos del curso
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <SeccionPlegable
+      titulo="Datos del curso"
+      claveMemoria="abril360.capacitaciones.curso.datos"
+      descripcion="Categoría, intensidad y vigencia. Son los datos que el validador exige para publicar."
+      // La insignia va en la cabecera y no dentro del formulario a propósito:
+      // plegada la sección, es lo único que queda visible, y «sin guardar» es
+      // justo lo que no se puede esconder.
+      estado={
+        sucio ? (
+          <Badge variant="relWarning">Sin guardar</Badge>
+        ) : (
+          <Badge variant="relNeutral">Guardado</Badge>
+        )
+      }
+    >
         <form onSubmit={enviar} className="space-y-6" noValidate>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
@@ -326,7 +335,6 @@ export function CursoDatosForm({
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+    </SeccionPlegable>
   );
 }

@@ -11,10 +11,11 @@
 // La acción primaria es una sola: «Nuevo curso» (§16).
 
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Plus, Search } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,14 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { listarCursos } from "@/services/capacitacionesService";
 import type { CursoResumen, EstadoCurso } from "@/types/capacitaciones";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -179,64 +172,94 @@ export default function CapacitacionesCursosPage() {
             <>
               {/* Escritorio: tabla. Movil: tarjetas. §20 pide reemplazar la
                   tabla, no comprimirla hasta que sea ilegible. */}
-              <div className="hidden overflow-x-auto rounded-rel-panel border border-rel-border bg-rel-surface md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-rel-border hover:bg-transparent">
-                      <TableHead className="text-rel-dark">Curso</TableHead>
-                      <TableHead className="text-rel-dark">Estado</TableHead>
-                      <TableHead className="text-rel-dark">Categoría</TableHead>
-                      <TableHead className="text-right text-rel-dark">Lecciones</TableHead>
-                      <TableHead className="text-right text-rel-dark">Intensidad</TableHead>
-                      <TableHead className="text-rel-dark">Vigencia</TableHead>
-                      <TableHead className="text-right text-rel-dark">
-                        <span className="sr-only">Acciones</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {visibles.map((c) => (
-                      <TableRow key={c.id} className="border-rel-border">
-                        <TableCell className="font-medium text-rel-dark">
-                          {c.titulo}
-                          {c.estado === "PUBLICADO" ? (
-                            <span className="ml-2 text-xs text-rel-muted">
-                              v{c.version_actual}
-                            </span>
-                          ) : null}
-                        </TableCell>
-                        <TableCell>
-                          <EstadoCursoBadge estado={c.estado} />
-                        </TableCell>
-                        <TableCell>
-                          <CategoriaBadge
-                            categoria={c.categoria}
-                            restringida={c.categoria_restringida}
-                          />
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums text-rel-dark">
-                          {c.lecciones}
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums text-rel-dark">
+              <div className="hidden md:block">
+                <TablaDatos<CursoResumen>
+                  filas={visibles}
+                  claveFila={(c) => c.id}
+                  etiquetaElemento="cursos"
+                  etiquetaTabla="Catálogo de cursos"
+                  columnas={[
+                    {
+                      clave: "titulo",
+                      titulo: "Curso",
+                      valor: (c) => c.titulo,
+                      celda: (c) => (
+                        <CeldaPrincipal
+                          a={`/capacitaciones/cursos/${c.id}`}
+                          titulo={c.titulo}
+                          apoyo={
+                            c.estado === "PUBLICADO"
+                              ? `Versión ${c.version_actual} publicada`
+                              : "Borrador sin publicar"
+                          }
+                        />
+                      ),
+                    },
+                    {
+                      clave: "estado",
+                      titulo: "Estado",
+                      valor: (c) => c.estado,
+                      celda: (c) => <EstadoCursoBadge estado={c.estado} />,
+                    },
+                    {
+                      clave: "categoria",
+                      titulo: "Categoría",
+                      valor: (c) => c.categoria,
+                      celda: (c) => (
+                        <CategoriaBadge
+                          categoria={c.categoria}
+                          restringida={c.categoria_restringida}
+                        />
+                      ),
+                    },
+                    {
+                      clave: "lecciones",
+                      titulo: "Lecciones",
+                      alineacion: "derecha",
+                      valor: (c) => c.lecciones,
+                      celda: (c) => (
+                        <span className="tabular-nums text-rel-dark">{c.lecciones}</span>
+                      ),
+                    },
+                    {
+                      clave: "intensidad",
+                      titulo: "Intensidad",
+                      alineacion: "derecha",
+                      valor: (c) => c.intensidad_horaria_min,
+                      celda: (c) => (
+                        <span className="tabular-nums text-rel-dark">
                           {formatearIntensidad(c.intensidad_horaria_min)}
-                        </TableCell>
-                        <TableCell className="text-rel-dark">
+                        </span>
+                      ),
+                    },
+                    {
+                      clave: "vigencia",
+                      titulo: "Vigencia",
+                      valor: (c) => c.vigencia_meses,
+                      celda: (c) => (
+                        <span className="text-rel-dark">
                           {formatearVigenciaMeses(c.vigencia_meses)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="relOutline"
-                            size="sm"
-                            onClick={() => navegar(`/capacitaciones/cursos/${c.id}`)}
-                          >
-                            {c.estado === "BORRADOR" ? "Continuar" : "Abrir"}
-                            <span className="sr-only"> el curso {c.titulo}</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </span>
+                      ),
+                    },
+                    {
+                      clave: "acciones",
+                      titulo: "Acciones",
+                      alineacion: "derecha",
+                      soloAcciones: true,
+                      celda: (c) => (
+                        <Button
+                          variant="relOutline"
+                          size="sm"
+                          onClick={() => navegar(`/capacitaciones/cursos/${c.id}`)}
+                        >
+                          {c.estado === "BORRADOR" ? "Continuar" : "Abrir"}
+                          <span className="sr-only"> el curso {c.titulo}</span>
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
               </div>
 
               <ul className="space-y-3 md:hidden">
@@ -246,8 +269,13 @@ export default function CapacitacionesCursosPage() {
                     className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <h2 className="font-rel-heading text-base font-bold text-rel-dark">
-                        {c.titulo}
+                      <h2 className="font-rel-heading text-base font-bold">
+                        <Link
+                          to={`/capacitaciones/cursos/${c.id}`}
+                          className="text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline"
+                        >
+                          {c.titulo}
+                        </Link>
                       </h2>
                       <EstadoCursoBadge estado={c.estado} />
                     </div>

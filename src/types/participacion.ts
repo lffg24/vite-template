@@ -125,6 +125,65 @@ export interface BloqueLeccion {
  * pantalla, y llevar el texto de todas las lecciones haría que abrir el índice
  * descargara el curso entero. En 4G eso se nota.
  */
+/** El material congelado en la versión que se está cursando. */
+export interface RecursoPublico {
+  proveedor: string;
+  url: string;
+  titulo: string;
+  duracion_seg?: number | null;
+  paginas?: number | null;
+}
+
+/**
+ * Una pregunta tal como la ve quien responde.
+ *
+ * **Sin `correcta`.** No es una omisión: el tipo del participante no la declara
+ * porque el servidor no la manda, y tenerla aquí como opcional invitaría a
+ * alguien a leerla.
+ */
+export interface PreguntaPublica {
+  /** Decide la forma de la respuesta: un índice, o una lista de índices. */
+  tipo: "OPCION_UNICA" | "OPCION_MULTIPLE" | "VERDADERO_FALSO";
+  enunciado: string;
+  /** Ya resueltas: un verdadero/falso no las guarda, las pone el sistema. */
+  opciones: string[];
+  puntos: number;
+}
+
+/** Lo que se muestra al terminar, cuando ya no queda reintento. */
+export interface RetroalimentacionPublica {
+  enunciado: string;
+  acierto: boolean;
+  texto: string | null;
+}
+
+export interface EvaluacionPublica {
+  nota_minima: number;
+  intentos_max: number;
+  intentos_usados: number;
+  puede_intentar: boolean;
+  aprobado: boolean;
+  mejor_puntaje: number | null;
+  preguntas: PreguntaPublica[];
+}
+
+export interface IntentoCalificado {
+  numero: number;
+  aciertos: number;
+  preguntas: number;
+  puntaje: number;
+  aprobado: boolean;
+  nota_minima: number;
+  intentos_max: number;
+  intentos_usados: number;
+  puede_reintentar: boolean;
+  /**
+   * Vacía mientras queden intentos: con otro por delante, decir qué se falló
+   * convierte el segundo en copiar la corrección del primero.
+   */
+  retroalimentacion: RetroalimentacionPublica[];
+}
+
 export interface LeccionCompleta {
   leccion_id: string;
   orden: number;
@@ -132,6 +191,10 @@ export interface LeccionCompleta {
   tipo: string;
   obligatoria: boolean;
   bloques: BloqueLeccion[];
+  /** Solo en las lecciones que se reproducen desde una URL. */
+  recurso: RecursoPublico | null;
+  /** Solo en las lecciones de evaluación. */
+  evaluacion: EvaluacionPublica | null;
   bloques_vistos: number;
   completada: boolean;
 }
@@ -208,7 +271,11 @@ export type MotivoPublico =
   /** La asignación exige invitación personal y se llegó por el enlace del grupo. */
   | "requiere_invitacion"
   /** Inexistente, caducada, revocada o ya usada. Las cuatro dicen lo mismo. */
-  | "invitacion_no_disponible";
+  | "invitacion_no_disponible"
+  /** Se usaron todos los intentos de la evaluación, o ya se aprobó. */
+  | "intentos_agotados"
+  /** El envío no trae una respuesta por pregunta, o apunta fuera de rango. */
+  | "respuestas_invalidas";
 
 export interface ErrorPublico extends Error {
   motivo: MotivoPublico | "desconocido";

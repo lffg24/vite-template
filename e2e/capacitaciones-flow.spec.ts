@@ -181,6 +181,8 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
           tipo: "NATIVA",
           titulo: `Lección ${i + 1}`,
           bloques: [{ tipo: "texto", contenido: "Contenido" }],
+          recurso: null,
+          evaluacion: null,
           duracion_estimada_min: 20,
           obligatoria: true,
         })),
@@ -310,11 +312,16 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
 
     // --- 6 · A-12 · generar el enlace ------------------------------------------
     await expect(page.getByText(/sin acceso/i).first()).toBeVisible();
-    // Se busca DENTRO de la tabla: desde que el menú tiene su propia entrada
-    // «Enlaces de grupo», un `/enlaces/i` suelto empata con las dos y el primer
-    // resultado es el de la barra lateral, que lleva al selector en vez de a
-    // esta asignación.
-    await page.getByRole("table").getByRole("button", { name: /enlaces/i }).first().click();
+    // Nombre EXACTO y dentro de la tabla, por dos motivos que se acumularon:
+    // el menú tiene su propia entrada «Enlaces de grupo», y desde que la tabla
+    // ordena, su encabezado «Enlaces activos» es tambien un boton — y va antes
+    // en el DOM, asi que un `/enlaces/i` suelto ordenaba la columna en vez de
+    // abrir la asignacion.
+    await page
+      .getByRole("table")
+      .getByRole("button", { name: /^enlaces de /i })
+      .first()
+      .click();
     await expect(page.getByText(/nadie puede entrar todavía/i)).toBeVisible();
     await page.getByRole("button", { name: /generar el primero/i }).click();
     await page.getByRole("dialog").getByRole("button", { name: /^generar enlace$/i }).click();
@@ -414,6 +421,8 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
             tipo: "NATIVA",
             titulo: "Lección 1",
             bloques: [{ tipo: "texto", contenido: "c" }],
+            recurso: null,
+            evaluacion: null,
             duracion_estimada_min: 20,
             obligatoria: true,
           },

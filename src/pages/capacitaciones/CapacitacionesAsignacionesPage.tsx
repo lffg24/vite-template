@@ -9,11 +9,12 @@
 // ordenan primero, y la acción de cada fila lleva a sus enlaces.
 
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AlertTriangle, Link2, Send, Plus, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,14 +25,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { cerrarAsignacion, listarAsignaciones } from "@/services/capacitacionesService";
 import type { AsignacionResumen, ErrorApi } from "@/types/capacitaciones";
@@ -145,93 +138,129 @@ export default function CapacitacionesAsignacionesPage() {
 
       {consulta.fase === "listo" && filas.length > 0 ? (
         <>
-          <div className="hidden overflow-x-auto rounded-rel-panel border border-rel-border bg-rel-surface md:block">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-rel-border hover:bg-transparent">
-                  <TableHead className="text-rel-dark">Curso</TableHead>
-                  <TableHead className="text-rel-dark">Estado</TableHead>
-                  <TableHead className="text-rel-dark">Cómo se entra</TableHead>
-                  <TableHead className="text-right text-rel-dark">Enlaces activos</TableHead>
-                  <TableHead className="text-rel-dark">Fecha objetivo</TableHead>
-                  <TableHead className="text-rel-dark">Vigencia</TableHead>
-                  <TableHead className="text-right text-rel-dark">
-                    <span className="sr-only">Acciones</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filas.map((a) => (
-                  <TableRow key={a.id} className="border-rel-border">
-                    <TableCell className="font-medium text-rel-dark">
-                      {a.curso_titulo}
-                      <span className="ml-2 text-xs text-rel-muted">v{a.numero_version}</span>
-                    </TableCell>
-                    <TableCell>
-                      <EstadoAsignacionBadge estado={a.estado} />
-                    </TableCell>
-                    <TableCell>
-                      <ModoIdentidadBadge modo={a.modo_identidad} />
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      <span className={detenida(a) ? "font-semibold text-rel-warning" : "text-rel-dark"}>
+          <div className="hidden md:block">
+            <TablaDatos<AsignacionResumen>
+              filas={filas}
+              claveFila={(a) => a.id}
+              etiquetaElemento="asignaciones"
+              etiquetaTabla="Asignaciones de la empresa"
+              columnas={[
+                {
+                  clave: "curso",
+                  titulo: "Curso",
+                  valor: (a) => a.curso_titulo,
+                  celda: (a) => (
+                    <CeldaPrincipal
+                      a={`/capacitaciones/asignaciones/${a.id}/invitaciones`}
+                      titulo={a.curso_titulo}
+                      apoyo={`Versión ${a.numero_version}`}
+                    />
+                  ),
+                },
+                {
+                  clave: "estado",
+                  titulo: "Estado",
+                  valor: (a) => a.estado,
+                  celda: (a) => <EstadoAsignacionBadge estado={a.estado} />,
+                },
+                {
+                  clave: "modo",
+                  titulo: "Cómo se entra",
+                  valor: (a) => a.modo_identidad,
+                  celda: (a) => <ModoIdentidadBadge modo={a.modo_identidad} />,
+                },
+                {
+                  clave: "enlaces",
+                  titulo: "Enlaces activos",
+                  alineacion: "derecha",
+                  valor: (a) => a.enlaces_activos,
+                  celda: (a) => (
+                    <>
+                      <span
+                        className={
+                          detenida(a) ? "font-semibold text-rel-warning" : "text-rel-dark"
+                        }
+                      >
                         {a.enlaces_activos}
                       </span>
                       {detenida(a) ? (
                         <span className="ml-1.5 text-xs text-rel-warning">sin acceso</span>
                       ) : null}
-                    </TableCell>
-                    <TableCell className="text-rel-dark">
-                      {formatearFecha(a.fecha_objetivo)}
-                    </TableCell>
-                    <TableCell className="text-rel-dark">
+                    </>
+                  ),
+                },
+                {
+                  clave: "fecha",
+                  titulo: "Fecha objetivo",
+                  valor: (a) => a.fecha_objetivo,
+                  celda: (a) => (
+                    <span className="text-rel-dark">{formatearFecha(a.fecha_objetivo)}</span>
+                  ),
+                },
+                {
+                  clave: "vigencia",
+                  titulo: "Vigencia",
+                  valor: (a) => a.vigencia_meses,
+                  celda: (a) => (
+                    <span className="text-rel-dark">
                       {formatearVigenciaMeses(a.vigencia_meses)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {/* Las invitaciones van ANTES que los enlaces: en modo
-                            individual son la via por la que se entra, y el
-                            enlace de grupo solo sirve para mirar. */}
-                        <Button
-                          variant="relOutline"
-                          size="sm"
-                          onClick={() =>
-                            navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)
-                          }
-                        >
-                          <Send aria-hidden="true" />
-                          Invitaciones
-                          <span className="sr-only"> de {a.curso_titulo}</span>
+                    </span>
+                  ),
+                },
+                {
+                  clave: "acciones",
+                  titulo: "Acciones",
+                  alineacion: "derecha",
+                  soloAcciones: true,
+                  celda: (a) => (
+                    <div className="flex justify-end gap-1">
+                      {/* Las invitaciones van ANTES que los enlaces: en modo
+                          individual son la via por la que se entra, y el
+                          enlace de grupo solo sirve para mirar. */}
+                      <Button
+                        variant="relOutline"
+                        size="sm"
+                        onClick={() =>
+                          navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)
+                        }
+                      >
+                        <Send aria-hidden="true" />
+                        Invitaciones
+                        <span className="sr-only"> de {a.curso_titulo}</span>
+                      </Button>
+                      <Button
+                        variant="relOutline"
+                        size="sm"
+                        onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
+                      >
+                        <Link2 aria-hidden="true" />
+                        Enlaces
+                        <span className="sr-only"> de {a.curso_titulo}</span>
+                      </Button>
+                      {a.estado === "ACTIVA" ? (
+                        <Button variant="relGhost" size="sm" onClick={() => setACerrar(a)}>
+                          Cerrar
+                          <span className="sr-only"> la asignación de {a.curso_titulo}</span>
                         </Button>
-                        <Button
-                          variant="relOutline"
-                          size="sm"
-                          onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
-                        >
-                          <Link2 aria-hidden="true" />
-                          Enlaces
-                          <span className="sr-only"> de {a.curso_titulo}</span>
-                        </Button>
-                        {a.estado === "ACTIVA" ? (
-                          <Button variant="relGhost" size="sm" onClick={() => setACerrar(a)}>
-                            Cerrar
-                            <span className="sr-only"> la asignación de {a.curso_titulo}</span>
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      ) : null}
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </div>
 
           <ul className="space-y-3 md:hidden">
             {filas.map((a) => (
               <li key={a.id} className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-rel-heading text-base font-bold text-rel-dark">
-                    {a.curso_titulo}{" "}
+                  <h2 className="font-rel-heading text-base font-bold">
+                    <Link
+                      to={`/capacitaciones/asignaciones/${a.id}/invitaciones`}
+                      className="text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline"
+                    >
+                      {a.curso_titulo}
+                    </Link>{" "}
                     <span className="text-sm font-normal text-rel-muted">v{a.numero_version}</span>
                   </h2>
                   <EstadoAsignacionBadge estado={a.estado} />

@@ -17,9 +17,11 @@
 
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Printer, Send, ShieldOff } from "lucide-react";
+import { Printer, Send, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { TablaDatos } from "@/shared/ui/TablaDatos";
+import { BotonVolver } from "@/shared/ui/BotonVolver";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,14 +36,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   generarInvitaciones,
@@ -173,13 +167,7 @@ export default function CapacitacionesInvitacionesPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/capacitaciones/asignaciones"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-rel-primary hover:underline"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Volver a las asignaciones
-      </Link>
+      <BotonVolver a="/capacitaciones/asignaciones">Volver a asignaciones</BotonVolver>
 
       <PageHeader
         titulo="Invitaciones personales"
@@ -267,58 +255,76 @@ export default function CapacitacionesInvitacionesPage() {
       ) : null}
 
       {invitaciones.fase === "listo" && lista.length > 0 ? (
-        <div className="overflow-x-auto rounded-rel-card border border-rel-border">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-rel-border">
-                <TableHead className="text-rel-dark">Persona</TableHead>
-                <TableHead className="text-rel-dark">Documento</TableHead>
-                <TableHead className="text-rel-dark">Estado</TableHead>
-                <TableHead className="text-rel-dark">Vence</TableHead>
-                <TableHead className="text-right text-rel-dark">
-                  <span className="sr-only">Acciones</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {lista.map((i) => (
-                <TableRow key={i.id} className="border-rel-border">
-                  <TableCell className="font-medium text-rel-dark">
-                    {i.nombres} {i.apellidos}
-                  </TableCell>
-                  <TableCell className="tabular-nums text-rel-muted">
-                    {i.tipo_documento} {i.numero_documento}
-                  </TableCell>
-                  <TableCell>
-                    <EstadoInvitacion inv={i} />
-                  </TableCell>
-                  <TableCell className="text-rel-muted">
-                    {formatearFecha(i.expira_en)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {i.estado === "PENDIENTE" ? (
-                      <Button
-                        variant="relOutline"
-                        size="sm"
-                        onClick={() => {
-                          setARevocar(i);
-                          setMotivo("");
-                        }}
-                      >
-                        <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                        Revocar
-                      </Button>
-                    ) : i.estado === "CONSUMIDA" ? (
-                      <span className="text-xs text-rel-muted">
-                        Usada el {formatearFecha(i.consumida_en)}
-                      </span>
-                    ) : null}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <TablaDatos<InvitacionResumen>
+          filas={lista}
+          claveFila={(i) => i.id}
+          etiquetaElemento="invitaciones"
+          etiquetaTabla="Invitaciones de la asignación"
+          columnas={[
+            {
+              clave: "persona",
+              titulo: "Persona",
+              valor: (i) => `${i.apellidos} ${i.nombres}`,
+              celda: (i) => (
+                <span className="font-medium text-rel-dark">
+                  {i.nombres} {i.apellidos}
+                </span>
+              ),
+            },
+            {
+              clave: "documento",
+              titulo: "Documento",
+              valor: (i) => i.numero_documento,
+              celda: (i) => (
+                <span className="tabular-nums text-rel-muted">
+                  {i.tipo_documento} {i.numero_documento}
+                </span>
+              ),
+            },
+            {
+              clave: "estado",
+              titulo: "Estado",
+              valor: (i) => i.estado,
+              celda: (i) => <EstadoInvitacion inv={i} />,
+            },
+            {
+              clave: "expira",
+              titulo: "Vence",
+              valor: (i) => i.expira_en,
+              celda: (i) => (
+                <span className="text-rel-muted">{formatearFecha(i.expira_en)}</span>
+              ),
+            },
+            {
+              clave: "acciones",
+              titulo: "Acciones",
+              alineacion: "derecha",
+              soloAcciones: true,
+              celda: (i) =>
+                i.estado === "PENDIENTE" ? (
+                  <Button
+                    variant="relOutline"
+                    size="sm"
+                    onClick={() => {
+                      setARevocar(i);
+                      setMotivo("");
+                    }}
+                  >
+                    <ShieldOff className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                    Revocar
+                    <span className="sr-only">
+                      {" "}
+                      la invitación de {i.nombres} {i.apellidos}
+                    </span>
+                  </Button>
+                ) : i.estado === "CONSUMIDA" ? (
+                  <span className="text-xs text-rel-muted">
+                    Usada el {formatearFecha(i.consumida_en)}
+                  </span>
+                ) : null,
+            },
+          ]}
+        />
       ) : null}
 
       <AlertDialog open={aRevocar !== null} onOpenChange={(o) => !o && setARevocar(null)}>

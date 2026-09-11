@@ -151,57 +151,72 @@
 @layer base {
   :root {
     /* --- paleta de la casa -------------------------------------------------
-       Estos valores son los que YA usa Psicosocial, leidos de su marcado y
-       trasladados a tokens. No es una eleccion estetica nueva: es la que hay,
-       puesta en un sitio del que se pueda consumir.
+       Cada valor es el token equivalente de `origin/preprod`, anotado al lado.
+       Ese es el punto: `rel-*` no propone ningun color, REPITE el sistema de la
+       casa en un espacio de nombres aditivo, para que Capacitaciones pueda
+       consumirlo sin tocar las clases que ya usan las pantallas existentes.
 
-       Antes esta capa llevaba la marca REL de la constitucion (#0045FF sobre
-       lienzo menta #F2F9F8), y el resultado era que Capacitaciones parecia otro
-       producto abierto en la misma pestana. La marca REL sigue siendo la marca;
-       lo que no puede es aplicarse a un solo modulo. El dia que ABRIL-360 entero
-       migre se cambia aqui y se mueve todo junto — que es exactamente para lo
-       que sirve tener tokens.
+       Aqui hubo antes violeta, y estuvo mal. Se leyo del marcado de
+       Psicosocial en ESTE checkout —que arrastra `violet-700` escrito a mano— y
+       se dio por bueno sin comprobarlo contra `preprod`, donde la identidad REL
+       Calm Intelligence ya esta fusionada en turquesa. El violeta no era "el
+       color de la casa": era el color viejo de una pantalla sin migrar. La
+       leccion es concreta: el sistema de diseno se lee de los tokens de la rama
+       integrada, no del marcado de la pantalla que uno tenga delante.
 
-       Al lado de cada uno, su equivalente Tailwind: si manana alguien compara
-       esta pantalla con una de Psicosocial, tiene que poder verificar que son
-       el mismo color sin convertir HSL a mano. */
-    --rel-primary: 263 70% 50%;           /* violet-700  #6D28D9 */
+       ESTA RAMA VA POR DETRAS DE `preprod` (25 commits). Mientras no se
+       sincronice, la casa que rodea a estos tokens sigue con el tema anterior y
+       solo Capacitaciones se ve en marca. Tambien por eso la tipografia sigue
+       siendo la pila del sistema: `@fontsource/open-sans` llega con esa
+       sincronizacion y declararla antes seria otra vez una fuente que el codigo
+       afirma y el navegador no tiene. */
+    --rel-primary: 172 100% 36%;          /* = --primary de la casa */
     --rel-primary-foreground: 0 0% 100%;
-    --rel-accent: 263 83% 58%;            /* violet-600  #7C3AED · estado activo */
-    --rel-accent-subtle: 262 90% 96%;     /* violet-50   #F5F3FF */
-    --rel-turquoise: 172 100% 42%;        /* #00D4B8 · sin uso en pantalla */
-    --rel-turquoise-foreground: 229 84% 5%;
-    --rel-sky: 197 100% 42%;              /* #0098D6 · sin uso en pantalla */
-    --rel-sky-foreground: 229 84% 5%;
-    --rel-dark: 229 84% 5%;               /* slate-950  #020617 */
-    --rel-canvas: 210 40% 98%;            /* slate-50   #F8FAFC */
-    --rel-surface: 0 0% 100%;
-    --rel-surface-subtle: 210 40% 98%;    /* slate-50 */
-    --rel-border: 214 32% 91%;            /* slate-200  #E2E8F0 */
-    --rel-border-strong: 213 27% 84%;     /* slate-300  #CBD5E1 */
-    --rel-muted-foreground: 215 16% 47%;  /* slate-500  #64748B */
+    --rel-accent: 173 100% 23%;           /* = --primary-active · estado activo */
+    --rel-accent-subtle: 168 56% 92%;     /* = --accent */
+    --rel-turquoise: 172 100% 36%;        /* = --brand-turquoise */
+    --rel-turquoise-foreground: 0 0% 100%;
+    --rel-sky: 172 100% 41%;              /* = --brand-sky */
+    --rel-sky-foreground: 215 42% 13%;
+    --rel-dark: 215 42% 13%;              /* = --brand-dark */
+    --rel-canvas: 168 41% 96%;            /* = --background */
+    --rel-surface: 0 0% 100%;             /* = --surface */
+    --rel-surface-subtle: 168 25% 97%;    /* = --surface-subtle */
+    --rel-border: 168 18% 85%;            /* = --border */
+    --rel-border-strong: 171 24% 76%;     /* = --border-strong */
+    --rel-muted-foreground: 216 18% 45%;  /* = --muted-foreground */
 
     /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
-       Estos no son los colores corporativos: el turquesa de marca no significa
-       "exito" y el azul de marca no significa "informacion". Colapsarlos
-       dejaria un boton primario indistinguible de una confirmacion. */
-    --rel-success: 161 94% 24%;           /* emerald-700 #047857 */
+       El turquesa de marca NO significa "exito". Colapsarlos dejaria un boton
+       primario indistinguible de una confirmacion. Los valores son los de la
+       casa; los `-subtle` son el tinte claro de cada familia, que la casa no
+       declara porque sus pantallas no usan fondos de aviso. */
+    --rel-success: 158 64% 40%;           /* = --success */
     --rel-success-foreground: 0 0% 100%;
-    --rel-success-subtle: 152 81% 96%;    /* emerald-50  #ECFDF5 */
-    --rel-info: 221 83% 53%;              /* blue-600    #2563EB */
+    --rel-success-subtle: 158 60% 94%;
+    --rel-info: 172 100% 36%;             /* = --info */
     --rel-info-foreground: 0 0% 100%;
-    --rel-info-subtle: 214 100% 97%;      /* blue-50     #EFF6FF */
-    --rel-warning: 26 90% 37%;            /* amber-700   #B45309 */
-    --rel-warning-foreground: 0 0% 100%;
-    --rel-warning-subtle: 48 100% 96%;    /* amber-50    #FFFBEB */
-    --rel-danger: 0 74% 42%;              /* red-700     #B91C1C */
+    --rel-info-subtle: 172 60% 94%;
+    --rel-warning: 38 92% 50%;            /* = --warning */
+    --rel-warning-foreground: 218 57% 11%;
+    --rel-warning-subtle: 38 92% 95%;
+    --rel-danger: 0 72% 51%;              /* = --danger */
     --rel-danger-foreground: 0 0% 100%;
-    --rel-danger-subtle: 0 86% 97%;       /* red-50      #FEF2F2 */
-    --rel-neutral: 215 16% 47%;           /* slate-500   #64748B */
-    --rel-neutral-subtle: 210 40% 96%;    /* slate-100   #F1F5F9 */
+    --rel-danger-subtle: 0 72% 96%;
+    --rel-neutral: 216 18% 45%;           /* = --muted-foreground */
+    --rel-neutral-subtle: 168 22% 95%;    /* = --muted */
 
-    --rel-focus-ring: 263 70% 50%;        /* el primario, para que el foco no
-                                             sea de otro producto que el boton */
+    --rel-focus-ring: 172 100% 36%;       /* = --ring */
+
+    /* --- radios ------------------------------------------------------------
+       Los de la casa: `--radius` 0.875rem, `--radius-lg` 1rem, `--radius-xl`
+       1.25rem en `preprod`. Se declaran aqui con su valor y no como
+       `var(--radius-lg)` porque esos tokens llegan con la sincronizacion y
+       apuntar a una variable inexistente deja la esquina sin redondear sin que
+       nadie se entere. Al sincronizar, se reemplazan por la referencia. */
+    --rel-radius-control: 0.875rem;
+    --rel-radius-card: 1rem;
+    --rel-radius-panel: 1.25rem;
 
     /* --- tipografia -------------------------------------------------------
        La misma pila que el resto de ABRIL-360, que es la de Tailwind por

@@ -142,6 +142,10 @@ test.describe("Participante · recorrido en el teléfono", () => {
           { tipo: "texto", titulo: null, contenido: "Los riesgos mecánicos son…" },
           { tipo: "texto", titulo: null, contenido: "El reporte de incidentes…" },
         ],
+        // Explicito: omitido, la prueba pasaria sobre `undefined` y dejaria
+        // de comprobar que una leccion nativa NO trae material.
+        recurso: null,
+        evaluacion: null,
         bloques_vistos: vistos,
         completada: vistos >= 2,
       })

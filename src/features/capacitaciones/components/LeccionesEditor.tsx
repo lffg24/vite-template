@@ -15,10 +15,11 @@
 //   pulsar «Publicar», con la lección ya redactada.
 
 import { useState } from "react";
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,11 +54,26 @@ import {
   agregarLeccion,
   editarLeccion,
   eliminarLeccion,
+  moverLeccion,
 } from "@/services/capacitacionesService";
-import type { BloqueLeccion, ErrorApi, Leccion, TipoLeccion } from "@/types/capacitaciones";
+import type {
+  BloqueLeccion,
+  ErrorApi,
+  EvaluacionLeccion,
+  Leccion,
+  ProveedorRecurso,
+  TipoLeccion,
+} from "@/types/capacitaciones";
+import {
+  ConstructorEvaluacion,
+  EVALUACION_VACIA,
+} from "@/features/capacitaciones/components/ConstructorEvaluacion";
 import {
   ETIQUETA_TIPO_LECCION,
+  ETIQUETA_PROVEEDOR,
+  PROVEEDORES_RECURSO,
   TIPOS_LECCION,
+  TIPOS_LECCION_CON_RECURSO,
   TIPOS_LECCION_IMPLEMENTADOS,
   TIPOS_LECCION_NUNCA_OBLIGATORIOS,
 } from "@/types/capacitaciones";
@@ -94,6 +110,10 @@ interface FormLeccion {
   tipo: TipoLeccion;
   titulo: string;
   contenido: string;
+  proveedor: ProveedorRecurso;
+  url: string;
+  tituloRecurso: string;
+  evaluacion: EvaluacionLeccion;
   duracion: string;
   obligatoria: boolean;
 }
@@ -102,9 +122,18 @@ const FORM_VACIO: FormLeccion = {
   tipo: "NATIVA",
   titulo: "",
   contenido: "",
+  proveedor: "YOUTUBE",
+  url: "",
+  tituloRecurso: "",
+  evaluacion: EVALUACION_VACIA,
   duracion: "",
   obligatoria: true,
 };
+
+/** Este tipo se reproduce desde una URL, asi que exige material. */
+function usaRecurso(tipo: TipoLeccion) {
+  return TIPOS_LECCION_CON_RECURSO.includes(tipo);
+}
 
 export function LeccionesEditor({
   cursoId,
@@ -124,7 +153,10 @@ export function LeccionesEditor({
   const [form, setForm] = useState<FormLeccion>(FORM_VACIO);
   const [guardando, setGuardando] = useState(false);
   const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
+  const [errorEvaluacion, setErrorEvaluacion] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
+  const [moviendo, setMoviendo] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
   const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
@@ -133,6 +165,8 @@ export function LeccionesEditor({
     setEditandoId(null);
     setForm(FORM_VACIO);
     setErrorTitulo(null);
+    setErrorUrl(null);
+    setErrorEvaluacion(null);
     setAbierto(true);
   }
 
@@ -142,10 +176,16 @@ export function LeccionesEditor({
       tipo: l.tipo,
       titulo: l.titulo,
       contenido: bloquesATexto(l.bloques),
+      proveedor: l.recurso?.proveedor ?? "YOUTUBE",
+      url: l.recurso?.url ?? "",
+      tituloRecurso: l.recurso?.titulo ?? "",
+      evaluacion: l.evaluacion ?? EVALUACION_VACIA,
       duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
       obligatoria: l.obligatoria,
     });
     setErrorTitulo(null);
+    setErrorUrl(null);
+    setErrorEvaluacion(null);
     setAbierto(true);
   }
 
@@ -165,11 +205,44 @@ export function LeccionesEditor({
         : null;
     const bloques = textoABloques(form.contenido);
 
+    // El material solo viaja si la leccion es de las que lo usan Y hay URL. Sin
+    // la segunda condicion, editar el titulo de una leccion de video volveria a
+    // registrar el mismo recurso en cada guardado.
+    const urlLimpia = form.url.trim();
+    if (usaRecurso(form.tipo) && urlLimpia === "" && !editandoId) {
+      setErrorUrl("Esta leccion se reproduce desde una direccion: hace falta.");
+      return;
+    }
+    setErrorUrl(null);
+
+    const recurso =
+      usaRecurso(form.tipo) && urlLimpia !== ""
+        ? {
+            proveedor: form.proveedor,
+            url: urlLimpia,
+            titulo: form.tituloRecurso.trim() || titulo,
+          }
+        : null;
+
+    // La evaluación viaja entera o no viaja. El servidor la valida y la
+    // normaliza; aquí solo se comprueba lo que se puede decir sin duplicar sus
+    // reglas —el detalle vive en `catalogo.validar_evaluacion`, y tenerlo en
+    // dos sitios es la forma segura de que acaben diciendo cosas distintas.
+    const esEvaluacion = form.tipo === "EVALUACION";
+    if (esEvaluacion && form.evaluacion.preguntas.length === 0) {
+      setErrorEvaluacion("Agrega al menos una pregunta.");
+      return;
+    }
+    setErrorEvaluacion(null);
+    const evaluacion = esEvaluacion ? form.evaluacion : null;
+
     setGuardando(true);
     try {
       if (editandoId) {
         await editarLeccion(cursoId, editandoId, {
           titulo,
+          recurso,
+          evaluacion,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -179,6 +252,8 @@ export function LeccionesEditor({
         await agregarLeccion(cursoId, {
           tipo: form.tipo,
           titulo,
+          recurso,
+          evaluacion,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -196,6 +271,26 @@ export function LeccionesEditor({
       });
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function mover(leccion: Leccion, direccion: "ARRIBA" | "ABAJO") {
+    // Se bloquean TODOS los botones mientras uno viaja, no solo el pulsado: dos
+    // movimientos lanzados sobre la misma lista dejan un orden que no es el que
+    // pidió nadie, porque el segundo se calculó con posiciones ya caducas.
+    setMoviendo(leccion.id);
+    try {
+      await moverLeccion(cursoId, leccion.id, direccion);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos mover la lección",
+        description: err.message,
+      });
+    } finally {
+      setMoviendo(null);
     }
   }
 
@@ -225,26 +320,28 @@ export function LeccionesEditor({
   const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
 
   return (
-    <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
-        <div>
-          <CardTitle className="font-rel-heading text-lg text-rel-dark">Lecciones</CardTitle>
-          {lecciones.length > 0 ? (
-            <p className="mt-1 font-rel-body text-sm text-rel-muted">
-              {lecciones.length} {lecciones.length === 1 ? "lección" : "lecciones"}
-              {totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : null}
-            </p>
-          ) : null}
-        </div>
-        {editable ? (
+    <SeccionPlegable
+      titulo="Lecciones"
+      claveMemoria="abril360.capacitaciones.curso.lecciones"
+      descripcion={
+        lecciones.length > 0
+          ? `${lecciones.length} ${lecciones.length === 1 ? "lección" : "lecciones"}${
+              totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : ""
+            }`
+          : "Un curso sin lecciones no se puede publicar."
+      }
+      estado={
+        lecciones.length === 0 ? <Badge variant="relWarning">Vacío</Badge> : null
+      }
+      accion={
+        editable ? (
           <Button variant="relOutline" size="sm" onClick={abrirNueva}>
             <Plus aria-hidden="true" />
             Agregar lección
           </Button>
-        ) : null}
-      </CardHeader>
-
-      <CardContent>
+        ) : null
+      }
+    >
         {lecciones.length === 0 ? (
           <SinDatos
             ilustracion="documento"
@@ -261,7 +358,7 @@ export function LeccionesEditor({
           />
         ) : (
           <ol className="space-y-3">
-            {lecciones.map((l) => (
+            {lecciones.map((l, i) => (
               <li
                 key={l.id}
                 className="flex flex-wrap items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 sm:flex-nowrap"
@@ -286,7 +383,9 @@ export function LeccionesEditor({
                     )}
                   </div>
                   <p className="mt-1 font-rel-body text-sm text-rel-muted">
-                    {l.bloques?.length
+                    {l.recurso
+                      ? `${ETIQUETA_PROVEEDOR[l.recurso.proveedor]} · ${l.recurso.titulo}`
+                      : l.bloques?.length
                       ? `${l.bloques.length} ${l.bloques.length === 1 ? "bloque" : "bloques"}`
                       : "Sin contenido todavía"}
                     {l.duracion_estimada_min
@@ -296,6 +395,30 @@ export function LeccionesEditor({
                 </div>
                 {editable ? (
                   <div className="flex shrink-0 gap-1">
+                    {/* Subir y bajar, no arrastrar. Arrastrar es agradable con
+                        ratón y no existe con teclado; estos dos botones los
+                        opera cualquiera, y el orden es un dato normativo del
+                        curso como para dejarlo detrás de un gesto. */}
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      disabled={i === 0 || moviendo !== null}
+                      onClick={() => void mover(l, "ARRIBA")}
+                      aria-label={`Subir la lección ${l.titulo}`}
+                    >
+                      <ArrowUp aria-hidden="true" />
+                      <span className="sr-only">Subir</span>
+                    </Button>
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      disabled={i === lecciones.length - 1 || moviendo !== null}
+                      onClick={() => void mover(l, "ABAJO")}
+                      aria-label={`Bajar la lección ${l.titulo}`}
+                    >
+                      <ArrowDown aria-hidden="true" />
+                      <span className="sr-only">Bajar</span>
+                    </Button>
                     <Button
                       variant="relGhost"
                       size="sm"
@@ -325,12 +448,12 @@ export function LeccionesEditor({
         {lecciones.length > 1 && editable ? (
           <p className="mt-4 flex items-start gap-2 font-rel-body text-sm text-rel-muted">
             <GripVertical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            El orden lo lleva el servidor: cada lección nueva va al final, y al
-            eliminar una se renumeran las siguientes. Reordenar todavía no está
-            disponible.
+            El orden lo lleva el servidor: cada lección nueva va al final, al
+            eliminar una se renumeran las siguientes, y subir o bajar
+            intercambia con la vecina. Cambiarlo aquí no altera ninguna versión
+            ya publicada: forma la siguiente.
           </p>
         ) : null}
-      </CardContent>
 
       {/* --- alta y edición --- */}
       <Sheet
@@ -374,9 +497,9 @@ export function LeccionesEditor({
                 </SelectContent>
               </Select>
               <p className="text-sm text-rel-muted">
-                Solo el contenido nativo tiene reproductor hoy. Publicar una
-                versión con otro tipo produciría una asignación imposible de
-                completar, así que el servidor lo rechaza.
+                El contenido nativo se escribe aquí. El video y el documento se
+                reproducen desde una dirección externa. El recurso externo sigue
+                sin reproductor, y por eso no se puede publicar con él.
               </p>
             </div>
 
@@ -400,6 +523,110 @@ export function LeccionesEditor({
               ) : null}
             </div>
 
+            {usaRecurso(form.tipo) ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Material
+                </legend>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-proveedor" className="text-rel-dark">
+                    Dónde está
+                  </Label>
+                  <Select
+                    value={form.proveedor}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, proveedor: v as ProveedorRecurso }))
+                    }
+                  >
+                    <SelectTrigger id="l-proveedor">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROVEEDORES_RECURSO.map((prov) => (
+                        <SelectItem key={prov} value={prov}>
+                          {ETIQUETA_PROVEEDOR[prov]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-url" className="text-rel-dark">
+                    Dirección <span className="text-rel-danger">*</span>
+                  </Label>
+                  <Input
+                    id="l-url"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://…"
+                    value={form.url}
+                    maxLength={2000}
+                    onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                    aria-invalid={errorUrl ? true : undefined}
+                    aria-describedby={errorUrl ? "l-url-error" : "l-url-ayuda"}
+                  />
+                  {errorUrl ? (
+                    <p id="l-url-error" role="alert" className="text-sm text-rel-danger">
+                      {errorUrl}
+                    </p>
+                  ) : (
+                    <p id="l-url-ayuda" className="text-sm text-rel-muted">
+                      Tiene que empezar por https:// y el dominio debe
+                      corresponder al proveedor elegido; el servidor comprueba
+                      las dos cosas. El material tiene que quedar visible para
+                      cualquiera con el enlace: el participante entra sin cuenta.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-titulo-recurso" className="text-rel-dark">
+                    Nombre del material
+                  </Label>
+                  <Input
+                    id="l-titulo-recurso"
+                    value={form.tituloRecurso}
+                    maxLength={250}
+                    placeholder="Si lo dejas vacío, se usa el título de la lección"
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, tituloRecurso: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <p className="text-sm text-rel-muted">
+                  Se dará por vista cuando el participante lo confirme. De un
+                  video incrustado no se puede medir cuánto se reprodujo sin la
+                  API del proveedor, y mostrar un porcentaje calculado en el
+                  navegador sería inventarlo.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "EVALUACION" ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Cuestionario
+                </legend>
+                <ConstructorEvaluacion
+                  valor={form.evaluacion}
+                  alCambiar={(v) => setForm((f) => ({ ...f, evaluacion: v }))}
+                />
+                {errorEvaluacion ? (
+                  <p role="alert" className="text-sm text-rel-danger">
+                    {errorEvaluacion}
+                  </p>
+                ) : null}
+                <p className="text-sm text-rel-muted">
+                  Una evaluación tiene que ser obligatoria para publicarse: si se
+                  puede saltar, la constancia no prueba que se aprobara.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "NATIVA" ? (
             <div className="space-y-2">
               <Label htmlFor="l-contenido" className="text-rel-dark">
                 Contenido
@@ -416,6 +643,7 @@ export function LeccionesEditor({
                 pantalla para el participante.
               </p>
             </div>
+            ) : null}
 
             <div className="space-y-2">
               <Label htmlFor="l-duracion" className="text-rel-dark">
@@ -495,6 +723,6 @@ export function LeccionesEditor({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </SeccionPlegable>
   );
 }

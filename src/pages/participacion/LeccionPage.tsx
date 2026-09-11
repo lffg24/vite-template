@@ -1,6 +1,9 @@
-// src/pages/participacion/LeccionPage.tsx · D-06
+// src/pages/participacion/LeccionPage.tsx · D-05 y D-06
 //
-// La lección nativa: bloques de texto que se recorren de uno en uno.
+// Dos formas de lección en la misma pantalla, y a propósito: para quien cursa,
+// «la lección 3» es un sitio, no dos rutas distintas según de qué esté hecha.
+//
+// La nativa: bloques de texto que se recorren de uno en uno.
 //
 // De uno en uno y no en una página larga con scroll, y la razón no es estética.
 // El progreso se guarda por bloque, así que un solo scroll no permitiría saber
@@ -14,14 +17,24 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
-import { guardarProgreso, leerLeccion } from "@/services/participacionService";
-import type { ErrorPublico, LeccionCompleta } from "@/types/participacion";
+import {
+  enviarIntento,
+  guardarProgreso,
+  leerLeccion,
+} from "@/services/participacionService";
+import type {
+  ErrorPublico,
+  IntentoCalificado,
+  LeccionCompleta,
+} from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   BotonPrincipal,
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
+import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
+import { Evaluacion } from "@/features/participacion/Evaluacion";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -31,8 +44,14 @@ export default function LeccionPage() {
   const consulta = useConsulta<LeccionCompleta>(() => leerLeccion(leccionId), [leccionId]);
 
   const [bloque, setBloque] = useState(0);
+  // La confirmación de haber visto el material. Empieza SIEMPRE en falso,
+  // también al volver a abrir una lección ya completada: es una afirmación de
+  // la persona, y darla por hecha porque el servidor guardó un 1 convertiría el
+  // control en decorado.
+  const [confirmado, setConfirmado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<IntentoCalificado | null>(null);
 
   const leccion = consulta.datos;
 
@@ -65,6 +84,27 @@ export default function LeccionPage() {
     },
     [leccionId]
   );
+
+  async function enviar(respuestas: (number | number[])[]) {
+    setGuardando(true);
+    setErrorGuardado(null);
+    try {
+      setResultado(await enviarIntento(leccionId, respuestas));
+    } catch (e) {
+      const err = e as ErrorPublico;
+      // El 409 se distingue del resto: «ya no puedes» no es «falló la red», y
+      // ofrecer «reintentar» ante el primero sería mentir.
+      setErrorGuardado(
+        err.motivo === "intentos_agotados"
+          ? err.message
+          : err.motivo === "respuestas_invalidas"
+            ? "Revisa que hayas respondido todas las preguntas."
+            : "No pudimos enviar tus respuestas. Revisa tu conexión."
+      );
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   if (consulta.fase === "cargando") {
     return (
@@ -105,7 +145,11 @@ export default function LeccionPage() {
     );
   }
 
-  const total = Math.max(1, leccion.bloques.length);
+  // Una lección de material tiene UNA unidad de avance: la confirmación. El
+  // denominador lo calcula igual el servidor; aquí solo se pinta lo mismo.
+  const recurso = leccion.recurso;
+  const evaluacion = leccion.evaluacion;
+  const total = recurso || evaluacion ? 1 : Math.max(1, leccion.bloques.length);
   const esUltimo = bloque >= total - 1;
 
   async function siguiente() {
@@ -131,7 +175,13 @@ export default function LeccionPage() {
       </button>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        Parte {bloque + 1} de {total}
+        {evaluacion
+          ? "Evaluación"
+          : recurso
+            ? leccion.tipo === "VIDEO"
+              ? "Video"
+              : "Documento"
+            : `Parte ${bloque + 1} de ${total}`}
       </p>
       <h1 className="mt-1 font-rel-heading text-xl font-bold leading-tight">
         {leccion.titulo}
@@ -140,24 +190,69 @@ export default function LeccionPage() {
       {/* `aria-live` para que un lector de pantalla anuncie el bloque nuevo: sin
           esto, avanzar no produce ningún cambio audible y parece que el botón
           no hizo nada. */}
-      <div
-        className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
-        aria-live="polite"
-      >
-        {leccion.bloques[bloque]?.titulo ? (
-          <h2 className="mb-2 font-rel-heading text-base font-bold">
-            {leccion.bloques[bloque].titulo}
-          </h2>
-        ) : null}
-        {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
-            bloque. El contenido es texto plano por decisión del editor: nada que
-            sanear, nada que pueda inyectar marcado. */}
-        <p className="whitespace-pre-line text-base leading-relaxed">
-          {leccion.bloques[bloque]?.contenido ?? ""}
-        </p>
-      </div>
+      {evaluacion ? (
+        <Evaluacion
+          evaluacion={evaluacion}
+          enviando={guardando}
+          error={errorGuardado}
+          resultado={resultado}
+          alEnviar={(r) => void enviar(r)}
+          alReintentar={async () => {
+            setResultado(null);
+            setErrorGuardado(null);
+            // Se recarga: el número de intentos usados cambió, y seguir con el
+            // de antes mostraría «intento 1 de 1» en el segundo.
+            await consulta.refrescar();
+          }}
+          alTerminar={() => navegar("/c/sesion", { replace: true })}
+        />
+      ) : recurso ? (
+        <div className="mt-5 flex-1 space-y-4">
+          <ReproductorRecurso recurso={recurso} tipo={leccion.tipo} />
 
-      {errorGuardado ? (
+          {/* La confirmación es lo que cuenta, y la pantalla dice por qué en
+              vez de fingir una barra de reproducción: de un incrustado de
+              terceros no se puede medir cuánto se vio sin la API del proveedor,
+              y un porcentaje calculado en el navegador sería inventado. */}
+          <label className="flex cursor-pointer items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-4">
+            <input
+              type="checkbox"
+              checked={confirmado}
+              onChange={(e) => setConfirmado(e.target.checked)}
+              className="mt-1 h-5 w-5 shrink-0 accent-rel-primary"
+            />
+            <span>
+              <span className="block text-base font-semibold">
+                {leccion.tipo === "VIDEO"
+                  ? "He visto el video completo"
+                  : "He revisado el documento"}
+              </span>
+              <span className="mt-1 block text-sm text-rel-muted">
+                Con esto queda registrada tu participación en esta lección.
+              </span>
+            </span>
+          </label>
+        </div>
+      ) : (
+        <div
+          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
+          aria-live="polite"
+        >
+          {leccion.bloques[bloque]?.titulo ? (
+            <h2 className="mb-2 font-rel-heading text-base font-bold">
+              {leccion.bloques[bloque].titulo}
+            </h2>
+          ) : null}
+          {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
+              bloque. El contenido es texto plano por decisión del editor: nada
+              que sanear, nada que pueda inyectar marcado. */}
+          <p className="whitespace-pre-line text-base leading-relaxed">
+            {leccion.bloques[bloque]?.contenido ?? ""}
+          </p>
+        </div>
+      )}
+
+      {errorGuardado && !evaluacion ? (
         <p
           role="alert"
           className="mt-4 rounded-rel-card border border-rel-danger/30 bg-rel-danger-subtle p-3 text-sm"
@@ -166,8 +261,9 @@ export default function LeccionPage() {
         </p>
       ) : null}
 
+      {evaluacion ? null : (
       <div className="mt-6 flex gap-3">
-        {bloque > 0 ? (
+        {!recurso && bloque > 0 ? (
           <button
             type="button"
             onClick={() => setBloque((b) => b - 1)}
@@ -177,7 +273,7 @@ export default function LeccionPage() {
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : null}
-        <BotonPrincipal onClick={siguiente} disabled={guardando}>
+        <BotonPrincipal onClick={siguiente} disabled={guardando || (Boolean(recurso) && !confirmado)}>
           {guardando ? (
             "Guardando…"
           ) : esUltimo ? (
@@ -193,6 +289,7 @@ export default function LeccionPage() {
           )}
         </BotonPrincipal>
       </div>
+      )}
     </ParticipanteLayout>
   );
 }
