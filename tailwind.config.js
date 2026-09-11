@@ -136,9 +136,9 @@ export default {
 			lg: 'var(--radius)',
 			md: 'calc(var(--radius) - 2px)',
 			sm: 'calc(var(--radius) - 4px)',
-			'rel-control': '12px',
-			'rel-card': '16px',
-			'rel-panel': '28px'
+			'rel-control': 'var(--rel-radius-control)',
+			'rel-card': 'var(--rel-radius-card)',
+			'rel-panel': 'var(--rel-radius-panel)'
 		},
 		keyframes: {
 			'accordion-down': {
