@@ -134,6 +134,40 @@ export interface RecursoPublico {
   paginas?: number | null;
 }
 
+/**
+ * Una pregunta tal como la ve quien responde.
+ *
+ * **Sin `correcta`.** No es una omisión: el tipo del participante no la declara
+ * porque el servidor no la manda, y tenerla aquí como opcional invitaría a
+ * alguien a leerla.
+ */
+export interface PreguntaPublica {
+  enunciado: string;
+  opciones: string[];
+}
+
+export interface EvaluacionPublica {
+  nota_minima: number;
+  intentos_max: number;
+  intentos_usados: number;
+  puede_intentar: boolean;
+  aprobado: boolean;
+  mejor_puntaje: number | null;
+  preguntas: PreguntaPublica[];
+}
+
+export interface IntentoCalificado {
+  numero: number;
+  aciertos: number;
+  preguntas: number;
+  puntaje: number;
+  aprobado: boolean;
+  nota_minima: number;
+  intentos_max: number;
+  intentos_usados: number;
+  puede_reintentar: boolean;
+}
+
 export interface LeccionCompleta {
   leccion_id: string;
   orden: number;
@@ -143,6 +177,8 @@ export interface LeccionCompleta {
   bloques: BloqueLeccion[];
   /** Solo en las lecciones que se reproducen desde una URL. */
   recurso: RecursoPublico | null;
+  /** Solo en las lecciones de evaluación. */
+  evaluacion: EvaluacionPublica | null;
   bloques_vistos: number;
   completada: boolean;
 }
@@ -219,7 +255,11 @@ export type MotivoPublico =
   /** La asignación exige invitación personal y se llegó por el enlace del grupo. */
   | "requiere_invitacion"
   /** Inexistente, caducada, revocada o ya usada. Las cuatro dicen lo mismo. */
-  | "invitacion_no_disponible";
+  | "invitacion_no_disponible"
+  /** Se usaron todos los intentos de la evaluación, o ya se aprobó. */
+  | "intentos_agotados"
+  /** El envío no trae una respuesta por pregunta, o apunta fuera de rango. */
+  | "respuestas_invalidas";
 
 export interface ErrorPublico extends Error {
   motivo: MotivoPublico | "desconocido";

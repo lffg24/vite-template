@@ -17,8 +17,16 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
-import { guardarProgreso, leerLeccion } from "@/services/participacionService";
-import type { ErrorPublico, LeccionCompleta } from "@/types/participacion";
+import {
+  enviarIntento,
+  guardarProgreso,
+  leerLeccion,
+} from "@/services/participacionService";
+import type {
+  ErrorPublico,
+  IntentoCalificado,
+  LeccionCompleta,
+} from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   BotonPrincipal,
@@ -26,6 +34,7 @@ import {
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
+import { Evaluacion } from "@/features/participacion/Evaluacion";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -42,6 +51,7 @@ export default function LeccionPage() {
   const [confirmado, setConfirmado] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<IntentoCalificado | null>(null);
 
   const leccion = consulta.datos;
 
@@ -74,6 +84,27 @@ export default function LeccionPage() {
     },
     [leccionId]
   );
+
+  async function enviar(respuestas: number[]) {
+    setGuardando(true);
+    setErrorGuardado(null);
+    try {
+      setResultado(await enviarIntento(leccionId, respuestas));
+    } catch (e) {
+      const err = e as ErrorPublico;
+      // El 409 se distingue del resto: «ya no puedes» no es «falló la red», y
+      // ofrecer «reintentar» ante el primero sería mentir.
+      setErrorGuardado(
+        err.motivo === "intentos_agotados"
+          ? err.message
+          : err.motivo === "respuestas_invalidas"
+            ? "Revisa que hayas respondido todas las preguntas."
+            : "No pudimos enviar tus respuestas. Revisa tu conexión."
+      );
+    } finally {
+      setGuardando(false);
+    }
+  }
 
   if (consulta.fase === "cargando") {
     return (
@@ -117,7 +148,8 @@ export default function LeccionPage() {
   // Una lección de material tiene UNA unidad de avance: la confirmación. El
   // denominador lo calcula igual el servidor; aquí solo se pinta lo mismo.
   const recurso = leccion.recurso;
-  const total = recurso ? 1 : Math.max(1, leccion.bloques.length);
+  const evaluacion = leccion.evaluacion;
+  const total = recurso || evaluacion ? 1 : Math.max(1, leccion.bloques.length);
   const esUltimo = bloque >= total - 1;
 
   async function siguiente() {
@@ -143,11 +175,13 @@ export default function LeccionPage() {
       </button>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        {recurso
-          ? leccion.tipo === "VIDEO"
-            ? "Video"
-            : "Documento"
-          : `Parte ${bloque + 1} de ${total}`}
+        {evaluacion
+          ? "Evaluación"
+          : recurso
+            ? leccion.tipo === "VIDEO"
+              ? "Video"
+              : "Documento"
+            : `Parte ${bloque + 1} de ${total}`}
       </p>
       <h1 className="mt-1 font-rel-heading text-xl font-bold leading-tight">
         {leccion.titulo}
@@ -156,7 +190,23 @@ export default function LeccionPage() {
       {/* `aria-live` para que un lector de pantalla anuncie el bloque nuevo: sin
           esto, avanzar no produce ningún cambio audible y parece que el botón
           no hizo nada. */}
-      {recurso ? (
+      {evaluacion ? (
+        <Evaluacion
+          evaluacion={evaluacion}
+          enviando={guardando}
+          error={errorGuardado}
+          resultado={resultado}
+          alEnviar={(r) => void enviar(r)}
+          alReintentar={async () => {
+            setResultado(null);
+            setErrorGuardado(null);
+            // Se recarga: el número de intentos usados cambió, y seguir con el
+            // de antes mostraría «intento 1 de 1» en el segundo.
+            await consulta.refrescar();
+          }}
+          alTerminar={() => navegar("/c/sesion", { replace: true })}
+        />
+      ) : recurso ? (
         <div className="mt-5 flex-1 space-y-4">
           <ReproductorRecurso recurso={recurso} tipo={leccion.tipo} />
 
@@ -202,7 +252,7 @@ export default function LeccionPage() {
         </div>
       )}
 
-      {errorGuardado ? (
+      {errorGuardado && !evaluacion ? (
         <p
           role="alert"
           className="mt-4 rounded-rel-card border border-rel-danger/30 bg-rel-danger-subtle p-3 text-sm"
@@ -211,6 +261,7 @@ export default function LeccionPage() {
         </p>
       ) : null}
 
+      {evaluacion ? null : (
       <div className="mt-6 flex gap-3">
         {!recurso && bloque > 0 ? (
           <button
@@ -238,6 +289,7 @@ export default function LeccionPage() {
           )}
         </BotonPrincipal>
       </div>
+      )}
     </ParticipanteLayout>
   );
 }

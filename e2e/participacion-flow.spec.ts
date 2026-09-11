@@ -145,6 +145,7 @@ test.describe("Participante · recorrido en el teléfono", () => {
         // Explicito: omitido, la prueba pasaria sobre `undefined` y dejaria
         // de comprobar que una leccion nativa NO trae material.
         recurso: null,
+        evaluacion: null,
         bloques_vistos: vistos,
         completada: vistos >= 2,
       })

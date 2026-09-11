@@ -59,10 +59,15 @@ import {
 import type {
   BloqueLeccion,
   ErrorApi,
+  EvaluacionLeccion,
   Leccion,
   ProveedorRecurso,
   TipoLeccion,
 } from "@/types/capacitaciones";
+import {
+  ConstructorEvaluacion,
+  EVALUACION_VACIA,
+} from "@/features/capacitaciones/components/ConstructorEvaluacion";
 import {
   ETIQUETA_TIPO_LECCION,
   ETIQUETA_PROVEEDOR,
@@ -108,6 +113,7 @@ interface FormLeccion {
   proveedor: ProveedorRecurso;
   url: string;
   tituloRecurso: string;
+  evaluacion: EvaluacionLeccion;
   duracion: string;
   obligatoria: boolean;
 }
@@ -119,6 +125,7 @@ const FORM_VACIO: FormLeccion = {
   proveedor: "YOUTUBE",
   url: "",
   tituloRecurso: "",
+  evaluacion: EVALUACION_VACIA,
   duracion: "",
   obligatoria: true,
 };
@@ -147,6 +154,7 @@ export function LeccionesEditor({
   const [guardando, setGuardando] = useState(false);
   const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
+  const [errorEvaluacion, setErrorEvaluacion] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
   const [moviendo, setMoviendo] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState(false);
@@ -158,6 +166,7 @@ export function LeccionesEditor({
     setForm(FORM_VACIO);
     setErrorTitulo(null);
     setErrorUrl(null);
+    setErrorEvaluacion(null);
     setAbierto(true);
   }
 
@@ -170,11 +179,13 @@ export function LeccionesEditor({
       proveedor: l.recurso?.proveedor ?? "YOUTUBE",
       url: l.recurso?.url ?? "",
       tituloRecurso: l.recurso?.titulo ?? "",
+      evaluacion: l.evaluacion ?? EVALUACION_VACIA,
       duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
       obligatoria: l.obligatoria,
     });
     setErrorTitulo(null);
     setErrorUrl(null);
+    setErrorEvaluacion(null);
     setAbierto(true);
   }
 
@@ -213,12 +224,25 @@ export function LeccionesEditor({
           }
         : null;
 
+    // La evaluación viaja entera o no viaja. El servidor la valida y la
+    // normaliza; aquí solo se comprueba lo que se puede decir sin duplicar sus
+    // reglas —el detalle vive en `catalogo.validar_evaluacion`, y tenerlo en
+    // dos sitios es la forma segura de que acaben diciendo cosas distintas.
+    const esEvaluacion = form.tipo === "EVALUACION";
+    if (esEvaluacion && form.evaluacion.preguntas.length === 0) {
+      setErrorEvaluacion("Agrega al menos una pregunta.");
+      return;
+    }
+    setErrorEvaluacion(null);
+    const evaluacion = esEvaluacion ? form.evaluacion : null;
+
     setGuardando(true);
     try {
       if (editandoId) {
         await editarLeccion(cursoId, editandoId, {
           titulo,
           recurso,
+          evaluacion,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -229,6 +253,7 @@ export function LeccionesEditor({
           tipo: form.tipo,
           titulo,
           recurso,
+          evaluacion,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -576,6 +601,27 @@ export function LeccionesEditor({
                   video incrustado no se puede medir cuánto se reprodujo sin la
                   API del proveedor, y mostrar un porcentaje calculado en el
                   navegador sería inventarlo.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "EVALUACION" ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Cuestionario
+                </legend>
+                <ConstructorEvaluacion
+                  valor={form.evaluacion}
+                  alCambiar={(v) => setForm((f) => ({ ...f, evaluacion: v }))}
+                />
+                {errorEvaluacion ? (
+                  <p role="alert" className="text-sm text-rel-danger">
+                    {errorEvaluacion}
+                  </p>
+                ) : null}
+                <p className="text-sm text-rel-muted">
+                  Una evaluación tiene que ser obligatoria para publicarse: si se
+                  puede saltar, la constancia no prueba que se aprobara.
                 </p>
               </fieldset>
             ) : null}

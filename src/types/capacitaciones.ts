@@ -24,6 +24,7 @@ export const TIPOS_LECCION = [
   "VIDEO",
   "DOCUMENTO",
   "RECURSO_EXTERNO",
+  "EVALUACION",
 ] as const;
 export type TipoLeccion = (typeof TIPOS_LECCION)[number];
 
@@ -39,6 +40,7 @@ export const TIPOS_LECCION_IMPLEMENTADOS: readonly TipoLeccion[] = [
   "NATIVA",
   "VIDEO",
   "DOCUMENTO",
+  "EVALUACION",
 ];
 
 /** Los que se reproducen desde una URL externa y por tanto exigen material. */
@@ -59,6 +61,33 @@ export const ETIQUETA_PROVEEDOR: Record<ProveedorRecurso, string> = {
   URL: "Enlace directo",
 };
 
+/**
+ * Una pregunta del cuestionario, con su respuesta correcta.
+ *
+ * Este tipo es de la superficie AUTENTICADA — quien lo lee es quien redacta el
+ * curso. Lo que ve el participante es otro tipo, en `types/participacion.ts`, y
+ * no lleva `correcta`. Son dos tipos y no uno con el campo opcional a
+ * propósito: un opcional se olvida de rellenar y también de quitar.
+ */
+export interface PreguntaLeccion {
+  enunciado: string;
+  opciones: string[];
+  /** Índice de la opción correcta, desde 0. */
+  correcta: number;
+}
+
+export interface EvaluacionLeccion {
+  nota_minima: number;
+  intentos_max: number;
+  preguntas: PreguntaLeccion[];
+}
+
+export const NOTA_MINIMA_DEFECTO = 70;
+export const INTENTOS_DEFECTO = 1;
+export const OPCIONES_MIN = 2;
+export const OPCIONES_MAX = 6;
+export const PREGUNTAS_MAX = 50;
+
 export interface RecursoLeccion {
   proveedor: ProveedorRecurso;
   url: string;
@@ -72,6 +101,7 @@ export const ETIQUETA_TIPO_LECCION: Record<TipoLeccion, string> = {
   VIDEO: "Video",
   DOCUMENTO: "Documento",
   RECURSO_EXTERNO: "Recurso externo",
+  EVALUACION: "Evaluación",
 };
 
 /** Un recurso externo nunca cuenta para la finalización (PRD §10). */
@@ -142,6 +172,8 @@ export interface Leccion {
   bloques: BloqueLeccion[] | null;
   /** Solo en los tipos que se reproducen desde una URL. */
   recurso: RecursoLeccion | null;
+  /** Solo en las lecciones de evaluación. */
+  evaluacion: EvaluacionLeccion | null;
   duracion_estimada_min: number | null;
   obligatoria: boolean;
 }
@@ -178,6 +210,7 @@ export interface LeccionCrear {
    * tenía, y reescribir la fila cambiaría también lo que ya se publicó.
    */
   recurso?: RecursoLeccion | null;
+  evaluacion?: EvaluacionLeccion | null;
   duracion_estimada_min?: number | null;
   obligatoria?: boolean;
 }
