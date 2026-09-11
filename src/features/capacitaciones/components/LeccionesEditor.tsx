@@ -15,10 +15,11 @@
 //   pulsar «Publicar», con la lección ya redactada.
 
 import { useState } from "react";
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +54,7 @@ import {
   agregarLeccion,
   editarLeccion,
   eliminarLeccion,
+  moverLeccion,
 } from "@/services/capacitacionesService";
 import type { BloqueLeccion, ErrorApi, Leccion, TipoLeccion } from "@/types/capacitaciones";
 import {
@@ -125,6 +127,7 @@ export function LeccionesEditor({
   const [guardando, setGuardando] = useState(false);
   const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
+  const [moviendo, setMoviendo] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
   const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
@@ -199,6 +202,26 @@ export function LeccionesEditor({
     }
   }
 
+  async function mover(leccion: Leccion, direccion: "ARRIBA" | "ABAJO") {
+    // Se bloquean TODOS los botones mientras uno viaja, no solo el pulsado: dos
+    // movimientos lanzados sobre la misma lista dejan un orden que no es el que
+    // pidió nadie, porque el segundo se calculó con posiciones ya caducas.
+    setMoviendo(leccion.id);
+    try {
+      await moverLeccion(cursoId, leccion.id, direccion);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos mover la lección",
+        description: err.message,
+      });
+    } finally {
+      setMoviendo(null);
+    }
+  }
+
   async function confirmarEliminacion() {
     if (!aEliminar) return;
     setEliminando(true);
@@ -225,26 +248,28 @@ export function LeccionesEditor({
   const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
 
   return (
-    <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
-        <div>
-          <CardTitle className="font-rel-heading text-lg text-rel-dark">Lecciones</CardTitle>
-          {lecciones.length > 0 ? (
-            <p className="mt-1 font-rel-body text-sm text-rel-muted">
-              {lecciones.length} {lecciones.length === 1 ? "lección" : "lecciones"}
-              {totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : null}
-            </p>
-          ) : null}
-        </div>
-        {editable ? (
+    <SeccionPlegable
+      titulo="Lecciones"
+      claveMemoria="abril360.capacitaciones.curso.lecciones"
+      descripcion={
+        lecciones.length > 0
+          ? `${lecciones.length} ${lecciones.length === 1 ? "lección" : "lecciones"}${
+              totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : ""
+            }`
+          : "Un curso sin lecciones no se puede publicar."
+      }
+      estado={
+        lecciones.length === 0 ? <Badge variant="relWarning">Vacío</Badge> : null
+      }
+      accion={
+        editable ? (
           <Button variant="relOutline" size="sm" onClick={abrirNueva}>
             <Plus aria-hidden="true" />
             Agregar lección
           </Button>
-        ) : null}
-      </CardHeader>
-
-      <CardContent>
+        ) : null
+      }
+    >
         {lecciones.length === 0 ? (
           <SinDatos
             ilustracion="documento"
@@ -261,7 +286,7 @@ export function LeccionesEditor({
           />
         ) : (
           <ol className="space-y-3">
-            {lecciones.map((l) => (
+            {lecciones.map((l, i) => (
               <li
                 key={l.id}
                 className="flex flex-wrap items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 sm:flex-nowrap"
@@ -296,6 +321,30 @@ export function LeccionesEditor({
                 </div>
                 {editable ? (
                   <div className="flex shrink-0 gap-1">
+                    {/* Subir y bajar, no arrastrar. Arrastrar es agradable con
+                        ratón y no existe con teclado; estos dos botones los
+                        opera cualquiera, y el orden es un dato normativo del
+                        curso como para dejarlo detrás de un gesto. */}
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      disabled={i === 0 || moviendo !== null}
+                      onClick={() => void mover(l, "ARRIBA")}
+                      aria-label={`Subir la lección ${l.titulo}`}
+                    >
+                      <ArrowUp aria-hidden="true" />
+                      <span className="sr-only">Subir</span>
+                    </Button>
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      disabled={i === lecciones.length - 1 || moviendo !== null}
+                      onClick={() => void mover(l, "ABAJO")}
+                      aria-label={`Bajar la lección ${l.titulo}`}
+                    >
+                      <ArrowDown aria-hidden="true" />
+                      <span className="sr-only">Bajar</span>
+                    </Button>
                     <Button
                       variant="relGhost"
                       size="sm"
@@ -325,12 +374,12 @@ export function LeccionesEditor({
         {lecciones.length > 1 && editable ? (
           <p className="mt-4 flex items-start gap-2 font-rel-body text-sm text-rel-muted">
             <GripVertical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            El orden lo lleva el servidor: cada lección nueva va al final, y al
-            eliminar una se renumeran las siguientes. Reordenar todavía no está
-            disponible.
+            El orden lo lleva el servidor: cada lección nueva va al final, al
+            eliminar una se renumeran las siguientes, y subir o bajar
+            intercambia con la vecina. Cambiarlo aquí no altera ninguna versión
+            ya publicada: forma la siguiente.
           </p>
         ) : null}
-      </CardContent>
 
       {/* --- alta y edición --- */}
       <Sheet
@@ -495,6 +544,6 @@ export function LeccionesEditor({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </SeccionPlegable>
   );
 }

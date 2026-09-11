@@ -192,6 +192,25 @@ export async function eliminarLeccion(cursoId: string, leccionId: string): Promi
   }
 }
 
+/**
+ * Sube o baja una lección una posición.
+ *
+ * Relativo y no absoluto: si la pantalla se quedó con una lista vieja, «llévala
+ * a la posición 5» reordenaría otra cosa. Un paso sobre la lista que el
+ * servidor tiene bloqueada no puede equivocarse de lección.
+ */
+export async function moverLeccion(
+  cursoId: string,
+  leccionId: string,
+  direccion: "ARRIBA" | "ABAJO"
+): Promise<void> {
+  try {
+    await api.post(`${BASE}/cursos/${cursoId}/lecciones/${leccionId}/mover`, { direccion });
+  } catch (e) {
+    throw errorApi(e, "No pudimos mover la lección.");
+  }
+}
+
 // --- A-05 · publicación -----------------------------------------------------------
 
 /**
