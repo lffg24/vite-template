@@ -17,6 +17,7 @@
 import { Outlet } from "react-router-dom";
 import {
   BookOpen,
+  ClipboardCheck,
   FileBadge,
   Link2,
   Send,
@@ -50,6 +51,23 @@ const NAVEGACION: EntradaDelMenu[] = [
     to: "/capacitaciones/cursos",
     label: "Catálogo",
     icon: BookOpen,
+    visible: (c) => Boolean(c?.puede_editar_catalogo || c?.puede_publicar),
+  },
+  {
+    to: "/evaluaciones",
+    label: "Evaluaciones",
+    icon: ClipboardCheck,
+    // APROXIMACIÓN DECLARADA, y conviene que se note. El banco es de OTRO
+    // módulo (`hseq/evaluaciones`) con sus propios permisos, y
+    // `GET /capacitaciones/contexto` solo resuelve los de Capacitaciones. Se
+    // usa aquí la capacidad editorial más cercana: quien redacta el catálogo
+    // global suele ser quien redacta los cuestionarios.
+    //
+    // Si la aproximación falla, la pantalla responde con la explicación de
+    // permisos en vez de romperse — que es peor que esconderla, pero mucho
+    // mejor que inventarse una respuesta. Lo que cierra esto de verdad es que
+    // el contexto devuelva capacidades de varios módulos, y eso es trabajo del
+    // endpoint, no de este menú.
     visible: (c) => Boolean(c?.puede_editar_catalogo || c?.puede_publicar),
   },
   {
