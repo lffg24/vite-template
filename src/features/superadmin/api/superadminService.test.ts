@@ -11,7 +11,10 @@ describe("superadmin service", () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
       calls.push({ url: String(url), init });
-      return new Response(JSON.stringify({ ok: true, item: {}, message: "ok" }), { status: 200 });
+      return new Response(
+        JSON.stringify({ ok: true, item: {}, message: "ok" }),
+        { status: 200 },
+      );
     });
 
     await superadminService.updatePsicologo(9, {
@@ -36,7 +39,9 @@ describe("superadmin service", () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
       calls.push({ url: String(url), init });
-      return new Response(JSON.stringify({ ok: true, saldo_nuevo: 7 }), { status: 200 });
+      return new Response(JSON.stringify({ ok: true, saldo_nuevo: 7 }), {
+        status: 200,
+      });
     });
 
     await superadminService.assignCredits({
@@ -54,5 +59,24 @@ describe("superadmin service", () => {
     expect(calls[0].init?.method).toBe("POST");
     expect(calls[1].url).toContain("/superadmin/creditos/descontar");
     expect(calls[1].init?.method).toBe("POST");
+  });
+
+  it("crea y edita empresas desde la superficie protegida de SuperAdmin", async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
+      calls.push({ url: String(url), init });
+      return new Response(JSON.stringify({ ok: true, item: {} }), {
+        status: 200,
+      });
+    });
+    const payload = { nombre: "Cliente Abril", nit: "900123456-7" };
+
+    await superadminService.createEmpresa(payload);
+    await superadminService.updateEmpresa("empresa-1", payload);
+
+    expect(calls[0].url).toContain("/superadmin/empresas");
+    expect(calls[0].init?.method).toBe("POST");
+    expect(calls[1].url).toContain("/superadmin/empresas/empresa-1");
+    expect(calls[1].init?.method).toBe("PUT");
   });
 });
