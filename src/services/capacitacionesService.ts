@@ -54,7 +54,7 @@ const BASE = "/capacitaciones";
  * - **422** al publicar — trae `faltantes`, la lista de lo que impide publicar.
  * - **409** — ya existe una asignación activa para esa versión.
  */
-function errorApi(e: unknown, fallback: string): ErrorApi {
+export function errorApi(e: unknown, fallback: string): ErrorApi {
   const anyErr = e as {
     response?: { status?: number; data?: { detail?: unknown; message?: string } };
     message?: string;

@@ -61,6 +61,10 @@ const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/Capac
 const CapacitacionesConstanciasPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesConstanciasPage"));
 const CapacitacionesParticipantesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesParticipantesPage"));
 const CapacitacionesInvitacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInvitacionesPage"));
+const EvaluacionesPage = lazy(() => import("@/pages/evaluaciones/EvaluacionesPage"));
+const EvaluacionDetallePage = lazy(
+  () => import("@/pages/evaluaciones/EvaluacionDetallePage")
+);
 const SeleccionDeAsignacion = lazy(
   () => import("@/features/capacitaciones/components/SeleccionDeAsignacion")
 );
@@ -186,6 +190,15 @@ function App() {
               <Route path="enlaces" element={<SeleccionDeAsignacion destino="enlaces" />} />
               <Route path="constancias" element={<CapacitacionesConstanciasPage />} />
               <Route path="estado" element={<CapacitacionesEstadoPage />} />
+            </Route>
+
+            {/* El banco de evaluaciones vive FUERA de `/capacitaciones`, y es
+                deliberado: es catálogo de plataforma y lo van a consumir varios
+                módulos. Colgarlo del layout de Capacitaciones lo dejaría
+                pareciendo suyo, y mañana una 360 tendría que entrar por ahí. */}
+            <Route path="/evaluaciones" element={<CapacitacionesLayout />}>
+              <Route index element={<EvaluacionesPage />} />
+              <Route path=":cuestionarioId" element={<EvaluacionDetallePage />} />
             </Route>
           </Route>
 
