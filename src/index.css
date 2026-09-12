@@ -128,7 +128,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -170,43 +172,44 @@
        siendo la pila del sistema: `@fontsource/open-sans` llega con esa
        sincronizacion y declararla antes seria otra vez una fuente que el codigo
        afirma y el navegador no tiene. */
-    --rel-primary: 172 100% 36%;          /* = --primary de la casa */
-    --rel-primary-foreground: 0 0% 100%;
-    --rel-accent: 173 100% 23%;           /* = --primary-active · estado activo */
-    --rel-accent-subtle: 168 56% 92%;     /* = --accent */
-    --rel-turquoise: 172 100% 36%;        /* = --brand-turquoise */
+    --rel-primary: 172 100% 36%; /* = --primary de la casa */
+    /* El turquesa claro no alcanza AA con blanco para texto normal. */
+    --rel-primary-foreground: 215 42% 13%; /* = --brand-dark */
+    --rel-accent: 173 100% 23%; /* = --primary-active · estado activo */
+    --rel-accent-subtle: 168 56% 92%; /* = --accent */
+    --rel-turquoise: 172 100% 36%; /* = --brand-turquoise */
     --rel-turquoise-foreground: 0 0% 100%;
-    --rel-sky: 172 100% 41%;              /* = --brand-sky */
+    --rel-sky: 172 100% 41%; /* = --brand-sky */
     --rel-sky-foreground: 215 42% 13%;
-    --rel-dark: 215 42% 13%;              /* = --brand-dark */
-    --rel-canvas: 168 41% 96%;            /* = --background */
-    --rel-surface: 0 0% 100%;             /* = --surface */
-    --rel-surface-subtle: 168 25% 97%;    /* = --surface-subtle */
-    --rel-border: 168 18% 85%;            /* = --border */
-    --rel-border-strong: 171 24% 76%;     /* = --border-strong */
-    --rel-muted-foreground: 216 18% 45%;  /* = --muted-foreground */
+    --rel-dark: 215 42% 13%; /* = --brand-dark */
+    --rel-canvas: 168 41% 96%; /* = --background */
+    --rel-surface: 0 0% 100%; /* = --surface */
+    --rel-surface-subtle: 168 25% 97%; /* = --surface-subtle */
+    --rel-border: 168 18% 85%; /* = --border */
+    --rel-border-strong: 171 24% 76%; /* = --border-strong */
+    --rel-muted-foreground: 216 18% 45%; /* = --muted-foreground */
 
     /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
        El turquesa de marca NO significa "exito". Colapsarlos dejaria un boton
        primario indistinguible de una confirmacion. Los valores son los de la
        casa; los `-subtle` son el tinte claro de cada familia, que la casa no
        declara porque sus pantallas no usan fondos de aviso. */
-    --rel-success: 158 64% 40%;           /* = --success */
+    --rel-success: 158 64% 40%; /* = --success */
     --rel-success-foreground: 0 0% 100%;
     --rel-success-subtle: 158 60% 94%;
-    --rel-info: 172 100% 36%;             /* = --info */
+    --rel-info: 172 100% 36%; /* = --info */
     --rel-info-foreground: 0 0% 100%;
     --rel-info-subtle: 172 60% 94%;
-    --rel-warning: 38 92% 50%;            /* = --warning */
+    --rel-warning: 38 92% 50%; /* = --warning */
     --rel-warning-foreground: 218 57% 11%;
     --rel-warning-subtle: 38 92% 95%;
-    --rel-danger: 0 72% 51%;              /* = --danger */
+    --rel-danger: 0 72% 51%; /* = --danger */
     --rel-danger-foreground: 0 0% 100%;
     --rel-danger-subtle: 0 72% 96%;
-    --rel-neutral: 216 18% 45%;           /* = --muted-foreground */
-    --rel-neutral-subtle: 168 22% 95%;    /* = --muted */
+    --rel-neutral: 216 18% 45%; /* = --muted-foreground */
+    --rel-neutral-subtle: 168 22% 95%; /* = --muted */
 
-    --rel-focus-ring: 172 100% 36%;       /* = --ring */
+    --rel-focus-ring: 172 100% 36%; /* = --ring */
 
     /* --- radios ------------------------------------------------------------
        Los de la casa: `--radius` 0.875rem, `--radius-lg` 1rem, `--radius-xl`
@@ -230,8 +233,10 @@
        de marca. Un fallback silencioso es peor que no declararlo. Cuando se
        aprueben las fuentes de marca se instalan y se cambian estas dos lineas
        — para eso siguen siendo variables. */
-    --rel-font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --rel-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --rel-font-heading:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --rel-font-body:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
     /* --- movimiento (constitucion §15) --- */
     --rel-motion-micro: 150ms;
