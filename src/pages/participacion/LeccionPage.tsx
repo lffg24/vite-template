@@ -52,6 +52,9 @@ export default function LeccionPage() {
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null);
   const [resultado, setResultado] = useState<IntentoCalificado | null>(null);
+  // Persiste durante los reenvíos del mismo intento. Solo rota cuando la
+  // persona decide empezar otro después de recibir un veredicto.
+  const [solicitudId, setSolicitudId] = useState(() => crypto.randomUUID());
 
   const leccion = consulta.datos;
 
@@ -89,7 +92,7 @@ export default function LeccionPage() {
     setGuardando(true);
     setErrorGuardado(null);
     try {
-      setResultado(await enviarIntento(leccionId, respuestas));
+      setResultado(await enviarIntento(leccionId, solicitudId, respuestas));
     } catch (e) {
       const err = e as ErrorPublico;
       // El 409 se distingue del resto: «ya no puedes» no es «falló la red», y
@@ -198,6 +201,7 @@ export default function LeccionPage() {
           resultado={resultado}
           alEnviar={(r) => void enviar(r)}
           alReintentar={async () => {
+            setSolicitudId(crypto.randomUUID());
             setResultado(null);
             setErrorGuardado(null);
             // Se recarga: el número de intentos usados cambió, y seguir con el

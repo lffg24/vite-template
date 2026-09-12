@@ -187,20 +187,18 @@ export async function guardarProgreso(
 /**
  * D-07. Envía las respuestas de una evaluación. La nota la pone el SERVIDOR.
  *
- * **No se reintenta en silencio.** Cada envío es un intento distinto y el tope
- * de intentos solo significa algo si se cuentan; un reintento automático ante
- * un fallo de red gastaría uno sin que nadie lo pidiera. El servidor lo impide
- * además con el `UNIQUE` del número de intento, pero el cliente no debe
- * apoyarse en eso.
+ * `solicitudId` identifica el envío lógico: si la respuesta HTTP se pierde, el
+ * mismo envío puede repetirse sin consumir otro intento.
  */
 export async function enviarIntento(
   leccionId: string,
+  solicitudId: string,
   respuestas: (number | number[])[]
 ): Promise<IntentoCalificado> {
   try {
     const { data } = await publico.post<IntentoCalificado>(
       `/c/sesion/leccion/${leccionId}/intento`,
-      { respuestas }
+      { solicitud_id: solicitudId, respuestas }
     );
     return data;
   } catch (e) {
