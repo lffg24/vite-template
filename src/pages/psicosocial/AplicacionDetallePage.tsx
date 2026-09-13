@@ -197,7 +197,7 @@ export function buildApplicationEmployeeSocioDraft(
   const draft: FichaSociodemografica & { finalizar: false } = {
     ...ficha,
     area: String(area || ficha.area || "").trim(),
-    cargo: String(cargo || ficha.cargo || "").trim(),
+    cargo: String(ficha.cargo ?? cargo ?? "").trim(),
     finalizar: false,
   };
   return draft;
@@ -819,7 +819,7 @@ export default function AplicacionDetallePage() {
         selectedArea?.nombre,
         selectedCargo?.nombre,
       );
-      const shouldSaveSocio = hasApplicationEmployeeSocioData(socioDraft);
+      const shouldSaveSocio = hasApplicationEmployeeSocioData(employeeSocioForm);
       let socioWarning = "";
       if (shouldSaveSocio && created.empleado_id) {
         try {
@@ -2019,6 +2019,11 @@ export default function AplicacionDetallePage() {
                     label="Ocupación / profesión"
                     value={employeeSocioForm.ocupacion_profesion || ""}
                     onChange={(v) => updateEmployeeSocioForm("ocupacion_profesion", v)}
+                  />
+                  <SocioTextField
+                    label="Nombre del cargo"
+                    value={employeeSocioForm.cargo ?? selectedCargo?.nombre ?? ""}
+                    onChange={(v) => updateEmployeeSocioForm("cargo", v)}
                   />
                   <SocioSelectField
                     label="Estrato"

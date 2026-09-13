@@ -1147,7 +1147,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
     <div className="p-5">
       <div className="rounded-3xl border border-accent bg-accent/50 p-5">
         <h2 className="text-xl font-black text-foreground">Ficha de datos generales</h2>
-        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. Área y cargo vienen del maestro del colaborador y no cuentan como ficha diligenciada por sí solos.</p>
+        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. El cargo se sugiere desde el registro del colaborador y puedes ajustarlo para esta aplicación; el área conserva su valor base.</p>
       </div>
 
       {missing.length > 0 && (
@@ -1190,7 +1190,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MunicipioField disabled={completa} label="Ciudad / municipio donde trabaja" query={trabQuery} selectedValue={ficha.ciudad_trabajo || ""} setQuery={(v) => { setTrabQuery(v); if (v !== String(ficha.ciudad_trabajo || "")) { update("ciudad_trabajo", ""); update("departamento_trabajo", ""); } }} options={trabOptions} onSelect={(item) => selectMunicipio("trab", item)} />
             <ReadOnlyField label="Departamento donde trabaja" value={ficha.departamento_trabajo || ""} />
-            <ReadOnlyField label="Cargo base del colaborador" value={ficha.cargo || ""} />
+            <TextField disabled={completa} label="Nombre del cargo" value={ficha.cargo || ""} onChange={(v) => update("cargo", v)} />
             <SelectField disabled={completa} label="Tipo de cargo" value={ficha.tipo_cargo || ""} options={catalogos.tipo_cargo} onChange={(v) => update("tipo_cargo", v)} />
             <ReadOnlyField label="Área base del colaborador" value={ficha.area || ""} />
             <NumberField disabled={completa} label="Antigüedad en la empresa (años)" value={ficha.antiguedad_empresa ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_empresa", v === null ? "" : String(v))} />
