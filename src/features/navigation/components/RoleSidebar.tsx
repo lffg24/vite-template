@@ -13,6 +13,8 @@ export type RoleSidebarItem = {
 type RoleSidebarProps = {
   items: RoleSidebarItem[];
   storageKey: string;
+  /** Permite migrar una superficie a la identidad vigente sin alterar las demás. */
+  tone?: "legacy" | "rel";
   brandTitle?: string;
   brandSubtitle?: string;
   avatarText: string;
@@ -32,6 +34,7 @@ function isMenuActive(currentPath: string, targetPath: string) {
 export default function RoleSidebar({
   items,
   storageKey,
+  tone = "legacy",
   brandTitle = "ABRIL-360",
   brandSubtitle,
   avatarText,
@@ -60,22 +63,23 @@ export default function RoleSidebar({
 
   const compact = collapsed || mobile;
   const ancho = compact ? (mobile ? 72 : 84) : 292;
+  const currentBrand = tone === "rel";
 
   return (
     <aside
-      className="min-h-screen shrink-0 overflow-hidden bg-[#071329] text-white shadow-2xl transition-all duration-300"
+      className={`min-h-screen shrink-0 overflow-hidden text-white shadow-2xl transition-all duration-300 ${currentBrand ? "bg-rel-dark" : "bg-[#071329]"}`}
       style={{ width: ancho, minWidth: ancho, maxWidth: ancho }}
     >
       <div className="flex h-full flex-col p-4">
         <div className="mb-6 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg shadow-violet-950/30">
+            <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg ${currentBrand ? "shadow-black/20" : "shadow-violet-950/30"}`}>
               <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
             </div>
             {!compact && (
               <div className="min-w-0">
                 {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
-                  <AbrilWordmark className="block truncate text-2xl font-black" accentClassName="text-violet-300" />
+                  <AbrilWordmark className="block truncate text-2xl font-black" accentClassName={currentBrand ? "text-rel-sky" : "text-violet-300"} />
                 ) : (
                   <div className="truncate text-2xl font-black">{brandTitle}</div>
                 )}
@@ -95,11 +99,11 @@ export default function RoleSidebar({
         </div>
 
         <div className={`${compact ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-white/10 bg-white/5`}>
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-violet-600 font-bold">{avatarText}</div>
+          <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-bold ${currentBrand ? "bg-rel-accent" : "bg-violet-600"}`}>{avatarText}</div>
           {!compact && (
             <div className="min-w-0">
               <div className="truncate font-bold">{userTitle}</div>
-              <div className="truncate text-sm text-violet-200">{userSubtitle}</div>
+              <div className={`truncate text-sm ${currentBrand ? "text-teal-100" : "text-violet-200"}`}>{userSubtitle}</div>
             </div>
           )}
         </div>
@@ -121,7 +125,7 @@ export default function RoleSidebar({
                   "group flex w-full items-center rounded-2xl text-left text-sm font-semibold transition",
                   compact ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
                   active
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-950/30"
+                    ? (currentBrand ? "bg-rel-accent text-white shadow-lg shadow-black/20" : "bg-violet-600 text-white shadow-lg shadow-violet-950/30")
                     : "text-slate-300 hover:bg-white/10 hover:text-white",
                 ].join(" ")}
               >
@@ -136,7 +140,7 @@ export default function RoleSidebar({
           <div className="mt-5 border-t border-white/10 pt-4 text-xs leading-5 text-slate-400">
             <div>{footerTitle}</div>
             {footerLink ? (
-              <a href={footerLink} target="_blank" rel="noreferrer" className="text-violet-200 hover:text-white">
+              <a href={footerLink} target="_blank" rel="noreferrer" className={currentBrand ? "text-teal-100 hover:text-white" : "text-violet-200 hover:text-white"}>
                 {footerLinkLabel}
               </a>
             ) : null}

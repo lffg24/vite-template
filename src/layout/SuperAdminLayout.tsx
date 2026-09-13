@@ -24,10 +24,11 @@ const items = [
 
 export default function SuperAdminLayout() {
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-rel-canvas">
       <RoleSidebar
         items={items}
         storageKey="abril360.superadmin.sidebar.collapsed"
+        tone="rel"
         brandTitle="ABRIL360"
         brandSubtitle="Administración global"
         avatarText="SA"
