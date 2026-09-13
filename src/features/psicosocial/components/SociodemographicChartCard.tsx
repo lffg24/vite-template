@@ -119,7 +119,7 @@ export function SociodemographicChartCard({
                 type="button"
                 onClick={() => setChartType(value)}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                  active ? "bg-white text-violet-700 shadow-sm" : "text-slate-600 hover:bg-white/70"
+                  active ? "bg-white text-brand-primary shadow-sm" : "text-slate-600 hover:bg-white/70"
                 }`}
                 title={`Ver como ${label.toLowerCase()}`}
               >

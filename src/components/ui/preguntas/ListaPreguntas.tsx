@@ -38,14 +38,14 @@ const etiquetasTipo: Record<string, string> = {
 };
 
 const estilosTipo: Record<string, string> = {
-  likert: "bg-indigo-100 text-indigo-700",
+  likert: "bg-accent text-brand-primary",
   dicotomica: "bg-green-100 text-green-700",
   semaforo: "bg-red-100 text-red-700",
   seleccion_multiple: "bg-yellow-100 text-yellow-800",
   abierta: "bg-gray-100 text-gray-800",
-  escala_visual: "bg-blue-100 text-blue-800",
+  escala_visual: "bg-accent text-brand-primary",
   frecuencia_temporal: "bg-orange-100 text-orange-800",
-  situacional: "bg-purple-100 text-purple-700",
+  situacional: "bg-accent text-brand-primary",
   ranking: "bg-teal-100 text-teal-700",
 };
 

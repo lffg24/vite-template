@@ -9,6 +9,8 @@ export function pathFor(tipo: TipoReportePsicoOficial) {
   if (tipo === "base_forma_a") return "informe-base-forma-a";
   if (tipo === "base_forma_b") return "informe-base-forma-b";
   if (tipo === "base_general") return "informe-base-general";
+  if (tipo === "consolidado_base") return "informe-consolidado-base";
+  if (tipo === "consolidado_analisis") return "informe-consolidado-analisis";
   if (tipo === "detallado_excel") return "informe-detallado";
   return "informe-sociodemografico";
 }

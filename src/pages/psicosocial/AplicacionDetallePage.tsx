@@ -197,7 +197,7 @@ export function buildApplicationEmployeeSocioDraft(
   const draft: FichaSociodemografica & { finalizar: false } = {
     ...ficha,
     area: String(area || ficha.area || "").trim(),
-    cargo: String(cargo || ficha.cargo || "").trim(),
+    cargo: String(ficha.cargo ?? cargo ?? "").trim(),
     finalizar: false,
   };
   return draft;
@@ -819,7 +819,7 @@ export default function AplicacionDetallePage() {
         selectedArea?.nombre,
         selectedCargo?.nombre,
       );
-      const shouldSaveSocio = hasApplicationEmployeeSocioData(socioDraft);
+      const shouldSaveSocio = hasApplicationEmployeeSocioData(employeeSocioForm);
       let socioWarning = "";
       if (shouldSaveSocio && created.empleado_id) {
         try {
@@ -986,8 +986,8 @@ export default function AplicacionDetallePage() {
       <button
         type="button"
         onClick={() => toggleParticipantSort(key)}
-        className={`inline-flex items-center gap-1 rounded-lg px-1 py-1 font-black uppercase tracking-normal transition hover:bg-slate-100 hover:text-slate-800 ${
-          active ? "text-violet-700" : "text-slate-500"
+        className={`inline-flex min-w-0 items-center gap-1 whitespace-normal rounded-lg px-1 py-1 text-left font-black uppercase tracking-normal transition hover:bg-slate-100 hover:text-slate-800 ${
+          active ? "text-brand-primary" : "text-slate-500"
         } ${align === "right" ? "ml-auto" : ""}`}
       >
         {label}
@@ -1121,7 +1121,7 @@ export default function AplicacionDetallePage() {
       const cierre = (await psicoAdminService.cerrarAplicacion(
         empresaId,
         Number(aplicacionId),
-        3,
+        1,
       )) as CierreAplicacionResponse;
       if (cierre && cierre.ok === false) {
         const calidad = cierre.scoring_fallidos
@@ -1165,9 +1165,9 @@ export default function AplicacionDetallePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8">
+      <main className="min-h-screen bg-background p-8">
         <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border bg-white p-8 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin text-violet-700" /> Cargando
+          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" /> Cargando
           aplicación...
         </div>
       </main>
@@ -1175,7 +1175,7 @@ export default function AplicacionDetallePage() {
   }
   if (error || !data) {
     return (
-      <main className="min-h-screen bg-slate-50 p-8">
+      <main className="min-h-screen bg-background p-8">
         <div className="mx-auto max-w-3xl rounded-3xl border border-red-200 bg-red-50 p-8 text-red-800">
           <h1 className="text-2xl font-black">
             No se pudo cargar la aplicación
@@ -1192,7 +1192,7 @@ export default function AplicacionDetallePage() {
             </button>
             <button
               onClick={() => void load()}
-              className="rounded-xl bg-violet-700 px-4 py-2 font-bold text-white"
+              className="rounded-xl bg-primary px-4 py-2 font-bold text-primary-foreground hover:bg-primary-hover"
             >
               Reintentar
             </button>
@@ -1221,16 +1221,16 @@ export default function AplicacionDetallePage() {
   );
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-background px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       {closing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-3xl border border-violet-100 bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-3xl border border-accent bg-white p-6 shadow-floating">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-brand-primary">
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+                <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                   Motor de cálculo psicosocial
                 </p>
                 <h2 className="mt-1 text-xl font-black text-slate-950">
@@ -1239,7 +1239,7 @@ export default function AplicacionDetallePage() {
                 <p className="mt-2 text-sm text-slate-600">{calcStage}</p>
                 <div className="mt-4 overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-3 rounded-full bg-violet-700 transition-all duration-500"
+                    className="h-3 rounded-full bg-primary transition-all duration-500"
                     style={{ width: `${calcProgress}%` }}
                   />
                 </div>
@@ -1293,9 +1293,9 @@ export default function AplicacionDetallePage() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-violet-700">
-                Detalle de aplicación
-              </p>
+                <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
+                  Detalle de aplicación
+                </p>
               <h1 className="mt-1 text-3xl font-black text-slate-950">
                 {data.aplicacion.nombre}
               </h1>
@@ -1312,7 +1312,7 @@ export default function AplicacionDetallePage() {
                 {data.instrumentos.map((i) => (
                   <span
                     key={`${i.evaluacion_id}-${i.instrument_code}`}
-                    className="rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700"
+                    className="rounded-full bg-accent px-3 py-1 text-xs font-black text-brand-primary"
                   >
                     {instrumentLabel(i.instrument_code)}
                   </span>
@@ -1332,7 +1332,7 @@ export default function AplicacionDetallePage() {
                 <button
                   onClick={cerrarAplicacion}
                   disabled={closing}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShieldCheck className="h-4 w-4" />{" "}
                   {closing ? "Calculando..." : "Cerrar y calcular"}
@@ -1359,7 +1359,7 @@ export default function AplicacionDetallePage() {
                   onClick={() =>
                     navigate(buildParticipantsReportUrl(Number(aplicacionId)))
                   }
-                  className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-bold text-violet-700 hover:bg-violet-100"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-5 py-3 text-sm font-bold text-brand-primary hover:bg-accent-hover"
                 >
                   <FileArchive className="h-4 w-4" /> Descarga masiva
                 </button>
@@ -1371,7 +1371,7 @@ export default function AplicacionDetallePage() {
                       `/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`,
                     )
                   }
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-bold text-white hover:bg-violet-800"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
                 >
                   <FileText className="h-4 w-4" /> Informes oficiales
                 </button>
@@ -1379,13 +1379,13 @@ export default function AplicacionDetallePage() {
             </div>
           </div>
           {!finalizada && showClosureGuide && (
-            <div className="mt-5 rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-slate-50 p-4 shadow-sm">
+            <div className="mt-5 rounded-3xl border border-accent bg-gradient-to-r from-accent via-white to-brand-canvas p-4 shadow-card">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-violet-100">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+                  <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                     Guía rápida de cierre
                   </p>
                   <h3 className="mt-1 text-base font-black text-slate-950">
@@ -1394,7 +1394,7 @@ export default function AplicacionDetallePage() {
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     Primero registra o valida las respuestas de los
                     colaboradores. Cuando cierres y calcules la aplicación,
-                    ABRIL-360 desbloqueará el dashboard de resultados y los
+                    ABRIL360 desbloqueará el dashboard de resultados y los
                     informes oficiales con esta aplicación precargada.
                   </p>
                 </div>
@@ -1428,18 +1428,18 @@ export default function AplicacionDetallePage() {
             label="Pendientes por completar"
             value={pendientesCompletar}
           />
-          <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-violet-200 bg-violet-50 p-5 shadow-sm">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-violet-700 shadow-sm ring-1 ring-violet-100">
+          <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-accent bg-accent/50 p-5 shadow-card">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
               <Coins className="h-6 w-6" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-violet-700">
+              <p className="text-sm font-bold text-brand-primary">
                 Créditos consumidos
               </p>
-              <strong className="text-3xl font-black text-violet-950">
+              <strong className="text-3xl font-black text-foreground">
                 {creditosConsumidosCaptura}
               </strong>
-              <p className="mt-1 text-xs leading-5 text-violet-700">
+              <p className="mt-1 text-xs leading-5 text-foreground-soft">
                 Reservados/iniciados: {creditosReservadosCaptura}. Estimados:{" "}
                 {resumen.creditos_estimados}
               </p>
@@ -1463,13 +1463,13 @@ export default function AplicacionDetallePage() {
                 <>
                   <button
                     onClick={() => setOpenBulkUpload(true)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 hover:bg-violet-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-accent bg-accent px-4 py-2 text-sm font-bold text-brand-primary hover:bg-accent-hover"
                   >
                     <Upload className="h-4 w-4" /> Carga masiva
                   </button>
                   <button
                     onClick={() => void openAddEmployee()}
-                    className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
                   >
                     <Plus className="h-4 w-4" /> Agregar colaborador
                   </button>
@@ -1494,23 +1494,23 @@ export default function AplicacionDetallePage() {
             />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[1180px] table-fixed text-left text-sm">
+          <div className="overflow-x-hidden rounded-2xl border border-slate-200">
+            <table className="w-full table-fixed text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="w-[21%] px-4 py-3" aria-sort={participantSortAria("colaborador")}>
+                  <th className="w-[21%] px-3 py-3" aria-sort={participantSortAria("colaborador")}>
                     {renderParticipantSortHeader("colaborador", "Colaborador")}
                   </th>
-                  <th className="w-[17%] px-4 py-3" aria-sort={participantSortAria("areaCargo")}>
+                  <th className="w-[17%] px-3 py-3" aria-sort={participantSortAria("areaCargo")}>
                     {renderParticipantSortHeader("areaCargo", "Área / cargo")}
                   </th>
-                  <th className="w-[20%] px-4 py-3" aria-sort={participantSortAria("instrumentos")}>
+                  <th className="w-[20%] px-3 py-3" aria-sort={participantSortAria("instrumentos")}>
                     {renderParticipantSortHeader("instrumentos", "Instrumentos")}
                   </th>
-                  <th className="w-[10%] px-4 py-3" aria-sort={participantSortAria("estado")}>
+                  <th className="w-[10%] px-3 py-3" aria-sort={participantSortAria("estado")}>
                     {renderParticipantSortHeader("estado", "Estado")}
                   </th>
-                  <th className="w-[32%] px-4 py-3 text-right" aria-sort={participantSortAria("accion")}>
+                  <th className="w-[32%] px-3 py-3 text-right" aria-sort={participantSortAria("accion")}>
                     {renderParticipantSortHeader("accion", "Acción", "right")}
                   </th>
                 </tr>
@@ -1528,36 +1528,36 @@ export default function AplicacionDetallePage() {
                 )}
                 {paginatedEmpleados.map((emp) => (
                   <tr key={emp.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-4">
-                      <strong className="block text-slate-950">
+                    <td className="break-words px-3 py-4">
+                      <strong className="block break-words text-slate-950">
                         {emp.nombre}
                       </strong>
-                      <span className="text-xs text-slate-500">
+                      <span className="break-all text-xs text-slate-500">
                         CC {emp.cedula}
                         {emp.email ? ` · ${emp.email}` : ""}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
-                      <span className="block font-bold">
+                    <td className="break-words px-3 py-4">
+                      <span className="block break-words font-bold">
                         {emp.area || "Sin área"}
                       </span>
                       <span className="text-xs text-slate-500">
                         {emp.cargo || "Sin cargo"}
                       </span>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-3 py-4">
                       <div className="flex flex-wrap gap-2">
                         {participantInstrumentChips(data.instrumentos, emp).map((chip) => {
                           const chipClass =
                             chip.state === "complete"
                               ? "bg-emerald-50 text-emerald-700"
                               : chip.state === "capture"
-                                ? "bg-violet-50 text-violet-700"
+                                ? "bg-accent text-brand-primary"
                                 : "bg-slate-100 text-slate-500";
                           return (
                             <span
                               key={`${emp.id}-${chip.code}`}
-                              className={`rounded-full px-3 py-1 text-xs font-black ${chipClass}`}
+                              className={`rounded-full px-2 py-1 text-xs font-black ${chipClass}`}
                             >
                               {chip.label}
                             </span>
@@ -1565,13 +1565,13 @@ export default function AplicacionDetallePage() {
                         })}
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-3 py-4">
                       {participantStatusLabel(emp) === "Completo" ? (
                         <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
                           <CheckCircle2 className="h-3 w-3" /> Completo
                         </span>
                       ) : participantStatusLabel(emp) === "En captura" ? (
-                        <span className="inline-flex whitespace-nowrap rounded-full bg-violet-50 px-3 py-1 text-xs font-black text-violet-700">
+                        <span className="inline-flex whitespace-nowrap rounded-full bg-accent px-3 py-1 text-xs font-black text-brand-primary">
                           En captura
                         </span>
                       ) : (
@@ -1580,13 +1580,13 @@ export default function AplicacionDetallePage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
+                    <td className="px-2 py-4 text-right">
                       {(() => {
                         const enabled = canOpenParticipant(emp);
                         const label = participantActionLabel(emp, finalizada);
                         const reportEnabled = finalizada && enabled;
                         return (
-                          <div className="flex flex-wrap justify-end gap-2">
+                          <div className="flex min-w-0 flex-wrap justify-end gap-1.5">
                             <button
                               onClick={() => {
                                 if (enabled)
@@ -1600,7 +1600,7 @@ export default function AplicacionDetallePage() {
                                   ? label
                                   : "La aplicación ya fue cerrada/calculada y este participante no tiene respuestas registradas."
                               }
-                              className={`inline-flex min-w-[150px] items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 font-bold ${enabled ? "bg-violet-700 text-white hover:bg-violet-800" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
+                              className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl px-2.5 py-2 text-xs font-bold 2xl:px-3 2xl:text-sm ${enabled ? "bg-primary text-primary-foreground hover:bg-primary-hover" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
                             >
                               {finalizada ? (
                                 <Lock className="h-4 w-4" />
@@ -1624,9 +1624,9 @@ export default function AplicacionDetallePage() {
                                     ? "Ver informes individuales del colaborador"
                                     : "Disponible para participantes con respuestas/resultados en aplicaciones finalizadas."
                                 }
-                                className={`inline-flex min-w-[122px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border px-3 py-2 font-bold ${
+                                className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl border px-2.5 py-2 text-xs font-bold 2xl:px-3 2xl:text-sm ${
                                   reportEnabled
-                                    ? "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100"
+                                    ? "border-accent bg-accent text-brand-primary hover:bg-accent-hover"
                                     : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
                                 }`}
                               >
@@ -1646,7 +1646,7 @@ export default function AplicacionDetallePage() {
                                     ? "No disponible en aplicaciones finalizadas o en cálculo."
                                     : "Eliminar respuestas y resultados de este colaborador en esta aplicación."
                                 }
-                                className="inline-flex min-w-[120px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-red-100 bg-red-50 px-3 py-2 font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl border border-red-100 bg-red-50 px-2.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40 2xl:px-3 2xl:text-sm"
                               >
                                 <Trash2 className="h-4 w-4" /> Limpiar
                               </button>
@@ -1674,7 +1674,7 @@ export default function AplicacionDetallePage() {
               <select
                 value={participantPageSize}
                 onChange={(e) => setParticipantPageSize(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -1697,7 +1697,7 @@ export default function AplicacionDetallePage() {
               >
                 Anterior
               </button>
-              <span className="rounded-xl bg-violet-700 px-3 py-2 text-sm font-black text-white">
+              <span className="rounded-xl bg-primary px-3 py-2 text-sm font-black text-primary-foreground">
                 {currentParticipantPage} / {totalParticipantPages}
               </span>
               <button
@@ -1764,7 +1764,7 @@ export default function AplicacionDetallePage() {
               </p>
             </div>
             {cleanupLoading && (
-              <div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 p-4 text-sm font-semibold text-violet-700">
+              <div className="mt-4 rounded-2xl border border-accent bg-accent p-4 text-sm font-semibold text-brand-primary">
                 <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
                 Preparando operación...
               </div>
@@ -1835,7 +1835,7 @@ export default function AplicacionDetallePage() {
           <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+                <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                   Nuevo colaborador
                 </p>
                 <h2 className="text-2xl font-black text-slate-950">
@@ -1927,7 +1927,7 @@ export default function AplicacionDetallePage() {
                     <button
                       type="button"
                       onClick={() => setCatalogModal("area")}
-                      className="shrink-0 whitespace-nowrap rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50"
+                      className="shrink-0 whitespace-nowrap rounded-2xl border border-accent px-4 font-bold text-brand-primary hover:bg-accent"
                     >
                       Nuevo
                     </button>
@@ -1961,7 +1961,7 @@ export default function AplicacionDetallePage() {
                           ? "Crear cargo para el área seleccionada"
                           : "Selecciona primero un área"
                       }
-                      className="shrink-0 whitespace-nowrap rounded-2xl border px-4 font-bold text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="shrink-0 whitespace-nowrap rounded-2xl border border-accent px-4 font-bold text-brand-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Nuevo
                     </button>
@@ -1970,10 +1970,10 @@ export default function AplicacionDetallePage() {
               </div>
               </section>
 
-              <section className="rounded-3xl border border-violet-100 bg-violet-50/50 p-4">
+              <section className="rounded-3xl border border-accent bg-accent/50 p-4">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+                    <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                       Perfil sociodemográfico opcional
                     </p>
                     <h3 className="text-lg font-black text-slate-950">
@@ -1984,7 +1984,7 @@ export default function AplicacionDetallePage() {
                     </p>
                   </div>
                   {employeeSocioLoading && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-violet-700">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-brand-primary">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" /> Cargando catálogos
                     </span>
                   )}
@@ -2019,6 +2019,11 @@ export default function AplicacionDetallePage() {
                     label="Ocupación / profesión"
                     value={employeeSocioForm.ocupacion_profesion || ""}
                     onChange={(v) => updateEmployeeSocioForm("ocupacion_profesion", v)}
+                  />
+                  <SocioTextField
+                    label="Nombre del cargo"
+                    value={employeeSocioForm.cargo ?? selectedCargo?.nombre ?? ""}
+                    onChange={(v) => updateEmployeeSocioForm("cargo", v)}
                   />
                   <SocioSelectField
                     label="Estrato"
@@ -2126,7 +2131,7 @@ export default function AplicacionDetallePage() {
                 </button>
                 <button
                   disabled={savingEmployee}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-6 py-3 font-bold text-white disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60"
                 >
                   {savingEmployee && (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -2159,7 +2164,7 @@ export default function AplicacionDetallePage() {
           >
             <div className="mb-5 flex items-start justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+                <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                   Catálogo
                 </p>
                 <h3 className="text-xl font-black">
@@ -2210,7 +2215,7 @@ export default function AplicacionDetallePage() {
                   !catalogName.trim() ||
                   (catalogModal === "cargo" && !employeeForm.area_id)
                 }
-                className="rounded-2xl bg-violet-700 px-5 py-3 font-bold text-white disabled:opacity-50"
+                className="rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground disabled:opacity-50"
               >
                 Crear
               </button>
@@ -2233,12 +2238,12 @@ function Card({
 }) {
   return (
     <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-50 text-violet-700">
+      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">
         {icon}
       </div>
-      <div className="min-w-0">
-        <p className="text-sm font-bold leading-5 text-slate-500">{label}</p>
-        <strong className="text-3xl font-black">{value}</strong>
+      <div className="min-w-0 pt-0.5">
+        <p className="text-sm font-bold leading-6 text-slate-600">{label}</p>
+        <strong className="mt-1 block text-3xl font-black leading-none">{value}</strong>
       </div>
     </article>
   );
@@ -2272,7 +2277,7 @@ function Input({ value, onChange, className = "", ...props }: any) {
       {...props}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${className}`}
+      className={`w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${className}`}
     />
   );
 }
@@ -2312,7 +2317,7 @@ function Combo({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : open ? "border-violet-300 bg-violet-50/60" : "border-slate-200 bg-white hover:border-violet-300"}`}
+        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : open ? "border-brand-primary/30 bg-accent/60" : "border-slate-200 bg-white hover:border-brand-primary/30"}`}
       >
         <div className="min-w-0">
           <span
@@ -2327,13 +2332,13 @@ function Combo({
           )}
         </div>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180 text-violet-600" : ""}`}
+          className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180 text-brand-primary" : ""}`}
         />
       </button>
       {open && !disabled && (
         <div className="absolute z-[70] mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
           <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-700">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-sky">
               Catálogo
             </p>
             <p className="mt-1 text-sm font-semibold text-slate-600">
@@ -2361,12 +2366,12 @@ function Combo({
                       onChange(opt.value);
                       setOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-bold transition ${value === opt.value ? "bg-violet-50 text-violet-700 ring-1 ring-violet-100" : "text-slate-700 hover:bg-slate-50"}`}
+                    className={`flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-bold transition ${value === opt.value ? "bg-accent text-brand-primary ring-1 ring-accent" : "text-slate-700 hover:bg-slate-50"}`}
                   >
                     <div className="min-w-0">
                       <span className="block truncate">{opt.label}</span>
                       {value === opt.value && (
-                        <span className="mt-0.5 block text-xs font-semibold text-violet-500">
+                        <span className="mt-0.5 block text-xs font-semibold text-brand-sky">
                           Seleccionado
                         </span>
                       )}

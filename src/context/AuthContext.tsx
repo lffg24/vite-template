@@ -2,6 +2,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { API_URL } from "@/lib/config";
 import { loginPathForCurrentLocation, SESSION_EXPIRED_EVENT } from "@/lib/sessionEvents";
+import { startSessionRenewal } from "@/lib/sessionRenewal";
+import { clearCaptureDrafts } from "@/lib/captureDraft";
 
 export type AuthUser = {
   id: string;
@@ -20,6 +22,7 @@ export type AuthState = {
   passwordChangeRequired: boolean;
   isAuthenticated: boolean;
   initialized: boolean;
+  renewAfterSeconds?: number;
 };
 
 type LoginOptions = { remember?: boolean; scope?: string };
@@ -41,6 +44,7 @@ type AuthContextType = AuthState & {
 };
 
 type MeResponse = {
+  session_renew_after_seconds?: number;
   id: number | string;
   nombre: string;
   email: string;
@@ -95,6 +99,7 @@ function stateFromMe(me: MeResponse): AuthState {
     passwordChangeRequired: Boolean(me.password_change_required),
     isAuthenticated: true,
     initialized: true,
+    renewAfterSeconds: me.session_renew_after_seconds,
   };
 }
 
@@ -156,6 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const onSessionExpired = () => {
+      window.dispatchEvent(new Event("abril360:before-session-exit"));
       setState(emptyState(true));
       if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.assign(loginPathForCurrentLocation());
@@ -166,10 +172,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
   }, []);
 
+  useEffect(() => {
+    if (!state.isAuthenticated || state.passwordChangeRequired || !state.renewAfterSeconds) return;
+    const controller = new AbortController();
+    const stop = startSessionRenewal(state.renewAfterSeconds, async () => {
+      const res = await fetch(`${API_URL}/auth/renew`, { method: "POST", credentials: "include", signal: controller.signal });
+      if (res.status === 401) window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+      else if (!res.ok) throw new Error("No fue posible renovar la sesión");
+    });
+    return () => { stop(); controller.abort(); };
+  }, [state.isAuthenticated, state.passwordChangeRequired, state.renewAfterSeconds]);
+
   const login = useCallback(async (email: string, password: string, options?: LoginOptions): Promise<LoginResult> => {
     const body = new URLSearchParams();
     body.append("username", email);
     body.append("password", password);
+    body.append("remember", String(Boolean(options?.remember)));
     if (options?.scope) body.append("scope", options.scope);
 
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -207,6 +225,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { Accept: "application/json" },
       });
     } finally {
+      window.dispatchEvent(new Event("abril360:explicit-logout"));
+      clearCaptureDrafts();
       setState(emptyState(true));
     }
   }, []);

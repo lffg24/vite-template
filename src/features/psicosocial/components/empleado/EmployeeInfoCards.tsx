@@ -45,7 +45,7 @@ export function EmployeeInfoCards({ perfil }: { perfil: PsicoEmpleadoPerfil }) {
 function CardTitle({ number, title }: { number: string; title: string }) {
   return (
     <div className="mb-4 flex items-center gap-3">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-sm font-black text-violet-700">{number}</span>
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-black text-brand-primary">{number}</span>
       <h3 className="text-lg font-bold text-slate-950">{title}</h3>
     </div>
   );

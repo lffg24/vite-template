@@ -53,7 +53,7 @@ export function normalizeSocioOptions(fallback: string[], remote?: Array<{ nombr
 }
 
 export function fieldBase(disabled = false) {
-  return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`;
+  return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`;
 }
 
 export function SocioTextField({ label, value, onChange, disabled = false }: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
@@ -106,7 +106,7 @@ export function SocioSelectField({ label, value, options, onChange, disabled = f
           <button
             type="button"
             onClick={() => { onChange(""); setOpen(false); }}
-            className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${!value ? "bg-violet-600 text-white" : "text-slate-500 hover:bg-slate-50"}`}
+            className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${!value ? "bg-primary text-primary-foreground" : "text-slate-500 hover:bg-slate-50"}`}
           >
             Selecciona una opción
           </button>
@@ -115,7 +115,7 @@ export function SocioSelectField({ label, value, options, onChange, disabled = f
               key={opt}
               type="button"
               onClick={() => { onChange(opt); setOpen(false); }}
-              className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${value === opt ? "bg-violet-600 text-white" : "text-slate-700 hover:bg-violet-50 hover:text-violet-800"}`}
+              className={`block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition ${value === opt ? "bg-primary text-primary-foreground" : "text-slate-700 hover:bg-accent hover:text-brand-primary"}`}
             >
               {opt}
             </button>
@@ -155,7 +155,7 @@ export function SocioMunicipioField({ label, query, selectedValue, setQuery, opt
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => { onSelect(item); setOpen(false); setTouched(false); }}
-                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-violet-50 hover:text-violet-800"
+                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-accent hover:text-brand-primary"
               >
                 {item.municipio} <span className="font-normal text-slate-500">{item.departamento ? `- ${item.departamento}` : ""}</span>
               </button>

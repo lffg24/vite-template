@@ -9,10 +9,28 @@ export type EmpresaPsico = {
   telefono?: string;
   ciudad?: string;
   pais?: string;
+  direccion?: string;
+  sitio_web?: string;
+  actividad_economica?: string;
+  representante_legal?: string;
   estado?: string;
   empleados?: number;
   aplicaciones?: number;
   evaluaciones_calculadas?: number;
+};
+
+export type ActualizarEmpresaPayload = {
+  nombre?: string | null;
+  razon_social?: string | null;
+  nit?: string | null;
+  email?: string | null;
+  telefono?: string | null;
+  direccion?: string | null;
+  ciudad?: string | null;
+  pais?: string | null;
+  sitio_web?: string | null;
+  actividad_economica?: string | null;
+  representante_legal?: string | null;
 };
 
 export type CreditosResumen = {
@@ -174,6 +192,16 @@ export const psicoAdminService = {
     requestJson<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(
       `/psicosocial/admin/empresas/${empresaId}`,
       { headers: { "X-Empresa-Id": empresaId } },
+    ),
+
+  actualizarEmpresa: (empresaId: string, payload: ActualizarEmpresaPayload) =>
+    requestJson<{ ok: boolean; empresa: EmpresaPsico; resumen: any; aplicaciones_recientes: AplicacionEmpresa[] }>(
+      `/psicosocial/admin/empresas/${empresaId}`,
+      {
+        method: "PATCH",
+        headers: { "X-Empresa-Id": empresaId },
+        body: JSON.stringify(payload),
+      },
     ),
 
   listarAreas: (empresaId: string, includeInactive = false) =>

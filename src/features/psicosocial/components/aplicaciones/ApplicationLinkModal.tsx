@@ -23,7 +23,7 @@ export function ApplicationLinkModal({
       <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-violet-600">Registro de respuestas</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-primary">Registro de respuestas</p>
             <h2 className="text-xl font-bold text-slate-950">Seleccionar aplicación psicosocial</h2>
           </div>
           <button onClick={onClose} className="rounded-xl p-2 text-slate-500 hover:bg-slate-100">
@@ -52,7 +52,7 @@ export function ApplicationLinkModal({
             <div className="space-y-3">
               <p className="text-sm text-slate-500">Este colaborador tiene aplicaciones disponibles. Selecciona la batería sobre la que deseas registrar o consultar respuestas.</p>
               {aplicaciones.map((app) => (
-                <button key={app.aplicacion_id} onClick={() => onContinue(app)} className="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-violet-300 hover:bg-violet-50/40">
+                <button key={app.aplicacion_id} onClick={() => onContinue(app)} className="w-full rounded-2xl border border-slate-200 p-4 text-left hover:border-brand-primary/30 hover:bg-accent/40">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export function ApplicationLinkModal({
                         ))}
                       </div>
                     </div>
-                    <span className="rounded-xl bg-violet-600 px-3 py-2 text-sm font-bold text-white">Continuar</span>
+                    <span className="rounded-xl bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">Continuar</span>
                   </div>
                 </button>
               ))}

@@ -5,6 +5,8 @@ export type TipoReportePsicoOficial =
   | "base_forma_a"
   | "base_forma_b"
   | "base_general"
+  | "consolidado_base"
+  | "consolidado_analisis"
   | "detallado_excel";
 
 export interface ReporteAplicacionOption {

@@ -151,7 +151,7 @@ export default function ListaEvaluaciones() {
                           navigate(`/evaluaciones/${evaluacion.id}/preguntas`)
                         }
                       >
-                        <List className="w-4 h-4 text-blue-500" />
+                        <List className="w-4 h-4 text-brand-primary" />
                       </Button>
 
                       <Button

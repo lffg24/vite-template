@@ -13,12 +13,11 @@ beforeEach(() => {
   }));
 });
 
-const sidebar = (tone: "legacy" | "rel") => (
+const sidebar = (
   <MemoryRouter initialEntries={["/superadmin/empresas"]}>
     <RoleSidebar
       items={[{ to: "/superadmin/empresas", label: "Empresas", icon: Building2 }]}
-      storageKey={`sidebar-test-${tone}`}
-      tone={tone}
+      storageKey="sidebar-test"
       avatarText="SA"
       userTitle="Administrador"
       userSubtitle="Plataforma"
@@ -29,14 +28,31 @@ const sidebar = (tone: "legacy" | "rel") => (
 );
 
 describe("RoleSidebar", () => {
-  it("usa la identidad vigente en SuperAdmin sin cambiar las otras superficies", () => {
-    const actual = render(sidebar("rel"));
-    expect(screen.getByRole("button", { name: "Empresas" })).toHaveClass("bg-rel-accent");
-    expect(screen.getByRole("complementary")).toHaveClass("bg-rel-dark");
+  it("pinta la entrada activa y la barra con tokens, no con colores sueltos", () => {
+    // Esta prueba reemplaza a la del parámetro `tone`, que existía para que la
+    // barra de SuperAdmin se viera en marca mientras las demás seguían en
+    // violeta. Al traer `preprod`, TODAS usan ya los tokens de la casa: el
+    // parámetro solo podía elegir un aspecto que dejó de existir.
+    render(sidebar);
 
-    actual.unmount();
-    render(sidebar("legacy"));
-    expect(screen.getByRole("button", { name: "Empresas" })).toHaveClass("bg-violet-600");
-    expect(screen.getByRole("complementary")).toHaveClass("bg-[#071329]");
+    expect(screen.getByRole("button", { name: "Empresas" })).toHaveClass(
+      "bg-sidebar-active"
+    );
+    expect(screen.getByRole("complementary")).toHaveClass("bg-sidebar");
+  });
+
+  it("no queda ni un violeta escrito a mano", () => {
+    // Es la queja concreta que motivó la sincronización: la barra se veía
+    // morada mientras los botones ya eran turquesa. Un color suelto aquí
+    // sobrevive al siguiente cambio de paleta y la vuelve a producir.
+    const { container } = render(sidebar);
+
+    const clases = Array.from(container.querySelectorAll("*"))
+      .map((n) => n.getAttribute("class") ?? "")
+      .join(" ");
+
+    expect(clases).not.toMatch(/violet-/);
+    // Y tampoco el azul oscuro que llevaba escrito a pelo en el marcado.
+    expect(clases).not.toMatch(/\[#071329\]/);
   });
 });

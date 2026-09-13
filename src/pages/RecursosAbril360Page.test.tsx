@@ -19,15 +19,29 @@ describe("RecursosAbril360Page", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: /Alcance, certificación y referencias/i })).toBeInTheDocument();
-    expect(screen.getByText(/No reemplaza el criterio profesional/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /INVIMA/i })).toHaveAttribute(
-      "href",
-      expect.stringContaining("invima.gov.co"),
-    );
-    expect(screen.getByRole("link", { name: /Ley 1581/i })).toHaveAttribute(
+    expect(screen.getByRole("heading", { name: /Alcance, certificación y marco normativo/i })).toBeInTheDocument();
+    expect(screen.getByText(/No reemplaza la valoración, interpretación ni firma/i)).toBeInTheDocument();
+    expect(screen.getByText(/Psicología de confianza aplicada a la presentación/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Resolución 2646 de 2008/i })).toHaveAttribute(
       "href",
       expect.stringContaining("suin-juriscol.gov.co"),
     );
+    expect(screen.getByRole("link", { name: /Ley 1581 de 2012/i })).toHaveAttribute(
+      "href",
+      expect.stringContaining("suin-juriscol.gov.co"),
+    );
+  });
+
+  it("renders the expanded operating guide for the manual page", () => {
+    render(
+      <MemoryRouter>
+        <RecursosAbril360Page page="manual-uso" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("heading", { name: /Manual de uso ABRIL360/i })).toBeInTheDocument();
+    expect(screen.getByText(/Ruta operativa recomendada/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mapa de navegación real del módulo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Controles previos al cierre/i)).toBeInTheDocument();
   });
 });

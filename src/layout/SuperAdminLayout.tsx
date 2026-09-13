@@ -28,7 +28,6 @@ export default function SuperAdminLayout() {
       <RoleSidebar
         items={items}
         storageKey="abril360.superadmin.sidebar.collapsed"
-        tone="rel"
         brandTitle="ABRIL360"
         brandSubtitle="Administración global"
         avatarText="SA"

@@ -27,7 +27,7 @@ describe("application employee sociodemographic draft", () => {
 
   it("construye borrador sin finalizar e inyecta area y cargo de la aplicacion", () => {
     const draft = buildApplicationEmployeeSocioDraft(
-      { sexo: "Masculino", area: "", cargo: "" },
+      { sexo: "Masculino", area: "" },
       "Operaciones",
       "Analista SST",
     );
@@ -38,6 +38,21 @@ describe("application employee sociodemographic draft", () => {
       cargo: "Analista SST",
       finalizar: false,
     });
+  });
+
+  it("conserva nombre del cargo editado distinto de la profesión y del catálogo", () => {
+    const draft = buildApplicationEmployeeSocioDraft(
+      { ocupacion_profesion: "Psicóloga", cargo: "Coordinadora de bienestar" },
+      "Talento humano",
+      "Analista SST",
+    );
+    expect(draft).toMatchObject({
+      ocupacion_profesion: "Psicóloga",
+      cargo: "Coordinadora de bienestar",
+      area: "Talento humano",
+      finalizar: false,
+    });
+    expect(buildApplicationEmployeeSocioDraft({ cargo: "" }, "Talento humano", "Analista SST").cargo).toBe("");
   });
 
   it("normaliza catalogos conservando el orden base y agregando valores remotos", () => {

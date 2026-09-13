@@ -127,7 +127,7 @@ function stateClass(state: string) {
     case "EN_CAPTURA":
       return "bg-sky-50 text-sky-700 ring-sky-200";
     case "CALCULANDO":
-      return "bg-violet-50 text-violet-700 ring-violet-200";
+      return "bg-accent text-brand-primary ring-accent";
     case "REABIERTA":
       return "bg-amber-50 text-amber-700 ring-amber-200";
     case "ERROR_CALCULO":
@@ -220,7 +220,7 @@ export default function AplicacionesBTPage() {
       <div className="mx-auto max-w-[1540px] space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.22em] text-violet-700">
+            <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.22em] text-brand-primary">
               <Layers3 className="h-4 w-4" /> Aplicaciones BT
             </div>
             <h1 className="text-4xl font-black tracking-tight text-slate-950">Aplicaciones BT</h1>
@@ -232,7 +232,7 @@ export default function AplicacionesBTPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Select value={empresaFilter} onValueChange={(v) => { setEmpresaFilter(v); setPage(1); }}>
               <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-sm">
-                <Building2 className="mr-2 h-4 w-4 text-violet-700" />
+                <Building2 className="mr-2 h-4 w-4 text-brand-primary" />
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
               <SelectContent>
@@ -243,19 +243,19 @@ export default function AplicacionesBTPage() {
             <Button variant="outline" className="h-11 rounded-xl bg-white shadow-sm" onClick={load} disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TimerReset className="mr-2 h-4 w-4" />} Actualizar
             </Button>
-            <Button asChild className="h-11 rounded-xl bg-violet-700 px-5 font-bold shadow-lg shadow-violet-200 hover:bg-violet-800">
+            <Button asChild className="h-11 rounded-xl bg-primary px-5 font-bold shadow-card hover:bg-primary-hover">
               <Link to="/psicosocial/empresas"><Plus className="mr-2 h-4 w-4" /> Nueva aplicación</Link>
             </Button>
           </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-          <MetricCard icon={Layers3} label="Total" value={summary.total} note="aplicaciones" accent="from-violet-600 to-indigo-500" progress={100} />
-          <MetricCard icon={FileText} label="En captura" value={summary.captura} note={`${percent(summary.captura, summary.total)}% del total`} accent="from-blue-500 to-cyan-400" progress={percent(summary.captura, summary.total)} />
+          <MetricCard icon={Layers3} label="Total" value={summary.total} note="aplicaciones" accent="from-brand-primary to-brand-sky" progress={100} />
+          <MetricCard icon={FileText} label="En captura" value={summary.captura} note={`${percent(summary.captura, summary.total)}% del total`} accent="from-brand-turquoise to-brand-sky" progress={percent(summary.captura, summary.total)} />
           <MetricCard icon={ShieldCheck} label="Finalizadas" value={summary.finalizadas} note={`${percent(summary.finalizadas, summary.total)}% del total`} accent="from-emerald-500 to-teal-400" progress={percent(summary.finalizadas, summary.total)} />
           <MetricCard icon={RotateCcw} label="Reabiertas" value={summary.reabiertas} note={`${percent(summary.reabiertas, summary.total)}% del total`} accent="from-amber-500 to-orange-400" progress={percent(summary.reabiertas, summary.total)} />
           <MetricCard icon={AlertTriangle} label="Error cálculo" value={summary.errores} note={`${percent(summary.errores, summary.total)}% del total`} accent="from-red-500 to-rose-400" progress={percent(summary.errores, summary.total)} />
-          <MetricCard icon={WalletCards} label="Créditos" value={summary.creditos} note="consumidos" accent="from-purple-500 to-violet-700" progress={100} />
+          <MetricCard icon={WalletCards} label="Créditos" value={summary.creditos} note="consumidos" accent="from-brand-primary to-brand-dark" progress={100} />
         </section>
 
         <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-sm">
@@ -309,18 +309,18 @@ export default function AplicacionesBTPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {loading ? (
-                    <tr><td colSpan={8} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-violet-700" />Cargando aplicaciones BT...</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-brand-primary" />Cargando aplicaciones BT...</td></tr>
                   ) : error ? (
                     <tr><td colSpan={8} className="px-5 py-12 text-center text-red-700">{error}</td></tr>
                   ) : rows.length === 0 ? (
                     <tr><td colSpan={8} className="px-5 py-12 text-center text-slate-500">No hay aplicaciones para los filtros seleccionados.</td></tr>
                   ) : rows.map((row) => (
-                    <tr key={`${row.empresaId}-${row.id}`} className="transition hover:bg-violet-50/35">
+                    <tr key={`${row.empresaId}-${row.id}`} className="transition hover:bg-accent/35">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-700 ring-1 ring-violet-100"><FileText className="h-5 w-5" /></div>
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-brand-primary ring-1 ring-accent"><FileText className="h-5 w-5" /></div>
                           <div>
-                            <Link to={`/psicosocial/empresas/${row.empresaId}/aplicaciones/${row.id}`} className="font-black text-slate-900 underline decoration-violet-300 underline-offset-4 transition hover:text-violet-700 hover:decoration-violet-700">
+                            <Link to={`/psicosocial/empresas/${row.empresaId}/aplicaciones/${row.id}`} className="font-black text-slate-900 underline decoration-accent underline-offset-4 transition hover:text-brand-primary hover:decoration-brand-primary">
                               {row.nombre}
                             </Link>
                             <div className="text-xs text-slate-500">Aplicación #{row.id}</div>
@@ -332,7 +332,7 @@ export default function AplicacionesBTPage() {
                       <td className="px-5 py-4"><strong className="text-slate-950">{row.participantes}</strong><div className="text-xs text-slate-500">participantes</div></td>
                       <td className="px-5 py-4 min-w-[170px]">
                         <div className="mb-1 font-bold text-slate-800">{row.registrados} / {row.avance}%</div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-violet-700" style={{ width: `${Math.max(0, Math.min(100, row.avance))}%` }} /></div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, row.avance))}%` }} /></div>
                       </td>
                       <td className="px-5 py-4"><span className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-black ring-1 ${stateClass(row.estado)}`}>{row.estadoLabel}</span></td>
                       <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" /> {formatDate(row.fechaInicio)}</td>
@@ -350,7 +350,7 @@ export default function AplicacionesBTPage() {
                 {pageNumbers.map((p, index) => (
                   <div key={p} className="flex items-center gap-2">
                     {index > 0 && p - pageNumbers[index - 1] > 1 ? <span className="px-1 text-slate-400">...</span> : null}
-                    <Button variant={p === currentPage ? "default" : "outline"} size="sm" className={`h-10 w-10 rounded-xl ${p === currentPage ? "bg-violet-700 hover:bg-violet-800" : "bg-white"}`} onClick={() => setPage(p)}>{p}</Button>
+                    <Button variant={p === currentPage ? "default" : "outline"} size="sm" className={`h-10 w-10 rounded-xl ${p === currentPage ? "bg-primary hover:bg-primary-hover" : "bg-white"}`} onClick={() => setPage(p)}>{p}</Button>
                   </div>
                 ))}
                 <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ArrowRight className="h-4 w-4" /></Button>
@@ -382,7 +382,7 @@ function MetricCard({ icon: Icon, label, value, note, accent, progress }: Metric
     <Card className="rounded-[1.5rem] border-slate-200 bg-white shadow-sm">
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-lg shadow-violet-100`}><Icon className="h-6 w-6" /></div>
+          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-card`}><Icon className="h-6 w-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-500">{label}</p>
             <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">{value}</p>

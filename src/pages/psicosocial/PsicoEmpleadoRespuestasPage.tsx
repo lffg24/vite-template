@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useCaptureDraft } from "@/hooks/useCaptureDraft";
+import { DRAFT_PREFIX } from "@/lib/captureDraft";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -264,7 +267,7 @@ function pct(a: number, b: number) {
 function statusTone(status?: string | null) {
   const value = String(status || "").toLowerCase();
   if (["finalizada", "calculada", "completa"].includes(value)) return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (["borrador"].includes(value)) return "bg-violet-50 text-violet-700 border-violet-200";
+  if (["borrador"].includes(value)) return "bg-accent text-brand-primary border-accent";
   return "bg-slate-50 text-slate-600 border-slate-200";
 }
 function isLockedResponseStatus(status?: string | null) {
@@ -301,6 +304,7 @@ function chooseInitialEvaluation(app?: PsicoAplicacionEmpleado | null, preferred
 }
 
 export default function PsicoEmpleadoRespuestasPage() {
+  const { userId, tenantId } = useAuth();
   const { empleadoId = "", aplicacionId = "" } = useParams();
   const navigate = useNavigate();
   const [perfil, setPerfil] = useState<PsicoEmpleadoPerfil | null>(null);
@@ -328,7 +332,16 @@ export default function PsicoEmpleadoRespuestasPage() {
     setToast({ id, ...payload });
     window.setTimeout(() => setToast((current) => (current?.id === id ? null : current)), payload.durationMs ?? 5200);
   };
-  const draftKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval?.evaluacion_id || "none"}`;
+  const draftScope = `${DRAFT_PREFIX}${tenantId}:${userId}:${empleadoId}:${aplicacionId}`;
+  const draftKey = `${draftScope}:${selectedEval?.evaluacion_id || "none"}`;
+  const captureValue = useMemo(() => ({ answers, conditionalAnswers, observaciones }), [answers, conditionalAnswers, observaciones]);
+  const captureDraft = useCaptureDraft(draftKey, captureValue);
+  const fichaDraft = useCaptureDraft(`${draftScope}:ficha`, ficha);
+  useEffect(() => {
+    if (!captureDraft.storageAvailable || !fichaDraft.storageAvailable) {
+      notify({ type: "warning", title: "Borrador temporal no disponible", message: "El navegador no permite conservar el avance local. Usa Guardar antes de salir de esta pantalla." });
+    }
+  }, [captureDraft.storageAvailable, fichaDraft.storageAvailable]);
 
   const refreshContext = async (preferredEvalId?: number) => {
     if (!empleadoId || !aplicacionId) return;
@@ -338,21 +351,6 @@ export default function PsicoEmpleadoRespuestasPage() {
     setApp(selected);
     setSelectedEval(chooseInitialEvaluation(selected, preferredEvalId));
   };
-
-  useEffect(() => {
-    const onExpired = () => {
-      persistDraft();
-      notify({
-        type: "warning",
-        title: "Sesión vencida",
-        message: "Guardé un borrador local temporal para evitar pérdida de información. Te redirigiremos al login.",
-      });
-      window.setTimeout(() => navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`), 1800);
-    };
-    window.addEventListener("abril360:session-expired", onExpired);
-    return () => window.removeEventListener("abril360:session-expired", onExpired);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, answers, conditionalAnswers, observaciones, draftKey]);
 
   useEffect(() => {
     let mounted = true;
@@ -386,7 +384,10 @@ export default function PsicoEmpleadoRespuestasPage() {
       try {
         const res = await obtenerFichaSociodemografica(empleadoId, aplicacionId);
         if (!mounted) return;
-        setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
+        const baseFicha = { ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) };
+        const restoredFicha = fichaDraft.restore(`${draftScope}:ficha`, baseFicha, Boolean(res.completa));
+        setFicha(restoredFicha);
+        if (restoredFicha !== baseFicha) notify({ type: "info", title: "Datos generales recuperados", message: "Recuperamos el avance temporal de esta pestaña. Guarda para enviarlo al sistema." });
         setFichaCompleta(Boolean(res.completa));
       } catch {
         // Datos generales se cargan desde empleados. No requiere migración sociodemográfica nueva.
@@ -415,29 +416,22 @@ export default function PsicoEmpleadoRespuestasPage() {
           ["finalizada", "calculada", "cerrada"].some((state) => String(app?.estado || "").toLowerCase().includes(state)) ||
           !selectedEval?.editable ||
           isLockedResponseStatus(selectedEval?.estado_respuestas);
-        const draftStorageKey = `abril360:capture-draft:${empleadoId}:${aplicacionId}:${selectedEval.evaluacion_id}`;
-        const local = lockedForDraft ? null : readDraft(draftStorageKey);
-        const localAnswers = Object.fromEntries(Object.entries(local?.answers || {}).map(([key, value]) => [key, normalizeRespuestaLabel(value, undefined, "index")]));
         const nextConditionalAnswers: Record<string, boolean | null> = {};
         for (const rule of rules) {
           const code = String(rule.codigo || "");
           if (!code) continue;
           const fromServer = typeof rule.respuesta === "boolean" ? rule.respuesta : null;
-          const fromLocal = typeof local?.conditionalAnswers?.[code] === "boolean" ? local.conditionalAnswers[code] : undefined;
           const blockOrders = new Set((rule.ordenes || []).map(Number));
           const hasBlockAnswers = (res.preguntas || []).some((p) => blockOrders.has(Number(p.orden)) && Boolean(serverAnswers[p.pregunta_id]));
-          nextConditionalAnswers[code] = fromLocal ?? fromServer ?? (hasBlockAnswers ? true : false);
+          nextConditionalAnswers[code] = fromServer ?? (hasBlockAnswers ? true : false);
         }
-        setAnswers({ ...serverAnswers, ...localAnswers });
-        setConditionalAnswers(nextConditionalAnswers);
-        setConditionalBlockOpen(Object.fromEntries(rules.map((rule) => [rule.codigo, Boolean(nextConditionalAnswers[rule.codigo])])));
-        setObservaciones(String(local?.observaciones ?? res.observaciones ?? ""));
-        if (lockedForDraft) {
-          try {
-            sessionStorage.removeItem(draftStorageKey);
-          } catch {}
-        }
-        if (local?.answers) {
+        const baseline = { answers: serverAnswers, conditionalAnswers: nextConditionalAnswers, observaciones: String(res.observaciones ?? "") };
+        const restored = captureDraft.restore(`${draftScope}:${selectedEval.evaluacion_id}`, baseline, lockedForDraft);
+        setAnswers(restored.answers);
+        setConditionalAnswers(restored.conditionalAnswers);
+        setConditionalBlockOpen(Object.fromEntries(rules.map((rule) => [rule.codigo, Boolean(restored.conditionalAnswers[rule.codigo])])));
+        setObservaciones(restored.observaciones);
+        if (restored !== baseline) {
           notify({
             type: "info",
             title: "Borrador local recuperado",
@@ -466,15 +460,8 @@ export default function PsicoEmpleadoRespuestasPage() {
 
   function persistDraft() {
     if (!selectedEval || selectedLocked) return;
-    try {
-      sessionStorage.setItem(draftKey, JSON.stringify({ answers, conditionalAnswers, observaciones, updatedAt: new Date().toISOString() }));
-    } catch {}
+    captureDraft.flush();
   }
-  useEffect(() => {
-    const t = window.setTimeout(() => persistDraft(), 450);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers, conditionalAnswers, observaciones, draftKey]);
 
   const conditionalOrders = useMemo(() => new Set(conditionalRules.flatMap((rule) => (rule.ordenes || []).map(Number))), [conditionalRules]);
   const omittedConditionalOrders = useMemo(() => {
@@ -590,9 +577,11 @@ export default function PsicoEmpleadoRespuestasPage() {
     setSaving(true);
     try {
       const res = await guardarFichaSociodemografica(empleadoId, aplicacionId, { ...ficha, finalizar });
+      const savedFicha = (res as any).item ? { ...EMPTY_FICHA, ...((res as any).item as Partial<FichaSociodemografica>) } : ficha;
+      fichaDraft.acknowledge(`${draftScope}:ficha`, savedFicha);
       const completa = Boolean(res.completa);
       setFichaCompleta(completa);
-      if ((res as any).item) setFicha({ ...EMPTY_FICHA, ...(((res as any).item || {}) as Partial<FichaSociodemografica>) });
+      setFicha(savedFicha);
       await refreshContext(selectedEval?.evaluacion_id);
       notify({
         type: completa || !finalizar ? "success" : "warning",
@@ -622,9 +611,7 @@ export default function PsicoEmpleadoRespuestasPage() {
       const payload = applicableQuestions.map((p) => ({ pregunta_id: p.pregunta_id, orden: p.orden, respuesta: answers[p.pregunta_id] || null }));
       const condicionales = conditionalRules.map((rule) => ({ codigo: rule.codigo, respuesta: Boolean(conditionalAnswers[rule.codigo]) }));
       const res = await guardarRespuestasPsicoEmpleado(empleadoId, selectedEval.evaluacion_id, payload, finalizar, observaciones, condicionales);
-      try {
-        sessionStorage.removeItem(draftKey);
-      } catch {}
+      captureDraft.acknowledge(draftKey, captureValue);
       await refreshContext(selectedEval.evaluacion_id);
       notify({
         type: "success",
@@ -701,7 +688,7 @@ export default function PsicoEmpleadoRespuestasPage() {
           </div>
           <div className="grid min-h-[360px] place-items-center rounded-3xl border border-slate-200 bg-white text-slate-600 shadow-sm">
             <div className="text-center">
-              <Loader2 className="mx-auto h-10 w-10 animate-spin text-violet-700" />
+              <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" />
               <p className="mt-3 text-sm font-black">Cargando registro de respuestas…</p>
             </div>
           </div>
@@ -712,7 +699,7 @@ export default function PsicoEmpleadoRespuestasPage() {
   const nombre = perfil?.nombre_completo || `Colaborador ${empleadoId}`;
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <main className="min-h-screen bg-slate-50 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
       {toast && <ToastCard toast={toast} onClose={() => setToast(null)} />}
       <CreditGuardDialog info={creditGuardDialog} onClose={() => setCreditGuardDialog(null)} />
       <ConfirmDialog
@@ -737,7 +724,7 @@ export default function PsicoEmpleadoRespuestasPage() {
             <button
               type="button"
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-black text-violet-700 shadow-sm transition hover:bg-violet-100"
+              className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-4 py-2.5 text-sm font-black text-brand-primary shadow-sm transition hover:bg-accent-hover"
             >
               <FileText className="h-4 w-4" /> Informe individual
             </button>
@@ -749,13 +736,13 @@ export default function PsicoEmpleadoRespuestasPage() {
         <section className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-700">Registro de respuestas · Baterías psicosociales</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-sky">Registro de respuestas · Baterías psicosociales</p>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{app?.nombre || "Aplicación psicosocial"}</h1>
               <p className="mt-2 text-sm text-slate-500">
                 Colaborador: <b>{nombre}</b> · Cargo: <b>{perfil?.cargo || "Sin dato"}</b> · Área: <b>{perfil?.area || "Sin dato"}</b>
               </p>
             </div>
-            <div className="grid h-14 w-14 place-items-center rounded-3xl bg-violet-50 text-violet-700">
+            <div className="grid h-14 w-14 place-items-center rounded-3xl bg-accent text-brand-primary">
               <ClipboardList className="h-7 w-7" />
             </div>
           </div>
@@ -770,7 +757,7 @@ export default function PsicoEmpleadoRespuestasPage() {
             <section className="grid gap-4 min-[1380px]:grid-cols-[minmax(340px,0.95fr)_minmax(520px,1.05fr)] min-[1850px]:grid-cols-[1fr_1.25fr_1fr]">
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-violet-100 text-2xl font-black text-violet-700">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent text-2xl font-black text-brand-primary">
                     {nombre.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase() || "CO"}
                   </div>
                   <div>
@@ -784,7 +771,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                 <Kpi label={showFicha ? "Campos requeridos" : conditionalRules.length ? "Ítems requeridos" : "Total preguntas"} value={metricTotal} />
                 <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
                 <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
-                <Kpi label="Avance" value={`${metricProgress}%`} tone="text-violet-700" />
+                <Kpi label="Avance" value={`${metricProgress}%`} tone="text-brand-primary" />
               </div>
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm min-[1380px]:col-span-2 min-[1850px]:col-span-1">
                 <p className="text-sm font-black text-slate-950">Alertas de validación</p>
@@ -807,7 +794,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   )}
                   {siblingStarted && ["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(selectedCode) && (
                     <p className="flex gap-2">
-                      <FileLock2 className="mt-0.5 h-4 w-4 text-violet-700" /> La forma intralaboral alternativa quedó bloqueada por consistencia de la batería.
+                      <FileLock2 className="mt-0.5 h-4 w-4 text-brand-primary" /> La forma intralaboral alternativa quedó bloqueada por consistencia de la batería.
                     </p>
                   )}
                 </div>
@@ -822,11 +809,11 @@ export default function PsicoEmpleadoRespuestasPage() {
                   return (
                     <button
                       key={ev.evaluacion_id}
-                      onClick={() => { if (!meta.blockedBySibling) { setSelectedEval(ev); setShowFicha(false); } }}
+                      onClick={() => { if (!meta.blockedBySibling) { captureDraft.flush(); setSelectedEval(ev); setShowFicha(false); } }}
                       disabled={meta.blockedBySibling}
                       className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${
                         active
-                          ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700"
+                          ? "border-b-4 border-brand-primary bg-accent/60 text-brand-primary"
                           : meta.blockedBySibling
                             ? "cursor-not-allowed text-slate-300"
                             : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
@@ -840,7 +827,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                 <button
                   type="button"
                   onClick={() => setShowFicha(true)}
-                  className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-violet-700 bg-violet-50/60 text-violet-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
+                  className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-brand-primary bg-accent/60 text-brand-primary" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
                 >
                   <FileText className="h-4 w-4" /> Datos generales
                   {fichaCompleta ? <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
@@ -856,13 +843,13 @@ export default function PsicoEmpleadoRespuestasPage() {
                     <div className="rounded-2xl border border-dashed p-4 text-sm text-slate-500">Sin secciones cargadas.</div>
                   ) : (
                     sections.map((s) => (
-                      <div key={s.name} className="rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-violet-200">
+                      <div key={s.name} className="rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-brand-primary/20">
                         <div className="flex items-center justify-between gap-2">
                           <span className="line-clamp-2 text-sm font-bold text-slate-700">{s.name}</span>
-                          <span className="rounded-full bg-violet-50 px-2 py-1 text-xs font-black text-violet-700">{s.answered}/{s.total}</span>
+                          <span className="rounded-full bg-accent px-2 py-1 text-xs font-black text-brand-primary">{s.answered}/{s.total}</span>
                         </div>
                         <div className="mt-2 h-2 rounded-full bg-slate-100">
-                          <div className="h-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500" style={{ width: `${pct(s.answered, s.total)}%` }} />
+                          <div className="h-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-turquoise" style={{ width: `${pct(s.answered, s.total)}%` }} />
                         </div>
                       </div>
                     ))
@@ -914,12 +901,12 @@ export default function PsicoEmpleadoRespuestasPage() {
                       maxLength={500}
                       disabled={selectedLocked}
                       placeholder="Observación técnica del digitador o psicólogo..."
-                      className="mt-3 min-h-36 w-full resize-none rounded-2xl border border-slate-200 p-3 text-sm outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 disabled:bg-slate-50"
+                      className="mt-3 min-h-36 w-full resize-none rounded-2xl border border-slate-200 p-3 text-sm outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
                     />
                   </div>
 
-                  <div className="rounded-3xl border border-violet-100 bg-violet-50 p-4">
-                    <h3 className="font-black text-violet-950">Resumen por batería</h3>
+                  <div className="rounded-3xl border border-accent bg-accent/50 p-4">
+                    <h3 className="font-black text-foreground">Resumen por batería</h3>
                     <div className="mt-3 space-y-2">
                       {app.evaluaciones.map((ev) => (
                         <div key={`mini-${ev.evaluacion_id}`} className="flex items-center justify-between gap-3 rounded-2xl bg-white/70 px-3 py-2 text-sm">
@@ -950,7 +937,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                         type="button"
                         onClick={requestFinalize}
                         disabled={saving || !selectedEval || selectedLocked}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-700 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-violet-200 transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-black text-primary-foreground shadow-floating transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
                       >
                         <ShieldCheck className="h-4 w-4" /> Finalizar instrumento
                       </button>
@@ -969,15 +956,6 @@ export default function PsicoEmpleadoRespuestasPage() {
       </div>
     </main>
   );
-}
-
-function readDraft(key: string): { answers?: Record<number, string>; conditionalAnswers?: Record<string, boolean | null>; observaciones?: string } | null {
-  try {
-    const raw = sessionStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
 }
 
 function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: number | string; tone?: string }) {
@@ -1013,15 +991,15 @@ function ConditionalQuestionBlock({
   const active = value === true;
   const inactive = value === false;
   return (
-    <div className="rounded-[24px] border border-violet-200 bg-white p-3 shadow-sm sm:p-4">
+    <div className="rounded-[24px] border border-accent bg-white p-3 shadow-card sm:p-4">
       <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(260px,360px)] min-[1500px]:items-center">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-brand-primary">
             <UsersRound className="h-5 w-5" />
           </span>
           <div className="min-w-0">
             <p className="text-[15px] font-black leading-snug text-slate-900 sm:text-base">{rule.label || "Pregunta condicional"}</p>
-            <p className="mt-1 text-xs font-bold text-violet-600">Pregunta condicional</p>
+            <p className="mt-1 text-xs font-bold text-brand-sky">Pregunta condicional</p>
           </div>
         </div>
         <div className="flex min-w-0 justify-start min-[1500px]:justify-end">
@@ -1034,13 +1012,13 @@ function ConditionalQuestionBlock({
             onClick={() => onGateChange(!active)}
             className={`relative inline-flex h-11 w-40 shrink-0 items-center rounded-full border p-1 text-xs font-black transition ${
               active
-                ? "border-violet-700 bg-violet-700 text-white shadow-sm shadow-violet-200"
+                ? "border-brand-primary bg-primary text-primary-foreground shadow-card"
                 : disabled
                   ? "border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-slate-100 text-slate-600 hover:border-violet-300 hover:bg-violet-50"
+                  : "border-slate-200 bg-slate-100 text-slate-600 hover:border-brand-primary/30 hover:bg-accent"
             } ${disabled ? "cursor-not-allowed" : ""}`}
           >
-            <span className={`z-10 flex-1 text-center transition ${inactive ? "text-slate-900" : active ? "text-violet-100" : ""}`}>No</span>
+            <span className={`z-10 flex-1 text-center transition ${inactive ? "text-slate-900" : active ? "text-primary-foreground/80" : ""}`}>No</span>
             <span className={`z-10 flex-1 text-center transition ${active ? "text-white" : "text-slate-500"}`}>Sí</span>
             <span
               aria-hidden="true"
@@ -1059,11 +1037,11 @@ function ConditionalQuestionBlock({
       )}
 
       {active && (
-        <div className="mt-3 rounded-3xl border border-violet-100 bg-violet-50/70 p-3">
+        <div className="mt-3 rounded-3xl border border-accent bg-accent/60 p-3">
           <button
             type="button"
             onClick={onToggleOpen}
-            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-violet-800 shadow-sm"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-brand-primary shadow-sm"
           >
             <span>Se habilitan preguntas condicionales</span>
             <ChevronDown className={`h-4 w-4 shrink-0 transition ${open ? "rotate-180" : ""}`} />
@@ -1167,9 +1145,9 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
 
   return (
     <div className="p-5">
-      <div className="rounded-3xl border border-violet-100 bg-violet-50/60 p-5">
-        <h2 className="text-xl font-black text-slate-950">Ficha de datos generales</h2>
-        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. Área y cargo vienen del maestro del colaborador y no cuentan como ficha diligenciada por sí solos.</p>
+      <div className="rounded-3xl border border-accent bg-accent/50 p-5">
+        <h2 className="text-xl font-black text-foreground">Ficha de datos generales</h2>
+        <p className="mt-1 text-sm text-slate-600">Formulario alineado a la ficha oficial. El cargo se sugiere desde el registro del colaborador y puedes ajustarlo para esta aplicación; el área conserva su valor base.</p>
       </div>
 
       {missing.length > 0 && (
@@ -1212,7 +1190,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MunicipioField disabled={completa} label="Ciudad / municipio donde trabaja" query={trabQuery} selectedValue={ficha.ciudad_trabajo || ""} setQuery={(v) => { setTrabQuery(v); if (v !== String(ficha.ciudad_trabajo || "")) { update("ciudad_trabajo", ""); update("departamento_trabajo", ""); } }} options={trabOptions} onSelect={(item) => selectMunicipio("trab", item)} />
             <ReadOnlyField label="Departamento donde trabaja" value={ficha.departamento_trabajo || ""} />
-            <ReadOnlyField label="Cargo base del colaborador" value={ficha.cargo || ""} />
+            <TextField disabled={completa} label="Nombre del cargo" value={ficha.cargo || ""} onChange={(v) => update("cargo", v)} />
             <SelectField disabled={completa} label="Tipo de cargo" value={ficha.tipo_cargo || ""} options={catalogos.tipo_cargo} onChange={(v) => update("tipo_cargo", v)} />
             <ReadOnlyField label="Área base del colaborador" value={ficha.area || ""} />
             <NumberField disabled={completa} label="Antigüedad en la empresa (años)" value={ficha.antiguedad_empresa ?? ""} min={0} max={80} onChange={(v) => update("antiguedad_empresa", v === null ? "" : String(v))} />
@@ -1230,7 +1208,7 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
           <button disabled={saving || completa} type="button" onClick={onSave} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {completa ? "Datos guardados" : "Guardar datos"}
           </button>
-          <button disabled={saving || completa} type="button" onClick={onFinalize} className="inline-flex items-center gap-2 rounded-2xl bg-violet-700 px-5 py-3 text-sm font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100">
+          <button disabled={saving || completa} type="button" onClick={onFinalize} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-black text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} {completa ? "Ficha finalizada" : "Finalizar datos generales"}
           </button>
         </div>
@@ -1256,10 +1234,10 @@ function QuestionRow({
     ? "sm:grid-cols-2 lg:grid-cols-4 min-[1500px]:grid-cols-4"
     : "sm:grid-cols-3 lg:grid-cols-5 min-[1500px]:grid-cols-5";
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:border-violet-200 sm:p-4">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:border-brand-primary/20 sm:p-4">
       <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(430px,500px)] min-[1500px]:items-center">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-sm font-black text-violet-700">{pregunta.orden}</span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent text-sm font-black text-brand-primary">{pregunta.orden}</span>
           <p className="min-w-0 text-[15px] font-bold leading-snug text-slate-800 sm:text-base min-[1500px]:pr-2">{pregunta.texto}</p>
         </div>
         <div className={`grid min-w-0 grid-cols-2 gap-2 ${optionGridClass}`}>
@@ -1272,11 +1250,11 @@ function QuestionRow({
               className={`min-h-9 min-w-0 overflow-hidden rounded-xl border px-2 py-1.5 text-[12px] font-black leading-tight transition sm:text-[13px] ${
                 value === opt
                   ? disabled
-                    ? "border-violet-300 bg-violet-100 text-violet-900 shadow-inner"
-                    : "border-violet-700 bg-violet-700 text-white shadow-sm"
+                    ? "border-brand-primary/30 bg-accent-hover text-foreground shadow-inner"
+                    : "border-brand-primary bg-primary text-primary-foreground shadow-card"
                   : disabled
                     ? "border-slate-200 bg-slate-100 text-slate-400"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-brand-primary/30 hover:bg-accent"
               } ${disabled ? "cursor-not-allowed" : ""}`}
             >
               {opt}
