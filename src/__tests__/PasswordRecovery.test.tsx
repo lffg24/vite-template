@@ -17,6 +17,10 @@ describe("recuperación de contraseña", () => {
     fireEvent.click(screen.getByRole("button", { name: /enviar enlace seguro/i }));
 
     expect(await screen.findByText(/si existe una cuenta asociada/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Revisa tu correo" })).toBeInTheDocument();
+    expect(screen.getByText(/revisa la carpeta de correo no deseado/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /volver al inicio de sesión/i })).toHaveAttribute("href", "/login");
+    expect(screen.queryByText("ANA@EXAMPLE.COM")).not.toBeInTheDocument();
     expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("/auth/password-reset/request"), expect.objectContaining({ method: "POST" }));
   });
 

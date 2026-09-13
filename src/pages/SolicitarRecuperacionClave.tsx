@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { CheckCircle2, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 
+import recoverySentIllustration from "@/assets/password-recovery-sent.png";
 import { PasswordRecoveryShell } from "@/components/auth/PasswordRecoveryShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,12 +36,20 @@ export default function SolicitarRecuperacionClave() {
   };
 
   return (
-    <PasswordRecoveryShell title="Recupera tu acceso" description="Te enviaremos un enlace de un solo uso al correo asociado con tu cuenta.">
+    <PasswordRecoveryShell
+      title={submitted ? "Revisa tu correo" : "Recupera tu acceso"}
+      description={submitted
+        ? "Si existe una cuenta asociada, recibirás un enlace de un solo uso para recuperar el acceso."
+        : "Te enviaremos un enlace de un solo uso al correo asociado con tu cuenta."}
+      successIllustration={submitted ? recoverySentIllustration : undefined}
+    >
       {submitted ? (
-        <div role="status" className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 text-emerald-900">
-          <CheckCircle2 className="mb-3 h-7 w-7" />
-          <p className="font-black">Revisa tu correo</p>
-          <p className="mt-2 text-sm leading-6">Si existe una cuenta asociada, recibirás instrucciones para recuperar el acceso. Revisa también la carpeta de correo no deseado.</p>
+        <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-surface-subtle p-4 text-left">
+          <Mail className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-bold text-foreground">¿Aún no ves el mensaje?</p>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">Revisa la carpeta de correo no deseado. La entrega puede tardar unos minutos.</p>
+          </div>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-5" noValidate>
