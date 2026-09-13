@@ -137,7 +137,7 @@ export default function SuperAdminEmpresasPage() {
     setForm((actual) => ({ ...actual, [campo]: valor }));
 
   return (
-    <div>
+    <div className="rel-scope font-rel-body text-rel-dark">
       <SuperAdminPageHeader
         title="Empresas"
         subtitle="Crea y administra los clientes que usarán los módulos de Abril360."
