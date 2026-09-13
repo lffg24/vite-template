@@ -1,0 +1,148 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { LeccionesEditor } from "./LeccionesEditor";
+import { agregarLeccion, editarLeccion } from "@/services/capacitacionesService";
+import { listarVersionesElegibles } from "@/services/evaluacionesService";
+import type { EvaluacionLeccion, Leccion } from "@/types/capacitaciones";
+
+vi.mock("@/services/capacitacionesService", () => ({
+  agregarLeccion: vi.fn().mockResolvedValue({ leccion_id: "l9", orden: 1 }),
+  editarLeccion: vi.fn().mockResolvedValue(undefined),
+  eliminarLeccion: vi.fn(),
+  moverLeccion: vi.fn(),
+  reordenarLecciones: vi.fn(),
+}));
+
+vi.mock("@/services/evaluacionesService", () => ({
+  listarVersionesElegibles: vi.fn(),
+}));
+
+// El editor arrastra el constructor de evaluaciones entero, y la PRIMERA prueba
+// del archivo paga ese arranque: en solitario tarda 1,6 s y con la suite
+// completa en marcha pasa de los 5 s del limite global. Es lentitud de arranque,
+// no una espera que indique nada, asi que se le da margen en vez de recortar la
+// prueba.
+vi.setConfig({ testTimeout: 20_000 });
+
+const toast = vi.fn();
+vi.mock("@/hooks/use-toast", () => ({
+  useToast: () => ({ toast }),
+}));
+
+const VERSION = {
+  version_id: "v-banco-1",
+  numero: 2,
+  cuestionario_id: "q1",
+  codigo: "EVA-003",
+  titulo: "Inducción SST",
+  ambito: "SST" as const,
+  nota_minima: 80,
+  intentos_max: 2,
+  preguntas: 6,
+};
+
+const EVALUACION_PROPIA: EvaluacionLeccion = {
+  nota_minima: 70,
+  intentos_max: 1,
+  preguntas: [
+    {
+      tipo: "VERDADERO_FALSO",
+      enunciado: "Reportar es obligatorio",
+      opciones: ["Verdadero", "Falso"],
+      correctas: [0],
+      puntos: 1,
+    },
+  ],
+};
+
+function leccion(over: Partial<Leccion> = {}): Leccion {
+  return {
+    id: "l1",
+    orden: 1,
+    tipo: "EVALUACION",
+    titulo: "Final",
+    bloques: null,
+    recurso: null,
+    evaluacion: null,
+    cuestionario_version_id: VERSION.version_id,
+    duracion_estimada_min: null,
+    obligatoria: true,
+    ...over,
+  };
+}
+
+function abrirEdicion(l: Leccion) {
+  render(<LeccionesEditor cursoId="c1" lecciones={[l]} editable alCambiar={() => {}} />);
+  fireEvent.click(screen.getByRole("button", { name: /editar la lección/i }));
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(listarVersionesElegibles).mockResolvedValue([VERSION]);
+});
+
+/**
+ * La regla que se prueba aquí es la que impone el servidor: una lección de
+ * evaluación lleva el cuestionario del banco O escrito dentro, nunca los dos.
+ * Mandar ambos devuelve un 422 que la pantalla no sabría explicar mejor de lo
+ * que puede evitarlo, y mandar el nuevo sin soltar el viejo dejaba la lección
+ * publicando un cuestionario distinto del que enseñaba.
+ */
+describe("LeccionesEditor · de dónde sale el cuestionario", () => {
+  it("una lección del banco se abre en el banco y guarda su referencia", async () => {
+    abrirEdicion(leccion());
+
+    const selector = await screen.findByLabelText(/evaluación del banco/i);
+    expect(selector).toHaveValue(VERSION.version_id);
+    // Los números que decide el banco quedan a la vista: son los que la lección
+    // ya no puede cambiar, y descubrirlos cuando alguien reprueba es tarde.
+    expect(screen.getByText("80 %")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+
+    await vi.waitFor(() => expect(editarLeccion).toHaveBeenCalled());
+    const [, , cambios] = vi.mocked(editarLeccion).mock.calls[0];
+    expect(cambios.cuestionario_version_id).toBe(VERSION.version_id);
+    expect(cambios.evaluacion).toBeNull();
+  });
+
+  it("al pasar al cuestionario propio suelta la referencia al banco", async () => {
+    abrirEdicion(leccion());
+    await screen.findByLabelText(/evaluación del banco/i);
+
+    fireEvent.click(screen.getByRole("radio", { name: /escrito dentro de este curso/i }));
+
+    expect(screen.queryByLabelText(/evaluación del banco/i)).toBeNull();
+  });
+
+  it("al pasar al banco suelta el cuestionario escrito dentro", async () => {
+    // El camino de vuelta. Es el que deja evidencia contradictoria si falla:
+    // la lección enseñaría las preguntas de aquí y congelaría las del banco.
+    abrirEdicion(leccion({ evaluacion: EVALUACION_PROPIA, cuestionario_version_id: null }));
+
+    fireEvent.click(screen.getByRole("radio", { name: /del banco de evaluaciones/i }));
+    const selector = await screen.findByLabelText(/evaluación del banco/i);
+    fireEvent.change(selector, { target: { value: VERSION.version_id } });
+
+    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+
+    await vi.waitFor(() => expect(editarLeccion).toHaveBeenCalled());
+    const [, , cambios] = vi.mocked(editarLeccion).mock.calls[0];
+    expect(cambios.cuestionario_version_id).toBe(VERSION.version_id);
+    expect(cambios.evaluacion).toBeNull();
+  });
+
+  it("no deja guardar del banco sin haber elegido ninguna", async () => {
+    abrirEdicion(leccion({ evaluacion: EVALUACION_PROPIA, cuestionario_version_id: null }));
+
+    fireEvent.click(screen.getByRole("radio", { name: /del banco de evaluaciones/i }));
+    await screen.findByLabelText(/evaluación del banco/i);
+
+    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+
+    expect(await screen.findByText(/elige una evaluación del banco/i)).toBeInTheDocument();
+    expect(editarLeccion).not.toHaveBeenCalled();
+    expect(agregarLeccion).not.toHaveBeenCalled();
+  });
+});

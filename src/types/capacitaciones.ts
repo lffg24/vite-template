@@ -201,8 +201,15 @@ export interface Leccion {
   bloques: BloqueLeccion[] | null;
   /** Solo en los tipos que se reproducen desde una URL. */
   recurso: RecursoLeccion | null;
-  /** Solo en las lecciones de evaluación. */
+  /** Solo en las lecciones de evaluación que llevan el cuestionario dentro. */
   evaluacion: EvaluacionLeccion | null;
+  /**
+   * La otra forma de tener cuestionario: una versión publicada del banco.
+   *
+   * Excluyente con `evaluacion` — el servidor rechaza las dos a la vez porque
+   * dejarían sin decidir cuál se congela al publicar el curso.
+   */
+  cuestionario_version_id: string | null;
   duracion_estimada_min: number | null;
   obligatoria: boolean;
 }
@@ -240,6 +247,8 @@ export interface LeccionCrear {
    */
   recurso?: RecursoLeccion | null;
   evaluacion?: EvaluacionLeccion | null;
+  /** La versión publicada del banco. Excluyente con `evaluacion`. */
+  cuestionario_version_id?: string | null;
   duracion_estimada_min?: number | null;
   obligatoria?: boolean;
 }

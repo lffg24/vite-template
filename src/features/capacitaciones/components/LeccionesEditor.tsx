@@ -69,6 +69,7 @@ import {
   ConstructorEvaluacion,
   EVALUACION_VACIA,
 } from "@/features/capacitaciones/components/ConstructorEvaluacion";
+import { SelectorCuestionarioBanco } from "@/features/capacitaciones/components/SelectorCuestionarioBanco";
 import {
   ETIQUETA_TIPO_LECCION,
   ETIQUETA_PROVEEDOR,
@@ -107,6 +108,15 @@ function textoABloques(texto: string): BloqueLeccion[] {
     .map((contenido) => ({ tipo: "texto" as const, contenido }));
 }
 
+/**
+ * De dónde sale el cuestionario de una lección de evaluación.
+ *
+ * Son excluyentes y el servidor rechaza las dos a la vez: con ambas no estaría
+ * decidido cuál se congela al publicar el curso. Por eso la pantalla lo plantea
+ * como una elección y no como dos secciones que se puedan rellenar.
+ */
+type OrigenEvaluacion = "BANCO" | "PROPIA";
+
 interface FormLeccion {
   tipo: TipoLeccion;
   titulo: string;
@@ -114,6 +124,9 @@ interface FormLeccion {
   proveedor: ProveedorRecurso;
   url: string;
   tituloRecurso: string;
+  origenEvaluacion: OrigenEvaluacion;
+  /** `cuestionario_version_id` cuando el origen es el banco. */
+  versionBanco: string;
   evaluacion: EvaluacionLeccion;
   duracion: string;
   obligatoria: boolean;
@@ -126,6 +139,11 @@ const FORM_VACIO: FormLeccion = {
   proveedor: "YOUTUBE",
   url: "",
   tituloRecurso: "",
+  // El banco primero: reutilizar lo ya revisado y publicado es lo que se quiere
+  // que pase por defecto. Escribir el cuestionario dentro del curso deja una
+  // copia que ningun otro curso hereda cuando se corrige.
+  origenEvaluacion: "BANCO",
+  versionBanco: "",
   evaluacion: EVALUACION_VACIA,
   duracion: "",
   obligatoria: true,
@@ -181,6 +199,9 @@ export function LeccionesEditor({
       proveedor: l.recurso?.proveedor ?? "YOUTUBE",
       url: l.recurso?.url ?? "",
       tituloRecurso: l.recurso?.titulo ?? "",
+      // La lección ya tiene una de las dos formas; se abre en la que tiene.
+      origenEvaluacion: l.cuestionario_version_id ? "BANCO" : l.evaluacion ? "PROPIA" : "BANCO",
+      versionBanco: l.cuestionario_version_id ?? "",
       evaluacion: l.evaluacion ?? EVALUACION_VACIA,
       duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
       obligatoria: l.obligatoria,
@@ -231,12 +252,21 @@ export function LeccionesEditor({
     // reglas —el detalle vive en `catalogo.validar_evaluacion`, y tenerlo en
     // dos sitios es la forma segura de que acaben diciendo cosas distintas.
     const esEvaluacion = form.tipo === "EVALUACION";
-    if (esEvaluacion && form.evaluacion.preguntas.length === 0) {
+    const delBanco = esEvaluacion && form.origenEvaluacion === "BANCO";
+    if (delBanco && form.versionBanco === "") {
+      setErrorEvaluacion("Elige una evaluación del banco.");
+      return;
+    }
+    if (esEvaluacion && !delBanco && form.evaluacion.preguntas.length === 0) {
       setErrorEvaluacion("Agrega al menos una pregunta.");
       return;
     }
     setErrorEvaluacion(null);
-    const evaluacion = esEvaluacion ? form.evaluacion : null;
+    // Una de las dos, nunca las dos ni ninguna: es la misma regla que aplica el
+    // servidor, y mandar ambas devuelve un 422 que la pantalla no sabría
+    // explicar mejor de lo que puede evitarlo aquí.
+    const evaluacion = esEvaluacion && !delBanco ? form.evaluacion : null;
+    const cuestionarioVersionId = delBanco ? form.versionBanco : null;
 
     setGuardando(true);
     try {
@@ -245,6 +275,7 @@ export function LeccionesEditor({
           titulo,
           recurso,
           evaluacion,
+          cuestionario_version_id: cuestionarioVersionId,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -256,6 +287,7 @@ export function LeccionesEditor({
           titulo,
           recurso,
           evaluacion,
+          cuestionario_version_id: cuestionarioVersionId,
           bloques: bloques.length > 0 ? bloques : null,
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
@@ -601,10 +633,66 @@ export function LeccionesEditor({
                 <legend className="px-1 text-sm font-semibold text-rel-dark">
                   Cuestionario
                 </legend>
-                <ConstructorEvaluacion
-                  valor={form.evaluacion}
-                  alCambiar={(v) => setForm((f) => ({ ...f, evaluacion: v }))}
-                />
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-rel-dark">
+                    ¿De dónde sale?
+                  </legend>
+                  {(
+                    [
+                      {
+                        valor: "BANCO" as const,
+                        titulo: "Del banco de evaluaciones",
+                        ayuda:
+                          "Se comparte con los demás cursos. Al corregir una errata se corrige en todos, sin repetir el trabajo curso por curso.",
+                      },
+                      {
+                        valor: "PROPIA" as const,
+                        titulo: "Escrito dentro de este curso",
+                        ayuda:
+                          "Queda solo aquí. Útil cuando las preguntas no tienen sentido fuera de este curso.",
+                      },
+                    ]
+                  ).map((opcion) => (
+                    <label
+                      key={opcion.valor}
+                      className="flex cursor-pointer gap-3 rounded-rel-control border border-rel-border p-3 has-[:checked]:border-rel-primary has-[:checked]:bg-rel-accent-subtle"
+                    >
+                      <input
+                        type="radio"
+                        name="origen-evaluacion"
+                        className="mt-1 h-4 w-4 shrink-0 accent-rel-primary"
+                        checked={form.origenEvaluacion === opcion.valor}
+                        onChange={() => {
+                          setErrorEvaluacion(null);
+                          setForm((f) => ({ ...f, origenEvaluacion: opcion.valor }));
+                        }}
+                      />
+                      <span className="min-w-0">
+                        <span className="block font-rel-body text-sm font-semibold text-rel-dark">
+                          {opcion.titulo}
+                        </span>
+                        <span className="block font-rel-body text-sm text-rel-muted">
+                          {opcion.ayuda}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                {form.origenEvaluacion === "BANCO" ? (
+                  <SelectorCuestionarioBanco
+                    valor={form.versionBanco}
+                    alCambiar={(versionId) => {
+                      setErrorEvaluacion(null);
+                      setForm((f) => ({ ...f, versionBanco: versionId }));
+                    }}
+                  />
+                ) : (
+                  <ConstructorEvaluacion
+                    valor={form.evaluacion}
+                    alCambiar={(v) => setForm((f) => ({ ...f, evaluacion: v }))}
+                  />
+                )}
                 {errorEvaluacion ? (
                   <p role="alert" className="text-sm text-rel-danger">
                     {errorEvaluacion}
