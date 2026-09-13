@@ -179,7 +179,7 @@ function Shell() {
         navLabel="Navegación de Capacitaciones"
       />
 
-      <main className="flex min-w-0 flex-1 flex-col p-6">
+      <main className="flex min-w-0 flex-1 flex-col p-3 sm:p-6">
         <div id="contenido-capacitaciones" className="min-w-0 flex-1">
           {fase === "listo" && capacidades && !capacidades.tiene_acceso ? (
             <SinAccesoAlModulo />

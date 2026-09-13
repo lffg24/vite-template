@@ -27,6 +27,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EtiquetaConAyuda } from "@/shared/ui/Ayuda";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -133,9 +134,20 @@ export function ConstructorEvaluacion({
     <div className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="e-nota" className="text-rel-dark">
+          <EtiquetaConAyuda
+            htmlFor="e-nota"
+            ayuda={
+              <>
+                Sobre los <strong className="text-rel-dark">puntos</strong>, no
+                sobre el número de preguntas: una pregunta de cierre puede pesar
+                más que una de trámite. Se redondea hacia abajo, así que 2 de 3
+                es 66&nbsp;% y con mínima 67 no aprueba.
+              </>
+            }
+            etiquetaAyuda="Cómo se calcula la nota"
+          >
             Nota mínima para aprobar
-          </Label>
+          </EtiquetaConAyuda>
           <div className="flex items-center gap-2">
             <Input
               id="e-nota"
@@ -145,20 +157,20 @@ export function ConstructorEvaluacion({
               onChange={(e) =>
                 alCambiar({ ...valor, nota_minima: Number(e.target.value) || 0 })
               }
-              aria-describedby="e-nota-ayuda"
             />
             <span className="text-sm text-rel-muted">%</span>
           </div>
-          <p id="e-nota-ayuda" className="text-sm text-rel-muted">
-            Sobre los <strong>puntos</strong>, no sobre el número de preguntas. Se
-            redondea hacia abajo.
-          </p>
+
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="e-intentos" className="text-rel-dark">
+          <EtiquetaConAyuda
+            htmlFor="e-intentos"
+            ayuda="Al aprobar ya no se puede reintentar. Y la retroalimentación solo se muestra cuando no queda ningún intento: con otro por delante, señalar los fallos convierte el segundo en copiar la corrección del primero."
+            etiquetaAyuda="Cómo funcionan los intentos"
+          >
             Intentos permitidos
-          </Label>
+          </EtiquetaConAyuda>
           <Input
             id="e-intentos"
             inputMode="numeric"
@@ -167,11 +179,8 @@ export function ConstructorEvaluacion({
             onChange={(e) =>
               alCambiar({ ...valor, intentos_max: Number(e.target.value) || 0 })
             }
-            aria-describedby="e-intentos-ayuda"
           />
-          <p id="e-intentos-ayuda" className="text-sm text-rel-muted">
-            La retroalimentación solo se muestra cuando ya no queda reintento.
-          </p>
+
         </div>
       </div>
 

@@ -114,7 +114,7 @@ export default function CapacitacionesCursosPage() {
 
       {consulta.fase === "listo" && total === 0 ? (
         <SinDatos
-          ilustracion="capacitacion"
+          escena="cursos"
           titulo="Todavía no hay cursos"
           descripcion="Un curso empieza como borrador: se le agregan lecciones y los datos normativos, y solo entonces se puede publicar una versión."
           accion={

@@ -124,7 +124,7 @@ export default function CapacitacionesAsignacionesPage() {
 
       {consulta.fase === "listo" && filas.length === 0 ? (
         <SinDatos
-          ilustracion="capacitacion"
+          escena="agenda"
           titulo="Todavía no se ha asignado ningún curso"
           descripcion="Asignar una versión publicada es lo que permite generar enlaces y que la gente entre a hacerla."
           accion={
@@ -214,12 +214,22 @@ export default function CapacitacionesAsignacionesPage() {
                   soloAcciones: true,
                   celda: (a) => (
                     <div className="flex justify-end gap-1">
-                      {/* Las invitaciones van ANTES que los enlaces: en modo
-                          individual son la via por la que se entra, y el
-                          enlace de grupo solo sirve para mirar. */}
+                      {/* Cada modo tiene UNA vía por la que se entra, y es la
+                          que se ofrece como acción principal. La otra se
+                          deshabilita con su motivo a la vista: dejarla
+                          pulsable llevaba a una pantalla que ofrecía generar
+                          invitaciones para que el servidor las rechazara. */}
                       <Button
-                        variant="relOutline"
+                        variant={
+                          a.modo_identidad === "AUTODECLARADA" ? "relGhost" : "relOutline"
+                        }
                         size="sm"
+                        disabled={a.modo_identidad === "AUTODECLARADA"}
+                        title={
+                          a.modo_identidad === "AUTODECLARADA"
+                            ? "Esta asignación se responde por el enlace del grupo: no usa invitaciones personales."
+                            : undefined
+                        }
                         onClick={() =>
                           navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)
                         }
@@ -229,8 +239,15 @@ export default function CapacitacionesAsignacionesPage() {
                         <span className="sr-only"> de {a.curso_titulo}</span>
                       </Button>
                       <Button
-                        variant="relOutline"
+                        variant={
+                          a.modo_identidad === "AUTODECLARADA" ? "relOutline" : "relGhost"
+                        }
                         size="sm"
+                        title={
+                          a.modo_identidad === "AUTODECLARADA"
+                            ? undefined
+                            : "Con invitación personal, el enlace del grupo solo sirve para mirar de qué va el curso."
+                        }
                         onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
                       >
                         <Link2 aria-hidden="true" />
@@ -253,7 +270,10 @@ export default function CapacitacionesAsignacionesPage() {
           <ul className="space-y-3 md:hidden">
             {filas.map((a) => (
               <li key={a.id} className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
-                <div className="flex items-start justify-between gap-3">
+                {/* El estado va ARRIBA del titulo, no a su lado: en 320 px un
+                    rotulo de 90 px deja al titulo del curso en 80 px y lo parte
+                    en seis lineas. */}
+                <div className="flex flex-col-reverse items-start gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                   <h2 className="font-rel-heading text-base font-bold">
                     <Link
                       to={`/capacitaciones/asignaciones/${a.id}/invitaciones`}
@@ -285,11 +305,15 @@ export default function CapacitacionesAsignacionesPage() {
                     {formatearVigenciaMeses(a.vigencia_meses)}
                   </dd>
                 </dl>
-                <div className="mt-4 grid grid-cols-2 gap-2">
+                {/* Una accion por fila. Con el riel del menu, a la tarjeta le
+                    quedan 160 px: en dos columnas el rotulo «Invitaciones» se
+                    salia de su celda y se montaba sobre el boton vecino. */}
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button
                     variant="relOutline"
                     size="sm"
                     className="w-full"
+                    disabled={a.modo_identidad === "AUTODECLARADA"}
                     onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)}
                   >
                     <Send aria-hidden="true" />
@@ -308,7 +332,7 @@ export default function CapacitacionesAsignacionesPage() {
                     <Button
                       variant="relGhost"
                       size="sm"
-                      className="col-span-2 w-full"
+                      className="w-full sm:col-span-2"
                       onClick={() => setACerrar(a)}
                     >
                       Cerrar

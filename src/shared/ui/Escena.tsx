@@ -27,39 +27,57 @@
 // que entra al repositorio se queda en el historial para siempre, aunque se
 // reemplace después.
 
-import acceso_restringido from "@/assets/ilustraciones/acceso-restringido.webp";
-import publicar from "@/assets/ilustraciones/publicar.webp";
-import curso from "@/assets/ilustraciones/curso.webp";
-import ilustracion02 from "@/assets/ilustraciones/ilustracion-02.webp";
-import ilustracion03 from "@/assets/ilustraciones/ilustracion-03.webp";
-import ilustracion04 from "@/assets/ilustraciones/ilustracion-04.webp";
-import ilustracion05 from "@/assets/ilustraciones/ilustracion-05.webp";
-import ilustracion07 from "@/assets/ilustraciones/ilustracion-07.webp";
-import ilustracion08 from "@/assets/ilustraciones/ilustracion-08.webp";
-import ilustracion09 from "@/assets/ilustraciones/ilustracion-09.webp";
+import agenda from "@/assets/ilustraciones/agenda.webp";
+import avanceCurso from "@/assets/ilustraciones/avance-curso.webp";
+import avanzaCapacitacion from "@/assets/ilustraciones/avanza-capacitacion.webp";
+import avanzaEnCapacitaciones from "@/assets/ilustraciones/avanza-en-capacitaciones.webp";
+import cambioContrasena from "@/assets/ilustraciones/cambio-contrasena.webp";
+import cambioPassword from "@/assets/ilustraciones/cambio-password.webp";
+import capacitaciones from "@/assets/ilustraciones/capacitaciones.webp";
+import certificadoCapacitacionHombre from "@/assets/ilustraciones/certificado-capacitacion-hombre.webp";
+import certificadoMujer from "@/assets/ilustraciones/certificado-mujer.webp";
+import cursoProfesional from "@/assets/ilustraciones/curso-profesional.webp";
+import cursos from "@/assets/ilustraciones/cursos.webp";
+import errorLink from "@/assets/ilustraciones/error-link.webp";
+import estudioMujer from "@/assets/ilustraciones/estudio-mujer.webp";
+import linkFallido from "@/assets/ilustraciones/link-fallido.webp";
+import planificacion from "@/assets/ilustraciones/planificacion.webp";
+import terminaCapacitacionMujer from "@/assets/ilustraciones/termina-capacitacion-mujer.webp";
+import terminasteCapacitacion from "@/assets/ilustraciones/terminaste-capacitacion.webp";
 
 import { cn } from "@/lib/utils";
 
 /**
  * Nombre de escena → archivo.
  *
- * La indirección es el punto: las pantallas piden «publicar» y no un archivo,
- * así que cambiar la ilustración —o renombrarla cuando se le encuentre su
- * sitio— no toca ninguna pantalla. Las que todavía no tienen nombre propio lo
- * llevan por índice, y eso es honesto: decir `ilustracion-03` es mejor que
- * bautizarla «éxito» y descubrir luego que dibuja otra cosa.
+ * El nombre es el del archivo de origen, que ya viene descrito por función
+ * (`certificado-mujer`, `error-link`). Antes se numeraban por orden alfabético
+ * y eso tenía un defecto que no se ve hasta que muerde: al cambiar una imagen de
+ * la carpeta, **cada escena pasaba a apuntar a un dibujo distinto** sin que
+ * nadie tocara una línea. Una pantalla que decía «publicar» habría acabado
+ * enseñando un candado.
+ *
+ * Añadir un archivo a la carpeta no basta: hay que importarlo aquí. Si falta,
+ * falla el build — que es donde debe fallar.
  */
 export const ESCENAS = {
-  publicar,
-  "acceso-restringido": acceso_restringido,
-  curso,
-  "ilustracion-02": ilustracion02,
-  "ilustracion-03": ilustracion03,
-  "ilustracion-04": ilustracion04,
-  "ilustracion-05": ilustracion05,
-  "ilustracion-07": ilustracion07,
-  "ilustracion-08": ilustracion08,
-  "ilustracion-09": ilustracion09,
+  "agenda": agenda,
+  "avance-curso": avanceCurso,
+  "avanza-capacitacion": avanzaCapacitacion,
+  "avanza-en-capacitaciones": avanzaEnCapacitaciones,
+  "cambio-contrasena": cambioContrasena,
+  "cambio-password": cambioPassword,
+  "capacitaciones": capacitaciones,
+  "certificado-capacitacion-hombre": certificadoCapacitacionHombre,
+  "certificado-mujer": certificadoMujer,
+  "curso-profesional": cursoProfesional,
+  "cursos": cursos,
+  "error-link": errorLink,
+  "estudio-mujer": estudioMujer,
+  "link-fallido": linkFallido,
+  "planificacion": planificacion,
+  "termina-capacitacion-mujer": terminaCapacitacionMujer,
+  "terminaste-capacitacion": terminasteCapacitacion,
 } as const;
 
 export type NombreEscena = keyof typeof ESCENAS;

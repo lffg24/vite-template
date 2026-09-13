@@ -121,7 +121,64 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await page.goto("/capacitaciones/asignaciones");
     const cerrar = page.getByRole("button", { name: /^cerrar$/i });
     await expect(cerrar).toBeVisible();
+    // Aqui vivia un `toBeInViewport()` a secas, y medía otra cosa: si la ULTIMA
+    // accion de la primera tarjeta cae por encima de la linea de flotacion. Eso
+    // depende de cuanto ocupe la cabecera —crecio al traer la tipografia de
+    // `preprod`— y no de si la pantalla cabe a lo ancho, que es lo que esta
+    // prueba dice comprobar. Desplazarse hacia abajo en un telefono no es un
+    // defecto; salirse de lado, si.
+    await cerrar.scrollIntoViewIfNeeded();
     await expect(cerrar).toBeInViewport();
+
+    // Lo que si es invariante: ninguna accion se sale de su tarjeta ni se monta
+    // sobre la vecina. Con las acciones en dos columnas —como estaban— a cada
+    // celda le quedaban 76 px y «Invitaciones» se desbordaba encima de
+    // «Enlaces»: se veia, pero no se podia pulsar lo que decia.
+    const cajas = await page.evaluate(() => {
+      const tarjeta = document.querySelector("main ul > li");
+      if (!tarjeta) return [];
+      const limite = tarjeta.getBoundingClientRect();
+      return [...tarjeta.querySelectorAll("button")].map((boton) => {
+        const caja = boton.getBoundingClientRect();
+        return {
+          texto: (boton.textContent ?? "").trim(),
+          izq: caja.left,
+          der: caja.right,
+          arriba: caja.top,
+          abajo: caja.bottom,
+          limiteIzq: limite.left,
+          limiteDer: limite.right,
+          // El rotulo no se parte (`whitespace-nowrap`): cuando no cabe, se
+          // sale del boton en vez de estrecharlo. La caja sigue midiendo lo
+          // mismo, asi que el solape hay que buscarlo AQUI, no en los bordes.
+          ancho: boton.clientWidth,
+          contenido: boton.scrollWidth,
+        };
+      });
+    });
+    expect(cajas.length).toBeGreaterThan(0);
+    for (const caja of cajas) {
+      expect.soft(caja.izq, `«${caja.texto}» se sale por la izquierda`).toBeGreaterThanOrEqual(
+        caja.limiteIzq - 1
+      );
+      expect.soft(caja.der, `«${caja.texto}» se sale por la derecha`).toBeLessThanOrEqual(
+        caja.limiteDer + 1
+      );
+    }
+    for (const caja of cajas) {
+      expect
+        .soft(caja.contenido, `el rotulo de «${caja.texto}» no cabe en su boton`)
+        .toBeLessThanOrEqual(caja.ancho + 1);
+    }
+    for (let i = 0; i < cajas.length; i += 1) {
+      for (let j = i + 1; j < cajas.length; j += 1) {
+        const a = cajas[i];
+        const b = cajas[j];
+        const seMontan =
+          a.izq < b.der - 1 && b.izq < a.der - 1 && a.arriba < b.abajo - 1 && b.arriba < a.abajo - 1;
+        expect.soft(seMontan, `«${a.texto}» y «${b.texto}» se montan`).toBe(false);
+      }
+    }
 
     const medidas = await page.evaluate(() => ({
       anchoVisible: document.documentElement.clientWidth,

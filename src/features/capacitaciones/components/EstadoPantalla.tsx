@@ -10,6 +10,7 @@ import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Ilustracion, type NombreIlustracion } from "@/shared/ui/ilustraciones";
+import { Escena, type NombreEscena } from "@/shared/ui/Escena";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ErrorApi } from "@/types/capacitaciones";
 
@@ -75,15 +76,29 @@ export function SinDatos({
   descripcion,
   accion,
   ilustracion = "vacio",
+  escena,
 }: {
   titulo: string;
   descripcion: string;
   accion?: ReactNode;
   ilustracion?: NombreIlustracion;
+  /**
+   * Escena con personajes, para los vacíos que se ven a diario.
+   *
+   * Gana a `ilustracion` cuando se pasa. La distinción no es de gusto: el
+   * dibujo vectorial es barato y sirve para cualquier hueco, y la escena pesa
+   * decenas de KB y se reserva para las pantallas principales, donde alguien va
+   * a pasar tiempo.
+   */
+  escena?: NombreEscena;
 }) {
   return (
     <div className="rounded-rel-panel border border-dashed border-rel-border-strong bg-rel-surface-subtle px-6 py-12 text-center">
-      <Ilustracion nombre={ilustracion} tamano="md" className="mx-auto" />
+      {escena ? (
+        <Escena nombre={escena} tamano="lg" className="mx-auto" />
+      ) : (
+        <Ilustracion nombre={ilustracion} tamano="md" className="mx-auto" />
+      )}
       <h3 className="mt-4 font-rel-heading text-lg font-bold text-rel-dark">{titulo}</h3>
       <p className="mx-auto mt-2 max-w-prose font-rel-body text-sm text-rel-muted">
         {descripcion}

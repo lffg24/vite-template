@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EtiquetaConAyuda } from "@/shared/ui/Ayuda";
 import {
   Select,
   SelectContent,
@@ -214,19 +215,20 @@ export function AsignacionNuevaSheet({
             ) : null}
 
             <div className="space-y-2">
-              <Label htmlFor="a-fecha" className="text-rel-dark">
+              <EtiquetaConAyuda
+                htmlFor="a-fecha"
+                ayuda="Cuándo debería estar hecha. No bloquea nada: es seguimiento."
+                etiquetaAyuda="Qué es la fecha objetivo"
+              >
                 Fecha objetivo
-              </Label>
+              </EtiquetaConAyuda>
               <Input
                 id="a-fecha"
                 type="date"
                 value={fechaObjetivo}
                 onChange={(e) => setFechaObjetivo(e.target.value)}
-                aria-describedby="a-fecha-ayuda"
               />
-              <p id="a-fecha-ayuda" className="text-sm text-rel-muted">
-                Cuándo debería estar hecha. No bloquea nada: es seguimiento.
-              </p>
+
             </div>
 
             <OpcionesExcluyentes<ModoIdentidad>
@@ -239,9 +241,13 @@ export function AsignacionNuevaSheet({
             />
 
             <div className="space-y-2">
-              <Label htmlFor="a-vigencia" className="text-rel-dark">
+              <EtiquetaConAyuda
+                htmlFor="a-vigencia"
+                ayuda="Se resuelve y se guarda ahora. Cambiar la vigencia del curso después no altera esta asignación."
+                etiquetaAyuda="Cómo funciona la vigencia"
+              >
                 Vigencia de la constancia
-              </Label>
+              </EtiquetaConAyuda>
               <Input
                 id="a-vigencia"
                 inputMode="numeric"
@@ -252,12 +258,8 @@ export function AsignacionNuevaSheet({
                     ? `Hereda ${elegida.vigencia_meses} meses del curso`
                     : "En meses. Vacío = la del curso"
                 }
-                aria-describedby="a-vigencia-ayuda"
               />
-              <p id="a-vigencia-ayuda" className="text-sm text-rel-muted">
-                Se resuelve y se guarda ahora. Cambiar la vigencia del curso
-                después no altera esta asignación.
-              </p>
+
             </div>
 
             <SheetFooter className="gap-2 sm:gap-2">

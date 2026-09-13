@@ -147,7 +147,7 @@ export function PanelPublicacion({
       <DialogoCasa
         abierto={confirmando}
         alCerrar={() => setConfirmando(false)}
-        escena="publicar"
+        escena="planificacion"
         antetitulo="Publicación"
         titulo={`Publicar la versión ${curso.version_actual + 1}`}
         descripcion={

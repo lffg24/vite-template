@@ -189,7 +189,7 @@ export default function CapacitacionesConstanciasPage() {
 
       {consulta.fase === "listo" && constancias.length === 0 ? (
         <SinDatos
-          ilustracion="constancia"
+          escena="certificado-mujer"
           titulo="Todavía no hay constancias"
           descripcion="Se emiten solas cuando alguien termina una capacitación asignada."
         />

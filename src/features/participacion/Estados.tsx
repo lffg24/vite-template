@@ -79,7 +79,7 @@ function PantallaDeEstado({
 
 export function EnlaceNoDisponible() {
   return (
-    <PantallaDeEstado escena="acceso-restringido" titulo="Este enlace ya no sirve">
+    <PantallaDeEstado escena="error-link" titulo="Este enlace ya no sirve">
       <p>
         Puede haber vencido, haberse llenado o haberse reemplazado por otro.
       </p>
@@ -94,7 +94,7 @@ export function EnlaceNoDisponible() {
 export function ParticipacionCerrada() {
   return (
     <PantallaDeEstado
-      escena="acceso-restringido"
+      escena="link-fallido"
       titulo="Falta un paso de tu empresa"
     >
       <p>

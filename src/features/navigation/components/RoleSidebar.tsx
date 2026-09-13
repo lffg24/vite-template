@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, LogOut, type LucideIcon } from "lucide-react
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 import AbrilWordmark from "@/components/brand/AbrilWordmark";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type RoleSidebarItem = {
   label: string;
@@ -43,6 +44,11 @@ export default function RoleSidebar({
   footerLinkLabel = "relconsilium.com",
 }: RoleSidebarProps) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(storageKey) === "1");
+  // En un telefono el menu desplegado se come tres cuartos de la pantalla y deja
+  // el contenido en ~98 px: la pagina se desborda de lado. Ahi el menu va
+  // siempre en riel de iconos, y la preferencia de escritorio se conserva
+  // intacta en `collapsed` para cuando se vuelva a una pantalla ancha.
+  const esMovil = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,17 +56,25 @@ export default function RoleSidebar({
     localStorage.setItem(storageKey, collapsed ? "1" : "0");
   }, [collapsed, storageKey]);
 
-  const width = collapsed ? "w-[96px]" : "w-[292px]";
+  const compacto = collapsed || esMovil;
+  // En movil se usa el MISMO riel de 96 px que el estado contraido, no un ancho
+  // nuevo: es el que ya esta dimensionado para que el avatar de 48 px quepa
+  // dentro del relleno.
+  const width = compacto ? "w-[96px]" : "w-[292px]";
 
+  // `min-w-0` en la barra: como hijo de un flex, el `min-width: auto` implicito
+  // toma el ancho minimo del contenido como suelo, y ese suelo son ~225 px. Sin
+  // el, el riel NO se estrecha —ni en movil ni al pulsar «contraer»— y el ancho
+  // declarado se ignora en silencio.
   return (
-    <aside className={`${width} min-h-screen shrink-0 overflow-hidden bg-sidebar text-sidebar-foreground shadow-floating transition-all duration-standard`}>
+    <aside className={`${width} min-h-screen min-w-0 shrink-0 overflow-hidden bg-sidebar text-sidebar-foreground shadow-floating transition-all duration-standard`}>
       <div className="flex h-full flex-col p-4">
-        <div className={`mb-6 ${collapsed ? "flex flex-col items-center gap-3" : "flex items-center justify-between gap-3"}`}>
-          <div className={`min-w-0 ${collapsed ? "flex items-center justify-center" : "flex items-center gap-3"}`}>
+        <div className={`mb-6 ${compacto ? "flex flex-col items-center gap-3" : "flex items-center justify-between gap-3"}`}>
+          <div className={`min-w-0 ${compacto ? "flex items-center justify-center" : "flex items-center gap-3"}`}>
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-sidebar-border bg-sidebar-hover p-2 shadow-card">
               <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
             </div>
-            {!collapsed && (
+            {!compacto && (
               <div className="min-w-0">
                 {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
                   <AbrilWordmark className="block truncate text-2xl font-black text-sidebar-foreground" accentClassName="text-brand-turquoise" />
@@ -75,7 +89,7 @@ export default function RoleSidebar({
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
-            className={`grid shrink-0 place-items-center rounded-xl border border-sidebar-border bg-sidebar-hover text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground ${collapsed ? "h-10 w-10" : "h-9 w-9"}`}
+            className={`${esMovil ? "hidden" : "grid"} shrink-0 place-items-center rounded-xl border border-sidebar-border bg-sidebar-hover text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground ${collapsed ? "h-10 w-10" : "h-9 w-9"}`}
             title={collapsed ? "Expandir menú" : "Contraer menú"}
             aria-label={collapsed ? "Expandir menú lateral" : "Contraer menú lateral"}
           >
@@ -83,9 +97,9 @@ export default function RoleSidebar({
           </button>
         </div>
 
-        <div className={`${collapsed ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-sidebar-border bg-sidebar-hover`}>
+        <div className={`${compacto ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-sidebar-border bg-sidebar-hover`}>
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sidebar-active font-heading font-bold text-sidebar-active-foreground">{avatarText}</div>
-          {!collapsed && (
+          {!compacto && (
             <div className="min-w-0">
               <div className="truncate font-heading font-semibold text-sidebar-foreground">{userTitle}</div>
               <div className="truncate text-sm text-sidebar-muted">{userSubtitle}</div>
@@ -101,27 +115,27 @@ export default function RoleSidebar({
               <button
                 key={item.to}
                 type="button"
-                title={collapsed ? item.label : undefined}
+                title={compacto ? item.label : undefined}
                 aria-current={active ? "page" : undefined}
                 onClick={() => {
                   if (location.pathname !== item.to) navigate(item.to);
                 }}
                 className={[
                   "group flex w-full items-center rounded-2xl text-left text-sm font-semibold transition-colors duration-fast",
-                  collapsed ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
+                  compacto ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
                   active
                     ? "bg-sidebar-active text-sidebar-active-foreground shadow-card"
                     : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-foreground",
                 ].join(" ")}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="truncate">{item.label}</span>}
+                {!compacto && <span className="truncate">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
-        {!collapsed && (
+        {!compacto && (
           <div className="mt-5 border-t border-sidebar-border pt-4 text-xs leading-5 text-sidebar-muted">
             <div>{footerTitle}</div>
             {footerLink ? (
@@ -134,11 +148,11 @@ export default function RoleSidebar({
 
         <NavLink
           to="/logout"
-          title={collapsed ? "Cerrar sesión" : undefined}
-          className={`${collapsed ? "justify-center px-0" : "gap-3 px-4"} mt-4 flex items-center rounded-2xl py-3 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-hover`}
+          title={compacto ? "Cerrar sesión" : undefined}
+          className={`${compacto ? "justify-center px-0" : "gap-3 px-4"} mt-4 flex items-center rounded-2xl py-3 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-hover`}
         >
           <LogOut className="h-5 w-5" />
-          {!collapsed && "Cerrar sesión"}
+          {!compacto && "Cerrar sesión"}
         </NavLink>
       </div>
     </aside>

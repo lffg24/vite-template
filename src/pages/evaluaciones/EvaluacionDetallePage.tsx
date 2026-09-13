@@ -280,7 +280,7 @@ export default function EvaluacionDetallePage() {
           <DialogoCasa
             abierto={confirmarPublicar}
             alCerrar={() => setConfirmarPublicar(false)}
-            escena="publicar"
+            escena="planificacion"
             antetitulo="Publicación"
             titulo={`Publicar la versión ${cuestionario.version_actual + 1}`}
             descripcion={

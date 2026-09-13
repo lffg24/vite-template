@@ -266,7 +266,7 @@ test.describe("Flujos psicosociales críticos", () => {
     );
     // La pantalla certificada envia explicitamente 3. La prueba debe observar
     // ese contrato real, no el valor por defecto interno de otro llamador.
-    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=3`, async (route) => {
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
       closeRequestUrl = route.request().url();
       closed = true;
       await fulfillJson(route, {
@@ -286,7 +286,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page.getByText("Aplicación cerrada")).toBeVisible();
     await expect(page.getByText("Empresa Andina SAS · Estado Finalizada")).toBeVisible();
     await expect(page.getByRole("button", { name: /reabrir aplicación/i })).toBeVisible();
-    expect(closeRequestUrl).toContain("min_participantes=3");
+    expect(closeRequestUrl).toContain("min_participantes=1");
   });
 
   // El servicio conserva un valor por defecto distinto para otros llamadores.
@@ -300,7 +300,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, applicationDetailWithoutCompleteParticipants),
     );
-    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=3`, async (route) => {
+    await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
       closeCalled = true;
       await fulfillJson(route, { ok: false, error: "MINIMO_PARTICIPANTES" }, 422);
     });

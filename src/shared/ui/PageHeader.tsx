@@ -10,6 +10,12 @@
 // que un módulo nuevo no tenía de dónde tomarlos y acababa inventando los
 // suyos — que es exactamente lo que le pasó a Capacitaciones.
 //
+// En un telefono el menu ocupa un riel de 96 px y al titulo le quedan ~160.
+// «Asignaciones» a 3xl mide 185 px de ancho minimo: una sola palabra que no
+// cabe empuja la pagina entera y aparece scroll horizontal. De ahi el tamano
+// menor en movil y el `break-words`, que es el que de verdad lo garantiza para
+// cualquier titulo futuro, no solo para los de hoy.
+//
 // Psicosocial no se toca en este cambio. Se migrará cuando haya con qué
 // comparar el resultado; hasta entonces este componente y su marcado son la
 // misma cosa escrita dos veces, a propósito.
@@ -39,19 +45,19 @@ export function PageHeader({
   return (
     <section
       className={cn(
-        "rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-sm",
+        "rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-sm sm:p-6",
         className
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-4">
+        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
           {Icono ? (
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-rel-card bg-rel-accent-subtle text-rel-primary">
-              <Icono className="h-7 w-7" aria-hidden="true" />
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-card bg-rel-accent-subtle text-rel-primary sm:h-14 sm:w-14">
+              <Icono className="h-5 w-5 sm:h-7 sm:w-7" aria-hidden="true" />
             </div>
           ) : null}
           <div className="min-w-0">
-            <h1 className="font-rel-heading text-3xl font-black tracking-tight text-rel-dark">
+            <h1 className="break-words font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-3xl">
               {titulo}
             </h1>
             {descripcion ? (

@@ -16,10 +16,12 @@
 // `/c/i/{token}` ya existe para cuando llegue.
 
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Printer, Send, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel } from "@/shared/ui/Panel";
+import { Escena } from "@/shared/ui/Escena";
 import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
 
@@ -39,11 +41,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import {
   generarInvitaciones,
+  listarAsignaciones,
   listarInvitaciones,
   listarParticipantes,
   revocarInvitacion,
 } from "@/services/capacitacionesService";
 import type {
+  AsignacionResumen,
   ErrorApi,
   InvitacionResumen,
   InvitacionesGeneradas,
@@ -80,6 +84,7 @@ function EstadoInvitacion({ inv }: { inv: InvitacionResumen }) {
 }
 
 export default function CapacitacionesInvitacionesPage() {
+  const navegar = useNavigate();
   const { asignacionId = "" } = useParams<{ asignacionId: string }>();
   const { toast } = useToast();
 
@@ -88,6 +93,18 @@ export default function CapacitacionesInvitacionesPage() {
     [asignacionId]
   );
   const personas = useConsulta<ParticipanteResumen[]>(() => listarParticipantes(), []);
+
+  // El MODO de la asignación decide si esta pantalla tiene sentido siquiera.
+  //
+  // Se consulta el listado de asignaciones —que ya trae `modo_identidad`— en vez
+  // de añadir un endpoint: es una lista corta de la misma empresa, y evita que
+  // la pantalla ofrezca generar invitaciones para que el servidor las rechace
+  // con un 422. Ofrecer una acción imposible y explicarla DESPUÉS del error es
+  // justo lo que hay que dejar de hacer.
+  const asignaciones = useConsulta<AsignacionResumen[]>(() => listarAsignaciones(), []);
+  const esAutodeclarada =
+    (asignaciones.datos ?? []).find((a) => a.id === asignacionId)?.modo_identidad ===
+    "AUTODECLARADA";
 
   const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
   const [generando, setGenerando] = useState(false);
@@ -175,8 +192,40 @@ export default function CapacitacionesInvitacionesPage() {
         descripcion="Cada persona entra con la suya, y sirve una sola vez. Es lo que hace que la constancia quede a nombre de quien de verdad hizo el curso."
       />
 
-      {/* Generar. Solo se ofrece a quien no tiene una viva. */}
-      <section className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+      {esAutodeclarada ? (
+        <Panel>
+          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-start sm:text-left">
+            <Escena nombre="link-fallido" tamano="md" className="shrink-0" />
+            <div className="min-w-0">
+              <h2 className="font-rel-heading text-lg font-bold text-rel-dark">
+                Esta asignación no usa invitaciones
+              </h2>
+              <p className="mt-2 font-rel-body text-sm leading-relaxed text-rel-muted">
+                Se configuró para que cualquiera entre por el enlace del grupo
+                escribiendo sus datos. Emitir invitaciones personales aquí no
+                haría nada: el servidor las rechaza, porque la identidad de quien
+                responde no sale de una nómina.
+              </p>
+              <p className="mt-2 font-rel-body text-sm leading-relaxed text-rel-muted">
+                Si necesitas que la constancia acredite identidad, hay que crear
+                la asignación con invitación personal — el modo no se cambia
+                después.
+              </p>
+              <Button
+                variant="rel"
+                className="mt-5"
+                onClick={() =>
+                  navegar(`/capacitaciones/asignaciones/${asignacionId}/enlaces`)
+                }
+              >
+                Ir a los enlaces de grupo
+              </Button>
+            </div>
+          </div>
+        </Panel>
+      ) : (
+        // Generar. Solo se ofrece a quien no tiene una invitación viva.
+        <section className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
         <h2 className="font-semibold text-rel-dark">Generar invitaciones</h2>
         {personas.fase === "listo" && disponibles.length === 0 ? (
           <p className="mt-2 text-sm text-rel-muted">
@@ -240,6 +289,7 @@ export default function CapacitacionesInvitacionesPage() {
           </>
         )}
       </section>
+      )}
 
       {invitaciones.fase === "cargando" ? <CargandoTabla /> : null}
       {invitaciones.fase === "error" && invitaciones.error ? (
