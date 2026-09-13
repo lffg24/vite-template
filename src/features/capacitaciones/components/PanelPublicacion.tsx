@@ -12,17 +12,8 @@ import { useState } from "react";
 import { CheckCircle2, CircleDashed, Lock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DialogoCasa } from "@/shared/ui/DialogoCasa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { publicarCurso } from "@/services/capacitacionesService";
 import type { CursoCabecera, ErrorApi } from "@/types/capacitaciones";
@@ -153,33 +144,41 @@ export function PanelPublicacion({
         </div>
       </CardContent>
 
-      <AlertDialog open={confirmando} onOpenChange={(v) => !v && setConfirmando(false)}>
-        <AlertDialogContent className="rel-scope font-rel-body">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-rel-heading text-rel-dark">
-              ¿Publicar la versión {curso.version_actual + 1}?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-rel-muted">
-              La versión queda congelada e inmutable: es lo que da valor probatorio
-              a las constancias que se emitan con ella. No se puede editar ni
-              borrar después, solo publicar una versión nueva.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={publicando}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rel-primary text-rel-primary-foreground hover:bg-rel-primary/90"
-              onClick={(e) => {
-                e.preventDefault();
-                void confirmar();
-              }}
+      <DialogoCasa
+        abierto={confirmando}
+        alCerrar={() => setConfirmando(false)}
+        escena="publicar"
+        antetitulo="Publicación"
+        titulo={`Publicar la versión ${curso.version_actual + 1}`}
+        descripcion={
+          <>
+            Queda <strong className="text-rel-dark">congelada e inmutable</strong>:
+            es lo que da valor probatorio a las constancias que se emitan con
+            ella. Corregir algo después crea la versión siguiente y deja intacta
+            esta, que es la que habrá hecho quien la tome.
+          </>
+        }
+        acciones={
+          <>
+            <Button
+              type="button"
+              variant="relGhost"
               disabled={publicando}
+              onClick={() => setConfirmando(false)}
             >
-              {publicando ? "Publicando…" : "Publicar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="rel"
+              disabled={publicando}
+              onClick={() => void confirmar()}
+            >
+              {publicando ? "Publicando…" : `Congelar la versión ${curso.version_actual + 1}`}
+            </Button>
+          </>
+        }
+      />
     </Card>
   );
 }

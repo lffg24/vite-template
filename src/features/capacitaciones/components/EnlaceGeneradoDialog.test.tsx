@@ -23,10 +23,9 @@ describe("la ventana que muestra el token una sola vez", () => {
     // convertiría una decisión de diseño en una trampa.
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
 
-    const avisos = screen.getAllByRole("alert");
-    const textos = avisos.map((a) => a.textContent ?? "").join(" ");
-    expect(textos).toMatch(/no se puede volver a ver/i);
-    expect(textos).toMatch(/se genera uno nuevo/i);
+    const texto = document.body.textContent ?? "";
+    expect(texto).toMatch(/no se puede volver a ver/i);
+    expect(texto).toMatch(/se genera otro/i);
   });
 
   it("ya NO advierte de que la pantalla del participante falte", () => {
@@ -35,10 +34,7 @@ describe("la ventana que muestra el token una sola vez", () => {
     // enlace que funciona es tan dañino como dejarle repartir uno que no.
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
 
-    const textos = screen
-      .queryAllByRole("alert")
-      .map((a) => a.textContent ?? "")
-      .join(" ");
+    const textos = document.body.textContent ?? "";
     expect(textos).not.toMatch(/todavía no lo repartas/i);
     // Y la advertencia que SÍ sigue siendo cierta no se fue con ella.
     expect(textos).toMatch(/no se puede volver a ver/i);
@@ -91,6 +87,7 @@ describe("la ventana que muestra el token una sola vez", () => {
 
   it("muestra el cupo y el vencimiento para que se reparta con criterio", () => {
     render(<EnlaceGeneradoDialog enlace={ENLACE} alCerrar={vi.fn()} />);
-    expect(screen.getByText(/cupo de 25/i)).toBeInTheDocument();
+    expect(document.body.textContent).toMatch(/admite 25 personas/i);
+    expect(document.body.textContent).toMatch(/vence el/i);
   });
 });

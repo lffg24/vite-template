@@ -7,6 +7,7 @@
 
 import type { ReactNode } from "react";
 import { AlertTriangle, Loader2, Mail, WifiOff } from "lucide-react";
+import { Escena, type NombreEscena } from "@/shared/ui/Escena";
 
 import { BotonSecundario, Panel } from "./ParticipanteLayout";
 import type { ErrorPublico, MotivoPublico } from "@/types/participacion";
@@ -38,43 +39,73 @@ export function Cargando({ etiqueta = "Un momento…" }: { etiqueta?: string }) 
  * Y no lleva botón de reintentar: reintentar no arregla ninguno de los cuatro.
  * Ofrecerlo sería dar una palanca que no hace nada.
  */
+/**
+ * La forma de una pantalla de estado del recorrido público.
+ *
+ * Las tres que había —enlace muerto, módulo no habilitado, hace falta
+ * invitación— eran un panel blanco con un triángulo de aviso y dos frases. Se
+ * veían como un error del sistema, y ninguna lo es: las tres describen una
+ * situación normal que alguien puede resolver.
+ *
+ * Con la escena, el mismo mensaje se lee como algo escrito para quien lo está
+ * leyendo. Y lo que pasa a primer plano es **qué hacer**, no el símbolo de
+ * alarma.
+ */
+function PantallaDeEstado({
+  escena,
+  titulo,
+  children,
+  accion,
+}: {
+  escena: NombreEscena;
+  titulo: string;
+  children: ReactNode;
+  accion?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-1 flex-col justify-center py-6">
+      <div className="mx-auto w-full max-w-md text-center">
+        <Escena nombre={escena} tamano="xl" className="mx-auto" />
+        <h1 className="mt-6 font-rel-heading text-2xl font-black leading-tight text-rel-dark">
+          {titulo}
+        </h1>
+        <div className="mt-3 text-base leading-relaxed text-rel-muted">{children}</div>
+        {accion ? <div className="mt-8">{accion}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+
 export function EnlaceNoDisponible() {
   return (
-    <div className="flex flex-1 flex-col justify-center">
-      <Panel className="text-center">
-        <AlertTriangle
-          className="mx-auto h-8 w-8 text-rel-warning"
-          aria-hidden="true"
-        />
-        <h1 className="mt-4 font-rel-heading text-xl font-bold">
-          Este enlace no está disponible
-        </h1>
-        <p className="mt-3 text-base leading-relaxed text-rel-muted">
-          Comunícate con tu empresa para que te compartan uno nuevo.
-        </p>
-      </Panel>
-      <p className="mt-4 text-center text-sm text-rel-muted">
-        No hay nada que hacer en esta página.
+    <PantallaDeEstado escena="acceso-restringido" titulo="Este enlace ya no sirve">
+      <p>
+        Puede haber vencido, haberse llenado o haberse reemplazado por otro.
       </p>
-    </div>
+      <p className="mt-2">
+        Pídele uno nuevo a quien organiza la capacitación en tu empresa.
+      </p>
+    </PantallaDeEstado>
   );
 }
 
 /** El módulo no está habilitado para esa empresa. Se separa porque se arregla. */
 export function ParticipacionCerrada() {
   return (
-    <div className="flex flex-1 flex-col justify-center">
-      <Panel className="text-center">
-        <AlertTriangle className="mx-auto h-8 w-8 text-rel-warning" aria-hidden="true" />
-        <h1 className="mt-4 font-rel-heading text-xl font-bold">
-          Todavía no está habilitado
-        </h1>
-        <p className="mt-3 text-base leading-relaxed text-rel-muted">
-          Tu empresa aún no tiene activado el acceso a las capacitaciones en
-          línea. Avísales: es algo que ellos pueden resolver.
-        </p>
-      </Panel>
-    </div>
+    <PantallaDeEstado
+      escena="acceso-restringido"
+      titulo="Falta un paso de tu empresa"
+    >
+      <p>
+        El enlace está bien: lo que falta es que activen el acceso a las
+        capacitaciones en línea.
+      </p>
+      <p className="mt-2">
+        Avísale a quien te lo compartió — <strong className="text-rel-dark">se
+        resuelve del lado de ellos</strong> y no tienes que hacer nada más.
+      </p>
+    </PantallaDeEstado>
   );
 }
 

@@ -15,14 +15,8 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Copy, KeyRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import { Ilustracion } from "@/shared/ui/ilustraciones";
 import type { EnlaceCreado } from "@/types/capacitaciones";
 import { formatearFechaHora } from "../formato";
 
@@ -75,60 +69,67 @@ export function EnlaceGeneradoDialog({
   }
 
   return (
-    <Dialog open onOpenChange={(v) => !v && alCerrar()}>
-      <DialogContent className="rel-scope bg-rel-surface font-rel-body sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 font-rel-heading text-rel-dark">
-            <KeyRound className="h-5 w-5 text-rel-primary" aria-hidden="true" />
-            Enlace generado
-          </DialogTitle>
-          <DialogDescription className="text-rel-muted">
-            Para «{enlace.curso}». Vence el {formatearFechaHora(enlace.expira_en)}
-            {enlace.cupo_max != null ? ` · cupo de ${enlace.cupo_max}` : " · sin límite de cupo"}.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div
-          role="alert"
-          className="rounded-rel-card border border-rel-warning/30 bg-rel-warning-subtle p-4 text-sm text-rel-dark"
-        >
-          <p className="font-semibold">Cópialo ahora: no se puede volver a ver.</p>
-          <p className="mt-1">
-            El sistema solo guarda una huella del enlace, no el enlace. Si se
-            pierde, se genera uno nuevo — el anterior seguirá funcionando hasta
-            que lo revoques.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="enlace-url" className="text-sm font-semibold text-rel-dark">
-            Enlace para compartir
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="enlace-url"
-              ref={campoRef}
-              readOnly
-              value={url}
-              onFocus={(e) => e.currentTarget.select()}
-              className="min-w-0 flex-1 rounded-rel-control border border-rel-border bg-rel-surface-subtle px-3 py-2 font-mono text-sm text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-            />
-            <Button type="button" variant="rel" onClick={copiar}>
-              {copiado ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-              {copiado ? "Copiado" : "Copiar"}
-            </Button>
-          </div>
-          <p role="status" aria-live="polite" className="text-sm text-rel-success">
-            {copiado ? "Enlace copiado al portapapeles." : " "}
-          </p>
-        </div>
-
-        <DialogFooter>
-          <Button type="button" variant="relOutline" onClick={alCerrar}>
-            Ya lo copié
+    <DialogoCasa
+      abierto
+      alCerrar={alCerrar}
+      // Sin equis, sin velo y sin `Escape`: al cerrar, el enlace se pierde.
+      // Salir tiene que ser un acto deliberado, y el pie lo dice.
+      cierreRapido={false}
+      antetitulo="Enlace de grupo"
+      titulo="Ya puedes repartirlo"
+      tono="aviso"
+      visual={<Ilustracion nombre="enlace" tamano="lg" />}
+      descripcion={
+        <>
+          Para <strong className="text-rel-dark">{enlace.curso}</strong>. Vence el{" "}
+          {formatearFechaHora(enlace.expira_en)}
+          {enlace.cupo_max != null
+            ? ` y admite ${enlace.cupo_max} personas.`
+            : ", sin límite de personas."}
+        </>
+      }
+      acciones={
+        <Button type="button" variant="relOutline" onClick={alCerrar}>
+          Ya lo copié
+        </Button>
+      }
+    >
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <input
+            id="enlace-url"
+            aria-label="Enlace para compartir"
+            ref={campoRef}
+            readOnly
+            value={url}
+            onFocus={(e) => e.currentTarget.select()}
+            className="min-w-0 flex-1 rounded-rel-control border border-rel-border bg-rel-surface-subtle px-3 py-3 font-mono text-sm text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+          />
+          <Button type="button" variant="rel" size="lg" onClick={copiar}>
+            {copiado ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+            {copiado ? "Copiado" : "Copiar"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+
+        <p role="status" aria-live="polite" className="text-sm font-semibold text-rel-success">
+          {copiado ? "Enlace copiado al portapapeles." : " "}
+        </p>
+
+        {/* El aviso va AQUÍ y no en un recuadro amarillo aparte.
+            El recuadro de alerta se lee como un error del sistema y se ignora
+            por costumbre; dicho junto al campo que hay que copiar, se lee
+            cuando importa — que es antes de cerrar. */}
+        <p className="border-t border-rel-border pt-3 text-sm text-rel-muted">
+          <KeyRound
+            className="mr-1.5 inline h-4 w-4 align-text-bottom text-rel-warning"
+            aria-hidden="true"
+          />
+          El sistema guarda solo una huella, no el enlace:{" "}
+          <strong className="text-rel-dark">al cerrar esta ventana no se puede volver a ver</strong>.
+          Si se pierde, se genera otro y el anterior sigue sirviendo hasta que lo
+          revoques.
+        </p>
+      </div>
+    </DialogoCasa>
   );
 }

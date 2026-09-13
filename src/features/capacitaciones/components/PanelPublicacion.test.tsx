@@ -90,7 +90,8 @@ describe("A-05 · publicación", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /publicar versión 1/i }));
 
-    expect(await screen.findByText(/queda congelada e inmutable/i)).toBeInTheDocument();
+    await screen.findByRole("dialog");
+    expect(document.body.textContent).toMatch(/congelada e inmutable/i);
     expect(publicarCurso).not.toHaveBeenCalled();
 
     // `act` envolviendo el clic: publicar es asincrono, y su `setState` de
@@ -98,7 +99,7 @@ describe("A-05 · publicación", () => {
     // envuelve en `act`; esto si, y ademas deja la prueba comprobando el estado
     // ya asentado.
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /^publicar$/i }));
+      fireEvent.click(screen.getByRole("button", { name: /congelar la versión/i }));
     });
 
     expect(publicarCurso).toHaveBeenCalledWith("c1");
@@ -118,7 +119,7 @@ describe("A-05 · publicación", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /publicar versión 1/i }));
-    fireEvent.click(await screen.findByRole("button", { name: /^publicar$/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /congelar la versión/i }));
 
     expect(await screen.findByText("al menos una lección")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /publicar versión 1/i })).toBeDisabled();

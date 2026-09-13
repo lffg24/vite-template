@@ -17,18 +17,9 @@ import { Archive, ClipboardCheck, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
+import { DialogoCasa } from "@/shared/ui/DialogoCasa";
 import { Panel } from "@/shared/ui/Panel";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -286,36 +277,46 @@ export default function EvaluacionDetallePage() {
             )}
           </SeccionPlegable>
 
-          <AlertDialog open={confirmarPublicar} onOpenChange={setConfirmarPublicar}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2">
-                  <ClipboardCheck className="h-5 w-5" aria-hidden="true" />
-                  Publicar la versión {cuestionario.version_actual + 1}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Se congela una copia con las {actual.preguntas.length} preguntas y
-                  sus respuestas correctas. <strong>No vuelve a cambiar</strong>:
-                  corregir algo después crea la versión siguiente y deja intacta
-                  esta, que es la que habrá respondido quien la tome. Los cursos
-                  que ya usan una versión anterior siguen con la suya hasta que
-                  alguien los cambie.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={publicando}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
+          <DialogoCasa
+            abierto={confirmarPublicar}
+            alCerrar={() => setConfirmarPublicar(false)}
+            escena="publicar"
+            antetitulo="Publicación"
+            titulo={`Publicar la versión ${cuestionario.version_actual + 1}`}
+            descripcion={
+              <>
+                Se congela una copia con las{" "}
+                <strong className="text-rel-dark">
+                  {actual.preguntas.length}{" "}
+                  {actual.preguntas.length === 1 ? "pregunta" : "preguntas"}
+                </strong>{" "}
+                y sus respuestas correctas. No vuelve a cambiar: corregir algo
+                después crea la versión siguiente y deja intacta esta, que es la
+                que habrá respondido quien la tome. Los cursos que ya usan una
+                versión anterior siguen con la suya.
+              </>
+            }
+            acciones={
+              <>
+                <Button
+                  type="button"
+                  variant="relGhost"
                   disabled={publicando}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    void publicar();
-                  }}
+                  onClick={() => setConfirmarPublicar(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  variant="rel"
+                  disabled={publicando}
+                  onClick={() => void publicar()}
                 >
                   {publicando ? "Publicando…" : "Publicar versión"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </>
+            }
+          />
         </>
       ) : null}
     </div>

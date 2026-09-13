@@ -228,7 +228,7 @@ test.describe("Participante · recorrido en el teléfono", () => {
     );
 
     await page.goto(`/c/${TOKEN}`);
-    await expect(page.getByText(/este enlace no está disponible/i)).toBeVisible();
+    await expect(page.getByText(/este enlace ya no sirve/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /reintentar/i })).toHaveCount(0);
     // Y no filtra la causa.
     await expect(page.getByText(/expir|cupo|revoc/i)).toHaveCount(0);

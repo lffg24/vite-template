@@ -45,6 +45,8 @@ export function SeccionPlegable({
   abiertaPorDefecto = true,
   claveMemoria,
   className,
+  abierta: abiertaControlada,
+  alAlternar,
 }: {
   titulo: string;
   /** Línea de apoyo bajo el título. Se ve también plegada. */
@@ -58,9 +60,28 @@ export function SeccionPlegable({
   /** Clave de `localStorage`. Sin ella, la sección no recuerda nada. */
   claveMemoria?: string;
   className?: string;
+  /**
+   * Para controlarla desde fuera: una sección que se pliega sola al guardar.
+   *
+   * Si se pasa, manda ella y el estado interno queda de respaldo. La sección
+   * sigue recordando en `localStorage` igual, porque quien la plegó a mano
+   * espera encontrarla plegada la próxima vez aunque alguien la abra por
+   * código en el medio.
+   */
+  abierta?: boolean;
+  alAlternar?: (abierta: boolean) => void;
 }) {
   const idContenido = useId();
-  const [abierta, setAbierta] = useState(() => leerMemoria(claveMemoria, abiertaPorDefecto));
+  const [abiertaInterna, setAbiertaInterna] = useState(() =>
+    leerMemoria(claveMemoria, abiertaPorDefecto)
+  );
+  const abierta = abiertaControlada ?? abiertaInterna;
+
+  function alternar() {
+    const siguiente = !abierta;
+    setAbiertaInterna(siguiente);
+    alAlternar?.(siguiente);
+  }
 
   useEffect(() => {
     if (!claveMemoria) return;
@@ -81,7 +102,7 @@ export function SeccionPlegable({
       <div className="flex flex-wrap items-center justify-between gap-3 p-6">
         <button
           type="button"
-          onClick={() => setAbierta((v) => !v)}
+          onClick={alternar}
           aria-expanded={abierta}
           aria-controls={idContenido}
           className="group flex min-w-0 flex-1 items-start gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"

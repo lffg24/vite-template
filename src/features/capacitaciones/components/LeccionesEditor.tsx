@@ -15,11 +15,12 @@
 //   pulsar «Publicar», con la lección ya redactada.
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
+import { FilaOrdenable, ListaOrdenable } from "@/shared/ui/ListaOrdenable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,7 +55,7 @@ import {
   agregarLeccion,
   editarLeccion,
   eliminarLeccion,
-  moverLeccion,
+  reordenarLecciones,
 } from "@/services/capacitacionesService";
 import type {
   BloqueLeccion,
@@ -156,7 +157,8 @@ export function LeccionesEditor({
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
   const [errorEvaluacion, setErrorEvaluacion] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
-  const [moviendo, setMoviendo] = useState<string | null>(null);
+  const [moviendo, setMoviendo] = useState(false);
+  const [ordenOptimista, setOrdenOptimista] = useState<string[] | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
   const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
@@ -274,23 +276,27 @@ export function LeccionesEditor({
     }
   }
 
-  async function mover(leccion: Leccion, direccion: "ARRIBA" | "ABAJO") {
-    // Se bloquean TODOS los botones mientras uno viaja, no solo el pulsado: dos
-    // movimientos lanzados sobre la misma lista dejan un orden que no es el que
-    // pidió nadie, porque el segundo se calculó con posiciones ya caducas.
-    setMoviendo(leccion.id);
+  async function reordenar(nuevos: string[]) {
+    // Se pinta el orden nuevo ANTES de que responda el servidor. Esperar a la
+    // respuesta para mover la fila hace que la lección salte de vuelta al sitio
+    // de origen durante un instante, y arrastrar se siente roto aunque
+    // funcione. Si falla, se recarga y vuelve al orden real.
+    setOrdenOptimista(nuevos);
+    setMoviendo(true);
     try {
-      await moverLeccion(cursoId, leccion.id, direccion);
+      await reordenarLecciones(cursoId, nuevos);
       await alCambiar();
     } catch (e) {
       const err = e as ErrorApi;
       toast({
         variant: "destructive",
-        title: "No pudimos mover la lección",
+        title: "No pudimos guardar el orden",
         description: err.message,
       });
+      await alCambiar();
     } finally {
-      setMoviendo(null);
+      setOrdenOptimista(null);
+      setMoviendo(false);
     }
   }
 
@@ -316,6 +322,15 @@ export function LeccionesEditor({
       setEliminando(false);
     }
   }
+
+  // Mientras el servidor confirma, manda el orden local. `ordenOptimista`
+  // lleva ids y no lecciones: así no hay dos copias de los datos que puedan
+  // desincronizarse, solo dos opiniones sobre el orden.
+  const visibles = ordenOptimista
+    ? ordenOptimista
+        .map((id) => lecciones.find((l) => l.id === id))
+        .filter((l): l is Leccion => Boolean(l))
+    : lecciones;
 
   const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
 
@@ -357,17 +372,25 @@ export function LeccionesEditor({
             }
           />
         ) : (
-          <ol className="space-y-3">
-            {lecciones.map((l, i) => (
-              <li
+          <ListaOrdenable
+            ids={visibles.map((l) => l.id)}
+            alReordenar={(nuevos) => void reordenar(nuevos)}
+            deshabilitada={!editable || moviendo}
+          >
+            {visibles.map((l, i) => (
+              <FilaOrdenable
                 key={l.id}
-                className="flex flex-wrap items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 sm:flex-nowrap"
+                id={l.id}
+                etiqueta={l.titulo}
+                deshabilitada={!editable || moviendo}
+                className="bg-rel-surface-subtle"
               >
+                <div className="flex flex-wrap items-start gap-3 sm:flex-nowrap">
                 <span
                   className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rel-canvas font-rel-heading text-sm font-bold tabular-nums text-rel-dark"
                   aria-hidden="true"
                 >
-                  {l.orden}
+                  {i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -395,30 +418,6 @@ export function LeccionesEditor({
                 </div>
                 {editable ? (
                   <div className="flex shrink-0 gap-1">
-                    {/* Subir y bajar, no arrastrar. Arrastrar es agradable con
-                        ratón y no existe con teclado; estos dos botones los
-                        opera cualquiera, y el orden es un dato normativo del
-                        curso como para dejarlo detrás de un gesto. */}
-                    <Button
-                      variant="relGhost"
-                      size="sm"
-                      disabled={i === 0 || moviendo !== null}
-                      onClick={() => void mover(l, "ARRIBA")}
-                      aria-label={`Subir la lección ${l.titulo}`}
-                    >
-                      <ArrowUp aria-hidden="true" />
-                      <span className="sr-only">Subir</span>
-                    </Button>
-                    <Button
-                      variant="relGhost"
-                      size="sm"
-                      disabled={i === lecciones.length - 1 || moviendo !== null}
-                      onClick={() => void mover(l, "ABAJO")}
-                      aria-label={`Bajar la lección ${l.titulo}`}
-                    >
-                      <ArrowDown aria-hidden="true" />
-                      <span className="sr-only">Bajar</span>
-                    </Button>
                     <Button
                       variant="relGhost"
                       size="sm"
@@ -440,20 +439,12 @@ export function LeccionesEditor({
                     </Button>
                   </div>
                 ) : null}
-              </li>
+                </div>
+              </FilaOrdenable>
             ))}
-          </ol>
+          </ListaOrdenable>
         )}
 
-        {lecciones.length > 1 && editable ? (
-          <p className="mt-4 flex items-start gap-2 font-rel-body text-sm text-rel-muted">
-            <GripVertical className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            El orden lo lleva el servidor: cada lección nueva va al final, al
-            eliminar una se renumeran las siguientes, y subir o bajar
-            intercambia con la vecina. Cambiarlo aquí no altera ninguna versión
-            ya publicada: forma la siguiente.
-          </p>
-        ) : null}
 
       {/* --- alta y edición --- */}
       <Sheet

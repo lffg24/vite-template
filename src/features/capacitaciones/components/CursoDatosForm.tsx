@@ -81,6 +81,7 @@ export function CursoDatosForm({
   const original = useMemo(() => aBorrador(curso), [curso]);
   const [valores, setValores] = useState<Borrador>(original);
   const [guardando, setGuardando] = useState(false);
+  const [plegada, setPlegada] = useState(false);
   const [errores, setErrores] = useState<Partial<Record<keyof Borrador, string>>>({});
 
   // Si el curso se recarga (por ejemplo tras publicar), el formulario vuelve a
@@ -137,6 +138,7 @@ export function CursoDatosForm({
     try {
       await editarCurso(curso.id, cambios);
       toast({ title: "Cambios guardados" });
+      setPlegada(true);
       await alGuardar();
     } catch (e) {
       const err = e as ErrorApi;
@@ -154,6 +156,12 @@ export function CursoDatosForm({
     <SeccionPlegable
       titulo="Datos del curso"
       claveMemoria="abril360.capacitaciones.curso.datos"
+      // Se pliega sola al guardar. La sección ocupa media pantalla y, una vez
+      // guardada, lo único que hace es empujar hacia abajo lo que falta. Se
+      // pliega DESPUÉS de que el servidor confirme, no al pulsar: plegarla
+      // antes escondería el formulario mientras todavía puede fallar.
+      abierta={plegada ? false : undefined}
+      alAlternar={(abierta) => setPlegada(!abierta)}
       descripcion="Categoría, intensidad y vigencia. Son los datos que el validador exige para publicar."
       // La insignia va en la cabecera y no dentro del formulario a propósito:
       // plegada la sección, es lo único que queda visible, y «sin guardar» es

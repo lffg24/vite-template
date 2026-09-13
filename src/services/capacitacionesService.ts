@@ -211,6 +211,26 @@ export async function moverLeccion(
   }
 }
 
+/**
+ * Fija el orden COMPLETO de las lecciones. Lo usa el arrastre.
+ *
+ * Se manda la lista entera y no «la lección X a la posición N»: con la lista
+ * completa el servidor comprueba que la pantalla conocía exactamente las mismas
+ * lecciones, y rechaza con un 409 si no. Arrastrar de la 1 a la 5 con la
+ * operación relativa serían cuatro llamadas encadenadas, y cuatro sitios donde
+ * una se pierde.
+ */
+export async function reordenarLecciones(
+  cursoId: string,
+  orden: string[]
+): Promise<void> {
+  try {
+    await api.post(`${BASE}/cursos/${cursoId}/lecciones/orden`, { orden });
+  } catch (e) {
+    throw errorApi(e, "No pudimos guardar el nuevo orden.");
+  }
+}
+
 // --- A-05 · publicación -----------------------------------------------------------
 
 /**

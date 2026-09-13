@@ -299,7 +299,7 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
 
     // La confirmación dice qué se está congelando ANTES de congelarlo.
     await expect(page.getByText(/queda congelada e inmutable/i)).toBeVisible();
-    await page.getByRole("button", { name: /^publicar$/i }).click();
+    await page.getByRole("button", { name: /congelar la versión/i }).click();
 
     // --- 5 · A-11 · asignar la versión recién publicada ------------------------
     await page.goto("/capacitaciones/asignaciones");
@@ -332,8 +332,13 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     // `/c/:token` empezó a existir. Se comprueba que no volvió, porque decirle a
     // alguien que no reparta un enlace que funciona hace tanto daño como
     // dejarle repartir uno que no.
-    await expect(page.getByRole("alert").first()).toContainText(/no se puede volver a ver/i);
-    await expect(page.getByRole("alert")).toHaveCount(1);
+    await expect(page.getByRole("dialog")).toContainText(/no se puede volver a ver/i);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+    expect(
+      ((await page.getByRole("dialog").textContent()) ?? "").match(
+        /no se puede volver a ver/gi
+      )?.length
+    ).toBe(1);
     await expect(page.getByLabel(/enlace para compartir/i)).toHaveValue(
       /token-de-prueba-no-real/
     );
