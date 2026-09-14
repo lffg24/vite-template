@@ -28,6 +28,7 @@ const groups: NavigationGroup[] = [
     { label: "Mi perfil", to: "/psicosocial/perfil", icon: Users },
   ] },
   { label: "Capacitación", icon: BookOpen, children: [
+    { label: "Inicio", to: "/capacitaciones/inicio", icon: Gauge },
     { label: "Catálogo", to: "/capacitaciones/cursos", icon: BookOpen },
     { label: "Asignaciones", to: "/capacitaciones/asignaciones", icon: Users },
     { label: "Participantes", to: "/capacitaciones/participantes", icon: UsersRound },

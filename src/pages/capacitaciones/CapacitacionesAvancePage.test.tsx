@@ -252,10 +252,11 @@ describe("Avance · quién va por dónde", () => {
  */
 describe("la exportación no se puede convertir en una fórmula", () => {
   it("desarma los cuatro inicios que una hoja de cálculo interpreta", () => {
-    expect(celdaCSV("=1+1")).toBe(`"'=1+1"`);
-    expect(celdaCSV("+34600000000")).toBe(`"'+34600000000"`);
-    expect(celdaCSV("-5")).toBe(`"'-5"`);
-    expect(celdaCSV("@SUM(A1)")).toBe(`"'@SUM(A1)"`);
+    expect(celdaCSV("=1+1")).toBe(`"\t=1+1"`);
+    expect(celdaCSV("+34600000000")).toBe(`"\t+34600000000"`);
+    expect(celdaCSV("-5")).toBe(`"\t-5"`);
+    expect(celdaCSV("@SUM(A1)")).toBe(`"\t@SUM(A1)"`);
+    expect(celdaCSV("\r\n=1+1")).toBe(`"\t=1+1"`);
   });
 
   it("no toca lo que no lo necesita, y sigue escapando comillas", () => {

@@ -166,7 +166,7 @@ const CABECERA_CSV = [
  *
  * Ver la descripción de OWASP como «CSV Injection».
  */
-const INICIOS_DE_FORMULA = /^[=+@\-\t\r]/;
+const INICIOS_DE_FORMULA = /^[=+@\-]/;
 
 /**
  * Escapa una celda de CSV y la desarma como fórmula.
@@ -175,12 +175,13 @@ const INICIOS_DE_FORMULA = /^[=+@\-\t\r]/;
  * los cargos traen punto y coma, y una exportación que se rompe en la fila 40 se
  * descubre cuando ya está en el correo de alguien.
  *
- * Y con una comilla simple delante cuando empieza por algo que la hoja leería
- * como fórmula. La comilla simple es la marca que esas hojas entienden como
- * «esto es texto»: no se ve en la celda y el valor se lee igual.
+ * Descarta controles iniciales y antepone una tabulación dentro de la celda
+ * entrecomillada a los valores que empiezan como fórmula. La comilla simple
+ * no sobrevive de forma fiable al ciclo de guardar y volver a abrir en Excel.
  */
 export function celdaCSV(valor: string): string {
-  const seguro = INICIOS_DE_FORMULA.test(valor) ? `'${valor}` : valor;
+  const limpio = valor.replace(/^[\u0000-\u001f\ufeff]+/, "");
+  const seguro = INICIOS_DE_FORMULA.test(limpio) ? `\t${limpio}` : limpio;
   return `"${seguro.replace(/"/g, '""')}"`;
 }
 
