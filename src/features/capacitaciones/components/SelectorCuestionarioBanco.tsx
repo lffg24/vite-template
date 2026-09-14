@@ -42,10 +42,14 @@ export function SelectorCuestionarioBanco({
 }) {
   const [versiones, setVersiones] = useState<VersionElegible[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // La que la lección traía AL ABRIR, y solo esa. Lo que el usuario elija
+  // después ya está en la lista, así que repetir la petición por cada cambio del
+  // desplegable sería una consulta por clic para recibir lo mismo.
+  const [elegidaAlAbrir] = useState(() => valor || null);
 
   useEffect(() => {
     let vigente = true;
-    listarVersionesElegibles(valor || null)
+    listarVersionesElegibles(elegidaAlAbrir)
       .then((v) => {
         if (vigente) setVersiones(v);
       })
@@ -55,10 +59,7 @@ export function SelectorCuestionarioBanco({
     return () => {
       vigente = false;
     };
-    // Se relee al cambiar `valor` para que la elegida viaje siempre en la
-    // petición. Sin eso, abrir una lección cuya versión fue sustituida pedía la
-    // lista sin ella y el desplegable quedaba vacío.
-  }, [valor]);
+  }, [elegidaAlAbrir]);
 
   const elegida = versiones?.find((v) => v.version_id === valor) ?? null;
 
