@@ -1,161 +1,77 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, LogOut, type LucideIcon } from "lucide-react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { ChevronDown, ChevronLeft, ChevronRight, LogOut, Menu } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 import evaIsotipoWhite from "@/assets/eva-isotipo-white.png";
 import AbrilWordmark from "@/components/brand/AbrilWordmark";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import type { NavigationEntry, NavigationItem } from "../navigationTree";
 
-export type RoleSidebarItem = {
-  label: string;
-  to: string;
-  icon: LucideIcon;
+export type RoleSidebarItem = NavigationItem;
+type Props = {
+  items: NavigationEntry[]; storageKey: string; tone?: "legacy" | "rel";
+  brandTitle?: string; brandSubtitle?: string; avatarText: string;
+  userTitle: string; userSubtitle: string; navLabel: string;
+  footerTitle?: string; footerLink?: string; footerLinkLabel?: string;
+  loading?: boolean; error?: string | null; onRetry?: () => void;
 };
+const activeRoute = (current: string, target: string) => current === target || current.startsWith(`${target}/`);
 
-type RoleSidebarProps = {
-  items: RoleSidebarItem[];
-  storageKey: string;
-  /** Permite migrar una superficie a la identidad vigente sin alterar las demás. */
-  tone?: "legacy" | "rel";
-  brandTitle?: string;
-  brandSubtitle?: string;
-  avatarText: string;
-  userTitle: string;
-  userSubtitle: string;
-  navLabel: string;
-  footerTitle?: string;
-  footerLink?: string;
-  footerLinkLabel?: string;
-};
-
-function isMenuActive(currentPath: string, targetPath: string) {
-  if (targetPath.endsWith("/dashboard")) return currentPath === targetPath;
-  return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
-}
-
-export default function RoleSidebar({
-  items,
-  storageKey,
-  tone = "legacy",
-  brandTitle = "ABRIL-360",
-  brandSubtitle,
-  avatarText,
-  userTitle,
-  userSubtitle,
-  navLabel,
+export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitle = "ABRIL360",
+  brandSubtitle, avatarText, userTitle, userSubtitle, navLabel,
   footerTitle = `© ${new Date().getFullYear()} REL Consilium SAS`,
-  footerLink = "https://relconsilium.com/",
-  footerLinkLabel = "relconsilium.com",
-}: RoleSidebarProps) {
+  footerLink = "https://relconsilium.com/", footerLinkLabel = "relconsilium.com",
+  loading = false, error = null, onRetry }: Props) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(storageKey) === "1");
-  const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 639px)").matches);
-  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
   const location = useLocation();
+  const rel = tone === "rel";
+  useEffect(() => { localStorage.setItem(storageKey, collapsed ? "1" : "0"); }, [collapsed, storageKey]);
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  useEffect(() => {
-    localStorage.setItem(storageKey, collapsed ? "1" : "0");
-  }, [collapsed, storageKey]);
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 639px)");
-    const actualizar = () => setMobile(media.matches);
-    media.addEventListener("change", actualizar);
-    return () => media.removeEventListener("change", actualizar);
-  }, []);
-
-  const compact = collapsed || mobile;
-  const ancho = compact ? (mobile ? 72 : 84) : 292;
-  const currentBrand = tone === "rel";
-
-  return (
-    <aside
-      className={`min-h-screen shrink-0 overflow-hidden text-white shadow-2xl transition-all duration-300 ${currentBrand ? "bg-rel-dark" : "bg-[#071329]"}`}
-      style={{ width: ancho, minWidth: ancho, maxWidth: ancho }}
-    >
-      <div className="flex h-full flex-col p-4">
-        <div className="mb-6 flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg ${currentBrand ? "shadow-black/20" : "shadow-violet-950/30"}`}>
-              <img src={evaIsotipoWhite} alt="" className="h-full w-full object-contain" aria-hidden="true" />
-            </div>
-            {!compact && (
-              <div className="min-w-0">
-                {brandTitle === "ABRIL360" || brandTitle === "ABRIL-360" ? (
-                  <AbrilWordmark className="block truncate text-2xl font-black" accentClassName={currentBrand ? "text-rel-sky" : "text-violet-300"} />
-                ) : (
-                  <div className="truncate text-2xl font-black">{brandTitle}</div>
-                )}
-                {brandSubtitle ? <div className="truncate text-xs text-slate-400">{brandSubtitle}</div> : null}
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setCollapsed((value) => !value)}
-            title={compact ? "Expandir menú" : "Contraer menú"}
-            className={`${mobile ? "hidden" : "grid"} h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white`}
-          >
-            {compact ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </button>
-        </div>
-
-        <div className={`${compact ? "items-center justify-center p-2" : "gap-3 p-3"} mb-5 flex rounded-2xl border border-white/10 bg-white/5`}>
-          <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full font-bold ${currentBrand ? "bg-rel-accent" : "bg-violet-600"}`}>{avatarText}</div>
-          {!compact && (
-            <div className="min-w-0">
-              <div className="truncate font-bold">{userTitle}</div>
-              <div className={`truncate text-sm ${currentBrand ? "text-teal-100" : "text-violet-200"}`}>{userSubtitle}</div>
-            </div>
-          )}
-        </div>
-
-        <nav className="flex-1 space-y-1.5" aria-label={navLabel}>
-          {items.map((item) => {
-            const Icon = item.icon;
-            const active = isMenuActive(location.pathname, item.to);
-            return (
-              <button
-                key={item.to}
-                type="button"
-                title={compact ? item.label : undefined}
-                aria-current={active ? "page" : undefined}
-                onClick={() => {
-                  if (location.pathname !== item.to) navigate(item.to);
-                }}
-                className={[
-                  "group flex w-full items-center rounded-2xl text-left text-sm font-semibold transition",
-                  compact ? "justify-center px-0 py-3" : "gap-3 px-4 py-3",
-                  active
-                    ? (currentBrand ? "bg-rel-accent text-white shadow-lg shadow-black/20" : "bg-violet-600 text-white shadow-lg shadow-violet-950/30")
-                    : "text-slate-300 hover:bg-white/10 hover:text-white",
-                ].join(" ")}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!compact && <span className="truncate">{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-
-        {!compact && (
-          <div className="mt-5 border-t border-white/10 pt-4 text-xs leading-5 text-slate-400">
-            <div>{footerTitle}</div>
-            {footerLink ? (
-              <a href={footerLink} target="_blank" rel="noreferrer" className={currentBrand ? "text-teal-100 hover:text-white" : "text-violet-200 hover:text-white"}>
-                {footerLinkLabel}
-              </a>
-            ) : null}
-          </div>
-        )}
-
-        <NavLink
-          to="/logout"
-          title={compact ? "Cerrar sesión" : undefined}
-          className={`${compact ? "justify-center px-0" : "gap-3 px-4"} mt-4 flex items-center rounded-2xl py-3 text-sm font-semibold text-slate-300 hover:bg-white/10`}
-        >
-          <LogOut className="h-5 w-5" />
-          {!compact && "Cerrar sesión"}
-        </NavLink>
+  const renderContent = (compact: boolean, mobile = false) => <div className="flex h-full min-h-0 flex-col p-4">
+    <div className="mb-5 flex items-center justify-between gap-2">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2"><img src={evaIsotipoWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" /></span>
+        {!compact && <span className="min-w-0"><AbrilWordmark className="block truncate text-2xl font-black" accentClassName={rel ? "text-rel-sky" : "text-violet-300"} /><span className="block truncate text-xs text-slate-300">{brandSubtitle}</span></span>}
       </div>
-    </aside>
-  );
+      {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}</button>}
+    </div>
+    <div className={`mb-4 flex items-center rounded-2xl border border-white/10 bg-white/5 ${compact ? "justify-center p-2" : "gap-3 p-3"}`}>
+      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold ${rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600"}`}>{avatarText}</span>
+      {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-slate-300">{userSubtitle}</span></span>}
+    </div>
+    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+      {loading && <p role="status" className="px-3 py-4 text-sm text-slate-300">Cargando menú…</p>}
+      {error && <div role="alert" className="rounded-xl border border-white/20 p-3 text-sm"><p>{error}</p><button type="button" onClick={onRetry} className="mt-2 underline focus-visible:ring-2 focus-visible:ring-rel-sky">Reintentar</button></div>}
+      {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-slate-300">No hay opciones habilitadas para esta cuenta.</p>}
+      {items.map(entry => {
+        if ("to" in entry) {
+          const Icon = entry.icon;
+          const active = activeRoute(location.pathname, entry.to);
+          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? (rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600 text-white") : "text-slate-200 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
+        }
+        const Icon = entry.icon;
+        const active = entry.children.some(child => activeRoute(location.pathname, child.to));
+        const expanded = openGroups.includes(entry.label) || (active && !openGroups.includes(`closed:${entry.label}`));
+        return <div key={entry.label} className="rounded-xl border border-white/10">
+          <button type="button" aria-expanded={!compact && expanded} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
+            if (compact) { setCollapsed(false); setOpenGroups(v => [...v, entry.label]); return; }
+            setOpenGroups(v => expanded ? [...v.filter(x => x !== entry.label), `closed:${entry.label}`] : [...v.filter(x => x !== `closed:${entry.label}`), entry.label]);
+          }} className={`flex w-full items-center rounded-xl text-left text-sm font-semibold text-slate-100 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center p-3" : "gap-3 px-3 py-2.5"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <><span className="min-w-0 flex-1">{entry.label}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} /></>}</button>
+          {!compact && expanded && <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
+            const ChildIcon = child.icon;
+            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
+          })}</div>}
+        </div>;
+      })}
+    </nav>
+    {!compact && <div className="mt-3 border-t border-white/10 pt-3 text-xs leading-5 text-slate-300"><div>{footerTitle}</div>{footerLink && <a href={footerLink} target="_blank" rel="noreferrer" className="underline hover:text-white">{footerLinkLabel}</a>}</div>}
+    <NavLink to="/logout" title={compact ? "Cerrar sesión" : undefined} className={`mt-3 flex items-center rounded-xl py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center" : "gap-3 px-3"}`}><LogOut className="h-5 w-5" />{!compact && "Cerrar sesión"}</NavLink>
+  </div>;
+
+  return <>
+    <div className="flex w-full items-center gap-3 bg-rel-dark px-4 py-3 text-white sm:hidden"><Sheet open={mobileOpen} onOpenChange={setMobileOpen}><SheetTrigger asChild><button type="button" aria-label="Abrir menú" className="rounded-lg p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky"><Menu className="h-6 w-6" /></button></SheetTrigger><SheetContent side="left" className="w-[min(88vw,340px)] border-0 bg-rel-dark p-0 text-white"><SheetTitle className="sr-only">Menú de Abril360</SheetTitle>{renderContent(false, true)}</SheetContent></Sheet><AbrilWordmark className="text-xl font-black" accentClassName="text-rel-sky" /></div>
+    <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-lg sm:sticky sm:top-0 sm:block ${rel ? "bg-rel-dark" : "bg-[#071329]"}`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
+  </>;
 }

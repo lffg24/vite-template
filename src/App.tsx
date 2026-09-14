@@ -75,6 +75,8 @@ const SuperAdminEmpresasPage = lazy(() => import("@/pages/superadmin/SuperAdminE
 const SuperAdminPsicologosPage = lazy(() => import("@/pages/superadmin/SuperAdminPsicologosPage"));
 const SuperAdminCreditosPage = lazy(() => import("@/pages/superadmin/SuperAdminCreditosPage"));
 const SuperAdminRolesPermisosPage = lazy(() => import("@/pages/superadmin/SuperAdminRolesPermisosPage"));
+const SuperAdminUsuariosPage = lazy(() => import("@/pages/superadmin/SuperAdminUsuariosPage"));
+const ActivarCuenta = lazy(() => import("@/pages/ActivarCuenta"));
 const SuperAdminAuditoriaPage = lazy(() => import("@/pages/superadmin/SuperAdminAuditoriaPage"));
 const SuperAdminPlaceholderPage = lazy(() => import("@/pages/superadmin/SuperAdminPlaceholderPage"));
 
@@ -98,6 +100,7 @@ function App() {
         <Routes>
           {/* Públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/activar-cuenta" element={<ActivarCuenta />} />
           <Route path="/recuperar-clave" element={<SolicitarRecuperacionClave />} />
           <Route path="/restablecer-clave" element={<RestablecerClave />} />
           <Route path="/logout" element={<Logout />} />
@@ -145,6 +148,7 @@ function App() {
               <Route path="psicologos" element={<SuperAdminPsicologosPage />} />
               <Route path="creditos" element={<SuperAdminCreditosPage />} />
               <Route path="roles-permisos" element={<SuperAdminRolesPermisosPage />} />
+              <Route path="usuarios" element={<SuperAdminUsuariosPage />} />
               <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
               <Route path="planes" element={<SuperAdminPlaceholderPage title="Planes y suscripciones" />} />
               <Route path="configuracion" element={<SuperAdminPlaceholderPage title="Configuración global" />} />

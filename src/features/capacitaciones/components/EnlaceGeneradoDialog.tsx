@@ -76,7 +76,7 @@ export function EnlaceGeneradoDialog({
 
   return (
     <Dialog open onOpenChange={(v) => !v && alCerrar()}>
-      <DialogContent className="rel-scope bg-rel-surface font-rel-body sm:max-w-xl">
+      <DialogContent showClose={false} className="rel-scope bg-rel-surface font-rel-body sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-rel-heading text-rel-dark">
             <KeyRound className="h-5 w-5 text-rel-primary" aria-hidden="true" />

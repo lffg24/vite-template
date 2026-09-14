@@ -13,7 +13,7 @@ const resourceLinks = [
 export default function PsicologoLayout() {
   return (
     <PsicoEmpresaActivaProvider>
-      <div className="flex min-h-screen bg-slate-50">
+      <div className="flex min-h-screen flex-col bg-rel-canvas sm:flex-row">
         <PsicologoSidebar />
         <main className="flex min-w-0 flex-1 flex-col p-6">
           <div className="min-w-0 flex-1">

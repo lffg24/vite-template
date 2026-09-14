@@ -1,42 +1,44 @@
-import { render, screen } from "@testing-library/react";
-import { Building2 } from "lucide-react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { describe, expect, it } from "vitest";
 import RoleSidebar from "./RoleSidebar";
+import { projectNavigation } from "../navigationTree";
 
-beforeEach(() => {
-  window.matchMedia = vi.fn().mockImplementation(() => ({
-    matches: false,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-  }));
-});
+function sidebar(destinos: string[]) {
+  return render(<MemoryRouter initialEntries={["/superadmin/empresas"]}><RoleSidebar
+    items={projectNavigation(destinos)} storageKey="sidebar-navigation-test" tone="rel"
+    avatarText="SA" userTitle="Administrador" userSubtitle="Plataforma"
+    navLabel="Navegación principal" footerLink=""
+  /></MemoryRouter>);
+}
 
-const sidebar = (tone: "legacy" | "rel") => (
-  <MemoryRouter initialEntries={["/superadmin/empresas"]}>
-    <RoleSidebar
-      items={[{ to: "/superadmin/empresas", label: "Empresas", icon: Building2 }]}
-      storageKey={`sidebar-test-${tone}`}
-      tone={tone}
-      avatarText="SA"
-      userTitle="Administrador"
-      userSubtitle="Plataforma"
-      navLabel="Navegación SuperAdmin"
-      footerLink=""
-    />
-  </MemoryRouter>
-);
+describe("navegación compartida", () => {
+  it("muestra una sola opción como enlace directo con icono", () => {
+    sidebar(["/superadmin/empresas"]);
+    const enlaces = screen.getAllByRole("link", { name: "Empresas" });
+    expect(enlaces.length).toBeGreaterThan(0);
+    expect(enlaces[0].querySelector("svg")).not.toBeNull();
+    expect(screen.queryByRole("button", { name: "Administración" })).toBeNull();
+  });
 
-describe("RoleSidebar", () => {
-  it("usa la identidad vigente en SuperAdmin sin cambiar las otras superficies", () => {
-    const actual = render(sidebar("rel"));
-    expect(screen.getByRole("button", { name: "Empresas" })).toHaveClass("bg-rel-accent");
-    expect(screen.getByRole("complementary")).toHaveClass("bg-rel-dark");
+  it("agrupa opciones autorizadas, conserva iconos y abre panel móvil", () => {
+    sidebar(["/superadmin/empresas", "/superadmin/usuarios"]);
+    const group = screen.getAllByRole("button", { name: "Administración" })[0];
+    expect(group).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("link", { name: "Usuarios" })[0].querySelector("svg")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Abrir menú" }));
+    expect(screen.getByRole("dialog", { name: "Menú de Abril360" })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "Menú de Abril360" })).not.toBeInTheDocument();
+  });
 
-    actual.unmount();
-    render(sidebar("legacy"));
-    expect(screen.getByRole("button", { name: "Empresas" })).toHaveClass("bg-violet-600");
-    expect(screen.getByRole("complementary")).toHaveClass("bg-[#071329]");
+  it("no dibuja destinos ausentes y comunica el error con reintento", () => {
+    const view = sidebar(["/superadmin/empresas"]);
+    view.rerender(<MemoryRouter><RoleSidebar items={[]} storageKey="sidebar-navigation-test"
+      avatarText="SA" userTitle="Administrador" userSubtitle="Plataforma"
+      navLabel="Navegación principal" error="No pudimos cargar tu navegación."
+      onRetry={() => undefined} /></MemoryRouter>);
+    expect(screen.queryByRole("link", { name: "Empresas" })).toBeNull();
+    expect(screen.getAllByRole("alert")[0]).toHaveTextContent("No pudimos cargar");
   });
 });
