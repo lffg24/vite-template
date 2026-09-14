@@ -19,6 +19,7 @@ import {
   BookOpen,
   ClipboardCheck,
   FileBadge,
+  LayoutDashboard,
   Link2,
   Send,
   ShieldCheck,
@@ -47,6 +48,15 @@ type EntradaDelMenu = RoleSidebarItem & {
 // defecto que este cambio corrige— esconder una sección que el usuario SÍ puede
 // operar la vuelve inencontrable.
 const NAVEGACION: EntradaDelMenu[] = [
+  {
+    // La primera del menu y la portada del modulo. Solo para quien puede
+    // asignar: el tablero cuenta lo que pasa en UNA empresa, y quien solo
+    // redacta catalogo no opera ninguna.
+    to: "/capacitaciones/inicio",
+    label: "Inicio",
+    icon: LayoutDashboard,
+    visible: (c) => Boolean(c?.puede_asignar),
+  },
   {
     to: "/capacitaciones/cursos",
     label: "Catálogo",

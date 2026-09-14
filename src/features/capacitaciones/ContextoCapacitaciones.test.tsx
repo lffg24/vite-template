@@ -39,13 +39,28 @@ beforeEach(() => {
 });
 
 describe("rutaInicial", () => {
-  it("manda a asignaciones a quien solo puede asignar", () => {
+  it("manda al tablero a quien opera una empresa", () => {
     // El defecto que arregla: aterrizar siempre en el catálogo llevaba a un 403
     // a quien no lo puede editar, y un 403 en la primera pantalla parece una
     // avería del sistema, no un límite de permisos.
+    //
+    // Y desde que el módulo tiene portada, el destino es esa y no la lista de
+    // asignaciones: quien opera una empresa necesita saber qué está pasando
+    // antes que ver un inventario.
     expect(rutaInicial(contexto({ puede_asignar: true, tiene_acceso: true }))).toBe(
-      "/capacitaciones/asignaciones"
+      "/capacitaciones/inicio"
     );
+  });
+
+  it("el tablero gana al catálogo cuando se pueden las dos cosas", () => {
+    // Contraprueba del orden. El catálogo es de PLATAFORMA y no cuenta nada de
+    // ninguna empresa; quien además puede asignar tiene una empresa que operar,
+    // y es lo que necesita ver al entrar.
+    expect(
+      rutaInicial(
+        contexto({ puede_asignar: true, puede_editar_catalogo: true, tiene_acceso: true })
+      )
+    ).toBe("/capacitaciones/inicio");
   });
 
   it("manda al catálogo a quien lo puede editar o publicar", () => {
@@ -131,13 +146,13 @@ describe("IndiceCapacitaciones", () => {
           <Routes>
             <Route path="/capacitaciones" element={<IndiceCapacitaciones />} />
             <Route path="/capacitaciones/cursos" element={<p>catálogo</p>} />
-            <Route path="/capacitaciones/asignaciones" element={<p>asignaciones</p>} />
+            <Route path="/capacitaciones/inicio" element={<p>tablero</p>} />
           </Routes>
         </ProveedorCapacitaciones>
       </MemoryRouter>
     );
 
-    expect(await screen.findByText("asignaciones")).toBeInTheDocument();
+    expect(await screen.findByText("tablero")).toBeInTheDocument();
     expect(screen.queryByText("catálogo")).not.toBeInTheDocument();
   });
 });

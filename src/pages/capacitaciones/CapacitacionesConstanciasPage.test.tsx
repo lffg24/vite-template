@@ -28,6 +28,11 @@ function constancia(over: Partial<ConstanciaResumen> = {}): ConstanciaResumen {
     vence_el: "2027-05-10",
     anulada_en: null,
     anulacion_motivo: null,
+    // Los tres los calcula el servidor al leer. El fixture los declara para que
+    // una pantalla que los ignorara no pasara por casualidad.
+    situacion: "VIGENTE",
+    dias_para_vencer: 400,
+    por_vencer: false,
     ...over,
   };
 }
@@ -310,5 +315,58 @@ describe("el motivo de la anulación es accesible", () => {
     const id = insignia.getAttribute("aria-describedby");
     expect(id).toBeTruthy();
     expect(document.getElementById(id!)).toHaveTextContent(/curso equivocado/i);
+  });
+});
+
+
+describe("el vencimiento se ve ANTES de que ocurra", () => {
+  // La vigencia se calculaba y nadie avisaba: una constancia se vencía sola y se
+  // descubría cuando alguien iba a buscarla, que en SST suele ser durante una
+  // auditoría.
+
+  it("una que está por vencer lo dice, y dice cuánto queda", async () => {
+    vi.mocked(listarConstancias).mockResolvedValue([
+      constancia({ por_vencer: true, dias_para_vencer: 45 }),
+    ]);
+    montar();
+
+    expect(await screen.findAllByText("Por vencer")).not.toHaveLength(0);
+    // En los términos con los que se decide algo: «2026-11-12» hay que restarlo
+    // mentalmente y nadie lo hace al pasar una lista de sesenta filas.
+    expect(screen.getAllByText("Vence en 45 días")).not.toHaveLength(0);
+  });
+
+  it("una ya vencida NO cuenta como vigente en la cabecera", async () => {
+    // Es el número que alguien se lleva a una auditoría. Contar las vencidas
+    // ahí afirmaría una cobertura que no existe.
+    vi.mocked(listarConstancias).mockResolvedValue([
+      constancia({ id: "k1", situacion: "VIGENTE", dias_para_vencer: 400 }),
+      constancia({
+        id: "k2",
+        folio: 13,
+        codigo_verificacion: "WXYZ-9876",
+        situacion: "VENCIDA",
+        dias_para_vencer: -3,
+        vence_el: "2026-09-10",
+      }),
+    ]);
+    montar();
+
+    expect(await screen.findByText(/1 vigente de 2/)).toBeInTheDocument();
+    expect(screen.getByText(/1 vencida/)).toBeInTheDocument();
+    expect(screen.getAllByText("Vencida")).not.toHaveLength(0);
+    // Y `estado` sigue diciendo lo que se escribió: el vencimiento no se
+    // escribe nunca, se deduce de la fecha al leer.
+    expect(screen.queryByText("Anulada")).not.toBeInTheDocument();
+  });
+
+  it("una lejos de vencer no se marca", async () => {
+    // Contraprueba: si el umbral no se aplicara, la lista avisaría de todo y
+    // dejaría de avisar de algo.
+    vi.mocked(listarConstancias).mockResolvedValue([constancia()]);
+    montar();
+
+    expect(await screen.findAllByText("Vigente")).not.toHaveLength(0);
+    expect(screen.queryByText("Por vencer")).not.toBeInTheDocument();
   });
 });

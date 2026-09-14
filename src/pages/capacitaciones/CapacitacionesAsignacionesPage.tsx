@@ -214,6 +214,19 @@ export default function CapacitacionesAsignacionesPage() {
                   soloAcciones: true,
                   celda: (a) => (
                     <div className="flex justify-end gap-1">
+                      {/* «Avance» va primero: es lo que se consulta a diario,
+                          mientras que repartir el acceso se hace una vez. */}
+                      <Button
+                        variant="relOutline"
+                        size="sm"
+                        onClick={() =>
+                          navegar(`/capacitaciones/asignaciones/${a.id}/avance`)
+                        }
+                      >
+                        <Users aria-hidden="true" />
+                        Avance
+                        <span className="sr-only"> de {a.curso_titulo}</span>
+                      </Button>
                       {/* Cada modo tiene UNA vía por la que se entra, y es la
                           que se ofrece como acción principal. La otra se
                           deshabilita con su motivo a la vista: dejarla
@@ -309,6 +322,15 @@ export default function CapacitacionesAsignacionesPage() {
                     quedan 160 px: en dos columnas el rotulo «Invitaciones» se
                     salia de su celda y se montaba sobre el boton vecino. */}
                 <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <Button
+                    variant="rel"
+                    size="sm"
+                    className="w-full sm:col-span-2"
+                    onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/avance`)}
+                  >
+                    <Users aria-hidden="true" />
+                    Avance
+                  </Button>
                   <Button
                     variant="relOutline"
                     size="sm"

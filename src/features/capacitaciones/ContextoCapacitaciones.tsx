@@ -69,10 +69,14 @@ export function useCapacitaciones(): ValorContexto {
  * no con el orden en que se escribieron las pantallas.
  */
 export function rutaInicial(capacidades: ContextoCapacidades | null): string {
+  // El tablero va PRIMERO cuando se puede asignar: es quien opera la empresa el
+  // que necesita saber que hay en marcha. Quien solo redacta catalogo no tiene
+  // empresa que mirar —el catalogo es de plataforma—, asi que para el la
+  // portada util sigue siendo la lista de cursos.
+  if (capacidades?.puede_asignar) return "/capacitaciones/inicio";
   if (capacidades?.puede_editar_catalogo || capacidades?.puede_publicar) {
     return "/capacitaciones/cursos";
   }
-  if (capacidades?.puede_asignar) return "/capacitaciones/asignaciones";
   // Sin ninguna capacidad, el estado del módulo es lo único que puede explicar
   // por qué. Y si tampoco puede verlo, esa pantalla lo dirá sin filtrar nada.
   return "/capacitaciones/estado";

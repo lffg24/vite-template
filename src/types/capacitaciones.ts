@@ -450,6 +450,18 @@ export interface ConstanciaResumen {
   vence_el: string | null;
   anulada_en: string | null;
   anulacion_motivo: string | null;
+  /**
+   * Derivados por el servidor al leer.
+   *
+   * `estado` dice lo que se escribió; `situacion` le suma el vencimiento, que
+   * no se escribe nunca porque es consecuencia de la fecha. Una tarea que
+   * «pasara a VENCIDA» fallaría un día y dejaría constancias afirmando una
+   * vigencia que ya no tienen.
+   */
+  situacion: "VIGENTE" | "VENCIDA" | "ANULADA" | null;
+  dias_para_vencer: number | null;
+  /** Vigente y dentro del umbral de aviso. El umbral lo pone el servidor. */
+  por_vencer: boolean;
 }
 
 export interface ConstanciaEmitidaAdmin {
@@ -574,4 +586,91 @@ export interface InvitacionResumen {
   consumida_en: string | null;
   revocada_en: string | null;
   revocacion_motivo: string | null;
+}
+
+
+// --- seguimiento ---------------------------------------------------------------
+
+/**
+ * En qué punto está una persona dentro de una asignación.
+ *
+ * Cuatro y no tres: «invitado y no ha entrado» y «se le venció la invitación»
+ * parecen lo mismo y piden acciones distintas —a uno se le recuerda, al otro
+ * hay que volver a invitarlo—.
+ */
+export type SituacionParticipante =
+  | "SIN_EMPEZAR"
+  | "INVITACION_VENCIDA"
+  | "EN_CURSO"
+  | "COMPLETADO";
+
+export interface AvanceParticipante {
+  participante_id: string;
+  nombres: string;
+  apellidos: string;
+  tipo_documento: string;
+  numero_documento: string;
+  cargo: string | null;
+  correo: string | null;
+
+  situacion: SituacionParticipante;
+  obligatorias_completas: number;
+  obligatorias_totales: number;
+
+  invitacion_estado: string | null;
+  invitacion_utilizable: boolean | null;
+  invitada_en: string | null;
+
+  inscripcion_id: string | null;
+  iniciada_en: string | null;
+  completada_en: string | null;
+  ultima_actividad: string | null;
+
+  constancia_codigo: string | null;
+  constancia_estado: string | null;
+  constancia_vence_el: string | null;
+}
+
+export interface AvanceAsignacion {
+  asignacion: {
+    id: string;
+    curso_titulo: string;
+    numero_version: number;
+    estado: string;
+    modo_identidad: ModoIdentidad;
+    fecha_objetivo: string | null;
+  };
+  obligatorias_totales: number;
+  /** En modo autodeclarado no hay lista previa: no hay «faltan N» que dar. */
+  hay_convocatoria: boolean;
+  resumen: {
+    personas: number;
+    sin_empezar: number;
+    invitacion_vencida: number;
+    en_curso: number;
+    completados: number;
+    con_constancia: number;
+  };
+  participantes: AvanceParticipante[];
+}
+
+export interface AsignacionAtrasada {
+  id: string;
+  curso_titulo: string;
+  fecha_objetivo: string;
+  en_curso: number;
+  sin_empezar: number;
+}
+
+export interface Tablero {
+  asignaciones_activas: number;
+  personas_en_curso: number;
+  personas_completadas: number;
+  sin_empezar: number;
+  constancias_vigentes: number;
+  constancias_por_vencer: number;
+  constancias_vencidas: number;
+  /** El umbral lo decide el servidor: repetirlo aquí lo dejaría viejo. */
+  dias_aviso_vencimiento: number;
+  atrasadas: AsignacionAtrasada[];
 }

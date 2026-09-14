@@ -12,6 +12,7 @@ import type {
   AsignacionCreada,
   AsignacionCrear,
   AsignacionResumen,
+  AvanceAsignacion,
   ConstanciaEmitidaAdmin,
   ConstanciaResumen,
   InvitacionResumen,
@@ -34,6 +35,7 @@ import type {
   LeccionEditar,
   ModuloEstado,
   VersionAsignable,
+  Tablero,
   VersionPublicada,
 } from "@/types/capacitaciones";
 
@@ -525,5 +527,37 @@ export async function revocarInvitacion(
     await api.post(`${BASE}/invitaciones/${invitacionId}/revocar`, { motivo });
   } catch (e) {
     throw errorApi(e, "No pudimos revocar la invitación.");
+  }
+}
+
+
+// --- seguimiento ---------------------------------------------------------------
+
+/**
+ * Quién va por dónde en una asignación.
+ *
+ * La `situacion` de cada persona la calcula el SERVIDOR. Es deliberado: de ella
+ * cuelga una acción —a quién se le reenvía la invitación y a quién se le
+ * recuerda que entre—, y una regla que viviera aquí acabaría distinta en la
+ * exportación.
+ */
+export async function obtenerAvance(asignacionId: string): Promise<AvanceAsignacion> {
+  try {
+    const { data } = await api.get<AvanceAsignacion>(
+      `${BASE}/asignaciones/${asignacionId}/avance`
+    );
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos cargar el avance de esta asignación.");
+  }
+}
+
+/** La portada del módulo: qué hay en marcha y qué pide atención hoy. */
+export async function obtenerTablero(): Promise<Tablero> {
+  try {
+    const { data } = await api.get<Tablero>(`${BASE}/tablero`);
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos cargar el resumen del módulo.");
   }
 }

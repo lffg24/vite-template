@@ -69,6 +69,23 @@ function vigencia(c: ConstanciaResumen): string {
 }
 
 /**
+ * Cuánto queda, en las palabras con las que se decide algo.
+ *
+ * «Vence en 45 días» es accionable; «2026-11-12» hay que restarlo mentalmente y
+ * nadie lo hace al pasar una lista de sesenta filas.
+ */
+function cuentaAtras(c: ConstanciaResumen): string | null {
+  if (c.dias_para_vencer === null || c.estado === "ANULADA") return null;
+  if (c.dias_para_vencer < 0) {
+    const dias = Math.abs(c.dias_para_vencer);
+    return dias === 1 ? "Venció ayer" : `Venció hace ${dias} días`;
+  }
+  if (c.dias_para_vencer === 0) return "Vence hoy";
+  if (c.dias_para_vencer === 1) return "Vence mañana";
+  return `Vence en ${c.dias_para_vencer} días`;
+}
+
+/**
  * La insignia de estado, con el motivo **accesible de verdad**.
  *
  * Antes el motivo vivía solo en un `title`, que no llega a quien navega con
@@ -79,6 +96,28 @@ function vigencia(c: ConstanciaResumen): string {
  */
 function EstadoConstancia({ c, idMotivo }: { c: ConstanciaResumen; idMotivo: string }) {
   if (c.estado !== "ANULADA") {
+    // `situacion` la calcula el servidor sumándole el vencimiento a `estado`.
+    // El vencimiento NO se escribe nunca: es consecuencia de la fecha, y una
+    // tarea que «pasara a VENCIDA» fallaría un día y dejaría constancias
+    // afirmando una vigencia que ya no tienen.
+    if (c.situacion === "VENCIDA") {
+      return (
+        <span className="inline-flex flex-col items-start gap-1">
+          <Badge variant="destructive">Vencida</Badge>
+          <span className="text-xs leading-snug text-rel-muted">Pide reinducción</span>
+        </span>
+      );
+    }
+    if (c.por_vencer) {
+      return (
+        <span className="inline-flex flex-col items-start gap-1">
+          <Badge variant="outline" className="border-rel-warning text-rel-warning">
+            Por vencer
+          </Badge>
+          <span className="text-xs leading-snug text-rel-muted">{cuentaAtras(c)}</span>
+        </span>
+      );
+    }
     return <Badge variant="secondary">Vigente</Badge>;
   }
   return (
@@ -120,7 +159,12 @@ export default function CapacitacionesConstanciasPage() {
     );
   }, [constancias, filtro]);
 
-  const vigentes = constancias.filter((c) => c.estado === "VIGENTE").length;
+  // «Vigentes» cuenta las que de verdad lo están hoy, no las que no se
+  // anularon: incluir las vencidas ahí era afirmar una cobertura que no existe,
+  // que es justo el número que alguien lleva a una auditoría.
+  const vigentes = constancias.filter((c) => c.situacion === "VIGENTE").length;
+  const porVencer = constancias.filter((c) => c.por_vencer).length;
+  const vencidas = constancias.filter((c) => c.situacion === "VENCIDA").length;
 
   async function copiarCodigo(codigo: string) {
     try {
@@ -162,7 +206,15 @@ export default function CapacitacionesConstanciasPage() {
       <PageHeader
         titulo="Constancias"
         icono={FileBadge}
-        descripcion={`${vigentes} vigente${vigentes === 1 ? "" : "s"} de ${constancias.length}. Cada una lleva su folio y un código con el que cualquiera puede comprobarla sin necesidad de una cuenta.`}
+        descripcion={
+          <>
+            {vigentes} vigente{vigentes === 1 ? "" : "s"} de {constancias.length}
+            {porVencer > 0 ? `, ${porVencer} por vencer` : ""}
+            {vencidas > 0 ? `, ${vencidas} vencida${vencidas === 1 ? "" : "s"}` : ""}.
+            Cada una lleva su folio y un código con el que cualquiera puede
+            comprobarla sin necesidad de una cuenta.
+          </>
+        }
       />
 
       <div className="relative max-w-sm">

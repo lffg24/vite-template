@@ -18,13 +18,6 @@ vi.mock("@/services/evaluacionesService", () => ({
   listarVersionesElegibles: vi.fn(),
 }));
 
-// El editor arrastra el constructor de evaluaciones entero, y la PRIMERA prueba
-// del archivo paga ese arranque: en solitario tarda 1,6 s y con la suite
-// completa en marcha pasa de los 5 s del limite global. Es lentitud de arranque,
-// no una espera que indique nada, asi que se le da margen en vez de recortar la
-// prueba.
-vi.setConfig({ testTimeout: 20_000 });
-
 const toast = vi.fn();
 vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast }),

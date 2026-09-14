@@ -53,6 +53,8 @@ const IndiceCapacitaciones = lazy(() =>
     default: m.IndiceCapacitaciones,
   }))
 );
+const CapacitacionesInicioPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInicioPage"));
+const CapacitacionesAvancePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAvancePage"));
 const CapacitacionesCursosPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursosPage"));
 const CapacitacionesCursoDetallePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursoDetallePage"));
 const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAsignacionesPage"));
@@ -167,12 +169,17 @@ function App() {
                   fija: mandar siempre al catalogo aterrizaba en un 403 a quien
                   solo puede asignar. */}
               <Route index element={<IndiceCapacitaciones />} />
+              <Route path="inicio" element={<CapacitacionesInicioPage />} />
               <Route path="cursos" element={<CapacitacionesCursosPage />} />
               <Route path="cursos/:cursoId" element={<CapacitacionesCursoDetallePage />} />
               <Route path="asignaciones" element={<CapacitacionesAsignacionesPage />} />
               <Route
                 path="asignaciones/:asignacionId/enlaces"
                 element={<CapacitacionesEnlacesPage />}
+              />
+              <Route
+                path="asignaciones/:asignacionId/avance"
+                element={<CapacitacionesAvancePage />}
               />
               <Route path="participantes" element={<CapacitacionesParticipantesPage />} />
               <Route

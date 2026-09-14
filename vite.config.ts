@@ -26,5 +26,12 @@ export default defineConfig({
     exclude: ["node_modules/**", "dist/**", "e2e/**"],
     setupFiles: "./src/test/setup.ts",
     globals: true,
+    // Los 5 s por defecto no dan con la suite entera en marcha. Es arranque, no
+    // espera: los mismos archivos pasan en 1-2 s por separado y se caen en
+    // 5 000 ms exactos cuando compiten por la maquina —ya le paso a tres
+    // distintos, ninguno relacionado con el otro—. Un rojo asi no dice nada del
+    // codigo y ensena a volver a lanzar la suite hasta que pase, que es la peor
+    // costumbre que puede coger un equipo.
+    testTimeout: 20_000,
   },
 });
