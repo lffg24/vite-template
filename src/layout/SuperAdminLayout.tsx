@@ -1,32 +1,16 @@
 import { Outlet } from "react-router-dom";
-import {
-  Building2,
-  CalendarClock,
-  ClipboardList,
-  CreditCard,
-  Gauge,
-  Settings,
-  UserCog,
-  UsersRound,
-} from "lucide-react";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
-
-const items = [
-  { to: "/superadmin/dashboard", label: "Dashboard", icon: Gauge },
-  { to: "/superadmin/empresas", label: "Empresas", icon: Building2 },
-  { to: "/superadmin/psicologos", label: "Psicólogos", icon: UsersRound },
-  { to: "/superadmin/creditos", label: "Créditos", icon: CreditCard },
-  { to: "/superadmin/roles-permisos", label: "Roles y permisos", icon: UserCog },
-  { to: "/superadmin/auditoria", label: "Auditoría", icon: ClipboardList },
-  { to: "/superadmin/planes", label: "Planes y suscripciones", icon: CalendarClock },
-  { to: "/superadmin/configuracion", label: "Configuración", icon: Settings },
-];
+import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
 
 export default function SuperAdminLayout() {
+  const menu = useEffectiveNavigation();
   return (
-    <div className="flex min-h-screen bg-rel-canvas">
+    <div className="flex min-h-screen flex-col bg-rel-canvas sm:flex-row">
       <RoleSidebar
-        items={items}
+        items={menu.items}
+        loading={menu.loading}
+        error={menu.error}
+        onRetry={menu.retry}
         storageKey="abril360.superadmin.sidebar.collapsed"
         brandTitle="ABRIL360"
         brandSubtitle="Administración global"

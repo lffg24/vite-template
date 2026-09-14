@@ -3,7 +3,7 @@ import { emitSessionExpired } from "@/lib/sessionEvents";
 
 export interface Capacidad { clave: string; nombre: string; descripcion: string; modulo: string; superficie: string; configurable: boolean; requiere_contrato: boolean }
 export interface Rol { id: number; codigo: string; nombre: string; version: number | null; permisos: string[] }
-export interface Persona { id: number; nombre: string; email: string | null }
+export interface Persona { id: number; nombre: string; email: string | null; estado_cuenta: "ACTIVA" | "PENDIENTE"; estado_entrega: "PENDIENTE" | "EN_PROCESO" | "COMPLETADO" | "DESCARTADO" | null }
 export interface Empresa { id: string; nombre: string }
 export interface CambioRol { rol_id: number | null; version: number; nombre: string; permisos: string[]; huella?: string }
 export interface CambioAsignacion { rol_id: number; usuario_id: number; empresa_id: string; activo: boolean; valido_desde: string | null; valido_hasta: string | null; huella?: string }
@@ -28,6 +28,10 @@ export const accesoService = {
   catalogo: () => consultar<{ version: number; capacidades: Capacidad[] }>("/catalogo"),
   roles: (q = "", pagina = 1) => consultar<Pagina<Rol>>(`/roles?q=${encodeURIComponent(q)}&pagina=${pagina}`),
   usuarios: (q = "", pagina = 1) => consultar<Pagina<Persona>>(`/usuarios?q=${encodeURIComponent(q)}&pagina=${pagina}`),
+  todasEmpresas: (q = "", pagina = 1) => consultar<Pagina<Empresa>>(`/empresas?q=${encodeURIComponent(q)}&pagina=${pagina}`),
+  invitar: (datos: { nombre: string; email: string; empresa_id: string }) => consultar<{ id: number; estado: string; entrega: string }>("/usuarios/invitar", datos),
+  reenviarInvitacion: (id: number) => consultar<{ entrega: string }>(`/usuarios/${id}/reenviar-invitacion`, {}),
+  crearMembresia: (id: number, empresa_id: string) => consultar<{ usuario_id: number; empresa_id: string }>(`/usuarios/${id}/membresias`, { empresa_id }),
   empresas: (id: number) => consultar<{ items: Empresa[] }>(`/usuarios/${id}/empresas`),
   explicacion: (id: number, empresa: string) => consultar<Explicacion>(`/explicacion?usuario_id=${id}&empresa_id=${encodeURIComponent(empresa)}`),
   previewRol: (datos: CambioRol) => consultar<VistaRol>("/roles/vista-previa", datos),
