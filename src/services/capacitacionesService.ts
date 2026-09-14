@@ -540,11 +540,25 @@ export async function revocarInvitacion(
  * cuelga una acción —a quién se le reenvía la invitación y a quién se le
  * recuerda que entre—, y una regla que viviera aquí acabaría distinta en la
  * exportación.
+ *
+ * La búsqueda también va al servidor. La lista es la nómina de una empresa:
+ * traerla entera para filtrarla en el navegador manda por la red los datos de
+ * todo el personal cada vez que alguien abre la pantalla, aunque venga a buscar
+ * a una sola persona.
  */
-export async function obtenerAvance(asignacionId: string): Promise<AvanceAsignacion> {
+export async function obtenerAvance(
+  asignacionId: string,
+  opciones: { buscar?: string; limite?: number } = {}
+): Promise<AvanceAsignacion> {
   try {
     const { data } = await api.get<AvanceAsignacion>(
-      `${BASE}/asignaciones/${asignacionId}/avance`
+      `${BASE}/asignaciones/${asignacionId}/avance`,
+      {
+        params: {
+          ...(opciones.buscar ? { buscar: opciones.buscar } : {}),
+          ...(opciones.limite ? { limite: opciones.limite } : {}),
+        },
+      }
     );
     return data;
   } catch (e) {

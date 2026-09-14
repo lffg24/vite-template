@@ -33,6 +33,7 @@ const VERSION = {
   nota_minima: 80,
   intentos_max: 2,
   preguntas: 6,
+  vigente: true,
 };
 
 const EVALUACION_PROPIA: EvaluacionLeccion = {
@@ -137,5 +138,42 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
     expect(await screen.findByText(/elige una evaluación del banco/i)).toBeInTheDocument();
     expect(editarLeccion).not.toHaveBeenCalled();
     expect(agregarLeccion).not.toHaveBeenCalled();
+  });
+});
+
+describe("LeccionesEditor · lo que la pantalla PROMETE del banco", () => {
+  it("no dice que corregir el banco corrija los cursos ya publicados", async () => {
+    // Lo decía, y era falso: publicar una versión CONGELA el cuestionario, así
+    // que ni los cursos publicados ni esta misma lección cambian solos.
+    // Prometerlo enseñaba justo el modelo mental contrario al que sostiene el
+    // módulo, y se habría descubierto en una auditoría.
+    abrirEdicion(leccion());
+    await screen.findByLabelText(/evaluación del banco/i);
+
+    expect(screen.queryByText(/se corrige en todos/i)).toBeNull();
+    expect(screen.getByText(/lo ya publicado queda congelado/i)).toBeInTheDocument();
+  });
+
+  it("una versión sustituida sigue a la vista, marcada", async () => {
+    // Esconderla no cambia a dónde apunta la lección: solo deja la pantalla en
+    // blanco afirmando que no hay nada elegido.
+    vi.mocked(listarVersionesElegibles).mockResolvedValue([
+      { ...VERSION, vigente: false },
+    ]);
+    abrirEdicion(leccion());
+
+    const selector = await screen.findByLabelText(/evaluación del banco/i);
+    expect(selector).toHaveValue(VERSION.version_id);
+    expect(screen.getByText(/versión anterior/i)).toBeInTheDocument();
+    expect(screen.getByText(/ya hay una más reciente publicada/i)).toBeInTheDocument();
+  });
+
+  it("pide al servidor que incluya la que la lección ya tiene", async () => {
+    // Sin esto, abrir una lección cuya versión fue sustituida pedía la lista sin
+    // ella y el desplegable quedaba vacío.
+    abrirEdicion(leccion());
+    await screen.findByLabelText(/evaluación del banco/i);
+
+    expect(listarVersionesElegibles).toHaveBeenCalledWith(VERSION.version_id);
   });
 });

@@ -641,6 +641,13 @@ export interface AvanceAsignacion {
     fecha_objetivo: string | null;
   };
   obligatorias_totales: number;
+  /**
+   * Si esta versión se puede medir.
+   *
+   * Las publicadas antes de que el snapshot congelara el id de cada lección no
+   * tienen con qué casar el progreso: no se pueden cursar y tampoco medir.
+   */
+  version_medible: boolean;
   /** En modo autodeclarado no hay lista previa: no hay «faltan N» que dar. */
   hay_convocatoria: boolean;
   resumen: {
@@ -652,6 +659,9 @@ export interface AvanceAsignacion {
     con_constancia: number;
   };
   participantes: AvanceParticipante[];
+  /** Lo que llegó es una parte. La pantalla tiene que decirlo. */
+  hay_mas: boolean;
+  limite: number;
 }
 
 export interface AsignacionAtrasada {

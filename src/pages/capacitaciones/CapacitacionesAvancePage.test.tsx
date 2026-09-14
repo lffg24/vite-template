@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-import CapacitacionesAvancePage from "./CapacitacionesAvancePage";
+import CapacitacionesAvancePage, { celdaCSV } from "./CapacitacionesAvancePage";
 import { obtenerAvance } from "@/services/capacitacionesService";
 import type { AvanceAsignacion, AvanceParticipante } from "@/types/capacitaciones";
 
@@ -57,6 +57,9 @@ function avance(over: Partial<AvanceAsignacion> = {}): AvanceAsignacion {
       con_constancia: 0,
     },
     participantes: [persona()],
+    hay_mas: false,
+    limite: 200,
+    version_medible: true,
     ...over,
   };
 }
@@ -180,14 +183,14 @@ describe("Avance · quién va por dónde", () => {
     expect(screen.queryByText(/no hay lista de convocados/i)).not.toBeInTheDocument();
   });
 
-  it("la búsqueda filtra por documento, no solo por nombre", async () => {
-    // En una lista de nómina se busca por cédula: es el dato que llega en el
-    // correo de quien pregunta.
+  it("la búsqueda la resuelve el SERVIDOR, no el navegador", async () => {
+    // La lista es la nómina de una empresa: traerla entera para filtrarla aquí
+    // manda por la red los datos de todo el personal cada vez que alguien abre
+    // la pantalla, aunque venga a buscar a una sola persona.
     vi.mocked(obtenerAvance).mockResolvedValue(
       avance({
         participantes: [
           persona({ participante_id: "p1", apellidos: "Alvarez", numero_documento: "1001" }),
-          persona({ participante_id: "p2", apellidos: "Bernal", numero_documento: "2002" }),
         ],
       })
     );
@@ -198,7 +201,67 @@ describe("Avance · quién va por dónde", () => {
       target: { value: "2002" },
     });
 
-    expect(screen.getByText("Bernal, Ana")).toBeInTheDocument();
-    expect(screen.queryByText("Alvarez, Ana")).not.toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(obtenerAvance).toHaveBeenCalledWith("a1", { buscar: "2002" })
+    );
+  });
+
+  it("una lista recortada lo dice en vez de callarlo", async () => {
+    // Una lista recortada en silencio es peor que una lista larga: quien
+    // exporta se lleva menos gente de la que cree.
+    vi.mocked(obtenerAvance).mockResolvedValue(
+      avance({
+        hay_mas: true,
+        limite: 200,
+        resumen: { ...avance().resumen, personas: 640 },
+      })
+    );
+    montar();
+
+    expect(await screen.findByText(/Se muestran las primeras/)).toBeInTheDocument();
+    expect(screen.getByText("200")).toBeInTheDocument();
+  });
+
+  it("cuando cabe todo NO anuncia un recorte que no hay", async () => {
+    // Contraprueba: un aviso que sale siempre deja de avisar.
+    vi.mocked(obtenerAvance).mockResolvedValue(avance());
+    montar();
+
+    await screen.findByText("Alvarez, Ana");
+    expect(screen.queryByText(/Se muestran las primeras/)).not.toBeInTheDocument();
+  });
+
+  it("una versión que no se puede medir lo explica", async () => {
+    // Las publicadas antes de que el snapshot congelara el id de cada lección
+    // no tienen con qué casar el progreso. Pintar ceros se leería como gente
+    // que no ha empezado, que es lo contrario de lo que pasa.
+    vi.mocked(obtenerAvance).mockResolvedValue(avance({ version_medible: false }));
+    montar();
+
+    expect(
+      await screen.findByText(/se publicó antes de una corrección/i)
+    ).toBeInTheDocument();
+  });
+});
+
+/**
+ * Entrecomillar no basta para un CSV que alguien va a abrir en Excel: la hoja
+ * quita las comillas y evalúa lo que queda. Un cargo escrito como una fórmula se
+ * convierte en una petición que saca datos de otras celdas al abrir el archivo, y
+ * quien lo abre no hizo nada raro — abrió el listado de su empresa.
+ */
+describe("la exportación no se puede convertir en una fórmula", () => {
+  it("desarma los cuatro inicios que una hoja de cálculo interpreta", () => {
+    expect(celdaCSV("=1+1")).toBe(`"'=1+1"`);
+    expect(celdaCSV("+34600000000")).toBe(`"'+34600000000"`);
+    expect(celdaCSV("-5")).toBe(`"'-5"`);
+    expect(celdaCSV("@SUM(A1)")).toBe(`"'@SUM(A1)"`);
+  });
+
+  it("no toca lo que no lo necesita, y sigue escapando comillas", () => {
+    // Contraprueba: si antepusiera la comilla a todo, cada nombre del archivo
+    // saldría con un apóstrofo delante.
+    expect(celdaCSV("Ospina Ruiz")).toBe(`"Ospina Ruiz"`);
+    expect(celdaCSV('Jefe de "Planta"')).toBe(`"Jefe de ""Planta"""`);
   });
 });

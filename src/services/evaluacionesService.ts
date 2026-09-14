@@ -92,11 +92,21 @@ export async function archivarCuestionario(id: string): Promise<void> {
   }
 }
 
-/** La versión VIGENTE de cada cuestionario publicado. Nunca el historial. */
-export async function listarVersionesElegibles(): Promise<VersionElegible[]> {
+/**
+ * La versión VIGENTE de cada cuestionario publicado. Nunca el historial.
+ *
+ * `incluirVersionId` es la excepción: la que una lección ya tiene elegida viaja
+ * aunque la hayan sustituido, marcada como no vigente.
+ */
+export async function listarVersionesElegibles(
+  incluirVersionId?: string | null
+): Promise<VersionElegible[]> {
   try {
     const { data } = await api.get<VersionElegible[]>(
-      `${BASE}/cuestionarios/publicadas`
+      `${BASE}/cuestionarios/publicadas`,
+      incluirVersionId
+        ? { params: { incluir_version_id: incluirVersionId } }
+        : undefined
     );
     return data;
   } catch (e) {

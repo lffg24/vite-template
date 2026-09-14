@@ -12,7 +12,11 @@
 //
 //   - **Solo ofrece la versión VIGENTE de cada cuestionario.** El historial no
 //     se elige a mano: una lección que apuntara a la versión de hace dos
-//     revisiones seguiría preguntando lo de entonces sin que nadie lo note.
+//     revisiones seguiría preguntando lo de entonces sin que nadie lo note. La
+//     única excepción es la que esta lección YA tiene elegida: si la
+//     sustituyeron, sigue apareciendo marcada como anterior, porque esconderla
+//     no cambia a dónde apunta la lección — solo deja la pantalla en blanco
+//     afirmando que no hay nada elegido.
 //   - **Enseña cuántas preguntas, la nota mínima y los intentos.** Son los
 //     números que decide el banco y que la lección ya no puede cambiar; verlos
 //     antes de elegir evita descubrirlo cuando alguien reprueba.
@@ -41,7 +45,7 @@ export function SelectorCuestionarioBanco({
 
   useEffect(() => {
     let vigente = true;
-    listarVersionesElegibles()
+    listarVersionesElegibles(valor || null)
       .then((v) => {
         if (vigente) setVersiones(v);
       })
@@ -51,7 +55,10 @@ export function SelectorCuestionarioBanco({
     return () => {
       vigente = false;
     };
-  }, []);
+    // Se relee al cambiar `valor` para que la elegida viaje siempre en la
+    // petición. Sin eso, abrir una lección cuya versión fue sustituida pedía la
+    // lista sin ella y el desplegable quedaba vacío.
+  }, [valor]);
 
   const elegida = versiones?.find((v) => v.version_id === valor) ?? null;
 
@@ -107,9 +114,17 @@ export function SelectorCuestionarioBanco({
         {versiones.map((v) => (
           <option key={v.version_id} value={v.version_id}>
             {v.codigo} · {v.titulo} · v{v.numero}
+            {v.vigente ? "" : " (versión anterior)"}
           </option>
         ))}
       </select>
+      {elegida && !elegida.vigente ? (
+        <p className="text-sm text-rel-warning">
+          Esta lección apunta a la <strong>versión {elegida.numero}</strong>, y ya
+          hay una más reciente publicada. Sigue siendo válida —quien la responda
+          verá estas preguntas— pero si querías la última, elígela aquí.
+        </p>
+      ) : null}
       {elegida ? (
         <dl className="grid grid-cols-1 gap-x-4 gap-y-1 font-rel-body text-sm sm:grid-cols-3">
           <div className="flex justify-between gap-2 sm:block">

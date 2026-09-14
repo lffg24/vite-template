@@ -642,14 +642,20 @@ export function LeccionesEditor({
                       {
                         valor: "BANCO" as const,
                         titulo: "Del banco de evaluaciones",
+                        // Decía que corregir una errata «se corrige en todos», y
+                        // era falso: publicar una versión CONGELA el
+                        // cuestionario, así que ni los cursos ya publicados ni
+                        // esta misma lección cambian solos. Prometerlo enseñaba
+                        // justo el modelo mental contrario al que sostiene el
+                        // módulo, y se habría descubierto en una auditoría.
                         ayuda:
-                          "Se comparte con los demás cursos. Al corregir una errata se corrige en todos, sin repetir el trabajo curso por curso.",
+                          "Un cuestionario escrito una vez y reutilizable desde cualquier curso. Al corregirlo se publica una versión nueva, y cada lección elige cuándo pasar a ella: lo ya publicado queda congelado como estaba.",
                       },
                       {
                         valor: "PROPIA" as const,
                         titulo: "Escrito dentro de este curso",
                         ayuda:
-                          "Queda solo aquí. Útil cuando las preguntas no tienen sentido fuera de este curso.",
+                          "Las preguntas viven en esta lección y ningún otro curso las ve. Útil cuando no tienen sentido fuera de aquí.",
                       },
                     ]
                   ).map((opcion) => (

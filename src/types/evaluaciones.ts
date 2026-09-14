@@ -88,4 +88,13 @@ export interface VersionElegible {
   nota_minima: number;
   intentos_max: number;
   preguntas: number;
+  /**
+   * Si sigue siendo la versión actual de su cuestionario.
+   *
+   * Llega en `false` solo para la que una lección ya tenía elegida y fue
+   * sustituida. Se sigue ofreciendo porque lo que la lección apunta es un
+   * hecho: esconderlo dejaba la pantalla en blanco afirmando que no había nada
+   * elegido.
+   */
+  vigente: boolean;
 }
