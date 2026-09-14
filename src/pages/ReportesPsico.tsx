@@ -640,7 +640,7 @@ function NormativeRiskTable({ table, compact = false }: { table: NormativaTable;
             {filas.map((row: NormativaRow, idx: number) => {
               const isTotal = row.tipo === "DOMINIO_TOTAL" || row.tipo === "TOTAL";
               return (
-                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-accent/60 font-semibold")}> 
+                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-accent/60 font-semibold")}>
                   <td className="px-4 py-3">
                     <div className="break-words font-medium text-slate-900">{row.nombre ?? row.codigo ?? "Sin nombre"}</div>
                     {isTotal && <div className="mt-1 text-[11px] uppercase tracking-wide text-brand-primary">Resultado consolidado</div>}
@@ -1391,7 +1391,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
 
   const Th = ({ label, sortKey, align = "left" }: { label: string; sortKey: SortKey; align?: "left" | "right" }) => (
     <th className={cn("whitespace-nowrap px-4 py-3", align === "right" && "text-right")}>
-      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "right" && "justify-end")}> 
+      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "right" && "justify-end")}>
         {label}
         <span className="text-[10px] text-slate-400">{sort.key === sortKey ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span>
       </button>
@@ -1832,7 +1832,7 @@ export default function ReportesPsico() {
         <div className="overflow-x-auto rounded-2xl border bg-white p-1 shadow-sm">
           <div className="flex min-w-max gap-1">
             {TABS.map(({ key, label, icon: Icon }) => (
-              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-primary text-primary-foreground shadow-sm" : "text-slate-600 hover:bg-slate-100")}> 
+              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-primary text-primary-foreground shadow-sm" : "text-slate-600 hover:bg-slate-100")}>
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}
