@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type StandardPaginationProps = {
   page: number;
@@ -37,16 +38,17 @@ export function StandardPagination({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {onPageSizeChange && (
-          <label className="mr-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
-            Filas
-            <select
-              value={safePageSize}
-              onChange={(event) => onPageSizeChange(Number(event.target.value))}
-              className="h-9 rounded-xl border border-input bg-surface px-3 text-sm font-bold text-foreground outline-none transition focus:border-input-focus focus:ring-2 focus:ring-input-focus/20"
-            >
-              {pageSizeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
+          <div className="mr-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
+            <span>Filas</span>
+            <Select value={String(safePageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
+              <SelectTrigger aria-label="Filas por página" className="h-9 w-20 rounded-xl font-bold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageSizeOptions.map((option) => <SelectItem key={option} value={String(option)}>{option}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         )}
         <button type="button" onClick={() => go(1)} disabled={currentPage <= 1} className="rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40">Primera</button>
         <button type="button" onClick={() => go(currentPage - 1)} disabled={currentPage <= 1} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft className="h-4 w-4" />Anterior</button>

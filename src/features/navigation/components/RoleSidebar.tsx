@@ -41,7 +41,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold ${rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600"}`}>{avatarText}</span>
       {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-slate-300">{userSubtitle}</span></span>}
     </div>
-    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(100_116_139_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-500/45 [&::-webkit-scrollbar-track]:bg-transparent">
       {loading && <p role="status" className="px-3 py-4 text-sm text-slate-300">Cargando menú…</p>}
       {error && <div role="alert" className="rounded-xl border border-white/20 p-3 text-sm"><p>{error}</p><button type="button" onClick={onRetry} className="mt-2 underline focus-visible:ring-2 focus-visible:ring-rel-sky">Reintentar</button></div>}
       {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-slate-300">No hay opciones habilitadas para esta cuenta.</p>}
