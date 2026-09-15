@@ -1,7 +1,7 @@
 import {
   BarChart3, BookOpen, Building2, CircleHelp, ClipboardCheck, ClipboardList,
   CreditCard, FileBadge, FileText, Gauge, KeyRound, Layers3, Link2,
-  Send, ShieldCheck, Users, UsersRound, type LucideIcon,
+  Send, ShieldCheck, ToggleRight, Users, UsersRound, type LucideIcon,
 } from "lucide-react";
 
 export type NavigationItem = { label: string; icon: LucideIcon; to: string };
@@ -14,6 +14,7 @@ const groups: NavigationGroup[] = [
     { label: "Empresas", to: "/superadmin/empresas", icon: Building2 },
     { label: "Psicólogos", to: "/superadmin/psicologos", icon: UsersRound },
     { label: "Créditos", to: "/superadmin/creditos", icon: CreditCard },
+    { label: "Habilitar módulos", to: "/superadmin/habilitacion", icon: ToggleRight },
     { label: "Usuarios", to: "/superadmin/usuarios", icon: Users },
     { label: "Roles y permisos", to: "/superadmin/roles-permisos", icon: KeyRound },
     { label: "Auditoría", to: "/superadmin/auditoria", icon: ClipboardList },
