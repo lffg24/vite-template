@@ -76,6 +76,7 @@ const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdmin
 const SuperAdminEmpresasPage = lazy(() => import("@/pages/superadmin/SuperAdminEmpresasPage"));
 const SuperAdminPsicologosPage = lazy(() => import("@/pages/superadmin/SuperAdminPsicologosPage"));
 const SuperAdminCreditosPage = lazy(() => import("@/pages/superadmin/SuperAdminCreditosPage"));
+const SuperAdminHabilitacionPage = lazy(() => import("@/pages/superadmin/SuperAdminHabilitacionPage"));
 const SuperAdminRolesPermisosPage = lazy(() => import("@/pages/superadmin/SuperAdminRolesPermisosPage"));
 const SuperAdminUsuariosPage = lazy(() => import("@/pages/superadmin/SuperAdminUsuariosPage"));
 const ActivarCuenta = lazy(() => import("@/pages/ActivarCuenta"));
@@ -149,6 +150,7 @@ function App() {
               <Route path="empresas" element={<SuperAdminEmpresasPage />} />
               <Route path="psicologos" element={<SuperAdminPsicologosPage />} />
               <Route path="creditos" element={<SuperAdminCreditosPage />} />
+              <Route path="habilitacion" element={<SuperAdminHabilitacionPage />} />
               <Route path="roles-permisos" element={<SuperAdminRolesPermisosPage />} />
               <Route path="usuarios" element={<SuperAdminUsuariosPage />} />
               <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
