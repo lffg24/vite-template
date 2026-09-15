@@ -13,6 +13,12 @@ export interface Asignacion { id: number; role_id: number; nombre: string; modul
 export interface Explicacion { decisiones: (Capacidad & { permitido: boolean; motivo: string })[]; asignaciones: Asignacion[]; roles_globales: { codigo: string; nombre: string }[]; evaluado_en: string }
 export interface Evento { id: number; evento: string; actor_ref: string; creado_en: string; correlation_id: string; payload: Record<string, unknown> }
 export interface Pagina<T> { items: T[]; hay_mas: boolean }
+export interface InvitacionCreada {
+  id: number;
+  estado: string;
+  entrega: "EN_COLA" | "LOCAL";
+  enlace_activacion_local?: string;
+}
 
 async function consultar<T>(ruta: string, datos?: unknown): Promise<T> {
   const respuesta = await fetch(`${API_URL}/acceso${ruta}`, {
@@ -29,7 +35,7 @@ export const accesoService = {
   roles: (q = "", pagina = 1) => consultar<Pagina<Rol>>(`/roles?q=${encodeURIComponent(q)}&pagina=${pagina}`),
   usuarios: (q = "", pagina = 1) => consultar<Pagina<Persona>>(`/usuarios?q=${encodeURIComponent(q)}&pagina=${pagina}`),
   todasEmpresas: (q = "", pagina = 1) => consultar<Pagina<Empresa>>(`/empresas?q=${encodeURIComponent(q)}&pagina=${pagina}`),
-  invitar: (datos: { nombre: string; email: string; empresa_id: string }) => consultar<{ id: number; estado: string; entrega: string }>("/usuarios/invitar", datos),
+  invitar: (datos: { nombre: string; email: string; empresa_id: string }) => consultar<InvitacionCreada>("/usuarios/invitar", datos),
   reenviarInvitacion: (id: number) => consultar<{ entrega: string }>(`/usuarios/${id}/reenviar-invitacion`, {}),
   crearMembresia: (id: number, empresa_id: string) => consultar<{ usuario_id: number; empresa_id: string }>(`/usuarios/${id}/membresias`, { empresa_id }),
   empresas: (id: number) => consultar<{ items: Empresa[] }>(`/usuarios/${id}/empresas`),
