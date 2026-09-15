@@ -23,7 +23,7 @@ import {
   type GuardarEmpresaPayload,
   type SuperEmpresa,
 } from "@/features/superadmin/api/superadminService";
-import SuperAdminPagination from "@/features/superadmin/components/SuperAdminPagination";
+import { StandardPagination } from "@/components/common/StandardPagination";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const VACIA: GuardarEmpresaPayload = {
@@ -274,7 +274,7 @@ export default function SuperAdminEmpresasPage() {
             </div>
           </>
         )}
-        <SuperAdminPagination
+        <StandardPagination pageSizeOptions={[10, 20, 50, 100]}
           page={page}
           pageSize={pageSize}
           total={total}
