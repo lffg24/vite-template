@@ -6,6 +6,7 @@ import {
   CreditCard,
   Gauge,
   Settings,
+  ToggleRight,
   UserCog,
   UsersRound,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const items = [
   { to: "/superadmin/empresas", label: "Empresas", icon: Building2 },
   { to: "/superadmin/psicologos", label: "Psicólogos", icon: UsersRound },
   { to: "/superadmin/creditos", label: "Créditos", icon: CreditCard },
+  { to: "/superadmin/habilitacion", label: "Habilitar módulos", icon: ToggleRight },
   { to: "/superadmin/roles-permisos", label: "Roles y permisos", icon: UserCog },
   { to: "/superadmin/auditoria", label: "Auditoría", icon: ClipboardList },
   { to: "/superadmin/planes", label: "Planes y suscripciones", icon: CalendarClock },
