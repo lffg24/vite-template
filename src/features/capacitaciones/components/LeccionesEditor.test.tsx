@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { LeccionesEditor } from "./LeccionesEditor";
@@ -50,6 +50,10 @@ const EVALUACION_PROPIA: EvaluacionLeccion = {
   ],
 };
 
+beforeAll(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
+
 function leccion(over: Partial<Leccion> = {}): Leccion {
   return {
     id: "l1",
@@ -88,7 +92,7 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
     abrirEdicion(leccion());
 
     const selector = await screen.findByLabelText(/evaluación del banco/i);
-    expect(selector).toHaveValue(VERSION.version_id);
+    expect(selector).toHaveTextContent("EVA-003 · Inducción SST · v2");
     // Los números que decide el banco quedan a la vista: son los que la lección
     // ya no puede cambiar, y descubrirlos cuando alguien reprueba es tarde.
     expect(screen.getByText("80 %")).toBeInTheDocument();
@@ -117,7 +121,8 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
 
     fireEvent.click(screen.getByRole("radio", { name: /del banco de evaluaciones/i }));
     const selector = await screen.findByLabelText(/evaluación del banco/i);
-    fireEvent.change(selector, { target: { value: VERSION.version_id } });
+    fireEvent.click(selector);
+    fireEvent.click(await screen.findByRole("option", { name: /EVA-003.*Inducción SST.*v2/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
 
@@ -163,8 +168,8 @@ describe("LeccionesEditor · lo que la pantalla PROMETE del banco", () => {
     abrirEdicion(leccion());
 
     const selector = await screen.findByLabelText(/evaluación del banco/i);
-    expect(selector).toHaveValue(VERSION.version_id);
-    expect(screen.getByText(/versión anterior/i)).toBeInTheDocument();
+    expect(selector).toHaveTextContent("EVA-003 · Inducción SST · v2");
+    expect(screen.getAllByText(/versión anterior/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/ya hay una más reciente publicada/i)).toBeInTheDocument();
   });
 

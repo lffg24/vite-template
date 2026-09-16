@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
@@ -23,7 +23,6 @@ import { Label } from "@/components/ui/label";
 import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { safeRedirectPath } from "@/lib/accessRoutes";
 import evaLogoColor from "@/assets/eva-logo-color.png";
 
 type FieldErrors = { email?: string; password?: string };
@@ -42,7 +41,7 @@ const productCards = [
 ];
 
 export default function Login() {
-  const { initialized, isAuthenticated, roles, permissions, login } = useAuth();
+  const { initialized, isAuthenticated, passwordChangeRequired, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -60,8 +59,6 @@ export default function Login() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [relLogoError, setRelLogoError] = useState(false);
 
-  const redirectPath = useMemo(() => safeRedirectPath(from, roles, permissions), [from, roles, permissions]);
-
   if (!initialized) {
     return (
       <div className="grid h-screen place-items-center overflow-hidden bg-sidebar px-4 text-sm text-sidebar-foreground">
@@ -73,7 +70,11 @@ export default function Login() {
     );
   }
 
-  if (isAuthenticated) return <Navigate to={redirectPath} replace />;
+  if (isAuthenticated) {
+    return passwordChangeRequired
+      ? <Navigate to="/psicosocial/perfil?forcePassword=1" replace />
+      : <Navigate to="/" replace state={{ from }} />;
+  }
 
   const validate = (): boolean => {
     const next: FieldErrors = {};
@@ -91,12 +92,10 @@ export default function Login() {
     setLoading(true);
     try {
       const result = await login(email.trim(), password, { remember });
-      navigate(
-        result.passwordChangeRequired
-          ? "/psicosocial/perfil?forcePassword=1"
-          : safeRedirectPath(from, result.roles, result.permissions),
-        { replace: true },
-      );
+      navigate(result.passwordChangeRequired ? "/psicosocial/perfil?forcePassword=1" : "/", {
+        replace: true,
+        state: result.passwordChangeRequired ? undefined : { from },
+      });
     } catch (err: any) {
       const status = err?.status as number | undefined;
       const msg = typeof err?.message === "string" ? err.message : "No pudimos iniciar sesión.";

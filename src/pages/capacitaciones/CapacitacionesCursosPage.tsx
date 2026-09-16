@@ -12,7 +12,7 @@
 
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Plus, Search } from "lucide-react";
+import { BookOpen, LockKeyhole, Plus, Search } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
@@ -41,6 +41,7 @@ import {
   EstadoCursoBadge,
 } from "@/features/capacitaciones/components/Insignias";
 import { CursoNuevoSheet } from "@/features/capacitaciones/components/CursoNuevoSheet";
+import { useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
 import {
   formatearIntensidad,
   formatearVigenciaMeses,
@@ -56,6 +57,40 @@ const PESO_ESTADO: Record<EstadoCurso, number> = {
 };
 
 export default function CapacitacionesCursosPage() {
+  const { capacidades, fase } = useCapacitaciones();
+
+  if (fase === "cargando") return <CargandoTabla />;
+  if (!capacidades?.puede_editar_catalogo) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          titulo="Catálogo de cursos"
+          icono={BookOpen}
+          descripcion="El catálogo editorial es común para toda la plataforma."
+        />
+        <section role="status" className="mx-auto max-w-2xl rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center shadow-sm">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-rel-surface-subtle text-rel-primary">
+            <LockKeyhole className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h2 className="mt-5 font-rel-heading text-xl font-black text-rel-dark">
+            Tu rol gestiona capacitaciones, no el catálogo global
+          </h2>
+          <p className="mx-auto mt-2 max-w-prose text-sm leading-6 text-rel-muted">
+            Puedes asignar cursos publicados, administrar participantes y revisar su avance.
+            Crear o modificar cursos requiere el permiso editorial de plataforma.
+          </p>
+          <Button asChild variant="rel" className="mt-5">
+            <Link to="/capacitaciones/asignaciones">Ir a asignaciones</Link>
+          </Button>
+        </section>
+      </div>
+    );
+  }
+
+  return <CatalogoAutorizado />;
+}
+
+function CatalogoAutorizado() {
   const navegar = useNavigate();
   const consulta = useConsulta<CursoResumen[]>(() => listarCursos(), []);
   const [busqueda, setBusqueda] = useState("");

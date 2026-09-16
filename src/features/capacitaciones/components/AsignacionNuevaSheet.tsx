@@ -39,6 +39,7 @@ import { OpcionesExcluyentes, type OpcionExcluyente } from "@/shared/ui/Opciones
 import { useConsulta } from "../useConsulta";
 import { CargandoPanel, ErrorConsulta, SinDatos } from "./EstadoPantalla";
 import { formatearIntensidad, formatearVigenciaMeses } from "../formato";
+import { DatePicker, isoLocal } from "@/shared/ui/DatePicker";
 
 /**
  * Los dos modos, explicados por su CONSECUENCIA y no por su nombre.
@@ -222,11 +223,12 @@ export function AsignacionNuevaSheet({
               >
                 Fecha objetivo
               </EtiquetaConAyuda>
-              <Input
+              <DatePicker
                 id="a-fecha"
-                type="date"
                 value={fechaObjetivo}
-                onChange={(e) => setFechaObjetivo(e.target.value)}
+                onChange={setFechaObjetivo}
+                min={isoLocal(new Date())}
+                hideLabel
               />
 
             </div>

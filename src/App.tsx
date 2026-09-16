@@ -10,8 +10,8 @@ import {
 import { Toaster } from "@/components/ui/toaster";
 
 import ProtectedRoute from "@/routes/ProtectedRoute";
-import { LEGACY_APP_ROUTES, routeByAccess } from "@/lib/accessRoutes";
-import { useAuth } from "@/context/AuthContext";
+import { LEGACY_APP_ROUTES } from "@/lib/accessRoutes";
+import { EffectiveAccessRedirect } from "@/features/navigation/EffectiveAccessRedirect";
 
 const Login = lazy(() => import("@/pages/Login"));
 const SolicitarRecuperacionClave = lazy(() => import("@/pages/SolicitarRecuperacionClave"));
@@ -91,11 +91,6 @@ function RouteFallback() {
   );
 }
 
-function AccessRedirect() {
-  const { roles, permissions } = useAuth();
-  return <Navigate to={routeByAccess(roles, permissions)} replace />;
-}
-
 function App() {
   return (
     <Router>
@@ -134,10 +129,10 @@ function App() {
 
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<AccessRedirect />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
             <Route path="/sin-acceso" element={<SinAcceso />} />
             {LEGACY_APP_ROUTES.map((path) => (
-              <Route key={path} path={`${path}/*`} element={<AccessRedirect />} />
+              <Route key={path} path={`${path}/*`} element={<EffectiveAccessRedirect />} />
             ))}
           </Route>
 

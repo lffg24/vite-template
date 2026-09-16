@@ -1,7 +1,6 @@
 // src/routes/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { routeByAccess } from "@/lib/accessRoutes";
 
 type Props = {
   requireRole?: string | string[];
@@ -45,7 +44,7 @@ export default function ProtectedRoute({ requireRole, requirePermission }: Props
   const okPermission = hasAny(permissions, requirePermission);
 
   if (!okRole || !okPermission) {
-    return <Navigate to={routeByAccess(roles, permissions)} replace />;
+    return <Navigate to="/" replace state={{ from: location.pathname }} />;
   }
 
   return <Outlet />;

@@ -10,9 +10,10 @@
 
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertTriangle, Link2, Send, Plus, Users } from "lucide-react";
+import { AlertTriangle, Link2, MoreHorizontal, Send, Plus, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
 import {
@@ -213,7 +214,7 @@ export default function CapacitacionesAsignacionesPage() {
                   alineacion: "derecha",
                   soloAcciones: true,
                   celda: (a) => (
-                    <div className="flex justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1">
                       {/* «Avance» va primero: es lo que se consulta a diario,
                           mientras que repartir el acceso se hace una vez. */}
                       <Button
@@ -227,52 +228,40 @@ export default function CapacitacionesAsignacionesPage() {
                         Avance
                         <span className="sr-only"> de {a.curso_titulo}</span>
                       </Button>
-                      {/* Cada modo tiene UNA vía por la que se entra, y es la
-                          que se ofrece como acción principal. La otra se
-                          deshabilita con su motivo a la vista: dejarla
-                          pulsable llevaba a una pantalla que ofrecía generar
-                          invitaciones para que el servidor las rechazara. */}
-                      <Button
-                        variant={
-                          a.modo_identidad === "AUTODECLARADA" ? "relGhost" : "relOutline"
-                        }
-                        size="sm"
-                        disabled={a.modo_identidad === "AUTODECLARADA"}
-                        title={
-                          a.modo_identidad === "AUTODECLARADA"
-                            ? "Esta asignación se responde por el enlace del grupo: no usa invitaciones personales."
-                            : undefined
-                        }
-                        onClick={() =>
-                          navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)
-                        }
-                      >
-                        <Send aria-hidden="true" />
-                        Invitaciones
-                        <span className="sr-only"> de {a.curso_titulo}</span>
-                      </Button>
-                      <Button
-                        variant={
-                          a.modo_identidad === "AUTODECLARADA" ? "relOutline" : "relGhost"
-                        }
-                        size="sm"
-                        title={
-                          a.modo_identidad === "AUTODECLARADA"
-                            ? undefined
-                            : "Con invitación personal, el enlace del grupo solo sirve para mirar de qué va el curso."
-                        }
-                        onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
-                      >
-                        <Link2 aria-hidden="true" />
-                        Enlaces
-                        <span className="sr-only"> de {a.curso_titulo}</span>
-                      </Button>
-                      {a.estado === "ACTIVA" ? (
-                        <Button variant="relGhost" size="sm" onClick={() => setACerrar(a)}>
-                          Cerrar
-                          <span className="sr-only"> la asignación de {a.curso_titulo}</span>
-                        </Button>
-                      ) : null}
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="relGhost" size="icon" aria-label={`Más acciones para ${a.curso_titulo}`}>
+                            <MoreHorizontal aria-hidden="true" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="rel-scope w-56 space-y-1 rounded-rel-card border-rel-border bg-rel-surface p-2 font-rel-body shadow-floating">
+                          {a.modo_identidad === "INVITACION_INDIVIDUAL" ? (
+                            <Button
+                              variant="relGhost"
+                              size="sm"
+                              className="w-full justify-start"
+                              onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/invitaciones`)}
+                            >
+                              <Send aria-hidden="true" />
+                              Invitaciones
+                            </Button>
+                          ) : null}
+                          <Button
+                            variant="relGhost"
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => navegar(`/capacitaciones/asignaciones/${a.id}/enlaces`)}
+                          >
+                            <Link2 aria-hidden="true" />
+                            Enlaces de grupo
+                          </Button>
+                          {a.estado === "ACTIVA" ? (
+                            <Button variant="relGhost" size="sm" className="w-full justify-start text-rel-danger" onClick={() => setACerrar(a)}>
+                              Cerrar asignación
+                            </Button>
+                          ) : null}
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   ),
                 },

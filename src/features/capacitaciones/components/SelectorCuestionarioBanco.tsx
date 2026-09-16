@@ -24,9 +24,15 @@
 import { useEffect, useState } from "react";
 
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { listarVersionesElegibles } from "@/services/evaluacionesService";
 import type { VersionElegible } from "@/types/evaluaciones";
-import { cn } from "@/lib/utils";
 
 export function SelectorCuestionarioBanco({
   valor,
@@ -96,29 +102,26 @@ export function SelectorCuestionarioBanco({
       <Label htmlFor={id} className="text-rel-dark">
         Evaluación del banco
       </Label>
-      <select
-        id={id}
-        className={cn(
-          "h-10 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3",
-          "font-rel-body text-sm text-rel-dark",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary",
-          "disabled:cursor-not-allowed disabled:opacity-50"
-        )}
-        value={valor}
+      <Select
+        value={valor || undefined}
         disabled={deshabilitado}
-        onChange={(e) => {
-          const seleccionada = versiones.find((v) => v.version_id === e.target.value) ?? null;
-          alCambiar(e.target.value, seleccionada);
+        onValueChange={(versionId) => {
+          const seleccionada = versiones.find((v) => v.version_id === versionId) ?? null;
+          alCambiar(versionId, seleccionada);
         }}
       >
-        <option value="">Elige una evaluación…</option>
-        {versiones.map((v) => (
-          <option key={v.version_id} value={v.version_id}>
-            {v.codigo} · {v.titulo} · v{v.numero}
-            {v.vigente ? "" : " (versión anterior)"}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger id={id}>
+          <SelectValue placeholder="Elige una evaluación…" />
+        </SelectTrigger>
+        <SelectContent>
+          {versiones.map((v) => (
+            <SelectItem key={v.version_id} value={v.version_id}>
+              {v.codigo} · {v.titulo} · v{v.numero}
+              {v.vigente ? "" : " (versión anterior)"}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       {elegida && !elegida.vigente ? (
         <p className="text-sm text-rel-warning">
           Esta lección apunta a la <strong>versión {elegida.numero}</strong>, y ya

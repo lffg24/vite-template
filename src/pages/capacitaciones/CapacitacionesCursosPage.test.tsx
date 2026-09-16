@@ -9,6 +9,12 @@ import CapacitacionesCursosPage from "./CapacitacionesCursosPage";
 import { listarCursos } from "@/services/capacitacionesService";
 import type { CursoResumen, ErrorApi } from "@/types/capacitaciones";
 
+const useCapacitacionesMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/features/capacitaciones/ContextoCapacitaciones", () => ({
+  useCapacitaciones: useCapacitacionesMock,
+}));
+
 vi.mock("@/services/capacitacionesService", () => ({
   listarCursos: vi.fn(),
   crearCurso: vi.fn(),
@@ -56,6 +62,22 @@ function enLaTabla() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useCapacitacionesMock.mockReturnValue({
+    fase: "listo",
+    capacidades: { puede_editar_catalogo: true },
+  });
+});
+
+it("no consulta ni ofrece crear cursos sin permiso editorial global", async () => {
+  useCapacitacionesMock.mockReturnValue({
+    fase: "listo",
+    capacidades: { puede_editar_catalogo: false, puede_asignar: true },
+  });
+  montar();
+
+  expect(await screen.findByText(/tu rol gestiona capacitaciones/i)).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /nuevo curso/i })).not.toBeInTheDocument();
+  expect(listarCursos).not.toHaveBeenCalled();
 });
 
 describe("A-02 · los cuatro estados", () => {

@@ -12,8 +12,8 @@
 //      está cambiando lo que están respondiendo hoy, y no se atreve.
 
 import { useCallback, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Archive, ClipboardCheck, Upload } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { Archive, BookOpenCheck, ClipboardCheck, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -181,6 +181,27 @@ export default function EvaluacionDetallePage() {
               </Button>
             </div>
           </header>
+
+          <section className="flex items-start gap-3 rounded-rel-card border border-rel-info/25 bg-rel-info-subtle p-4">
+            <BookOpenCheck className="mt-0.5 h-5 w-5 shrink-0 text-rel-info" aria-hidden="true" />
+            <div className="text-sm leading-6 text-rel-dark">
+              <p className="font-semibold">Cómo usarla en una capacitación</p>
+              {cuestionario.version_actual === 0 ? (
+                <p className="text-rel-muted">
+                  Completa las preguntas y publica una versión. Después abre un curso,
+                  agrega una lección de tipo Evaluación y elige “Del banco de evaluaciones”.
+                </p>
+              ) : (
+                <p className="text-rel-muted">
+                  Ya está disponible. En el editor de un curso agrega una lección de tipo
+                  Evaluación y elige “Del banco de evaluaciones”.{" "}
+                  <Link className="font-semibold text-rel-primary underline-offset-2 hover:underline" to="/capacitaciones/cursos">
+                    Ir al catálogo
+                  </Link>
+                </p>
+              )}
+            </div>
+          </section>
 
           {/* El checklist se ve SIN pulsar «Publicar». Descubrir lo que falta a
               base de errores es lo que hace que nadie se atreva a pulsarlo. */}

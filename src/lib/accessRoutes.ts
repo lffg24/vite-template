@@ -71,6 +71,22 @@ export function isLegacyAppRoute(path: string) {
   return LEGACY_APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
 }
 
+export function safeEffectiveRedirectPath(path: unknown, destinations: string[]) {
+  const fallback = (() => {
+    // Importar el árbol aquí crearía una dependencia circular. El servidor ya
+    // devuelve los destinos en el orden canónico del producto; la resolución
+    // del landing se hace en el componente que llama esta función.
+    return destinations[0] ?? NO_ACCESS_ROUTE;
+  })();
+  if (typeof path !== "string" || !path.startsWith("/")) return fallback;
+  if (path === "/" || path === "/login" || path === "/logout") return fallback;
+  if (isLegacyAppRoute(path)) return fallback;
+  const allowed = destinations.some(
+    (destination) => path === destination || path.startsWith(`${destination}/`)
+  );
+  return allowed ? path : fallback;
+}
+
 export function safeRedirectPath(path: unknown, roles: string[] = [], permissions: string[] = []) {
   const fallback = routeByAccess(roles, permissions);
   if (typeof path !== "string" || !path.startsWith("/")) return fallback;
