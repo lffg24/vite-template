@@ -6,8 +6,10 @@ import SuperAdminHabilitacionPage from "./SuperAdminHabilitacionPage";
 import { superadminService } from "@/features/superadmin/api/superadminService";
 import {
   cambiarBandera,
+  cambiarBanderaGlobal,
   crearContrato,
   obtenerHabilitacion,
+  obtenerHabilitacionPlataforma,
   type EstadoDeHabilitacion,
 } from "@/services/habilitacionService";
 
@@ -17,8 +19,10 @@ vi.mock("@/features/superadmin/api/superadminService", () => ({
 
 vi.mock("@/services/habilitacionService", () => ({
   obtenerHabilitacion: vi.fn(),
+  obtenerHabilitacionPlataforma: vi.fn(),
   crearContrato: vi.fn().mockResolvedValue(undefined),
   cambiarBandera: vi.fn().mockResolvedValue(undefined),
+  cambiarBanderaGlobal: vi.fn().mockResolvedValue(undefined),
 }));
 
 const toast = vi.fn();
@@ -66,6 +70,17 @@ beforeEach(() => {
     page_size: 20,
   });
   vi.mocked(obtenerHabilitacion).mockResolvedValue(estado());
+  vi.mocked(obtenerHabilitacionPlataforma).mockResolvedValue({
+    modulo: "CAPACITACIONES",
+    banderas: [{
+      clave: "capacitaciones.catalogo",
+      nombre: "Catálogo",
+      para_que: "Redactar y publicar cursos.",
+      efectiva: false,
+      superficie: "PLATAFORMA",
+      habilitado_global: false,
+    }],
+  });
 });
 
 /**
@@ -149,5 +164,21 @@ describe("Habilitar módulos", () => {
       clave: "capacitaciones.participacion",
       habilitado: true,
     });
+  });
+
+  it("administra el catálogo con el control GLOBAL", async () => {
+    await elegirEmpresa();
+
+    fireEvent.click(await screen.findByLabelText("Catálogo global"));
+
+    await vi.waitFor(() => expect(cambiarBanderaGlobal).toHaveBeenCalledWith({
+      modulo: "CAPACITACIONES",
+      clave: "capacitaciones.catalogo",
+      habilitado: true,
+    }));
+    expect(cambiarBandera).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ clave: "capacitaciones.catalogo" }),
+    );
   });
 });

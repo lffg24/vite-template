@@ -19,7 +19,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Circle, Loader2, ShieldCheck } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,10 @@ import { useToast } from "@/hooks/use-toast";
 import { superadminService, type SuperEmpresa } from "@/features/superadmin/api/superadminService";
 import {
   cambiarBandera,
+  cambiarBanderaGlobal,
   crearContrato,
   obtenerHabilitacion,
+  obtenerHabilitacionPlataforma,
   type EstadoDeHabilitacion,
 } from "@/services/habilitacionService";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -38,9 +40,12 @@ import type { ErrorApi } from "@/types/capacitaciones";
 
 const MODULO = "CAPACITACIONES";
 
-/** Hoy en formato ISO, que es lo que espera un `<input type="date">`. */
+/** Hoy LOCAL en formato ISO, que es lo que espera un `<input type="date">`. */
 function hoyISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const hoy = new Date();
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
+  return `${hoy.getFullYear()}-${mes}-${dia}`;
 }
 
 function Condicion({
@@ -85,6 +90,11 @@ export default function SuperAdminHabilitacionPage() {
     [busqueda]
   );
 
+  const plataforma = useConsulta(
+    () => obtenerHabilitacionPlataforma(MODULO),
+    [revision]
+  );
+
   const estado = useConsulta<EstadoDeHabilitacion | null>(
     async () => (empresa ? await obtenerHabilitacion(empresa.id, MODULO) : null),
     [empresa?.id, revision]
@@ -117,6 +127,53 @@ export default function SuperAdminHabilitacionPage() {
         title="Habilitar módulos"
         subtitle="Qué empresa puede usar qué módulo, y qué le falta para poder usarlo."
       />
+
+      <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-accent-subtle text-rel-primary">
+            <BookOpen className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-rel-heading font-bold">Catálogo global de Capacitación</h2>
+            <p className="mt-1 text-sm text-rel-muted">
+              Pertenece a la plataforma y lo comparten todas las empresas. Este control no depende del contrato de una empresa.
+            </p>
+          </div>
+        </div>
+        {plataforma.fase === "cargando" ? (
+          <p role="status" className="mt-4 text-sm text-rel-muted">Consultando el estado global…</p>
+        ) : null}
+        <ul className="mt-4 space-y-3">
+          {(plataforma.datos?.banderas ?? []).map((bandera) => (
+            <li key={bandera.clave} className="flex min-w-0 items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="font-semibold">{bandera.nombre}</p>
+                <p className="text-sm text-rel-muted">{bandera.para_que}</p>
+              </div>
+              <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 accent-rel-primary"
+                  checked={Boolean(bandera.habilitado_global)}
+                  disabled={guardando !== null}
+                  aria-label={`${bandera.nombre} global`}
+                  onChange={(event) => conContexto(
+                    `global:${bandera.clave}`,
+                    () => cambiarBanderaGlobal({
+                      modulo: MODULO,
+                      clave: bandera.clave,
+                      habilitado: event.target.checked,
+                    }),
+                  )}
+                />
+                <span className="text-rel-muted">
+                  {bandera.habilitado_global ? "Encendido" : "Apagado"}
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="space-y-3">
@@ -259,8 +316,8 @@ export default function SuperAdminHabilitacionPage() {
               <div className="rounded-rel-card border border-rel-border bg-rel-surface p-5">
                 <h3 className="font-rel-heading font-bold">Funcionalidades</h3>
                 <p className="mt-1 text-sm text-rel-muted">
-                  Se encienden empresa por empresa. Encenderlas aquí no las
-                  enciende para nadie más.
+                  Asignaciones y acceso público se encienden empresa por empresa.
+                  El catálogo global se administra en el control superior.
                 </p>
                 <ul className="mt-4 space-y-4">
                   {banderas.map((b) => (

@@ -25,6 +25,12 @@ export interface BanderaDeModulo {
   efectiva: boolean | null;
   habilitado_global?: boolean;
   override?: boolean | null;
+  superficie?: "PLATAFORMA" | "EMPRESA";
+}
+
+export interface EstadoDePlataforma {
+  modulo: string;
+  banderas: Array<BanderaDeModulo & { habilitado_global: boolean }>;
 }
 
 export interface ContratoDeModulo {
@@ -56,6 +62,31 @@ export async function obtenerHabilitacion(
     return data;
   } catch (e) {
     throw errorApi(e, "No pudimos consultar la habilitación de esta empresa.");
+  }
+}
+
+export async function obtenerHabilitacionPlataforma(
+  modulo = "CAPACITACIONES"
+): Promise<EstadoDePlataforma> {
+  try {
+    const { data } = await api.get<EstadoDePlataforma>(`${BASE}/plataforma`, {
+      params: { modulo },
+    });
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos consultar las funcionalidades globales.");
+  }
+}
+
+export async function cambiarBanderaGlobal(datos: {
+  modulo: string;
+  clave: string;
+  habilitado: boolean;
+}): Promise<void> {
+  try {
+    await api.post(`${BASE}/plataforma/bandera`, datos);
+  } catch (e) {
+    throw errorApi(e, "No pudimos cambiar esta funcionalidad global.");
   }
 }
 
