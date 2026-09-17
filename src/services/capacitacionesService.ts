@@ -68,6 +68,19 @@ export function errorApi(e: unknown, fallback: string): ErrorApi {
 
   if (typeof detail === "string") {
     mensaje = detail;
+  } else if (Array.isArray(detail)) {
+    // FastAPI usa una lista para los errores de validación del contrato. Antes
+    // esta forma caía al fallback y escondía justamente el dato que permite
+    // corregir el formulario. Se conserva solo el mensaje legible: rutas como
+    // `body.evaluacion.preguntas.0` son detalle de implementación.
+    const mensajes = detail
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const msg = (item as { msg?: unknown }).msg;
+        return typeof msg === "string" ? msg : null;
+      })
+      .filter((item): item is string => Boolean(item));
+    if (mensajes.length > 0) mensaje = mensajes.join(" ");
   } else if (detail && typeof detail === "object") {
     const d = detail as { mensaje?: string; detail?: string; faltantes?: string[] };
     if (Array.isArray(d.faltantes)) faltantes = d.faltantes;

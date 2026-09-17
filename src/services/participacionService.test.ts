@@ -4,7 +4,7 @@ import {
   abrirEnlace,
   inscribirse,
   miCurso,
-  reanudar,
+  reanudarConDocumento,
   verificarConstancia,
 } from "./participacionService";
 import type { ErrorPublico } from "@/types/participacion";
@@ -96,11 +96,15 @@ describe("rutas y credenciales", () => {
     expect(get).toHaveBeenCalledWith("/c/a%2Fb%3Fc");
   });
 
-  it("reanudar manda el secreto y nunca el documento", async () => {
-    // No hay endpoint que acepte el documento, y este cliente no debe inventarlo.
-    post.mockResolvedValueOnce({ data: {} });
-    await reanudar("mi-secreto");
-    expect(post).toHaveBeenCalledWith("/c/sesion/reanudar", { secreto: "mi-secreto" });
+  it("reanuda por documento dentro del enlace codificado", async () => {
+    post.mockResolvedValueOnce({ data: { curso: "Curso" } });
+
+    await reanudarConDocumento("a/b", "CC", " 1010 ");
+
+    expect(post).toHaveBeenCalledWith("/c/a%2Fb/reanudar", {
+      tipo_documento: "CC",
+      numero_documento: "1010",
+    });
   });
 
   it("consultar el curso no manda ningún identificador", async () => {

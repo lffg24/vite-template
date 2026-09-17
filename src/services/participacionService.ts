@@ -28,6 +28,7 @@ import type {
   LeccionCompleta,
   MotivoPublico,
   ProgresoGuardado,
+  TipoDocumento,
   Verificacion,
 } from "@/types/participacion";
 
@@ -50,6 +51,7 @@ const MOTIVOS: readonly MotivoPublico[] = [
   "constancia_no_encontrada",
   "requiere_invitacion",
   "invitacion_no_disponible",
+  "servicio_no_disponible",
 ];
 
 /**
@@ -137,19 +139,23 @@ export async function miCurso(): Promise<EstadoCurso> {
   }
 }
 
-/**
- * D-02b. Reanudar en otro dispositivo.
- *
- * Solo con el secreto. El número de documento no sirve y no hay endpoint que lo
- * acepte: quien tuviera el enlace del grupo y conociera el documento de un
- * compañero podría continuar su curso.
- */
-export async function reanudar(secreto: string): Promise<EstadoCurso> {
+/** Retoma una inscripción desde el mismo enlace habilitado y el documento. */
+export async function reanudarConDocumento(
+  token: string,
+  tipoDocumento: TipoDocumento,
+  numeroDocumento: string
+): Promise<EstadoCurso> {
   try {
-    const { data } = await publico.post<EstadoCurso>("/c/sesion/reanudar", { secreto });
+    const { data } = await publico.post<EstadoCurso>(
+      `/c/${encodeURIComponent(token)}/reanudar`,
+      {
+        tipo_documento: tipoDocumento,
+        numero_documento: numeroDocumento.trim(),
+      }
+    );
     return data;
   } catch (e) {
-    throw errorPublico(e, "No pudimos reanudar con ese código.");
+    throw errorPublico(e, "No pudimos recuperar tu capacitación.");
   }
 }
 

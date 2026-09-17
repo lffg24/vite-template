@@ -48,7 +48,9 @@ export function urlIncrustable(recurso: RecursoPublico): string | null {
       host === "youtu.be"
         ? u.pathname.slice(1)
         : u.searchParams.get("v") ?? (u.pathname.startsWith("/embed/") ? u.pathname.slice(7) : "");
-    return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : null;
+    return id
+      ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?playsinline=1&rel=0`
+      : null;
   }
 
   if (recurso.proveedor === "VIMEO") {
@@ -99,7 +101,10 @@ export function ReproductorRecurso({
             // sacar al participante de su curso.
             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen"
-            referrerPolicy="no-referrer"
+            // YouTube rechaza el reproductor con error 153 cuando el navegador
+            // elimina por completo el origen. Solo se comparte el origen, no la
+            // ruta ni el token del enlace público.
+            referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
           />
         </div>

@@ -36,7 +36,6 @@ import {
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
-import { SecretoDeReanudacion } from "@/features/participacion/SecretoDeReanudacion";
 
 function fecha(iso: string): string {
   return new Date(iso).toLocaleDateString("es-CO", {
@@ -58,7 +57,6 @@ export default function InvitacionPage() {
   const [abierto, setAbierto] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [secreto, setSecreto] = useState<string | null>(null);
 
   const inv = consulta.datos;
 
@@ -73,14 +71,8 @@ export default function InvitacionPage() {
         clave: t.clave,
         texto_id_presentado: t.texto_id,
       }));
-      const r = await aceptarInvitacion(token, aceptaciones);
-      if (r.secreto) {
-        setSecreto(r.secreto);
-      } else {
-        // Ya estaba dentro —volvió a abrir su enlace— y no hay secreto nuevo:
-        // emitirlo invalidaría la sesión que quizá tiene abierta en otro sitio.
-        navegar("/c/sesion", { replace: true });
-      }
+      await aceptarInvitacion(token, aceptaciones);
+      navegar("/c/sesion", { replace: true });
     } catch (e) {
       const err = e as ErrorPublico;
       setError(
@@ -115,17 +107,6 @@ export default function InvitacionPage() {
   }
 
   if (!inv) return null;
-
-  if (secreto) {
-    return (
-      <ParticipanteLayout>
-        <SecretoDeReanudacion
-          secreto={secreto}
-          alContinuar={() => navegar("/c/sesion", { replace: true })}
-        />
-      </ParticipanteLayout>
-    );
-  }
 
   const todasMarcadas = inv.textos.every((t) => marcados[t.clave]);
 

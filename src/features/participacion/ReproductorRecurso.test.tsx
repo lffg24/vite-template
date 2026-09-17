@@ -12,7 +12,8 @@ describe("la dirección incrustable", () => {
   it("convierte las tres formas de YouTube que la gente pega de verdad", () => {
     // Nadie pega una URL de embed: pega la del navegador, la de «compartir» o
     // la de un enlace ya incrustado. Las tres tienen que llegar al mismo sitio.
-    const esperada = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+    const esperada =
+      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?playsinline=1&rel=0";
 
     expect(
       urlIncrustable(rec({ proveedor: "YOUTUBE", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }))
@@ -88,7 +89,7 @@ describe("el reproductor", () => {
     expect(marco).toBeTruthy();
     expect(marco?.getAttribute("sandbox")).not.toContain("allow-top-navigation");
     expect(marco?.getAttribute("referrerPolicy") ?? marco?.getAttribute("referrerpolicy")).toBe(
-      "no-referrer"
+      "strict-origin-when-cross-origin"
     );
   });
 

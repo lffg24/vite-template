@@ -115,10 +115,10 @@ test.describe("Participante · invitación personal", () => {
       ],
     });
 
-    // Y sale con su secreto de reanudación, una sola vez. Va en un campo y no
-    // en texto suelto porque hay que poder seleccionarlo para copiarlo cuando el
-    // portapapeles no está disponible — fuera de HTTPS, por ejemplo.
-    await expect(page.locator('input[value="secreto-de-reanudacion"]')).toBeVisible();
+    // La cookie HttpOnly conserva la sesión; no se expone una credencial que la
+    // persona deba copiar, guardar o entender.
+    await expect(page).toHaveURL(/\/c\/sesion$/);
+    await expect(page.getByText(/código de continuación/i)).toHaveCount(0);
   });
 
   test("una invitación que ya no sirve no dice por qué", async ({ page }) => {
@@ -187,7 +187,7 @@ test.describe("Administración · importar participantes", () => {
 
   async function autenticar(page: Page) {
     await page.route(`${API}/auth/me`, (r) => json(r, usuario));
-    await page.route(`${API}/capacitaciones/contexto`, (r) =>
+    await page.route(`**/capacitaciones/contexto*`, (r) =>
       json(r, {
         empresa_id: "empresa-1",
         roles_plataforma: [],
@@ -207,6 +207,9 @@ test.describe("Administración · importar participantes", () => {
         bandera_catalogo_empresa: true,
         bandera_asignacion: true,
       })
+    );
+    await page.route(`${API}/acceso/navegacion`, (r) =>
+      json(r, { destinos: ["/capacitaciones/asignaciones"] })
     );
     await page.addInitScript(() => {
       window.localStorage.setItem("token", "token-de-prueba");
@@ -329,7 +332,7 @@ test.describe("Administración · importar participantes", () => {
     // backend también lo rechaza — pero ofrecer una sección que responderá 403
     // convierte un límite de permisos en algo que parece una avería.
     await page.route(`${API}/auth/me`, (r) => json(r, usuario));
-    await page.route(`${API}/capacitaciones/contexto`, (r) =>
+    await page.route(`**/capacitaciones/contexto*`, (r) =>
       json(r, {
         empresa_id: "empresa-1",
         roles_plataforma: [],
@@ -347,17 +350,16 @@ test.describe("Administración · importar participantes", () => {
         bandera_asignacion: true,
       })
     );
+    await page.route(`${API}/acceso/navegacion`, (r) =>
+      json(r, { destinos: ["/capacitaciones/asignaciones"] })
+    );
     await page.addInitScript(() => {
       window.localStorage.setItem("token", "token-de-prueba");
     });
     await page.route(`${API}/capacitaciones/asignaciones`, (r) => json(r, []));
 
     await page.goto("/capacitaciones/asignaciones");
-    // `button` y no `link`: las entradas de `RoleSidebar` son botones. La
-    // afirmación no cambia — sin la capacidad, Participantes no está en el menú.
-    await expect(
-      page.getByRole("button", { name: /asignaciones/i }).first()
-    ).toBeVisible();
-    await expect(page.getByRole("button", { name: /participantes/i })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /asignaciones/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /participantes/i })).toHaveCount(0);
   });
 });

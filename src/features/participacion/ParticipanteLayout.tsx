@@ -5,29 +5,32 @@
 // Quien abre esto es un trabajador con un teléfono de gama media, en 4G, que
 // llegó por WhatsApp y no tiene cuenta. Eso gobierna cada decisión de aquí:
 //
-// - Una sola columna. No hay versión de escritorio que se «comprima»: hay una
-//   pantalla estrecha que en escritorio se centra y ya.
-// - Sin navegación. No hay a dónde ir: hay un curso que terminar. Una barra de
-//   secciones aquí sería una invitación a perderse.
-// - Sin marca por encima del contenido. El nombre de la empresa aparece donde
-//   sirve —en el aterrizaje, para que el enlace de WhatsApp resulte creíble— y
-//   no en una cabecera que roba altura en cada pantalla.
+// - Móvil usa jerarquía compacta, controles táctiles y acciones persistentes.
+// - Escritorio aprovecha el ancho para separar contenido, contexto y avance.
+// - Sin navegación de producto. Hay un curso que terminar y no se agregan
+//   salidas que distraigan del recorrido.
+// - La marca vive en una cabecera breve y consistente en todas las pantallas.
 //
 // El `min-h-dvh` y no `min-h-screen`: en móvil, `100vh` incluye la barra del
 // navegador que se retrae al hacer scroll, y el pie queda cortado o baila.
 
 import type { ReactNode } from "react";
 
+import evaLogoColor from "@/assets/eva-logo-color.png";
+import AbrilWordmark from "@/components/brand/AbrilWordmark";
+
 export function ParticipanteLayout({
   children,
   progreso,
+  ancho = "amplio",
 }: {
   children: ReactNode;
   /** 0 a 1. Solo cuando hay un recorrido en marcha; en el aterrizaje no. */
   progreso?: number;
+  ancho?: "compacto" | "amplio";
 }) {
   return (
-    <div className="rel-scope flex min-h-dvh flex-col bg-rel-canvas font-rel-body text-rel-dark">
+    <div className="rel-scope flex min-h-screen min-h-[100dvh] flex-col bg-rel-canvas font-rel-body text-rel-dark">
       {progreso !== undefined ? (
         <div
           className="h-1 w-full bg-rel-border"
@@ -44,16 +47,42 @@ export function ParticipanteLayout({
         </div>
       ) : null}
 
-      {/* `max-w-md` y no `max-w-2xl`: en escritorio se ve como lo que es, una
-          pantalla pensada para el teléfono, en vez de estirar una columna de
-          texto hasta hacerla incómoda de leer. */}
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-6">
+      <header className="border-b border-rel-border/80 bg-rel-surface">
+        <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <img
+              src={evaLogoColor}
+              alt=""
+              aria-hidden="true"
+              className="h-9 w-9 object-contain sm:h-10 sm:w-10"
+            />
+            <div>
+              <AbrilWordmark
+                className="font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-2xl"
+                accentClassName="text-rel-primary"
+              />
+              <p className="hidden text-xs text-rel-muted sm:block">
+                Aprende · Avanza · Impacta
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-rel-accent-subtle px-3 py-1.5 text-xs font-semibold text-rel-accent sm:text-sm">
+            Participante
+          </span>
+        </div>
+      </header>
+
+      <main
+        className={`mx-auto flex w-full flex-1 flex-col px-4 py-5 sm:px-6 sm:py-8 lg:px-8 ${
+          ancho === "compacto" ? "max-w-3xl" : "max-w-7xl"
+        }`}
+      >
         {children}
       </main>
 
-      <footer className="mx-auto w-full max-w-md px-5 pb-6">
-        <p className="text-center text-xs text-rel-muted">
-          ABRIL-360 · REL Consilium
+      <footer className="mt-auto border-t border-rel-border/80 bg-rel-surface">
+        <p className="mx-auto w-full max-w-7xl px-4 py-5 text-center text-xs text-rel-muted sm:px-6 lg:px-8">
+          ABRIL360 · REL Consilium SAS
         </p>
       </footer>
     </div>
@@ -75,7 +104,7 @@ export function BotonPrincipal({
     <button
       {...props}
       className={
-        "min-h-12 w-full rounded-rel-control bg-rel-primary px-5 text-base font-semibold " +
+        "inline-flex min-h-12 w-full items-center justify-center rounded-rel-control bg-rel-primary px-5 text-base font-semibold shadow-sm " +
         "text-rel-primary-foreground transition-colors duration-rel-micro " +
         "hover:bg-rel-primary/90 focus-visible:outline-none focus-visible:ring-2 " +
         "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +
@@ -96,7 +125,7 @@ export function BotonSecundario({
     <button
       {...props}
       className={
-        "min-h-12 w-full rounded-rel-control border border-rel-primary px-5 text-base " +
+        "inline-flex min-h-12 w-full items-center justify-center rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base " +
         "font-semibold text-rel-primary transition-colors duration-rel-micro " +
         "hover:bg-rel-surface focus-visible:outline-none focus-visible:ring-2 " +
         "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +
@@ -118,7 +147,7 @@ export function Panel({
 }) {
   return (
     <div
-      className={`rounded-rel-card border border-rel-border bg-rel-surface p-5 ${className}`}
+      className={`rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm ${className}`}
     >
       {children}
     </div>

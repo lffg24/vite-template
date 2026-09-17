@@ -191,12 +191,10 @@ test.describe("Participante · recorrido en el teléfono", () => {
     await page.getByRole("checkbox").nth(1).check();
     await page.getByRole("button", { name: "Ingresar" }).click();
 
-    // --- el secreto, una sola vez ---
-    await expect(page.getByText("Ya estás dentro")).toBeVisible();
-    await expect(page.getByLabel(/código de continuación/i)).toHaveValue(
-      "mi-codigo-de-continuacion"
-    );
-    await page.getByRole("button", { name: /empezar el curso/i }).click();
+    // Entra directamente: el secreto queda en una cookie HttpOnly y nunca se
+    // convierte en una tarea ni en una credencial visible para la persona.
+    await expect(page).toHaveURL(/\/c\/sesion$/);
+    await expect(page.getByText(/código de continuación/i)).toHaveCount(0);
 
     // --- D-03 · el curso ---
     await expect(page.getByRole("heading", { name: /Inducción en Seguridad/ })).toBeVisible();
@@ -255,17 +253,36 @@ test.describe("Participante · recorrido en el teléfono", () => {
     await expect(page.getByText("Transportes del Norte S.A.S.")).toBeVisible();
   });
 
-  test("D-02b · sin sesión pide el código, nunca el documento", async ({ page }) => {
+  test("D-02b · reanuda con el mismo enlace y el documento", async ({ page }) => {
+    await simular(page);
+    let enviado: unknown = null;
+    await page.route(`${API}/c/${TOKEN}/reanudar`, async (route) => {
+      enviado = route.request().postDataJSON();
+      return json(route, curso());
+    });
+
+    await page.goto(`/c/${TOKEN}`);
+    await page.getByRole("button", { name: /ya había empezado/i }).click();
+    await page.getByLabel(/número de documento/i).fill("1018442907");
+    await page.getByRole("button", { name: /^continuar$/i }).click();
+
+    await expect.poll(() => enviado).toEqual({
+      tipo_documento: "CC",
+      numero_documento: "1018442907",
+    });
+    await expect(page).toHaveURL(/\/c\/sesion$/);
+    await expect(page.getByText(/código de continuación/i)).toHaveCount(0);
+  });
+
+  test("D-02b · sin sesión explica cómo volver al enlace original", async ({ page }) => {
     await page.route(`${API}/c/sesion/estado`, (route) =>
       json(route, { detail: { motivo: "sesion_invalida", mensaje: "sin sesión" } }, 401)
     );
 
     await page.goto("/c/sesion");
-    await expect(page.getByText(/¿estás en otro teléfono\?/i)).toBeVisible();
-    await expect(page.getByLabel(/código de continuación/i)).toBeVisible();
-    await expect(page.getByText(/el número de documento no basta/i)).toBeVisible();
-    // No hay ningún campo de documento en esta pantalla.
-    await expect(page.getByLabel(/documento/i)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /vuelve a abrir tu enlace/i })).toBeVisible();
+    await expect(page.getByText(/ya había empezado/i)).toBeVisible();
+    await expect(page.getByText(/código de continuación/i)).toHaveCount(0);
   });
 
   test("una lección bloqueada no es enlace ni recibe foco", async ({ page }) => {

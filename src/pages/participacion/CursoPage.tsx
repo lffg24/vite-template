@@ -1,18 +1,16 @@
 // src/pages/participacion/CursoPage.tsx · D-02b + D-03
 //
 // Dos pantallas en una ruta porque son la misma pregunta desde el punto de vista
-// de quien llega: «¿puedo seguir?». Si la cookie está, se sigue; si no, se pide
-// el código.
+// de quien llega: «¿puedo seguir?». Si la cookie está, se sigue; si no, se le
+// indica cómo volver al enlace que acota su empresa y asignación.
 //
-// **Reanudar por documento no existe**, y no por descuido: quien tuviera el
-// enlace del grupo y conociera el documento de un compañero podría continuar su
-// curso y descargar su constancia.
+// La identificación por documento vive en el aterrizaje del enlace, nunca en
+// esta ruta sin contexto. Así el cliente no envía empresa ni asignación.
 
-import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, Circle, Lock } from "lucide-react";
 
-import { miCurso, reanudar } from "@/services/participacionService";
+import { miCurso } from "@/services/participacionService";
 import type { ErrorPublico, EstadoCurso } from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
@@ -27,36 +25,6 @@ export default function CursoPage() {
   const navegar = useNavigate();
   const consulta = useConsulta<EstadoCurso>(() => miCurso(), []);
 
-  const [codigo, setCodigo] = useState("");
-  const [reanudando, setReanudando] = useState(false);
-  const [errorCodigo, setErrorCodigo] = useState<string | null>(null);
-
-  const entrarConCodigo = useCallback(
-    async (ev: React.FormEvent) => {
-      ev.preventDefault();
-      if (!codigo.trim()) {
-        setErrorCodigo("Escribe el código que te dimos al empezar.");
-        return;
-      }
-      setReanudando(true);
-      setErrorCodigo(null);
-      try {
-        await reanudar(codigo.trim());
-        await consulta.refrescar();
-      } catch (e) {
-        const err = e as ErrorPublico;
-        setErrorCodigo(
-          err.motivo === "sesion_invalida"
-            ? "Ese código no corresponde a ninguna capacitación en curso."
-            : err.message
-        );
-      } finally {
-        setReanudando(false);
-      }
-    },
-    [codigo, consulta]
-  );
-
   if (consulta.fase === "cargando") {
     return (
       <ParticipanteLayout>
@@ -70,44 +38,13 @@ export default function CursoPage() {
   // persona pulsando «reintentar» sin que nada cambiara nunca.
   if (consulta.fase === "error" && (consulta.error as ErrorPublico)?.motivo === "sesion_invalida") {
     return (
-      <ParticipanteLayout>
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="font-rel-heading text-2xl font-bold">
-            ¿Estás en otro teléfono?
-          </h1>
-          <p className="mt-3 text-base leading-relaxed text-rel-muted">
-            En este dispositivo no hay ninguna capacitación empezada. Si ya la
-            habías comenzado en otro, escribe el código de continuación.
-          </p>
-
-          <form onSubmit={entrarConCodigo} className="mt-6 space-y-3" noValidate>
-            <label htmlFor="codigo" className="block text-sm font-semibold">
-              Código de continuación
-            </label>
-            <input
-              id="codigo"
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              autoComplete="one-time-code"
-              enterKeyHint="go"
-              className="min-h-12 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 font-mono text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-              aria-invalid={errorCodigo ? true : undefined}
-              aria-describedby={errorCodigo ? "err-codigo" : undefined}
-            />
-            {errorCodigo ? (
-              <p id="err-codigo" role="alert" className="text-sm text-rel-danger">
-                {errorCodigo}
-              </p>
-            ) : null}
-            <BotonPrincipal type="submit" disabled={reanudando}>
-              {reanudando ? "Entrando…" : "Continuar"}
-            </BotonPrincipal>
-          </form>
-
-          <p className="mt-6 text-sm leading-relaxed text-rel-muted">
-            ¿No lo tienes? Pídele a quien te compartió el enlace que te ayude.
-            Por seguridad, el número de documento no basta para continuar el
-            curso de alguien.
+      <ParticipanteLayout ancho="compacto">
+        <div className="my-auto rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-card sm:p-8">
+          <h1 className="font-rel-heading text-2xl font-bold">Vuelve a abrir tu enlace</h1>
+          <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-rel-muted">
+            En este dispositivo no encontramos una sesión activa. Abre de nuevo
+            el enlace de la capacitación y elige “Ya había empezado” para entrar
+            con tu documento.
           </p>
         </div>
       </ParticipanteLayout>
@@ -154,18 +91,42 @@ export default function CursoPage() {
 
   return (
     <ParticipanteLayout progreso={avance}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        Versión {curso.numero_version}
-      </p>
-      <h1 className="mt-1 font-rel-heading text-2xl font-bold leading-tight">
-        {curso.curso}
-      </h1>
-      <p className="mt-2 text-sm text-rel-muted">
-        {curso.obligatorias_completas} de {curso.obligatorias_totales}{" "}
-        {curso.obligatorias_totales === 1 ? "lección" : "lecciones"}
-      </p>
+      <section className="rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card sm:p-7">
+        <div className="grid gap-5 lg:grid-cols-[1fr_20rem] lg:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent">
+              Curso · Versión {curso.numero_version}
+            </p>
+            <h1 className="mt-2 font-rel-heading text-3xl font-black leading-tight sm:text-4xl">
+              {curso.curso}
+            </h1>
+            <p className="mt-3 text-sm text-rel-muted">
+              Avanza en el orden propuesto. Tu progreso se guarda automáticamente.
+            </p>
+          </div>
+          <div className="rounded-rel-card bg-rel-accent-subtle p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">Tu progreso</p>
+                <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums">{Math.round(avance * 100)}%</p>
+              </div>
+              <p className="text-right text-sm text-rel-muted">
+                {curso.obligatorias_completas} de {curso.obligatorias_totales}{" "}
+                {curso.obligatorias_totales === 1 ? "lección" : "lecciones"}
+              </p>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-rel-surface">
+              <div className="h-full rounded-full bg-rel-primary" style={{ width: `${avance * 100}%` }} />
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <ol className="mt-5 space-y-3">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <section>
+          <h2 className="font-rel-heading text-xl font-bold">Ruta de aprendizaje</h2>
+          <p className="mt-1 text-sm text-rel-muted">Selecciona la siguiente lección disponible.</p>
+          <ol className="mt-4 space-y-3">
         {curso.lecciones.map((l) => {
           const bloqueada = !l.desbloqueada && !l.completada;
           return (
@@ -212,23 +173,37 @@ export default function CursoPage() {
             </li>
           );
         })}
-      </ol>
+          </ol>
+        </section>
 
-      <div className="mt-auto pt-6">
-        {curso.puede_finalizar ? (
-          <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
-            Registrar mi asistencia
-          </BotonPrincipal>
-        ) : (
-          <BotonSecundario
-            onClick={() => {
-              const siguiente = curso.lecciones.find((l) => !l.completada && l.desbloqueada);
-              if (siguiente) navegar(`/c/sesion/leccion/${siguiente.leccion_id}`);
-            }}
-          >
-            Continuar donde quedé
-          </BotonSecundario>
-        )}
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <Panel>
+            <p className="font-rel-heading text-lg font-bold">
+              {curso.puede_finalizar ? "Completaste el recorrido" : "Sigue avanzando"}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-rel-muted">
+              {curso.puede_finalizar
+                ? "Confirma tu asistencia para generar el registro y la constancia."
+                : "Continúa desde la primera lección disponible."}
+            </p>
+            <div className="mt-5">
+              {curso.puede_finalizar ? (
+                <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
+                  Registrar mi asistencia
+                </BotonPrincipal>
+              ) : (
+                <BotonSecundario
+                  onClick={() => {
+                    const siguiente = curso.lecciones.find((l) => !l.completada && l.desbloqueada);
+                    if (siguiente) navegar(`/c/sesion/leccion/${siguiente.leccion_id}`);
+                  }}
+                >
+                  Continuar donde quedé
+                </BotonSecundario>
+              )}
+            </div>
+          </Panel>
+        </aside>
       </div>
     </ParticipanteLayout>
   );

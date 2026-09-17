@@ -352,6 +352,14 @@
     --rel-motion-micro: 150ms;
     --rel-motion-panel: 220ms;
     --rel-motion-context: 280ms;
+
+    /* Illustration System · medidas compartidas, nunca por pantalla. */
+    --illustration-size-xs: 5rem;
+    --illustration-size-sm: 8rem;
+    --illustration-size-md: 12rem;
+    --illustration-size-lg: clamp(14rem, 24vw, 20rem);
+    --illustration-size-xl: clamp(18rem, 32vw, 26rem);
+    --illustration-radius: var(--rel-radius-panel);
   }
 }
 

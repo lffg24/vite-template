@@ -168,6 +168,7 @@ export default function LeccionPage() {
 
   return (
     <ParticipanteLayout progreso={(bloque + 1) / total}>
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
       <button
         type="button"
         onClick={() => navegar("/c/sesion")}
@@ -186,7 +187,7 @@ export default function LeccionPage() {
               : "Documento"
             : `Parte ${bloque + 1} de ${total}`}
       </p>
-      <h1 className="mt-1 font-rel-heading text-xl font-bold leading-tight">
+      <h1 className="mt-1 font-rel-heading text-2xl font-black leading-tight sm:text-3xl">
         {leccion.titulo}
       </h1>
 
@@ -211,14 +212,14 @@ export default function LeccionPage() {
           alTerminar={() => navegar("/c/sesion", { replace: true })}
         />
       ) : recurso ? (
-        <div className="mt-5 flex-1 space-y-4">
+        <div className="mt-5 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <ReproductorRecurso recurso={recurso} tipo={leccion.tipo} />
 
           {/* La confirmación es lo que cuenta, y la pantalla dice por qué en
               vez de fingir una barra de reproducción: de un incrustado de
               terceros no se puede medir cuánto se vio sin la API del proveedor,
               y un porcentaje calculado en el navegador sería inventado. */}
-          <label className="flex cursor-pointer items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-4">
+          <label className="flex cursor-pointer items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm lg:sticky lg:top-6">
             <input
               type="checkbox"
               checked={confirmado}
@@ -239,7 +240,7 @@ export default function LeccionPage() {
         </div>
       ) : (
         <div
-          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5"
+          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm sm:p-7"
           aria-live="polite"
         >
           {leccion.bloques[bloque]?.titulo ? (
@@ -266,7 +267,7 @@ export default function LeccionPage() {
       ) : null}
 
       {evaluacion ? null : (
-      <div className="mt-6 flex gap-3">
+      <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex gap-3 border-t border-rel-border bg-rel-canvas/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:ml-auto lg:w-full lg:max-w-md lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
         {!recurso && bloque > 0 ? (
           <button
             type="button"
@@ -294,6 +295,7 @@ export default function LeccionPage() {
         </BotonPrincipal>
       </div>
       )}
+      </div>
     </ParticipanteLayout>
   );
 }

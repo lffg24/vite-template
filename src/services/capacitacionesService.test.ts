@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/apiClient";
 import {
   crearAsignacion,
+  errorApi,
   generarEnlace,
   listarEnlaces,
   obtenerCurso,
@@ -29,6 +30,21 @@ beforeEach(() => {
 });
 
 describe("traducción de errores de la API", () => {
+  it("explica el 422 estructural de FastAPI en vez de ocultarlo con el fallback", () => {
+    const error = errorApi(
+      fallo(422, [
+        {
+          type: "missing",
+          loc: ["body", "evaluacion", "preguntas", 0, "correctas"],
+          msg: "Field required",
+        },
+      ]),
+      "No pudimos agregar la lección."
+    );
+
+    expect(error).toMatchObject({ status: 422, message: "Field required" });
+  });
+
   it("conserva el 404 para que la pantalla no lo confunda con un 403", async () => {
     // El backend responde 404 —y no 403— sobre un curso de otra empresa: un 403
     // confirmaría que el identificador existe en otro inquilino. Si el cliente

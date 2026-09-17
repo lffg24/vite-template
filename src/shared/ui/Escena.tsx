@@ -27,25 +27,12 @@
 // que entra al repositorio se queda en el historial para siempre, aunque se
 // reemplace después.
 
-import agenda from "@/assets/ilustraciones/agenda.webp";
-import avanceCurso from "@/assets/ilustraciones/avance-curso.webp";
-import avanzaCapacitacion from "@/assets/ilustraciones/avanza-capacitacion.webp";
-import avanzaEnCapacitaciones from "@/assets/ilustraciones/avanza-en-capacitaciones.webp";
-import cambioContrasena from "@/assets/ilustraciones/cambio-contrasena.webp";
-import cambioPassword from "@/assets/ilustraciones/cambio-password.webp";
-import capacitaciones from "@/assets/ilustraciones/capacitaciones.webp";
-import certificadoCapacitacionHombre from "@/assets/ilustraciones/certificado-capacitacion-hombre.webp";
-import certificadoMujer from "@/assets/ilustraciones/certificado-mujer.webp";
-import cursoProfesional from "@/assets/ilustraciones/curso-profesional.webp";
-import cursos from "@/assets/ilustraciones/cursos.webp";
-import errorLink from "@/assets/ilustraciones/error-link.webp";
-import estudioMujer from "@/assets/ilustraciones/estudio-mujer.webp";
-import linkFallido from "@/assets/ilustraciones/link-fallido.webp";
-import planificacion from "@/assets/ilustraciones/planificacion.webp";
-import terminaCapacitacionMujer from "@/assets/ilustraciones/termina-capacitacion-mujer.webp";
-import terminasteCapacitacion from "@/assets/ilustraciones/terminaste-capacitacion.webp";
-
 import { cn } from "@/lib/utils";
+import {
+  Illustration,
+  illustrationRegistry,
+  type IllustrationName,
+} from "./illustration";
 
 /**
  * Nombre de escena → archivo.
@@ -60,27 +47,9 @@ import { cn } from "@/lib/utils";
  * Añadir un archivo a la carpeta no basta: hay que importarlo aquí. Si falta,
  * falla el build — que es donde debe fallar.
  */
-export const ESCENAS = {
-  "agenda": agenda,
-  "avance-curso": avanceCurso,
-  "avanza-capacitacion": avanzaCapacitacion,
-  "avanza-en-capacitaciones": avanzaEnCapacitaciones,
-  "cambio-contrasena": cambioContrasena,
-  "cambio-password": cambioPassword,
-  "capacitaciones": capacitaciones,
-  "certificado-capacitacion-hombre": certificadoCapacitacionHombre,
-  "certificado-mujer": certificadoMujer,
-  "curso-profesional": cursoProfesional,
-  "cursos": cursos,
-  "error-link": errorLink,
-  "estudio-mujer": estudioMujer,
-  "link-fallido": linkFallido,
-  "planificacion": planificacion,
-  "termina-capacitacion-mujer": terminaCapacitacionMujer,
-  "terminaste-capacitacion": terminasteCapacitacion,
-} as const;
+export const ESCENAS = illustrationRegistry;
 
-export type NombreEscena = keyof typeof ESCENAS;
+export type NombreEscena = Exclude<IllustrationName, "courseLessonBuilder" | "evaluationBuilder">;
 
 const ANCHOS = {
   sm: "w-32",
@@ -102,20 +71,12 @@ export function Escena({
   className?: string;
 }) {
   return (
-    <img
-      src={ESCENAS[nombre]}
-      // Decorativa por defecto: acompaña a un titular que ya dice lo mismo, y
-      // anunciarla sería leer el mensaje dos veces. `alt=""` es lo que la
-      // esconde del lector de pantalla; omitir el atributo haría que leyera el
-      // nombre del archivo.
+    <Illustration
+      name={nombre}
+      size="full"
+      decorative={titulo == null}
       alt={titulo ?? ""}
-      // Las escenas viven en modales y pantallas de estado, que casi nunca se
-      // abren: cargarlas al entrar costaría ancho de banda por algo que quizá
-      // no se vea.
-      loading="lazy"
-      decoding="async"
-      className={cn(ANCHOS[tamano], "h-auto max-w-full select-none", className)}
-      draggable={false}
+      className={cn(ANCHOS[tamano], className)}
     />
   );
 }

@@ -44,12 +44,9 @@ import {
 } from "@/components/ui/select";
 import {
   Sheet,
-  SheetContent,
-  SheetDescription,
   SheetFooter,
-  SheetHeader,
-  SheetTitle,
 } from "@/components/ui/sheet";
+import { IllustratedFormSheet } from "@/shared/ui/illustration";
 import { useToast } from "@/hooks/use-toast";
 import {
   agregarLeccion,
@@ -149,6 +146,16 @@ const FORM_VACIO: FormLeccion = {
   obligatoria: true,
 };
 
+const TIPOS_CONTENIDO = TIPOS_LECCION.filter((tipo) => tipo !== "EVALUACION");
+
+function formularioNuevo(tipo: "NATIVA" | "EVALUACION"): FormLeccion {
+  return {
+    ...FORM_VACIO,
+    tipo,
+    evaluacion: { ...EVALUACION_VACIA, preguntas: [] },
+  };
+}
+
 /** Este tipo se reproduce desde una URL, asi que exige material. */
 function usaRecurso(tipo: TipoLeccion) {
   return TIPOS_LECCION_CON_RECURSO.includes(tipo);
@@ -174,6 +181,7 @@ export function LeccionesEditor({
   const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
   const [errorEvaluacion, setErrorEvaluacion] = useState<string | null>(null);
+  const [errorServidor, setErrorServidor] = useState<string | null>(null);
   const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
   const [moviendo, setMoviendo] = useState(false);
   const [ordenOptimista, setOrdenOptimista] = useState<string[] | null>(null);
@@ -181,12 +189,13 @@ export function LeccionesEditor({
 
   const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
 
-  function abrirNueva() {
+  function abrirNueva(tipo: "NATIVA" | "EVALUACION") {
     setEditandoId(null);
-    setForm(FORM_VACIO);
+    setForm(formularioNuevo(tipo));
     setErrorTitulo(null);
     setErrorUrl(null);
     setErrorEvaluacion(null);
+    setErrorServidor(null);
     setAbierto(true);
   }
 
@@ -209,6 +218,7 @@ export function LeccionesEditor({
     setErrorTitulo(null);
     setErrorUrl(null);
     setErrorEvaluacion(null);
+    setErrorServidor(null);
     setAbierto(true);
   }
 
@@ -262,6 +272,7 @@ export function LeccionesEditor({
       return;
     }
     setErrorEvaluacion(null);
+    setErrorServidor(null);
     // Una de las dos, nunca las dos ni ninguna: es la misma regla que aplica el
     // servidor, y mandar ambas devuelve un 422 que la pantalla no sabría
     // explicar mejor de lo que puede evitarlo aquí.
@@ -280,7 +291,7 @@ export function LeccionesEditor({
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
         });
-        toast({ title: "Lección guardada" });
+        toast({ title: esEvaluacion ? "Evaluación guardada" : "Lección guardada" });
       } else {
         await agregarLeccion(cursoId, {
           tipo: form.tipo,
@@ -292,15 +303,21 @@ export function LeccionesEditor({
           duracion_estimada_min: duracion,
           obligatoria: obligatoriedadFijada ? false : form.obligatoria,
         });
-        toast({ title: "Lección agregada", description: "Se ubicó al final del curso." });
+        toast({
+          title: esEvaluacion ? "Evaluación agregada" : "Lección agregada",
+          description: "Se ubicó al final del curso.",
+        });
       }
       setAbierto(false);
       await alCambiar();
     } catch (e) {
       const err = e as ErrorApi;
+      setErrorServidor(err.message);
       toast({
         variant: "destructive",
-        title: editandoId ? "No pudimos guardar la lección" : "No pudimos agregar la lección",
+        title: editandoId
+          ? `No pudimos guardar ${esEvaluacion ? "la evaluación" : "la lección"}`
+          : `No pudimos agregar ${esEvaluacion ? "la evaluación" : "la lección"}`,
         description: err.message,
       });
     } finally {
@@ -365,6 +382,7 @@ export function LeccionesEditor({
     : lecciones;
 
   const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
+  const editandoEvaluacion = form.tipo === "EVALUACION";
 
   return (
     <SeccionPlegable
@@ -381,11 +399,17 @@ export function LeccionesEditor({
         lecciones.length === 0 ? <Badge variant="relWarning">Vacío</Badge> : null
       }
       accion={
-        editable ? (
-          <Button variant="relOutline" size="sm" onClick={abrirNueva}>
-            <Plus aria-hidden="true" />
-            Agregar lección
-          </Button>
+        editable && lecciones.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            <Button variant="relOutline" size="sm" onClick={() => abrirNueva("NATIVA")}>
+              <Plus aria-hidden="true" />
+              Agregar lección
+            </Button>
+            <Button variant="relOutline" size="sm" onClick={() => abrirNueva("EVALUACION")}>
+              <Plus aria-hidden="true" />
+              Agregar evaluación
+            </Button>
+          </div>
         ) : null
       }
     >
@@ -396,10 +420,16 @@ export function LeccionesEditor({
             descripcion="Un curso sin lecciones no se puede publicar: produciría una asignación que nadie puede completar."
             accion={
               editable ? (
-                <Button variant="rel" onClick={abrirNueva}>
-                  <Plus aria-hidden="true" />
-                  Agregar la primera
-                </Button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button variant="rel" onClick={() => abrirNueva("NATIVA")}>
+                    <Plus aria-hidden="true" />
+                    Agregar lección
+                  </Button>
+                  <Button variant="relOutline" onClick={() => abrirNueva("EVALUACION")}>
+                    <Plus aria-hidden="true" />
+                    Agregar evaluación
+                  </Button>
+                </div>
               ) : undefined
             }
           />
@@ -438,7 +468,13 @@ export function LeccionesEditor({
                     )}
                   </div>
                   <p className="mt-1 font-rel-body text-sm text-rel-muted">
-                    {l.recurso
+                    {l.tipo === "EVALUACION"
+                      ? l.cuestionario_version_id
+                        ? "Evaluación del banco"
+                        : `${l.evaluacion?.preguntas.length ?? 0} ${
+                            l.evaluacion?.preguntas.length === 1 ? "pregunta" : "preguntas"
+                          }`
+                      : l.recurso
                       ? `${ETIQUETA_PROVEEDOR[l.recurso.proveedor]} · ${l.recurso.titulo}`
                       : l.bloques?.length
                       ? `${l.bloques.length} ${l.bloques.length === 1 ? "bloque" : "bloques"}`
@@ -454,7 +490,7 @@ export function LeccionesEditor({
                       variant="relGhost"
                       size="sm"
                       onClick={() => abrirEdicion(l)}
-                      aria-label={`Editar la lección ${l.titulo}`}
+                      aria-label={`Editar ${l.tipo === "EVALUACION" ? "la evaluación" : "la lección"} ${l.titulo}`}
                     >
                       <Pencil aria-hidden="true" />
                       <span className="hidden sm:inline">Editar</span>
@@ -485,20 +521,34 @@ export function LeccionesEditor({
           if (!v) setAbierto(false);
         }}
       >
-        <SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-xl">
-          <SheetHeader>
-            <SheetTitle className="font-rel-heading text-rel-dark">
-              {editandoId ? "Editar lección" : "Nueva lección"}
-            </SheetTitle>
-            <SheetDescription className="text-rel-muted">
-              {editandoId
-                ? "El tipo no se puede cambiar: cambiaría la regla de completitud de una lección que quizá ya está publicada en otra versión."
-                : "Se ubicará al final del curso."}
-            </SheetDescription>
-          </SheetHeader>
-
-          <form onSubmit={enviar} className="mt-6 space-y-5" noValidate>
-            <div className="space-y-2">
+        <IllustratedFormSheet
+          eyebrow={editandoEvaluacion ? "Evaluación del curso" : "Contenido del curso"}
+          title={
+            editandoId
+              ? editandoEvaluacion
+                ? "Editar evaluación"
+                : "Editar lección"
+              : editandoEvaluacion
+              ? "Nueva evaluación"
+              : "Nueva lección"
+          }
+          description={
+            editandoId
+              ? "El tipo se conserva para proteger la regla de completitud de las versiones ya publicadas."
+              : editandoEvaluacion
+              ? "Define cómo comprobarás el aprendizaje. Quedará ubicada dentro de la secuencia del curso."
+              : "Agrega contenido, video o documento. La nueva lección quedará al final del curso."
+          }
+          illustration={editandoEvaluacion ? "evaluationBuilder" : "courseLessonBuilder"}
+          width={editandoEvaluacion ? "wide" : "half"}
+        >
+          <form
+            onSubmit={enviar}
+            onChangeCapture={() => errorServidor && setErrorServidor(null)}
+            className="space-y-5 py-6"
+            noValidate
+          >
+            {!editandoEvaluacion ? <div className="space-y-2">
               <Label htmlFor="l-tipo" className="text-rel-dark">
                 Tipo de lección
               </Label>
@@ -511,7 +561,7 @@ export function LeccionesEditor({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TIPOS_LECCION.map((t) => (
+                  {TIPOS_CONTENIDO.map((t) => (
                     <SelectItem key={t} value={t} disabled={!estaImplementado(t)}>
                       {ETIQUETA_TIPO_LECCION[t]}
                       {estaImplementado(t) ? "" : " · sin reproductor todavía"}
@@ -524,7 +574,7 @@ export function LeccionesEditor({
                 reproducen desde una dirección externa. El recurso externo sigue
                 sin reproductor, y por eso no se puede publicar con él.
               </p>
-            </div>
+            </div> : null}
 
             <div className="space-y-2">
               <Label htmlFor="l-titulo" className="text-rel-dark">
@@ -763,7 +813,19 @@ export function LeccionesEditor({
               </div>
             </div>
 
-            <SheetFooter className="gap-2 sm:gap-2">
+            {errorServidor ? (
+              <div
+                role="alert"
+                className="rounded-rel-control border border-rel-danger/25 bg-rel-danger-subtle p-3 text-sm text-rel-danger"
+              >
+                <p className="font-semibold">
+                  No pudimos {editandoId ? "guardar" : "agregar"} {editandoEvaluacion ? "la evaluación" : "la lección"}.
+                </p>
+                <p className="mt-1">{errorServidor}</p>
+              </div>
+            ) : null}
+
+            <SheetFooter className="sticky bottom-0 -mx-5 gap-2 border-t border-rel-border bg-rel-surface px-5 py-4 sm:-mx-7 sm:gap-2 sm:px-7">
               <Button
                 type="button"
                 variant="relGhost"
@@ -773,11 +835,19 @@ export function LeccionesEditor({
                 Cancelar
               </Button>
               <Button type="submit" variant="rel" disabled={guardando}>
-                {guardando ? "Guardando…" : editandoId ? "Guardar lección" : "Agregar lección"}
+                {guardando
+                  ? "Guardando…"
+                  : editandoId
+                  ? editandoEvaluacion
+                    ? "Guardar evaluación"
+                    : "Guardar lección"
+                  : editandoEvaluacion
+                  ? "Agregar evaluación"
+                  : "Agregar lección"}
               </Button>
             </SheetFooter>
           </form>
-        </SheetContent>
+        </IllustratedFormSheet>
       </Sheet>
 
       {/* --- confirmación destructiva --- */}

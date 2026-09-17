@@ -9,16 +9,21 @@
 // repartía el enlace de grupo sin saber que ya no servía para entrar.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import AterrizajePage from "./AterrizajePage";
-import { abrirEnlace, inscribirse } from "@/services/participacionService";
+import {
+  abrirEnlace,
+  inscribirse,
+  reanudarConDocumento,
+} from "@/services/participacionService";
 import type { Aterrizaje } from "@/types/participacion";
 
 vi.mock("@/services/participacionService", () => ({
   abrirEnlace: vi.fn(),
   inscribirse: vi.fn(),
+  reanudarConDocumento: vi.fn(),
 }));
 
 const BASE: Aterrizaje = {
@@ -128,6 +133,23 @@ describe("cuando la asignación admite el enlace de grupo", () => {
     await screen.findByRole("heading", { name: BASE.curso });
 
     expect(screen.queryByText(/invitación personal/i)).toBeNull();
+  });
+
+  it("reanuda con el mismo enlace y el documento, sin mostrar códigos", async () => {
+    vi.mocked(abrirEnlace).mockResolvedValue({ ...BASE, exige_invitacion: false });
+    vi.mocked(reanudarConDocumento).mockResolvedValue({} as never);
+    montar();
+
+    fireEvent.click(await screen.findByRole("button", { name: /ya había empezado/i }));
+
+    expect(await screen.findByRole("heading", { name: /continúa tu capacitación/i })).toBeTruthy();
+    expect(screen.queryByText(/código de continuación/i)).toBeNull();
+    fireEvent.change(screen.getByLabelText(/número de documento/i), {
+      target: { value: "1018442907" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^continuar$/i }));
+
+    expect(reanudarConDocumento).toHaveBeenCalledWith("tok3n", "CC", "1018442907");
   });
 });
 

@@ -103,7 +103,7 @@ export function SelectorCuestionarioBanco({
         Evaluación del banco
       </Label>
       <Select
-        value={valor || undefined}
+        value={valor}
         disabled={deshabilitado}
         onValueChange={(versionId) => {
           const seleccionada = versiones.find((v) => v.version_id === versionId) ?? null;

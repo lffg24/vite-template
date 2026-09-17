@@ -72,7 +72,14 @@ function leccion(over: Partial<Leccion> = {}): Leccion {
 
 function abrirEdicion(l: Leccion) {
   render(<LeccionesEditor cursoId="c1" lecciones={[l]} editable alCambiar={() => {}} />);
-  fireEvent.click(screen.getByRole("button", { name: /editar la lección/i }));
+  fireEvent.click(
+    screen.getByRole("button", { name: /editar (la lección|la evaluación)/i })
+  );
+}
+
+function abrirNuevaEvaluacion() {
+  render(<LeccionesEditor cursoId="c1" lecciones={[]} editable alCambiar={() => {}} />);
+  fireEvent.click(screen.getByRole("button", { name: /^agregar evaluación$/i }));
 }
 
 beforeEach(() => {
@@ -88,6 +95,57 @@ beforeEach(() => {
  * publicando un cuestionario distinto del que enseñaba.
  */
 describe("LeccionesEditor · de dónde sale el cuestionario", () => {
+  it("separa la creación de contenido y de evaluación", () => {
+    render(<LeccionesEditor cursoId="c1" lecciones={[]} editable alCambiar={() => {}} />);
+
+    expect(screen.getByRole("button", { name: /^agregar lección$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^agregar evaluación$/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^agregar evaluación$/i }));
+
+    expect(screen.getByRole("heading", { name: /nueva evaluación/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/tipo de lección/i)).toBeNull();
+    expect(screen.getByText(/¿de dónde sale\?/i)).toBeInTheDocument();
+  });
+
+  it("envía al servidor el contrato vigente al crear una evaluación propia", async () => {
+    abrirNuevaEvaluacion();
+
+    fireEvent.change(screen.getByLabelText(/^título/i), {
+      target: { value: "Comprobación final" },
+    });
+    fireEvent.click(screen.getByRole("radio", { name: /escrito dentro de este curso/i }));
+    fireEvent.click(screen.getByRole("button", { name: /agregar pregunta/i }));
+    fireEvent.change(screen.getByLabelText(/enunciado de la pregunta 1/i), {
+      target: { value: "¿Qué debes hacer primero?" },
+    });
+    fireEvent.change(screen.getByLabelText(/texto de la opción 1/i), {
+      target: { value: "Reportar" },
+    });
+    fireEvent.change(screen.getByLabelText(/texto de la opción 2/i), {
+      target: { value: "Ignorar" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /^agregar evaluación$/i }));
+
+    await vi.waitFor(() => expect(agregarLeccion).toHaveBeenCalled());
+    const [, payload] = vi.mocked(agregarLeccion).mock.calls[0];
+    expect(payload).toMatchObject({
+      tipo: "EVALUACION",
+      titulo: "Comprobación final",
+      evaluacion: {
+        preguntas: [
+          {
+            tipo: "OPCION_UNICA",
+            correctas: [0],
+            puntos: 1,
+          },
+        ],
+      },
+      cuestionario_version_id: null,
+    });
+  });
+
   it("una lección del banco se abre en el banco y guarda su referencia", async () => {
     abrirEdicion(leccion());
 
@@ -97,7 +155,7 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
     // ya no puede cambiar, y descubrirlos cuando alguien reprueba es tarde.
     expect(screen.getByText("80 %")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+    fireEvent.click(screen.getByRole("button", { name: /guardar evaluación/i }));
 
     await vi.waitFor(() => expect(editarLeccion).toHaveBeenCalled());
     const [, , cambios] = vi.mocked(editarLeccion).mock.calls[0];
@@ -124,7 +182,7 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
     fireEvent.click(selector);
     fireEvent.click(await screen.findByRole("option", { name: /EVA-003.*Inducción SST.*v2/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+    fireEvent.click(screen.getByRole("button", { name: /guardar evaluación/i }));
 
     await vi.waitFor(() => expect(editarLeccion).toHaveBeenCalled());
     const [, , cambios] = vi.mocked(editarLeccion).mock.calls[0];
@@ -138,7 +196,7 @@ describe("LeccionesEditor · de dónde sale el cuestionario", () => {
     fireEvent.click(screen.getByRole("radio", { name: /del banco de evaluaciones/i }));
     await screen.findByLabelText(/evaluación del banco/i);
 
-    fireEvent.click(screen.getByRole("button", { name: /guardar lección/i }));
+    fireEvent.click(screen.getByRole("button", { name: /guardar evaluación/i }));
 
     expect(await screen.findByText(/elige una evaluación del banco/i)).toBeInTheDocument();
     expect(editarLeccion).not.toHaveBeenCalled();

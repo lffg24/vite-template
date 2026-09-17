@@ -54,7 +54,7 @@ export default function FinalizarPage() {
       setError(
         err.motivo === "orden_no_respetado"
           ? "Todavía te faltan lecciones obligatorias."
-          : "No pudimos registrar tu asistencia. Inténtalo otra vez."
+          : err.message || "No pudimos registrar tu asistencia. Inténtalo otra vez."
       );
     } finally {
       setEnviando(false);
@@ -176,13 +176,17 @@ export default function FinalizarPage() {
   }
 
   return (
-    <ParticipanteLayout progreso={1}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
+    <ParticipanteLayout progreso={1} ancho="compacto">
+      <div className="my-auto w-full rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card sm:p-8">
+      <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent">
         Paso 3 de 3
       </p>
-      <h1 className="mt-1 font-rel-heading text-2xl font-bold">
-        Registra tu asistencia
+      <h1 className="mt-2 font-rel-heading text-3xl font-black">
+        Confirma tu asistencia
       </h1>
+      <p className="mt-2 text-sm leading-relaxed text-rel-muted">
+        Revisa el resumen antes de registrar la evidencia de participación.
+      </p>
 
       <Panel className="mt-5">
         <dl className="space-y-3 text-sm">
@@ -227,6 +231,7 @@ export default function FinalizarPage() {
         <BotonSecundario onClick={() => navegar("/c/sesion")}>
           Volver al curso
         </BotonSecundario>
+      </div>
       </div>
     </ParticipanteLayout>
   );

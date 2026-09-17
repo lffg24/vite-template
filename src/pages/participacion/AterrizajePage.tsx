@@ -14,8 +14,14 @@ import { CheckCircle2, Clock, FileText } from "lucide-react";
 import {
   abrirEnlace,
   inscribirse,
+  reanudarConDocumento,
 } from "@/services/participacionService";
-import type { Aterrizaje, ErrorPublico, Identificacion } from "@/types/participacion";
+import type {
+  Aterrizaje,
+  ErrorPublico,
+  Identificacion,
+  TipoDocumento,
+} from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import { Ilustracion } from "@/shared/ui/ilustraciones";
 import {
@@ -26,7 +32,8 @@ import {
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { FormularioIdentidad } from "@/features/participacion/FormularioIdentidad";
-import { SecretoDeReanudacion } from "@/features/participacion/SecretoDeReanudacion";
+import { FormularioReanudacion } from "@/features/participacion/FormularioReanudacion";
+import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 
 function formatearDuracion(min: number | null): string | null {
   if (!min) return null;
@@ -41,26 +48,17 @@ export default function AterrizajePage() {
   const navegar = useNavigate();
   const consulta = useConsulta<Aterrizaje>(() => abrirEnlace(token), [token]);
 
-  const [paso, setPaso] = useState<"portada" | "datos">("portada");
+  const [paso, setPaso] = useState<"portada" | "datos" | "reanudar">("portada");
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<ErrorPublico | null>(null);
-  const [secreto, setSecreto] = useState<string | null>(null);
 
   const enviar = useCallback(
     async (datos: Identificacion) => {
       setEnviando(true);
       setErrorEnvio(null);
       try {
-        const r = await inscribirse(token, datos);
-        if (r.secreto) {
-          // Se muestra una vez y no se guarda en el navegador. La sesión ya va
-          // en la cookie `HttpOnly`; guardar el secreto en `localStorage` lo
-          // dejaría legible por cualquier script, que es justo lo que la cookie
-          // evita.
-          setSecreto(r.secreto);
-        } else {
-          navegar("/c/sesion", { replace: true });
-        }
+        await inscribirse(token, datos);
+        navegar("/c/sesion", { replace: true });
       } catch (e) {
         const err = e as ErrorPublico;
         setErrorEnvio(err);
@@ -76,6 +74,22 @@ export default function AterrizajePage() {
       }
     },
     [token, navegar, consulta]
+  );
+
+  const reanudar = useCallback(
+    async (tipoDocumento: TipoDocumento, numeroDocumento: string) => {
+      setEnviando(true);
+      setErrorEnvio(null);
+      try {
+        await reanudarConDocumento(token, tipoDocumento, numeroDocumento);
+        navegar("/c/sesion", { replace: true });
+      } catch (e) {
+        setErrorEnvio(e as ErrorPublico);
+      } finally {
+        setEnviando(false);
+      }
+    },
+    [token, navegar]
   );
 
   if (consulta.fase === "cargando") {
@@ -100,39 +114,66 @@ export default function AterrizajePage() {
   const datos = consulta.datos;
   if (!datos) return null;
 
-  if (secreto) {
+  if (paso === "datos") {
     return (
-      <ParticipanteLayout progreso={0.33}>
-        <SecretoDeReanudacion
-          secreto={secreto}
-          alContinuar={() => navegar("/c/sesion", { replace: true })}
-        />
+      <ParticipanteLayout progreso={0.15} ancho="amplio">
+        <div className="grid flex-1 overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
+          <aside className="hidden bg-rel-accent-subtle p-8 lg:flex lg:flex-col lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent">
+                Antes de comenzar
+              </p>
+              <h1 className="mt-3 font-rel-heading text-3xl font-bold">
+                Tus datos protegen tu avance
+              </h1>
+              <p className="mt-3 leading-relaxed text-rel-muted">
+                Te identificamos para guardar el progreso y emitir tu constancia.
+              </p>
+            </div>
+            <IllustrationSurface tone="lavender" className="mt-8">
+              <Illustration name="publicCourseWelcome" size="lg" decorative />
+            </IllustrationSurface>
+          </aside>
+          <div className="p-5 sm:p-8 lg:max-h-[calc(100dvh-11rem)] lg:overflow-y-auto">
+            {errorEnvio && errorEnvio.motivo !== "texto_cambio" ? (
+              <p
+                role="alert"
+                className="mb-4 rounded-rel-card border border-rel-danger/30 bg-rel-danger-subtle p-3 text-sm text-rel-dark"
+              >
+                {errorEnvio.message}
+              </p>
+            ) : null}
+            <FormularioIdentidad
+              textos={datos.textos}
+              enviando={enviando}
+              onEnviar={enviar}
+            />
+          </div>
+        </div>
       </ParticipanteLayout>
     );
   }
 
-  if (paso === "datos") {
+  if (paso === "reanudar") {
     return (
-      <ParticipanteLayout progreso={0.15}>
-        {errorEnvio && errorEnvio.motivo !== "texto_cambio" ? (
-          <p
-            role="alert"
-            className="mb-4 rounded-rel-card border border-rel-danger/30 bg-rel-danger-subtle p-3 text-sm text-rel-dark"
-          >
-            {errorEnvio.message}
-          </p>
-        ) : null}
-        <FormularioIdentidad
-          textos={datos.textos}
-          enviando={enviando}
-          onEnviar={enviar}
-        />
+      <ParticipanteLayout ancho="compacto">
+        <Panel className="my-auto p-5 sm:p-8">
+          <FormularioReanudacion
+            enviando={enviando}
+            error={errorEnvio?.message ?? null}
+            onEnviar={(tipo, numero) => void reanudar(tipo, numero)}
+            onCancelar={() => {
+              setErrorEnvio(null);
+              setPaso("portada");
+            }}
+          />
+        </Panel>
       </ParticipanteLayout>
     );
   }
 
   return (
-    <ParticipanteLayout>
+    <ParticipanteLayout ancho="amplio">
       {errorEnvio?.motivo === "texto_cambio" ? (
         <p
           role="alert"
@@ -143,51 +184,58 @@ export default function AterrizajePage() {
         </p>
       ) : null}
 
-      <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        {datos.empresa}
-      </p>
-      <h1 className="mt-2 font-rel-heading text-2xl font-bold leading-tight">
-        {datos.curso}
-      </h1>
-
-      <dl className="mt-4 space-y-2 text-sm text-rel-muted">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <dt className="sr-only">Lecciones</dt>
-          <dd>
-            {datos.lecciones} {datos.lecciones === 1 ? "lección" : "lecciones"}
-          </dd>
-        </div>
-        {formatearDuracion(datos.duracion_estimada_min) ? (
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <dt className="sr-only">Duración</dt>
-            {/* La duración va ANTES de empezar: quien está en turno decide si
-                tiene el rato, y descubrirlo a mitad es lo que hace abandonar. */}
-            <dd>{formatearDuracion(datos.duracion_estimada_min)}</dd>
+      <section className="overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card">
+        <div className="grid items-center gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:p-10">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent">
+              {datos.empresa}
+            </p>
+            <h1 className="mt-3 max-w-3xl font-rel-heading text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
+              {datos.curso}
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-rel-muted sm:text-lg">
+              Aprende a tu ritmo. Tu avance queda guardado para que puedas continuar cuando lo necesites.
+            </p>
+            <dl className="mt-6 flex flex-wrap gap-3 text-sm text-rel-muted">
+              <div className="flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface-subtle px-4 py-3">
+                <FileText className="h-4 w-4 shrink-0 text-rel-primary" aria-hidden="true" />
+                <dt className="sr-only">Lecciones</dt>
+                <dd>{datos.lecciones} {datos.lecciones === 1 ? "lección" : "lecciones"}</dd>
+              </div>
+              {formatearDuracion(datos.duracion_estimada_min) ? (
+                <div className="flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface-subtle px-4 py-3">
+                  <Clock className="h-4 w-4 shrink-0 text-rel-primary" aria-hidden="true" />
+                  <dt className="sr-only">Duración</dt>
+                  <dd>{formatearDuracion(datos.duracion_estimada_min)}</dd>
+                </div>
+              ) : null}
+            </dl>
           </div>
-        ) : null}
-      </dl>
-
-      <Panel className="mt-5">
-        <div className="flex items-start gap-3">
-          <CheckCircle2
-            className="mt-0.5 h-5 w-5 shrink-0 text-rel-success"
-            aria-hidden="true"
-          />
-          {/* Ni «descargable» ni «te la enviamos»: no hay PDF ni correo. Se
-              promete exactamente lo que la pantalla de cierre entrega — el folio
-              y el código—, porque prometer aquí lo que no existe convierte el
-              final del curso en una decepción justo donde había que dar
-              confianza. */}
-          <p className="text-sm leading-relaxed">
-            Al terminar recibes tu{" "}
-            <strong className="font-semibold">constancia de asistencia</strong>:
-            un registro con folio y un código con el que cualquiera puede
-            verificarla.
-          </p>
+          <IllustrationSurface tone="lavender" className="mx-auto w-full max-w-md">
+            <Illustration name="publicCourseWelcome" size="full" decorative priority />
+          </IllustrationSurface>
         </div>
-      </Panel>
+        <div className="grid gap-4 border-t border-rel-border bg-rel-surface-subtle p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-6 lg:px-10">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-rel-success" aria-hidden="true" />
+            <p className="text-sm leading-relaxed">
+              Al terminar recibes una <strong className="font-semibold">constancia de asistencia</strong> con folio verificable.
+            </p>
+          </div>
+          {!datos.exige_invitacion ? (
+            <div className="flex flex-col gap-3 sm:min-w-56">
+              <BotonPrincipal onClick={() => setPaso("datos")}>Comenzar</BotonPrincipal>
+              <button
+                type="button"
+                onClick={() => setPaso("reanudar")}
+                className="min-h-11 text-sm font-semibold text-rel-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+              >
+                Ya había empezado
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </section>
 
       {datos.exige_invitacion ? (
         // Este enlace es escaparate, no puerta.
@@ -216,19 +264,10 @@ export default function AterrizajePage() {
             </div>
           </Panel>
           <div className="mt-3">
-            <BotonSecundario onClick={() => navegar("/c/sesion")}>
-              Ya había empezado
-            </BotonSecundario>
+            <BotonSecundario onClick={() => navegar("/c/sesion")}>Ya había empezado</BotonSecundario>
           </div>
         </div>
-      ) : (
-        <div className="mt-auto space-y-3 pt-6">
-          <BotonPrincipal onClick={() => setPaso("datos")}>Comenzar</BotonPrincipal>
-          <BotonSecundario onClick={() => navegar("/c/sesion")}>
-            Ya había empezado
-          </BotonSecundario>
-        </div>
-      )}
+      ) : null}
     </ParticipanteLayout>
   );
 }

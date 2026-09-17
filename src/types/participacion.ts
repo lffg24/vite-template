@@ -275,7 +275,8 @@ export type MotivoPublico =
   /** Se usaron todos los intentos de la evaluación, o ya se aprobó. */
   | "intentos_agotados"
   /** El envío no trae una respuesta por pregunta, o apunta fuera de rango. */
-  | "respuestas_invalidas";
+  | "respuestas_invalidas"
+  | "servicio_no_disponible";
 
 export interface ErrorPublico extends Error {
   motivo: MotivoPublico | "desconocido";
