@@ -33,6 +33,10 @@ const estadoOperable = {
   vigencia_hasta: "2027-12-31",
   bandera_catalogo: true,
   bandera_asignacion: true,
+  // El recorrido publico abierto. No gobierna la administracion, pero decide si
+  // lo que se reparte va a servir, y las pantallas ya no ofrecen generar un
+  // enlace que al abrirse responderia que no esta habilitado.
+  bandera_participacion: true,
   operable: true,
 };
 
@@ -65,6 +69,7 @@ function capacidades(over: Record<string, unknown> = {}) {
     bandera_catalogo: true,
     bandera_catalogo_empresa: true,
     bandera_asignacion: true,
+    bandera_participacion: true,
     ...over,
   };
 }
@@ -544,5 +549,48 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await expect(primerControl).toHaveText(/saltar al contenido/i);
     await salto.focus();
     await expect(salto).toBeFocused();
+  });
+
+  test("con el acceso publico cerrado NO ofrece generar el enlace", async ({ page }) => {
+    // El defecto no era que se pudiera generar: era el ORDEN. Se creaba el
+    // curso, se asignaba, se generaba el enlace, se imprimia la hoja, se
+    // repartia... y el rechazo aparecia al abrirlo, delante de la persona a la
+    // que se le acababa de dar. Y como el token se muestra una sola vez, habria
+    // que volver a generarlo despues.
+    await sesion(page, capacidades({ bandera_participacion: false }));
+    await page.route(`${CAP}/asignaciones`, (route) =>
+      json(route, [
+        {
+          id: ASIGNACION_ID,
+          curso_id: CURSO_ID,
+          curso_titulo: "Induccion en Seguridad y Salud en el Trabajo",
+          curso_version_id: VERSION_ID,
+          numero_version: 1,
+          fecha_objetivo: null,
+          vigencia_meses: null,
+          estado: "ACTIVA",
+          modo_identidad: "AUTODECLARADA",
+          enlaces_activos: 0,
+          creado_en: "2026-09-05T12:00:00Z",
+        },
+      ])
+    );
+    await page.route(`${CAP}/asignaciones/${ASIGNACION_ID}/enlaces`, (route) =>
+      json(route, [])
+    );
+
+    await page.goto(`/capacitaciones/asignaciones/${ASIGNACION_ID}/enlaces`);
+
+    await expect(
+      page.getByText(/el acceso público está cerrado para esta empresa/i)
+    ).toBeVisible();
+    // Y no se ofrece: un aviso que se puede ignorar se ignora, y aqui no hay
+    // nada que ganar intentandolo.
+    await expect(
+      page.getByRole("button", { name: /generar enlace/i })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /generar el primero/i })
+    ).toHaveCount(0);
   });
 });

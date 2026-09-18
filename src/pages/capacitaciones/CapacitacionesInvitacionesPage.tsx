@@ -24,6 +24,10 @@ import { Panel } from "@/shared/ui/Panel";
 import { Escena } from "@/shared/ui/Escena";
 import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
+import {
+  AvisoAccesoPublico,
+  useAccesoPublicoAbierto,
+} from "@/features/capacitaciones/components/AvisoAccesoPublico";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,6 +114,9 @@ export default function CapacitacionesInvitacionesPage() {
   const [generando, setGenerando] = useState(false);
   const [recienEmitidas, setRecienEmitidas] = useState<InvitacionesGeneradas | null>(null);
   const [aRevocar, setARevocar] = useState<InvitacionResumen | null>(null);
+  // El token se muestra una sola vez: emitir con el acceso cerrado obliga a
+  // volver a emitir despues, y a recoger lo que ya se repartió.
+  const accesoAbierto = useAccesoPublicoAbierto();
   const [motivo, setMotivo] = useState("");
   const [revocando, setRevocando] = useState(false);
 
@@ -191,6 +198,8 @@ export default function CapacitacionesInvitacionesPage() {
         icono={Send}
         descripcion="Cada persona entra con la suya, y sirve una sola vez. Es lo que hace que la constancia quede a nombre de quien de verdad hizo el curso."
       />
+
+      <AvisoAccesoPublico que="invitaciones" />
 
       {esAutodeclarada ? (
         <Panel>
@@ -277,7 +286,7 @@ export default function CapacitacionesInvitacionesPage() {
               <Button
                 variant="rel"
                 size="sm"
-                disabled={generando || seleccion.size === 0}
+                disabled={generando || seleccion.size === 0 || !accesoAbierto}
                 onClick={() => void generar()}
               >
                 <Send className="mr-1.5 h-4 w-4" aria-hidden="true" />

@@ -17,6 +17,10 @@ import { Link2, Plus } from "lucide-react";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
+import {
+  AvisoAccesoPublico,
+  useAccesoPublicoAbierto,
+} from "@/features/capacitaciones/components/AvisoAccesoPublico";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +88,9 @@ export default function CapacitacionesEnlacesPage() {
   );
 
   const [generando, setGenerando] = useState(false);
+  // Repartir algo que la empresa no puede usar es trabajo perdido, y el
+  // codigo se muestra una sola vez: habria que volver a generarlo despues.
+  const accesoAbierto = useAccesoPublicoAbierto();
   const [vigenciaDias, setVigenciaDias] = useState(String(VIGENCIA_ENLACE_DIAS_DEFAULT));
   const [cupo, setCupo] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -170,7 +177,7 @@ export default function CapacitacionesEnlacesPage() {
             : "De esta asignación."
         }
         accion={
-          asignacion?.estado === "CERRADA" ? null : (
+          asignacion?.estado === "CERRADA" || !accesoAbierto ? null : (
             <Button variant="rel" onClick={() => setGenerando(true)}>
               <Plus aria-hidden="true" />
               Generar enlace
@@ -178,6 +185,8 @@ export default function CapacitacionesEnlacesPage() {
           )
         }
       />
+
+      <AvisoAccesoPublico que="enlaces" />
 
       {asignacion?.estado === "CERRADA" ? (
         <p
@@ -202,7 +211,7 @@ export default function CapacitacionesEnlacesPage() {
           titulo="Nadie puede entrar todavía"
           descripcion="La asignación existe, pero sin un enlace no hay por dónde acceder. El enlace se muestra una sola vez al generarlo."
           accion={
-            asignacion?.estado === "CERRADA" ? undefined : (
+            asignacion?.estado === "CERRADA" || !accesoAbierto ? undefined : (
               <Button variant="rel" onClick={() => setGenerando(true)}>
                 <Plus aria-hidden="true" />
                 Generar el primero

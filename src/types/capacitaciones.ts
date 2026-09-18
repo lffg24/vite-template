@@ -373,6 +373,14 @@ export interface ModuloEstado {
    */
   bandera_catalogo_global: boolean | null;
   bandera_asignacion: boolean | null;
+  /**
+   * Si el RECORRIDO PÚBLICO abre para esta empresa.
+   *
+   * No gobierna nada de la administración —quien asigna puede asignar sin
+   * ella— pero decide si lo que se reparte va a servir. `null` es «no
+   * declarada», que cierra igual que apagada.
+   */
+  bandera_participacion: boolean | null;
   operable: boolean;
 }
 
@@ -411,6 +419,14 @@ export interface ContextoCapacidades {
   bandera_catalogo: boolean | null;
   bandera_catalogo_empresa: boolean | null;
   bandera_asignacion: boolean | null;
+  /**
+   * Si el RECORRIDO PÚBLICO abre para esta empresa.
+   *
+   * No gobierna nada de la administración —quien asigna puede asignar sin
+   * ella— pero decide si lo que se reparte va a servir. `null` es «no
+   * declarada», que cierra igual que apagada.
+   */
+  bandera_participacion: boolean | null;
 }
 
 // --- errores ----------------------------------------------------------------------
