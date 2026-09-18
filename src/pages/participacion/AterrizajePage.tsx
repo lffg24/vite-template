@@ -9,7 +9,7 @@
 
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CheckCircle2, Clock, FileText } from "lucide-react";
+import { Award, Building2, CheckCircle2, Clock, FileText, Lock, Save, Smartphone } from "lucide-react";
 
 import {
   abrirEnlace,
@@ -34,6 +34,7 @@ import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { FormularioIdentidad } from "@/features/participacion/FormularioIdentidad";
 import { FormularioReanudacion } from "@/features/participacion/FormularioReanudacion";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
+import { AzulejoIcono } from "@/shared/ui/AzulejoIcono";
 
 function formatearDuracion(min: number | null): string | null {
   if (!min) return null;
@@ -187,10 +188,13 @@ export default function AterrizajePage() {
       <section className="overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card">
         <div className="grid items-center gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:p-10">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent">
+            {/* La empresa, grande y con su icono: es lo que hace creíble un
+                enlace que llegó por un chat. */}
+            <p className="inline-flex items-center gap-2 rounded-full bg-rel-accent-subtle px-3 py-1 text-sm font-semibold text-rel-accent">
+              <Building2 className="h-4 w-4" aria-hidden="true" />
               {datos.empresa}
             </p>
-            <h1 className="mt-3 max-w-3xl font-rel-heading text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
+            <h1 className="mt-4 max-w-3xl font-rel-heading text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
               {datos.curso}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-rel-muted sm:text-lg">
@@ -209,6 +213,11 @@ export default function AterrizajePage() {
                   <dd>{formatearDuracion(datos.duracion_estimada_min)}</dd>
                 </div>
               ) : null}
+              <div className="flex items-center gap-2 rounded-rel-control border border-rel-success/30 bg-rel-success-subtle px-4 py-3 text-rel-dark">
+                <Award className="h-4 w-4 shrink-0 text-rel-success" aria-hidden="true" />
+                <dt className="sr-only">Al terminar</dt>
+                <dd>Constancia incluida</dd>
+              </div>
             </dl>
           </div>
           <IllustrationSurface tone="lavender" className="mx-auto w-full max-w-md">
@@ -236,6 +245,21 @@ export default function AterrizajePage() {
           ) : null}
         </div>
       </section>
+
+      {/* Lo que tranquiliza a quien abre un enlace desconocido, dicho una vez
+          y sin prometer nada que el sistema no haga. */}
+      <ul className="mt-6 grid gap-3 text-sm text-rel-muted sm:grid-cols-3">
+        {[
+          { icono: Lock, texto: "Tus datos se tratan según la autorización que aceptas al entrar" },
+          { icono: Save, texto: "Tu avance se guarda solo; puedes seguir otro día" },
+          { icono: Smartphone, texto: "Funciona en el celular, sin instalar nada" },
+        ].map(({ icono, texto }) => (
+          <li key={texto} className="flex items-center gap-3">
+            <AzulejoIcono icono={icono} tamano="sm" />
+            <span>{texto}</span>
+          </li>
+        ))}
+      </ul>
 
       {datos.exige_invitacion ? (
         // Este enlace es escaparate, no puerta.
