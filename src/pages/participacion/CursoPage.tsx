@@ -7,8 +7,8 @@
 // La identificación por documento vive en el aterrizaje del enlace, nunca en
 // esta ruta sin contexto. Así el cliente no envía empresa ni asignación.
 
-import { Link, useNavigate } from "react-router-dom";
-import { CheckCircle2, Circle, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, BookOpen, Clock } from "lucide-react";
 
 import { miCurso } from "@/services/participacionService";
 import type { ErrorPublico, EstadoCurso } from "@/types/participacion";
@@ -20,6 +20,9 @@ import {
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
+import { RutaAprendizaje, siguienteLeccion } from "@/features/participacion/RutaAprendizaje";
+import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
+import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
 
 export default function CursoPage() {
   const navegar = useNavigate();
@@ -72,16 +75,15 @@ export default function CursoPage() {
 
   if (curso.estado === "COMPLETADA") {
     return (
-      <ParticipanteLayout progreso={1}>
-        <div className="flex flex-1 flex-col justify-center text-center">
-          <CheckCircle2
-            className="mx-auto h-10 w-10 text-rel-success"
-            aria-hidden="true"
-          />
-          <h1 className="mt-4 font-rel-heading text-2xl font-bold">
+      <ParticipanteLayout progreso={1} ancho="compacto">
+        <div className="my-auto flex flex-col items-center text-center">
+          <IllustrationSurface tone="positive" className="w-full max-w-xs">
+            <Illustration name="courseApproved" size="md" />
+          </IllustrationSurface>
+          <h1 className="mt-6 font-rel-heading text-2xl font-black sm:text-3xl">
             Ya terminaste esta capacitación
           </h1>
-          <p className="mt-3 text-base leading-relaxed text-rel-muted">
+          <p className="mt-3 max-w-md text-base leading-relaxed text-rel-muted">
             Tu asistencia quedó registrada. Puedes cerrar esta página.
           </p>
         </div>
@@ -89,116 +91,103 @@ export default function CursoPage() {
     );
   }
 
+  const siguiente = siguienteLeccion(curso.lecciones);
+  const numeroSiguiente = siguiente
+    ? curso.lecciones.findIndex((l) => l.leccion_id === siguiente.leccion_id) + 1
+    : null;
+
   return (
     <ParticipanteLayout progreso={avance}>
-      <section className="rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card sm:p-7">
-        <div className="grid gap-5 lg:grid-cols-[1fr_20rem] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent">
-              Curso · Versión {curso.numero_version}
-            </p>
-            <h1 className="mt-2 font-rel-heading text-3xl font-black leading-tight sm:text-4xl">
-              {curso.curso}
-            </h1>
-            <p className="mt-3 text-sm text-rel-muted">
-              Avanza en el orden propuesto. Tu progreso se guarda automáticamente.
-            </p>
-          </div>
-          <div className="rounded-rel-card bg-rel-accent-subtle p-4">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">Tu progreso</p>
-                <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums">{Math.round(avance * 100)}%</p>
-              </div>
-              <p className="text-right text-sm text-rel-muted">
-                {curso.obligatorias_completas} de {curso.obligatorias_totales}{" "}
-                {curso.obligatorias_totales === 1 ? "lección" : "lecciones"}
-              </p>
+      {/* --- el curso y cuánto falta --- */}
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-stretch">
+        <div className="flex flex-col justify-center py-2">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent">
+            Curso · Versión {curso.numero_version}
+          </p>
+          <h1 className="mt-2 break-words font-rel-heading text-3xl font-black leading-tight sm:text-4xl">
+            {curso.curso}
+          </h1>
+          <p className="mt-3 max-w-2xl text-base text-rel-muted">
+            Avanza en el orden propuesto. Tu progreso se guarda solo, así que
+            puedes seguir otro día desde donde quedaste.
+          </p>
+          <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-rel-muted">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-rel-primary" aria-hidden="true" />
+              <dt className="sr-only">Lecciones</dt>
+              <dd>
+                {curso.lecciones.length} {curso.lecciones.length === 1 ? "lección" : "lecciones"}
+              </dd>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-rel-surface">
-              <div className="h-full rounded-full bg-rel-primary" style={{ width: `${avance * 100}%` }} />
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-rel-primary" aria-hidden="true" />
+              <dt className="sr-only">Obligatorias</dt>
+              <dd>
+                {curso.obligatorias_totales}{" "}
+                {curso.obligatorias_totales === 1 ? "obligatoria" : "obligatorias"}
+              </dd>
             </div>
+          </dl>
+        </div>
+
+        <div className="flex items-center gap-5 rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card">
+          <AnilloProgreso valor={avance} etiqueta="Tu progreso en el curso" tamano={112} />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-rel-dark">
+              Tu progreso
+            </p>
+            <BarraProgreso valor={avance} etiqueta="Lecciones obligatorias completadas" tamano="sm" className="mt-3" />
+            <p className="mt-2 text-sm text-rel-muted">
+              {curso.obligatorias_completas} de {curso.obligatorias_totales}{" "}
+              {curso.obligatorias_totales === 1 ? "lección completada" : "lecciones completadas"}
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <section>
-          <h2 className="font-rel-heading text-xl font-bold">Ruta de aprendizaje</h2>
-          <p className="mt-1 text-sm text-rel-muted">Selecciona la siguiente lección disponible.</p>
-          <ol className="mt-4 space-y-3">
-        {curso.lecciones.map((l) => {
-          const bloqueada = !l.desbloqueada && !l.completada;
-          return (
-            <li key={l.leccion_id}>
-              {/* Lo bloqueado es un `<div>` y no un botón deshabilitado: un
-                  botón que no hace nada sigue recibiendo el foco al tabular y
-                  promete algo que no cumple. */}
-              {bloqueada ? (
-                <div className="flex items-center gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-4 opacity-60">
-                  <Lock className="h-5 w-5 shrink-0 text-rel-muted" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{l.titulo}</p>
-                    <p className="text-sm text-rel-muted">
-                      Termina la lección anterior para abrirla
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  to={`/c/sesion/leccion/${l.leccion_id}`}
-                  className="flex min-h-16 items-center gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-4 transition-colors duration-rel-micro hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
-                >
-                  {l.completada ? (
-                    <CheckCircle2
-                      className="h-5 w-5 shrink-0 text-rel-success"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-rel-primary" aria-hidden="true" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{l.titulo}</p>
-                    <p className="text-sm text-rel-muted">
-                      {l.completada
-                        ? "Completada"
-                        : l.bloques_vistos > 0
-                          ? `Vas por ${l.bloques_vistos} de ${l.bloques_totales}`
-                          : `${l.bloques_totales} ${l.bloques_totales === 1 ? "parte" : "partes"}`}
-                      {l.obligatoria ? "" : " · no obligatoria"}
-                    </p>
-                  </div>
-                </Link>
-              )}
-            </li>
-          );
-        })}
-          </ol>
+      {/* --- ruta y siguiente paso --- */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="ruta-titulo">
+          <h2 id="ruta-titulo" className="font-rel-heading text-xl font-bold">
+            Ruta de aprendizaje
+          </h2>
+          <p className="mt-1 text-sm text-rel-muted">
+            Las lecciones se abren en orden, a medida que terminas la anterior.
+          </p>
+          <div className="mt-4">
+            <RutaAprendizaje lecciones={curso.lecciones} />
+          </div>
         </section>
 
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <Panel>
+            <IllustrationSurface tone="lavender" className="mb-4 hidden aspect-[4/3] lg:flex">
+              <Illustration name={curso.puede_finalizar ? "courseApproved" : "learningPath"} size="sm" />
+            </IllustrationSurface>
             <p className="font-rel-heading text-lg font-bold">
-              {curso.puede_finalizar ? "Completaste el recorrido" : "Sigue avanzando"}
+              {curso.puede_finalizar ? "Completaste el recorrido" : "Tu siguiente paso"}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-rel-muted">
               {curso.puede_finalizar
-                ? "Confirma tu asistencia para generar el registro y la constancia."
-                : "Continúa desde la primera lección disponible."}
+                ? "Confirma tu asistencia para generar el registro y tu constancia."
+                : siguiente
+                  ? `Lección ${numeroSiguiente}: ${siguiente.titulo}`
+                  : "Continúa desde la primera lección disponible."}
             </p>
             <div className="mt-5">
               {curso.puede_finalizar ? (
                 <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
                   Registrar mi asistencia
                 </BotonPrincipal>
+              ) : siguiente ? (
+                <BotonPrincipal onClick={() => navegar(`/c/sesion/leccion/${siguiente.leccion_id}`)}>
+                  <span className="inline-flex items-center gap-2">
+                    Continuar <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </BotonPrincipal>
               ) : (
-                <BotonSecundario
-                  onClick={() => {
-                    const siguiente = curso.lecciones.find((l) => !l.completada && l.desbloqueada);
-                    if (siguiente) navegar(`/c/sesion/leccion/${siguiente.leccion_id}`);
-                  }}
-                >
-                  Continuar donde quedé
+                <BotonSecundario onClick={() => void consulta.refrescar()}>
+                  Actualizar mi avance
                 </BotonSecundario>
               )}
             </div>
