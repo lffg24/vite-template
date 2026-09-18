@@ -19,7 +19,7 @@ import {
   Panel,
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
-import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
+import { Cargando, PantallaDeError, PantallaDeEstado } from "@/features/participacion/Estados";
 import { RutaAprendizaje, siguienteLeccion } from "@/features/participacion/RutaAprendizaje";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
@@ -76,17 +76,20 @@ export default function CursoPage() {
   if (curso.estado === "COMPLETADA") {
     return (
       <ParticipanteLayout progreso={1} ancho="compacto">
-        <div className="my-auto flex flex-col items-center text-center">
-          <IllustrationSurface tone="positive" className="w-full max-w-xs">
-            <Illustration name="courseApproved" size="md" />
-          </IllustrationSurface>
-          <h1 className="mt-6 font-rel-heading text-2xl font-black sm:text-3xl">
-            Ya terminaste esta capacitación
-          </h1>
-          <p className="mt-3 max-w-md text-base leading-relaxed text-rel-muted">
-            Tu asistencia quedó registrada. Puedes cerrar esta página.
-          </p>
-        </div>
+        {/* La misma forma que el resto de pantallas de estado: escena grande,
+            sin caja, y el mensaje debajo. */}
+        <PantallaDeEstado
+          escena="courseApproved"
+          titulo="Ya terminaste esta capacitación"
+          accion={
+            // Quien vuelve otro día viene, casi siempre, por su constancia.
+            <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
+              Ver mi constancia
+            </BotonPrincipal>
+          }
+        >
+          Tu asistencia quedó registrada.
+        </PantallaDeEstado>
       </ParticipanteLayout>
     );
   }
@@ -181,8 +184,14 @@ export default function CursoPage() {
 
         <aside className="hidden lg:sticky lg:top-6 lg:block lg:self-start">
           <Panel>
-            <IllustrationSurface tone="lavender" className="mb-4 flex aspect-[4/3]">
-              <Illustration name={curso.puede_finalizar ? "courseApproved" : "learningPath"} size="sm" />
+            {/* La ilustración LLENA su superficie. Con un tamaño fijo quedaba
+                en 110 px dentro de una caja de 310 y se veía perdida. */}
+            <IllustrationSurface tone="lavender" className="mb-4 aspect-[4/3] p-3">
+              <Illustration
+                name={curso.puede_finalizar ? "courseApproved" : "learningPath"}
+                size="full"
+                className="h-full"
+              />
             </IllustrationSurface>
             <p className="font-rel-heading text-lg font-bold">{tituloPaso}</p>
             <p className="mt-2 text-sm leading-relaxed text-rel-muted">{textoPaso}</p>

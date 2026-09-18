@@ -51,7 +51,7 @@ export function Cargando({ etiqueta = "Un momento…" }: { etiqueta?: string }) 
  * leyendo. Y lo que pasa a primer plano es **qué hacer**, no el símbolo de
  * alarma.
  */
-function PantallaDeEstado({
+export function PantallaDeEstado({
   escena,
   titulo,
   children,

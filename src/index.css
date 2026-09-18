@@ -360,10 +360,13 @@
     --illustration-size-lg: clamp(14rem, 24vw, 20rem);
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
     --illustration-radius: var(--rel-radius-panel);
-    /* Superficies de apoyo. La lavanda queda en token y no en la clase: si la
-       marca cambia de color, cambia aquí y en ningún otro sitio. */
-    --illustration-surface-lavender: 250 100% 98%; /* = violet-50 */
-    --illustration-surface-lavender-border: 251 95% 92%; /* = violet-200 */
+    /* Superficie de marca para ilustraciones («lavender» en la API).
+       Sale del tono de la marca VIGENTE: hoy verde azulado, igual que las
+       ilustraciones. Con el lila (violet-50) las escenas quedaban sobre un
+       fondo de otra familia y no armonizaban. Si la marca pasa a violeta, se
+       vuelve a 250 100% 98% / 251 95% 92% aquí y en ningún otro sitio. */
+    --illustration-surface-lavender: 168 45% 96%;
+    --illustration-surface-lavender-border: 168 35% 88%;
   }
 }
 
