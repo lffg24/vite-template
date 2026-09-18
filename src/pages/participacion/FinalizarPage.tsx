@@ -16,9 +16,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Copy, ShieldCheck } from "lucide-react";
+import { Check, Copy, Printer, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import { finalizar, miCurso } from "@/services/participacionService";
+import { finalizar, miConstancia, miCurso } from "@/services/participacionService";
 import type {
   ConstanciaEmitida,
   ErrorPublico,
@@ -32,6 +33,8 @@ import {
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
+import { ConstanciaDocumento } from "@/features/capacitaciones/components/ConstanciaDocumento";
+import type { ConstanciaImprimible } from "@/types/constancia";
 
 export default function FinalizarPage() {
   const navegar = useNavigate();
@@ -117,40 +120,45 @@ export default function FinalizarPage() {
   if (listo || curso.estado === "COMPLETADA") {
     return (
       <ParticipanteLayout progreso={1}>
-        <div className="flex flex-1 flex-col justify-center text-center">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-rel-success" aria-hidden="true" />
+        <div className="flex flex-1 flex-col items-center py-4 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-rel-success-subtle ring-8 ring-rel-success-subtle/50">
+            <Check className="h-8 w-8 text-rel-success" aria-hidden="true" />
+          </span>
           {/* Sobrio. Es un documento de cumplimiento, no un logro personal:
               confeti aquí desentona con lo que la persona acaba de hacer. */}
-          <h1 className="mt-4 font-rel-heading text-2xl font-bold">
+          <h1 className="mt-5 font-rel-heading text-2xl font-black sm:text-3xl">
             Tu asistencia quedó registrada
           </h1>
-          <p className="mt-3 text-base leading-relaxed text-rel-muted">
-            Tu empresa verá el registro en su matriz de cumplimiento.
+          <p className="mt-2 max-w-xl text-base leading-relaxed text-rel-muted">
+            Tu empresa verá el registro en su matriz de cumplimiento. Esta es tu
+            constancia: puedes guardarla o imprimirla.
           </p>
 
-          {constancia ? (
-            <ConstanciaEmitidaPanel constancia={constancia} />
-          ) : falloConstancia ? (
-            <div className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5 text-left">
-              {/* Dice qué se perdió y qué NO: la asistencia está a salvo. Sin
-                  esa distinción, quien lea esto creerá que hay que repetir el
-                  curso. */}
-              <p className="text-sm leading-relaxed">
-                No pudimos mostrarte el folio de tu constancia.{" "}
-                <strong className="font-semibold">Tu asistencia sí quedó
-                registrada</strong>; esto es solo la consulta del documento.
-              </p>
-              <div className="mt-4">
-                <BotonSecundario onClick={() => setFalloConstancia(false)}>
-                  Volver a intentarlo
-                </BotonSecundario>
+          <div className="mt-6 w-full text-left">
+            {constancia ? (
+              <DocumentoDeLaConstancia emitida={constancia} />
+            ) : falloConstancia ? (
+              <div className="mx-auto max-w-xl rounded-rel-card border border-rel-border bg-rel-surface p-5">
+                {/* Dice qué se perdió y qué NO: la asistencia está a salvo. Sin
+                    esa distinción, quien lea esto creerá que hay que repetir el
+                    curso. */}
+                <p className="text-sm leading-relaxed">
+                  No pudimos mostrarte el folio de tu constancia.{" "}
+                  <strong className="font-semibold">Tu asistencia sí quedó
+                  registrada</strong>; esto es solo la consulta del documento.
+                </p>
+                <div className="mt-4">
+                  <BotonSecundario onClick={() => setFalloConstancia(false)}>
+                    Volver a intentarlo
+                  </BotonSecundario>
+                </div>
               </div>
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-rel-muted" aria-live="polite">
-              Preparando tu constancia…
-            </p>
-          )}
+            ) : (
+              <p className="text-center text-sm text-rel-muted" aria-live="polite">
+                Preparando tu constancia…
+              </p>
+            )}
+          </div>
         </div>
       </ParticipanteLayout>
     );
@@ -239,12 +247,63 @@ export default function FinalizarPage() {
 
 
 /**
+ * D-09. El documento completo, y lo que se hace con él.
+ *
+ * El folio y el código ya llegaron con `finalizar`; el documento es otra
+ * petición y puede fallar. Si falla, queda el panel con folio y código —que es
+ * lo que de verdad hace falta para pedirla o verificarla— en lugar de una
+ * pantalla vacía.
+ */
+function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
+  const consulta = useConsulta<ConstanciaImprimible>(() => miConstancia(), [emitida.codigo_verificacion]);
+  const urlVerificacion = `${window.location.origin}/c/verificar/${encodeURIComponent(emitida.codigo_verificacion)}`;
+
+  if (consulta.fase === "cargando") {
+    return (
+      <p className="text-center text-sm text-rel-muted" aria-live="polite">
+        Preparando tu constancia…
+      </p>
+    );
+  }
+  if (consulta.fase === "error" || !consulta.datos) {
+    return (
+      <div className="mx-auto max-w-xl">
+        <ConstanciaEmitidaPanel constancia={emitida} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <ConstanciaDocumento constancia={consulta.datos} urlVerificacion={urlVerificacion} />
+      <div className="mx-auto grid max-w-4xl gap-3 sm:grid-cols-2 print:hidden">
+        <BotonPrincipal onClick={() => window.print()}>
+          <span className="inline-flex items-center gap-2">
+            <Printer className="h-5 w-5" aria-hidden="true" /> Guardar o imprimir
+          </span>
+        </BotonPrincipal>
+        <Link
+          to={`/c/verificar/${encodeURIComponent(emitida.codigo_verificacion)}`}
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+        >
+          <ShieldCheck className="h-5 w-5" aria-hidden="true" /> Verificar
+        </Link>
+      </div>
+      <p className="mx-auto max-w-4xl text-center text-xs text-rel-muted print:hidden">
+        «Guardar o imprimir» abre la ventana de impresión: elige «Guardar como
+        PDF» para tenerla en el celular. Cualquiera puede comprobarla con el
+        código, sin crear una cuenta.
+      </p>
+    </div>
+  );
+}
+
+/**
  * D-09. El folio y el código, en la misma pantalla en que se terminó.
  *
- * **Sin PDF y sin QR**, y no por olvido: falta aprobar las librerías que los
- * generan. Lo que hay aquí es lo que los sustituye mientras tanto sin fingir
- * nada — la constancia existe, tiene folio, y cualquiera puede comprobarla
- * tecleando el código. El papel es una representación de esto, no al revés.
+ * Es el respaldo de `DocumentoDeLaConstancia` cuando el documento no llega: la
+ * constancia existe, tiene folio, y cualquiera puede comprobarla tecleando el
+ * código. El papel es una representación de esto, no al revés.
  */
 function ConstanciaEmitidaPanel({ constancia }: { constancia: ConstanciaEmitida }) {
   const [copiado, setCopiado] = useState(false);

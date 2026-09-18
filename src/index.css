@@ -379,3 +379,27 @@
     }
   }
 }
+
+/* Impresión de la constancia: en la hoja queda solo el documento.
+   `visibility` y no `display: none` porque el documento vive dentro del
+   layout; ocultar a los padres con `display` lo ocultaría también a él. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  body:has(.hoja-constancia) * {
+    visibility: hidden;
+  }
+  .hoja-constancia,
+  .hoja-constancia * {
+    visibility: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .hoja-constancia {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+  }
+}

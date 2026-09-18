@@ -13,6 +13,7 @@
 // que viaje la cookie `HttpOnly`, y ningún interceptor de sesión.
 
 import axios from "axios";
+import type { ConstanciaImprimible } from "@/types/constancia";
 
 import { API_URL } from "@/lib/config";
 import type {
@@ -219,6 +220,21 @@ export async function finalizar(): Promise<Finalizado> {
     return data;
   } catch (e) {
     throw errorPublico(e, "No pudimos registrar tu asistencia.");
+  }
+}
+
+/**
+ * D-09. El documento completo de MI constancia, para verlo e imprimirlo.
+ *
+ * Sin identificador: el servidor sale de la cookie de la sesión. No hay forma
+ * de pedir la de otra persona porque no existe el parámetro para hacerlo.
+ */
+export async function miConstancia(): Promise<ConstanciaImprimible> {
+  try {
+    const { data } = await publico.get<ConstanciaImprimible>("/c/sesion/constancia");
+    return data;
+  } catch (e) {
+    throw errorPublico(e, "No pudimos mostrarte tu constancia.");
   }
 }
 

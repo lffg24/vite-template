@@ -3,11 +3,12 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 import FinalizarPage from "./FinalizarPage";
-import { finalizar, miCurso } from "@/services/participacionService";
+import { finalizar, miConstancia, miCurso } from "@/services/participacionService";
 import type { EstadoCurso } from "@/types/participacion";
 
 vi.mock("@/services/participacionService", () => ({
   finalizar: vi.fn(),
+  miConstancia: vi.fn(),
   miCurso: vi.fn(),
 }));
 
@@ -41,6 +42,9 @@ function montar() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Por defecto el documento NO llega: las pruebas de abajo comprueban el
+  // respaldo con folio y código, que es lo que queda cuando falla.
+  vi.mocked(miConstancia).mockRejectedValue(new Error("sin documento"));
 });
 
 describe("cuando se vuelve a una inscripción ya completada", () => {
@@ -128,5 +132,73 @@ describe("lo que la pantalla promete", () => {
 
     expect(screen.queryByRole("button", { name: /descargar|pdf/i })).not.toBeInTheDocument();
     expect(container.textContent ?? "").not.toMatch(/descargable/i);
+  });
+});
+
+
+describe("D-09 · el documento de la constancia", () => {
+  const DOCUMENTO = {
+    folio: 12,
+    codigo_verificacion: "ABCD-2345",
+    estado: "VIGENTE",
+    situacion: "VIGENTE",
+    emitida_en: "2026-09-18T15:00:00Z",
+    vence_el: "2027-05-10",
+    snapshot: {
+      documento: "CONSTANCIA DE ASISTENCIA",
+      participante: { nombres: "María Fernanda", apellidos: "Ospina Ruiz" },
+      curso: { titulo: "Trabajo en alturas" },
+      aviso: "Constancia de asistencia a formación interna. No certifica competencias laborales.",
+    },
+  };
+
+  function yaCompletada() {
+    vi.mocked(miCurso).mockResolvedValue(curso());
+    vi.mocked(finalizar).mockResolvedValue({
+      estado: "COMPLETADA",
+      asistencia_id: null,
+      nueva: false,
+      constancia: CONSTANCIA,
+    });
+  }
+
+  it("muestra el documento con el tipo y el aviso CONGELADOS, y el QR", async () => {
+    yaCompletada();
+    vi.mocked(miConstancia).mockResolvedValue(DOCUMENTO);
+
+    montar();
+
+    expect(await screen.findByText("María Fernanda Ospina Ruiz")).toBeInTheDocument();
+    // Lo que dice el snapshot, no lo que diría una plantilla.
+    expect(screen.getByText("Constancia de asistencia")).toBeInTheDocument();
+    expect(screen.getByText(/No certifica competencias laborales/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: /Código QR para verificar la constancia ABCD-2345/ })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Guardar o imprimir/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Verificar/ })).toHaveAttribute(
+      "href",
+      "/c/verificar/ABCD-2345"
+    );
+  });
+
+  it("si el documento no llega, queda el folio y el código (no una pantalla vacía)", async () => {
+    yaCompletada();
+
+    montar();
+
+    expect(await screen.findByText(/N.º 12/)).toBeInTheDocument();
+    expect(screen.getByText("ABCD-2345")).toBeInTheDocument();
+    // Contraprueba: no se finge un documento que no llegó.
+    expect(screen.queryByRole("button", { name: /Guardar o imprimir/ })).toBeNull();
+  });
+
+  it("una constancia ANULADA lo dice en el documento", async () => {
+    yaCompletada();
+    vi.mocked(miConstancia).mockResolvedValue({ ...DOCUMENTO, estado: "ANULADA", situacion: "ANULADA" });
+
+    montar();
+
+    expect(await screen.findByText("Esta constancia fue anulada y ya no es válida.")).toBeInTheDocument();
   });
 });
