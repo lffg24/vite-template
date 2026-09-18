@@ -73,14 +73,17 @@ describe("Matriz de capacitación", () => {
     vi.mocked(obtenerMatriz).mockResolvedValue(matriz());
     montar();
 
-    const ana = (await screen.findByText("Ana María Rodríguez")).closest("tr")!;
+    // La tabla (escritorio) y las tarjetas (celular) se pintan las dos; el CSS
+    // decide cuál se ve. Aquí se mira la tabla.
+    const tabla = await screen.findByRole("table");
+    const ana = within(tabla).getByText("Ana María Rodríguez").closest("tr")!;
     expect(within(ana).getByText("Vigente")).toBeInTheDocument();
     expect(within(ana).getByText("Vencida")).toBeInTheDocument();
     expect(within(ana).getByText(/Venció el/)).toBeInTheDocument();
     expect(within(ana).getByText("1/2")).toBeInTheDocument();
 
     // A Carlos nadie le pidió «Trabajo en alturas»: no aplica, no «pendiente».
-    const carlos = screen.getByText("Carlos Méndez").closest("tr")!;
+    const carlos = within(tabla).getByText("Carlos Méndez").closest("tr")!;
     expect(within(carlos).getByText("No aplica")).toBeInTheDocument();
     expect(within(carlos).queryByText("Pendiente")).toBeNull();
   });
@@ -94,7 +97,7 @@ describe("Matriz de capacitación", () => {
   it("filtrar por estado vuelve a pedir la página 1 con ese estado", async () => {
     vi.mocked(obtenerMatriz).mockResolvedValue(matriz());
     montar();
-    await screen.findByText("Ana María Rodríguez");
+    await screen.findByRole("table");
 
     fireEvent.click(screen.getByRole("button", { name: /^Vencida/ }));
 
@@ -119,7 +122,7 @@ describe("Matriz de capacitación", () => {
       .mockResolvedValueOnce(pagina1)
       .mockResolvedValueOnce(pagina2);
     montar();
-    await screen.findByText("Ana María Rodríguez");
+    await screen.findByRole("table");
 
     fireEvent.click(screen.getByRole("button", { name: /Exportar CSV/ }));
 
@@ -144,6 +147,21 @@ describe("Matriz de capacitación", () => {
     montar();
     expect(await screen.findByText("Todavía no hay a quién medir")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Exportar CSV/ })).toBeDisabled();
+  });
+});
+
+describe("en el celular", () => {
+  it("cada persona es una tarjeta con SOLO los cursos que se le pidieron", async () => {
+    vi.mocked(obtenerMatriz).mockResolvedValue(matriz());
+    montar();
+    await screen.findByRole("table");
+
+    const tarjetas = screen.getAllByRole("listitem").filter((li) => li.querySelector("ul"));
+    const carlos = tarjetas.find((li) => li.textContent?.includes("Carlos Méndez"))!;
+    expect(within(carlos).getByText("Inducción SST")).toBeInTheDocument();
+    expect(within(carlos).getByText("Por vencer")).toBeInTheDocument();
+    // En la tarjeta no se lista lo que no aplica.
+    expect(within(carlos).queryByText("Trabajo en alturas")).toBeNull();
   });
 });
 

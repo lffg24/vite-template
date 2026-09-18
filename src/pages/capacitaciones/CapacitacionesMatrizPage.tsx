@@ -310,6 +310,69 @@ function TablaMatriz({ datos, limpiar }: { datos: MatrizCapacitacion; limpiar: (
   }
 
   return (
+    <>
+      <ListaMovil datos={datos} />
+      <div className="hidden md:block">
+        <TablaMatrizAncha datos={datos} />
+      </div>
+    </>
+  );
+}
+
+/**
+ * En el celular, una tarjeta por persona.
+ *
+ * Una matriz en 390 px deja la columna del nombre ocupando casi todo el ancho y
+ * los estados asomando por el borde: se puede desplazar, pero no se puede leer.
+ * La tarjeta dice lo mismo —cada curso pedido con su estado y su fecha— en el
+ * orden en que se lee en vertical. Los cursos que no aplican no se listan: en
+ * una tarjeta, una fila de «no aplica» es ruido.
+ */
+function ListaMovil({ datos }: { datos: MatrizCapacitacion }) {
+  const titulo = new Map(datos.cursos.map((c) => [c.curso_id, c.titulo]));
+  return (
+    <ul className="space-y-3 md:hidden">
+      {datos.filas.map((f) => (
+        <li key={f.participante_id} className="rounded-rel-card border border-rel-border p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="break-words font-semibold text-rel-dark">{nombreDe(f)}</p>
+              <p className="text-xs text-rel-muted">
+                {[f.numero_documento ? `${f.tipo_documento ?? ""} ${f.numero_documento}`.trim() : null, f.cargo]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </div>
+            <p className="shrink-0 text-right font-rel-heading font-black tabular-nums text-rel-dark">
+              {f.cumplidas}/{f.aplicables}
+              <span className="block text-xs font-normal text-rel-muted">cumple</span>
+            </p>
+          </div>
+          <ul className="mt-3 space-y-2 border-t border-rel-border pt-3">
+            {f.celdas.map((c) => {
+              const { etiqueta, tono } = ESTADO_CELDA[c.estado];
+              const detalle = detalleCelda(c);
+              return (
+                <li key={c.curso_id} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="min-w-0 break-words text-rel-dark">{titulo.get(c.curso_id) ?? "Curso"}</span>
+                  <span className="flex shrink-0 flex-col items-end">
+                    <Pill tono={tono}>{etiqueta}</Pill>
+                    {detalle && c.estado !== "VIGENTE" ? (
+                      <span className="mt-0.5 text-[11px] text-rel-muted">{detalle}</span>
+                    ) : null}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TablaMatrizAncha({ datos }: { datos: MatrizCapacitacion }) {
+  return (
     <TablaPanel>
       <table className="w-full min-w-max border-separate border-spacing-0 text-sm">
         <caption className="sr-only">
