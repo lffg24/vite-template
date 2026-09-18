@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 
 const TONES = {
   neutral: "border-rel-border bg-rel-surface-subtle",
-  lavender: "border-violet-200/70 bg-violet-50/80",
+  lavender:
+    "border-[hsl(var(--illustration-surface-lavender-border)/0.7)] bg-[hsl(var(--illustration-surface-lavender)/0.8)]",
   navy: "border-rel-dark bg-rel-dark text-white",
   positive: "border-rel-success/20 bg-rel-success-subtle",
   informative: "border-rel-info/20 bg-rel-info-subtle",

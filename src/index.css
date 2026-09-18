@@ -360,6 +360,10 @@
     --illustration-size-lg: clamp(14rem, 24vw, 20rem);
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
     --illustration-radius: var(--rel-radius-panel);
+    /* Superficies de apoyo. La lavanda queda en token y no en la clase: si la
+       marca cambia de color, cambia aquí y en ningún otro sitio. */
+    --illustration-surface-lavender: 250 100% 98%; /* = violet-50 */
+    --illustration-surface-lavender-border: 251 95% 92%; /* = violet-200 */
   }
 }
 

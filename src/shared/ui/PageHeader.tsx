@@ -25,8 +25,15 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { AzulejoIcono } from "./AzulejoIcono";
+
 type PageHeaderProps = {
   titulo: string;
+  /**
+   * La superficie o el módulo, sobre el título («Empresa»). Orienta a quien
+   * cambia de pantalla sin tener que mirar el menú.
+   */
+  antetitulo?: string;
   /** Una línea. Si necesita dos, probablemente pertenece a la pantalla. */
   descripcion?: ReactNode;
   icono?: LucideIcon;
@@ -37,6 +44,7 @@ type PageHeaderProps = {
 
 export function PageHeader({
   titulo,
+  antetitulo,
   descripcion,
   icono: Icono,
   accion,
@@ -51,12 +59,13 @@ export function PageHeader({
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-          {Icono ? (
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-card bg-rel-accent-subtle text-rel-primary sm:h-14 sm:w-14">
-              <Icono className="h-5 w-5 sm:h-7 sm:w-7" aria-hidden="true" />
-            </div>
-          ) : null}
+          {Icono ? <AzulejoIcono icono={Icono} tamano="lg" /> : null}
           <div className="min-w-0">
+            {antetitulo ? (
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent">
+                {antetitulo}
+              </p>
+            ) : null}
             <h1 className="break-words font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-3xl">
               {titulo}
             </h1>
