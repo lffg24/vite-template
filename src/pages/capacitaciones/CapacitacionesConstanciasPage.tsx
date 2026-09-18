@@ -480,7 +480,7 @@ function BotonCodigo({
     <button
       type="button"
       onClick={() => alCopiar(c.codigo_verificacion)}
-      className="inline-flex min-h-11 items-center gap-1.5 font-mono text-xs tracking-wider text-rel-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary md:min-h-0"
+      className="inline-flex min-h-[2.75rem] items-center gap-1.5 font-mono text-xs tracking-wider text-rel-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary md:min-h-0"
       aria-label={`Copiar el código ${c.codigo_verificacion}`}
     >
       {c.codigo_verificacion}

@@ -28,7 +28,7 @@ interface Errores {
 }
 
 const claseCampo =
-  "min-h-12 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 " +
+  "min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 " +
   "text-base text-rel-dark placeholder:text-rel-muted " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary";
 

@@ -172,7 +172,7 @@ export default function LeccionPage() {
       <button
         type="button"
         onClick={() => navegar("/c/sesion")}
-        className="-ml-1 mb-3 flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+        className="-ml-1 mb-3 flex min-h-[2.75rem] items-center gap-1.5 self-start text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Volver al curso
@@ -272,7 +272,7 @@ export default function LeccionPage() {
           <button
             type="button"
             onClick={() => setBloque((b) => b - 1)}
-            className="min-h-12 shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="min-h-[3rem] shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
             aria-label="Parte anterior"
           >
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />

@@ -53,7 +53,10 @@ export function TablaPanel({
 }) {
   return (
     <div className={cn("overflow-hidden rounded-rel-card border border-rel-border", className)}>
-      <div className="overflow-x-auto">{children}</div>
+      {/* `relative`: sin él, lo que va en posición absoluta dentro de la tabla
+          —los textos solo para lector de pantalla, por ejemplo— no queda
+          recortado por esta caja y alarga la página entera hacia la derecha. */}
+      <div className="relative overflow-x-auto">{children}</div>
     </div>
   );
 }

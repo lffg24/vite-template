@@ -161,4 +161,35 @@ describe("el núcleo es uno solo", () => {
 
     expect(propios).toEqual([]);
   });
+
+  it("nadie usa `min-h-<número>`: en Tailwind 3.3 no genera nada", () => {
+    // La escala de espaciado en `min-h` llegó en Tailwind 3.4 y el proyecto
+    // usa la 3.3. `min-h-12` no falla ni avisa: simplemente no existe, y el
+    // botón que debía medir 48 px para el pulgar medía 26. Se descubrió
+    // midiendo, no leyendo. Lo que funciona es el valor explícito:
+    // `min-h-[3rem]`.
+    //
+    // Psicosocial queda fuera: es el monolito inicial y no se toca. Las
+    // pantallas de superadmin que son suyas (créditos, empresas, psicólogos)
+    // quedan congeladas aquí: la lista solo puede menguar.
+    const DEL_MONOLITO = [
+      "pages/superadmin/SuperAdminCreditosPage.tsx",
+      "pages/superadmin/SuperAdminEmpresasPage.tsx",
+      "pages/superadmin/SuperAdminPsicologosPage.tsx",
+    ];
+    const usaMinHNumerico = (ruta: string) =>
+      /\bmin-h-\d+\b/.test(contenido(ruta).replace(/\bmin-h-0\b/g, ""));
+    const rotos = TODOS.filter((ruta) => {
+      const r = comoRuta(ruta);
+      if (r.includes("/psicosocial/") || DEL_MONOLITO.includes(r)) return false;
+      return usaMinHNumerico(ruta);
+    }).map(comoRuta);
+
+    expect(rotos).toEqual([]);
+    // Y la lista no se queda con nombres que ya cumplen.
+    const siguen = TODOS.filter(
+      (ruta) => DEL_MONOLITO.includes(comoRuta(ruta)) && usaMinHNumerico(ruta)
+    ).map(comoRuta);
+    expect(siguen.sort()).toEqual([...DEL_MONOLITO].sort());
+  });
 });

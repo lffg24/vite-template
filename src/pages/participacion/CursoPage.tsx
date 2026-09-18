@@ -96,6 +96,26 @@ export default function CursoPage() {
     ? curso.lecciones.findIndex((l) => l.leccion_id === siguiente.leccion_id) + 1
     : null;
 
+  const tituloPaso = curso.puede_finalizar ? "Completaste el recorrido" : "Tu siguiente paso";
+  const textoPaso = curso.puede_finalizar
+    ? "Confirma tu asistencia para generar el registro y tu constancia."
+    : siguiente
+      ? `Lección ${numeroSiguiente}: ${siguiente.titulo}`
+      : "Continúa desde la primera lección disponible.";
+  const accion = curso.puede_finalizar ? (
+    <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
+      Registrar mi asistencia
+    </BotonPrincipal>
+  ) : siguiente ? (
+    <BotonPrincipal onClick={() => navegar(`/c/sesion/leccion/${siguiente.leccion_id}`)}>
+      <span className="inline-flex items-center gap-2">
+        Continuar <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </span>
+    </BotonPrincipal>
+  ) : (
+    <BotonSecundario onClick={() => void consulta.refrescar()}>Actualizar mi avance</BotonSecundario>
+  );
+
   return (
     <ParticipanteLayout progreso={avance}>
       {/* --- el curso y cuánto falta --- */}
@@ -159,40 +179,27 @@ export default function CursoPage() {
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="hidden lg:sticky lg:top-6 lg:block lg:self-start">
           <Panel>
-            <IllustrationSurface tone="lavender" className="mb-4 hidden aspect-[4/3] lg:flex">
+            <IllustrationSurface tone="lavender" className="mb-4 flex aspect-[4/3]">
               <Illustration name={curso.puede_finalizar ? "courseApproved" : "learningPath"} size="sm" />
             </IllustrationSurface>
-            <p className="font-rel-heading text-lg font-bold">
-              {curso.puede_finalizar ? "Completaste el recorrido" : "Tu siguiente paso"}
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-rel-muted">
-              {curso.puede_finalizar
-                ? "Confirma tu asistencia para generar el registro y tu constancia."
-                : siguiente
-                  ? `Lección ${numeroSiguiente}: ${siguiente.titulo}`
-                  : "Continúa desde la primera lección disponible."}
-            </p>
-            <div className="mt-5">
-              {curso.puede_finalizar ? (
-                <BotonPrincipal onClick={() => navegar("/c/sesion/finalizar")}>
-                  Registrar mi asistencia
-                </BotonPrincipal>
-              ) : siguiente ? (
-                <BotonPrincipal onClick={() => navegar(`/c/sesion/leccion/${siguiente.leccion_id}`)}>
-                  <span className="inline-flex items-center gap-2">
-                    Continuar <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                </BotonPrincipal>
-              ) : (
-                <BotonSecundario onClick={() => void consulta.refrescar()}>
-                  Actualizar mi avance
-                </BotonSecundario>
-              )}
-            </div>
+            <p className="font-rel-heading text-lg font-bold">{tituloPaso}</p>
+            <p className="mt-2 text-sm leading-relaxed text-rel-muted">{textoPaso}</p>
+            <div className="mt-5">{accion}</div>
           </Panel>
         </aside>
+      </div>
+
+      {/* En el celular la acción no puede quedar debajo de toda la ruta: la
+          barra se queda abajo mientras se lee. Sin ilustración: aquí manda la
+          tarea. */}
+      <div className="sticky bottom-3 z-20 mt-6 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-card lg:hidden">
+        <p className="mb-3 truncate text-sm text-rel-muted">
+          <span className="font-semibold text-rel-dark">{tituloPaso}</span>
+          {siguiente && !curso.puede_finalizar ? ` · ${textoPaso}` : ""}
+        </p>
+        {accion}
       </div>
     </ParticipanteLayout>
   );

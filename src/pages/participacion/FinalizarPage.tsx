@@ -284,7 +284,7 @@ function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
         </BotonPrincipal>
         <Link
           to={`/c/verificar/${encodeURIComponent(emitida.codigo_verificacion)}`}
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+          className="inline-flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
         >
           <ShieldCheck className="h-5 w-5" aria-hidden="true" /> Verificar
         </Link>
@@ -354,7 +354,7 @@ function ConstanciaEmitidaPanel({ constancia }: { constancia: ConstanciaEmitida 
       <button
         type="button"
         onClick={copiar}
-        className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+        className="mt-3 inline-flex min-h-[2.75rem] items-center gap-2 text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
       >
         <Copy className="h-4 w-4" aria-hidden="true" />
         {copiado ? "Copiado" : "Copiar el código"}

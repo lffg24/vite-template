@@ -26,7 +26,7 @@ export function IllustratedHero({
         {description ? <p className="mt-3 text-rel-muted">{description}</p> : null}
         {action ? <div className="mt-5">{action}</div> : null}
       </div>
-      <IllustrationSurface className="min-h-48">
+      <IllustrationSurface className="min-h-[12rem]">
         <Illustration name={illustration} variant="hero" size="lg" priority />
       </IllustrationSurface>
     </section>

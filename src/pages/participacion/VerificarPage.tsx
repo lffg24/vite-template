@@ -155,7 +155,7 @@ export default function VerificarPage() {
           autoCapitalize="characters"
           autoCorrect="off"
           spellCheck={false}
-          className="mt-1 min-h-12 w-full rounded-rel-control border border-rel-border bg-rel-surface px-4 font-mono text-lg uppercase tracking-[0.15em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+          className="mt-1 min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-4 font-mono text-lg uppercase tracking-[0.15em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
         />
         <p className="mt-2 text-xs text-rel-muted">
           Da igual si lo escribes en minúsculas o sin el guion.

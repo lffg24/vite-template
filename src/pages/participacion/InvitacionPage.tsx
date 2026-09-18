@@ -186,7 +186,7 @@ export default function InvitacionPage() {
               <button
                 type="button"
                 onClick={() => setAbierto(abierto === t.clave ? null : t.clave)}
-                className="mt-1 min-h-11 pl-8 text-sm font-semibold text-rel-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+                className="mt-1 min-h-[2.75rem] pl-8 text-sm font-semibold text-rel-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
                 aria-expanded={abierto === t.clave}
                 aria-controls={`texto-${t.clave}`}
                 aria-label={`${abierto === t.clave ? "Ocultar" : "Leer"} el texto completo de: ${

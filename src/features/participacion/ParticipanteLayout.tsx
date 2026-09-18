@@ -48,7 +48,7 @@ export function ParticipanteLayout({
       ) : null}
 
       <header className="border-b border-rel-border/80 bg-rel-surface">
-        <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[4rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <img
               src={evaLogoColor}
@@ -104,7 +104,7 @@ export function BotonPrincipal({
     <button
       {...props}
       className={
-        "inline-flex min-h-12 w-full items-center justify-center rounded-rel-control bg-rel-primary px-5 text-base font-semibold shadow-sm " +
+        "inline-flex min-h-[3rem] w-full items-center justify-center rounded-rel-control bg-rel-primary px-5 text-base font-semibold shadow-sm " +
         "text-rel-primary-foreground transition-colors duration-rel-micro " +
         "hover:bg-rel-primary/90 focus-visible:outline-none focus-visible:ring-2 " +
         "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +
@@ -125,7 +125,7 @@ export function BotonSecundario({
     <button
       {...props}
       className={
-        "inline-flex min-h-12 w-full items-center justify-center rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base " +
+        "inline-flex min-h-[3rem] w-full items-center justify-center rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base " +
         "font-semibold text-rel-primary transition-colors duration-rel-micro " +
         "hover:bg-rel-surface focus-visible:outline-none focus-visible:ring-2 " +
         "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +

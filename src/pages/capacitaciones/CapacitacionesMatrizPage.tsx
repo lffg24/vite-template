@@ -192,6 +192,7 @@ export default function CapacitacionesMatrizPage() {
     ...ORDEN_ESTADOS.map((e) => ({
       valor: e,
       etiqueta: ESTADO_CELDA[e].etiqueta,
+      cuenta: datos?.resumen[e],
       tono:
         ESTADO_CELDA[e].tono === "info" || ESTADO_CELDA[e].tono === "marca"
           ? undefined
@@ -219,24 +220,9 @@ export default function CapacitacionesMatrizPage() {
       />
 
       <section className="space-y-4 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-sm sm:p-6">
-        {/* --- el resumen: cuántas celdas hay de cada estado en TODA la empresa --- */}
-        {datos ? (
-          <div className="flex flex-wrap items-center gap-2" aria-label="Resumen de la empresa">
-            {ORDEN_ESTADOS.map((e) => (
-              <Pill key={e} tono={ESTADO_CELDA[e].tono}>
-                {ESTADO_CELDA[e].etiqueta}
-                <span className="tabular-nums">{datos.resumen[e] ?? 0}</span>
-              </Pill>
-            ))}
-            <span className="text-xs text-rel-muted">
-              «Por vencer»: vence en {datos.dias_aviso} días o menos.
-            </span>
-          </div>
-        ) : null}
-
         {/* --- buscar y filtrar --- */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative w-full lg:max-w-sm">
+        <div className="space-y-3">
+          <div className="relative w-full sm:max-w-md">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-rel-muted"
               aria-hidden="true"
@@ -258,6 +244,12 @@ export default function CapacitacionesMatrizPage() {
               setPagina(1);
             }}
           />
+          {datos ? (
+            <p className="text-xs text-rel-muted">
+              Las cifras cuentan cursos en cada estado en toda la empresa. «Por vencer»:
+              vence en {datos.dias_aviso} días o menos.
+            </p>
+          ) : null}
         </div>
 
         {/* --- la matriz --- */}

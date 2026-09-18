@@ -176,7 +176,7 @@ export function Evaluacion({
           <button
             type="button"
             onClick={() => setActual((a) => a - 1)}
-            className="min-h-12 shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="min-h-[3rem] shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
           >
             Anterior
           </button>

@@ -237,7 +237,7 @@ export default function AterrizajePage() {
               <button
                 type="button"
                 onClick={() => setPaso("reanudar")}
-                className="min-h-11 text-sm font-semibold text-rel-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+                className="min-h-[2.75rem] text-sm font-semibold text-rel-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
               >
                 Ya había empezado
               </button>

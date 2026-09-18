@@ -28,6 +28,7 @@
 import { Award } from "lucide-react";
 
 import evaLogoColor from "@/assets/eva-logo-color.png";
+import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { CodigoQr } from "@/shared/ui/CodigoQr";
 import { Pill } from "@/shared/ui/Pill";
@@ -85,7 +86,14 @@ export function ConstanciaDocumento({
         {/* --- el cuerpo --- */}
         <div className="min-w-0">
           <header className="flex flex-wrap items-center justify-between gap-4">
-            <img src={evaLogoColor} alt="ABRIL-360" className="h-10 w-auto" />
+            {/* El mismo sello de marca que la cabecera del participante. */}
+            <div className="flex items-center gap-3">
+              <img src={evaLogoColor} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
+              <AbrilWordmark
+                className="font-rel-heading text-2xl font-black tracking-tight text-rel-dark"
+                accentClassName="text-rel-primary"
+              />
+            </div>
             <Pill tono="marca" punto={false}>
               <Award className="h-3.5 w-3.5" aria-hidden="true" />
               {enFrase(tipo)}

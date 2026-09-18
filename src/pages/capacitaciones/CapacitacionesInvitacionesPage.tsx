@@ -251,7 +251,7 @@ export default function CapacitacionesInvitacionesPage() {
             <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
               {disponibles.map((p) => (
                 <li key={p.id}>
-                  <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-rel-control px-2 hover:bg-rel-surface-subtle">
+                  <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-3 rounded-rel-control px-2 hover:bg-rel-surface-subtle">
                     <input
                       type="checkbox"
                       checked={seleccion.has(p.id)}

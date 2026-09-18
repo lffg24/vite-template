@@ -54,7 +54,7 @@ export function FiltroChips<T extends string>({
             aria-pressed={activo}
             onClick={() => alCambiar(o.valor)}
             className={cn(
-              "inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors duration-rel-micro",
+              "inline-flex min-h-[2.5rem] items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors duration-rel-micro",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
               activo
                 ? "border-rel-primary bg-rel-primary text-white"

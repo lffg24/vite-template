@@ -55,7 +55,7 @@ export function FormularioReanudacion({
             id="tipo-reanudacion"
             value={tipo}
             onChange={(e) => setTipo(e.target.value as TipoDocumento)}
-            className="min-h-12 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
           >
             {TIPOS_DOCUMENTO.map((opcion) => (
               <option key={opcion} value={opcion}>
@@ -76,7 +76,7 @@ export function FormularioReanudacion({
             autoComplete="off"
             enterKeyHint="go"
             maxLength={30}
-            className="min-h-12 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
             aria-invalid={mensaje ? true : undefined}
             aria-describedby={mensaje ? "error-reanudacion" : undefined}
           />
@@ -97,7 +97,7 @@ export function FormularioReanudacion({
         <button
           type="button"
           onClick={onCancelar}
-          className="min-h-12 rounded-rel-control px-5 text-sm font-semibold text-rel-muted hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+          className="min-h-[3rem] rounded-rel-control px-5 text-sm font-semibold text-rel-muted hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
         >
           Volver
         </button>
