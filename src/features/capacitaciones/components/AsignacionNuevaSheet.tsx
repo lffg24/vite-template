@@ -159,7 +159,7 @@ export function AsignacionNuevaSheet({
         {versiones.fase === "listo" && (versiones.datos ?? []).length === 0 ? (
           <div className="mt-6">
             <SinDatos
-              ilustracion="capacitacion"
+              escena="capacitaciones"
               titulo="No hay versiones publicadas"
               descripcion="Solo se puede asignar una versión congelada. Publica un curso del catálogo y vuelve aquí."
             />

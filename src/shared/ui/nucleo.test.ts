@@ -16,13 +16,19 @@ import { join, relative, sep } from "node:path";
  * Esto avisa. No impide crear un componente nuevo: impide que aparezca un SEGUNDO
  * componente para un trabajo que ya tiene el suyo, que es distinto.
  *
+ * ## Psicosocial NO se migra
+ *
+ * Es el monolito inicial, funciona, y tocarlo no compra nada. La dirección es la
+ * contraria: del monolito se **extrae** lo que el núcleo necesita y se replica
+ * aquí; cuando el núcleo haya madurado, se decidirá qué conviene traer. Estas
+ * reglas gobiernan el NÚCLEO y lo que se construye sobre él.
+ *
  * ## Por qué la lista de pendientes está aquí dentro
  *
- * Migrar todas las pantallas de Psicosocial al núcleo es trabajo de varias
- * tandas. Congelarlo en una lista tiene una propiedad que un comentario no
- * tiene: **la deuda no puede crecer**. Cada archivo que se migra sale de la
- * lista; cada archivo nuevo que incumpla, falla. Una lista que solo mengua es
- * una deuda que se paga; un comentario es una deuda que se olvida.
+ * Congelar la deuda en una lista tiene una propiedad que un comentario no tiene:
+ * **no puede crecer**. Cada archivo que se migra sale de la lista; cada archivo
+ * nuevo que incumpla, falla. Una lista que solo mengua es una deuda que se paga;
+ * un comentario es una deuda que se olvida.
  */
 
 const RAIZ = join(process.cwd(), "src");
@@ -113,6 +119,33 @@ describe("el núcleo es uno solo", () => {
       yaMigradas,
       "Ya no usan la tabla cruda: bórralas de TABLAS_SIN_MIGRAR."
     ).toEqual([]);
+  });
+
+  it("hay UNA familia de ilustración: el registro", () => {
+    // Llegó a haber tres a la vez: una vectorial sobre tokens, `Escena` y el
+    // registro. Ahora el registro es la única fuente de rutas y `Escena` es solo
+    // su puente de compatibilidad; la vectorial se retiró.
+    const vectorial = TODOS.filter((ruta) =>
+      comoRuta(ruta).startsWith("shared/ui/ilustraciones/")
+    );
+    expect(vectorial).toEqual([]);
+  });
+
+  it("toda ilustración del registro existe como archivo, y al revés", () => {
+    // El `import` ya hace fallar el build cuando falta el archivo. Lo que esto
+    // añade es el otro sentido: un `.webp` que nadie registra pesa en el
+    // repositorio para siempre sin que ninguna pantalla lo pinte.
+    const registro = contenido(
+      join(RAIZ, "shared", "ui", "illustration", "illustration.registry.ts")
+    );
+    const declaradas = [...registro.matchAll(/ilustraciones\/([a-z0-9-]+)\.webp/g)].map(
+      (m) => m[1]
+    );
+    const enDisco = readdirSync(join(RAIZ, "assets", "ilustraciones"))
+      .filter((f) => f.endsWith(".webp"))
+      .map((f) => f.replace(/\.webp$/, ""));
+
+    expect([...new Set(declaradas)].sort()).toEqual(enDisco.sort());
   });
 
   it("nadie se escribe su propio aviso emergente", () => {

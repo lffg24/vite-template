@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
-import type { NombreIlustracion } from "@/shared/ui/ilustraciones";
+import type { NombreEscena } from "@/shared/ui/Escena";
 
 type Destino = "invitaciones" | "enlaces";
 
@@ -42,7 +42,7 @@ const COPIA: Record<
     accion: string;
     vacio: string;
     Icono: typeof Send;
-    ilustracion: NombreIlustracion;
+    escena: NombreEscena;
   }
 > = {
   invitaciones: {
@@ -53,7 +53,7 @@ const COPIA: Record<
     vacio:
       "Las invitaciones se emiten sobre una asignación. Asigna primero una versión publicada a la empresa y vuelve aquí.",
     Icono: Send,
-    ilustracion: "invitacion",
+    escena: "notificacion",
   },
   enlaces: {
     titulo: "Enlaces de grupo",
@@ -63,7 +63,7 @@ const COPIA: Record<
     vacio:
       "Los enlaces se generan sobre una asignación. Asigna primero una versión publicada a la empresa y vuelve aquí.",
     Icono: Link2,
-    ilustracion: "enlace",
+    escena: "notificacion",
   },
 };
 
@@ -77,7 +77,7 @@ function urgencia(a: AsignacionResumen): number {
 export default function SeleccionDeAsignacion({ destino }: { destino: Destino }) {
   const navegar = useNavigate();
   const consulta = useConsulta<AsignacionResumen[]>(() => listarAsignaciones(), []);
-  const { titulo, descripcion, accion, vacio, Icono, ilustracion } = COPIA[destino];
+  const { titulo, descripcion, accion, vacio, Icono, escena } = COPIA[destino];
 
   const lista = [...(consulta.datos ?? [])].sort(
     (a, b) => urgencia(a) - urgencia(b) || a.curso_titulo.localeCompare(b.curso_titulo, "es")
@@ -96,7 +96,7 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
 
         {consulta.fase === "listo" && lista.length === 0 ? (
           <SinDatos
-            ilustracion={ilustracion}
+            escena={escena}
             titulo="Todavía no hay ninguna asignación"
             descripcion={vacio}
             accion={

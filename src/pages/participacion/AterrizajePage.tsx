@@ -23,7 +23,7 @@ import type {
   TipoDocumento,
 } from "@/types/participacion";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
-import { Ilustracion } from "@/shared/ui/ilustraciones";
+import { Escena } from "@/shared/ui/Escena";
 import {
   BotonPrincipal,
   BotonSecundario,
@@ -250,7 +250,7 @@ export default function AterrizajePage() {
         <div className="mt-auto pt-6">
           <Panel>
             <div className="flex items-start gap-3">
-              <Ilustracion nombre="invitacion" tamano="sm" className="shrink-0" />
+              <Escena nombre="notificacion" tamano="sm" className="shrink-0" />
               <div>
                 <p className="text-sm font-semibold leading-relaxed">
                   Esta capacitación se hace con una invitación personal.

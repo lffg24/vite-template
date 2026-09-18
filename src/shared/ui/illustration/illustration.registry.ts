@@ -17,6 +17,27 @@ import planificacion from "@/assets/ilustraciones/planificacion.webp";
 import preguntaEvaluacion from "@/assets/ilustraciones/pregunta-evaluacion.webp";
 import terminaCapacitacionMujer from "@/assets/ilustraciones/termina-capacitacion-mujer.webp";
 import terminasteCapacitacion from "@/assets/ilustraciones/terminaste-capacitacion.webp";
+// Ilustraciones GENERALES (2026-09-14): estados, archivos y acceso.
+import agendado from "@/assets/ilustraciones/agendado.webp";
+import alerta from "@/assets/ilustraciones/alerta.webp";
+import aprobado from "@/assets/ilustraciones/aprobado.webp";
+import archivoCargando from "@/assets/ilustraciones/archivo-cargando.webp";
+import archivosInformacion from "@/assets/ilustraciones/archivos-informacion.webp";
+import buscar from "@/assets/ilustraciones/buscar.webp";
+import cargarArchivo from "@/assets/ilustraciones/cargar-archivo.webp";
+import certificado from "@/assets/ilustraciones/certificado.webp";
+import checklist from "@/assets/ilustraciones/checklist.webp";
+import configuracion from "@/assets/ilustraciones/configuracion.webp";
+import descargarArchivo from "@/assets/ilustraciones/descargar-archivo.webp";
+import error from "@/assets/ilustraciones/error.webp";
+import evaluacionPregunta from "@/assets/ilustraciones/evaluacion-pregunta.webp";
+import firma from "@/assets/ilustraciones/firma.webp";
+import mantenimiento from "@/assets/ilustraciones/mantenimiento.webp";
+import notificacion from "@/assets/ilustraciones/notificacion.webp";
+import pdf from "@/assets/ilustraciones/pdf.webp";
+import satisfactorio from "@/assets/ilustraciones/satisfactorio.webp";
+import seguridadBloqueo from "@/assets/ilustraciones/seguridad-bloqueo.webp";
+import seguridadUsuario from "@/assets/ilustraciones/seguridad-usuario.webp";
 
 import type { IllustrationAsset } from "./illustration.types";
 
@@ -67,6 +88,27 @@ export const illustrationRegistry = {
     variant: "editorial",
   },
   "terminaste-capacitacion": { src: terminasteCapacitacion, variant: "spot" },
+  // --- GENERALES -----------------------------------------------------------
+  agendado: { src: agendado, variant: "editorial" },
+  alerta: { src: alerta, variant: "spot" },
+  aprobado: { src: aprobado, variant: "spot" },
+  "archivo-cargando": { src: archivoCargando, variant: "spot" },
+  "archivos-informacion": { src: archivosInformacion, variant: "editorial" },
+  buscar: { src: buscar, variant: "spot" },
+  "cargar-archivo": { src: cargarArchivo, variant: "spot" },
+  certificado: { src: certificado, variant: "spot" },
+  checklist: { src: checklist, variant: "spot" },
+  configuracion: { src: configuracion, variant: "spot" },
+  "descargar-archivo": { src: descargarArchivo, variant: "spot" },
+  error: { src: error, variant: "spot" },
+  "evaluacion-pregunta": { src: evaluacionPregunta, variant: "editorial" },
+  firma: { src: firma, variant: "spot" },
+  mantenimiento: { src: mantenimiento, variant: "spot" },
+  notificacion: { src: notificacion, variant: "editorial" },
+  pdf: { src: pdf, variant: "spot" },
+  satisfactorio: { src: satisfactorio, variant: "spot" },
+  "seguridad-bloqueo": { src: seguridadBloqueo, variant: "spot" },
+  "seguridad-usuario": { src: seguridadUsuario, variant: "editorial" },
 } as const satisfies Record<string, IllustrationAsset>;
 
 export type IllustrationName = keyof typeof illustrationRegistry;

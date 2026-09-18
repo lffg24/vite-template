@@ -16,7 +16,7 @@ import { Check, Copy, KeyRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
-import { Ilustracion } from "@/shared/ui/ilustraciones";
+import { Escena } from "@/shared/ui/Escena";
 import type { EnlaceCreado } from "@/types/capacitaciones";
 import { formatearFechaHora } from "../formato";
 
@@ -78,7 +78,7 @@ export function EnlaceGeneradoDialog({
       antetitulo="Enlace de grupo"
       titulo="Ya puedes repartirlo"
       tono="aviso"
-      visual={<Ilustracion nombre="enlace" tamano="lg" />}
+      visual={<Escena nombre="satisfactorio" tamano="lg" />}
       descripcion={
         <>
           Para <strong className="text-rel-dark">{enlace.curso}</strong>. Vence el{" "}

@@ -415,7 +415,7 @@ export function LeccionesEditor({
     >
         {lecciones.length === 0 ? (
           <SinDatos
-            ilustracion="documento"
+            escena="archivos-informacion"
             titulo="El curso todavía no tiene lecciones"
             descripcion="Un curso sin lecciones no se puede publicar: produciría una asignación que nadie puede completar."
             accion={

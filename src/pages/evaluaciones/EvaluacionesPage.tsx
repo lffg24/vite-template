@@ -83,7 +83,7 @@ export default function EvaluacionesPage() {
 
       {consulta.fase === "listo" && todas.length === 0 ? (
         <SinDatos
-          ilustracion="documento"
+          escena="evaluacion-pregunta"
           titulo="El banco está vacío"
           descripcion="Una evaluación se redacta una vez y la usan los cursos que la necesiten. Empieza por la que más se repita."
           accion={
