@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
-import CapacitacionesAvancePage, { celdaCSV } from "./CapacitacionesAvancePage";
+import CapacitacionesAvancePage from "./CapacitacionesAvancePage";
+import { celdaCSV } from "@/shared/csv";
 import { obtenerAvance } from "@/services/capacitacionesService";
 import type { AvanceAsignacion, AvanceParticipante } from "@/types/capacitaciones";
 

