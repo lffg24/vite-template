@@ -61,6 +61,7 @@ const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones
 const CapacitacionesEnlacesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEnlacesPage"));
 const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEstadoPage"));
 const CapacitacionesConstanciasPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesConstanciasPage"));
+const CapacitacionesMatrizPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesMatrizPage"));
 const CapacitacionesParticipantesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesParticipantesPage"));
 const CapacitacionesInvitacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInvitacionesPage"));
 const EvaluacionesPage = lazy(() => import("@/pages/evaluaciones/EvaluacionesPage"));
@@ -197,6 +198,7 @@ function App() {
               />
               <Route path="enlaces" element={<SeleccionDeAsignacion destino="enlaces" />} />
               <Route path="constancias" element={<CapacitacionesConstanciasPage />} />
+              <Route path="matriz" element={<CapacitacionesMatrizPage />} />
               <Route path="estado" element={<CapacitacionesEstadoPage />} />
             </Route>
 

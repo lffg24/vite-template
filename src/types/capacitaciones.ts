@@ -700,3 +700,52 @@ export interface Tablero {
   dias_aviso_vencimiento: number;
   atrasadas: AsignacionAtrasada[];
 }
+
+// --- R1 · matriz de capacitación ---------------------------------------------------
+
+/** El estado de UNA persona en UN curso. Lo decide el servidor. */
+export type EstadoCelda =
+  | "VIGENTE"
+  | "POR_VENCER"
+  | "VENCIDA"
+  | "EN_CURSO"
+  | "PENDIENTE"
+  | "ANULADA";
+
+export interface CursoMatriz {
+  curso_id: string;
+  titulo: string;
+  categoria: string | null;
+}
+
+export interface CeldaMatriz {
+  curso_id: string;
+  estado: EstadoCelda;
+  /** Hasta cuándo vale, o cuándo venció. */
+  vence_el: string | null;
+}
+
+export interface FilaMatriz {
+  participante_id: string;
+  nombres: string | null;
+  apellidos: string | null;
+  tipo_documento: string | null;
+  numero_documento: string | null;
+  cargo: string | null;
+  /** Solo los cursos que se le pidieron: una celda ausente es «no aplica». */
+  celdas: CeldaMatriz[];
+  cumplidas: number;
+  aplicables: number;
+}
+
+export interface MatrizCapacitacion {
+  cursos: CursoMatriz[];
+  filas: FilaMatriz[];
+  total: number;
+  pagina: number;
+  por_pagina: number;
+  /** Celdas por estado en TODA la empresa, no en la página. */
+  resumen: Record<EstadoCelda, number>;
+  /** El umbral de «por vencer», en días. Lo decide el servidor. */
+  dias_aviso: number;
+}

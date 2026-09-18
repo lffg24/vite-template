@@ -13,6 +13,8 @@ import type {
   AsignacionCrear,
   AsignacionResumen,
   AvanceAsignacion,
+  EstadoCelda,
+  MatrizCapacitacion,
   ConstanciaEmitidaAdmin,
   ConstanciaResumen,
   InvitacionResumen,
@@ -586,5 +588,30 @@ export async function obtenerTablero(): Promise<Tablero> {
     return data;
   } catch (e) {
     throw errorApi(e, "No pudimos cargar el resumen del módulo.");
+  }
+}
+
+/**
+ * R1. La matriz persona × curso, una página cada vez.
+ *
+ * Paginada en el servidor por la misma razón que el avance: es la nómina de una
+ * empresa, y pedirla entera para mostrar diez filas manda por la red los datos
+ * de todo el personal.
+ */
+export async function obtenerMatriz(
+  opciones: { buscar?: string; estado?: EstadoCelda; pagina?: number; porPagina?: number } = {}
+): Promise<MatrizCapacitacion> {
+  try {
+    const { data } = await api.get<MatrizCapacitacion>(`${BASE}/matriz`, {
+      params: {
+        ...(opciones.buscar ? { buscar: opciones.buscar } : {}),
+        ...(opciones.estado ? { estado: opciones.estado } : {}),
+        pagina: opciones.pagina ?? 1,
+        por_pagina: opciones.porPagina ?? 10,
+      },
+    });
+    return data;
+  } catch (e) {
+    throw errorApi(e, "No pudimos cargar la matriz de capacitación.");
   }
 }

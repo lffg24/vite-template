@@ -1,6 +1,6 @@
 import {
   BarChart3, BookOpen, Building2, CircleHelp, ClipboardCheck, ClipboardList,
-  CreditCard, FileBadge, FileText, Gauge, KeyRound, Layers3, Link2,
+  CreditCard, FileBadge, FileText, Gauge, Grid3x3, KeyRound, Layers3, Link2,
   Send, ShieldCheck, ToggleRight, Users, UsersRound, type LucideIcon,
 } from "lucide-react";
 
@@ -42,6 +42,7 @@ const groups: NavigationGroup[] = [
     { label: "Invitaciones", to: "/capacitaciones/invitaciones", icon: Send },
     { label: "Enlaces de grupo", to: "/capacitaciones/enlaces", icon: Link2 },
     { label: "Constancias", to: "/capacitaciones/constancias", icon: FileBadge },
+    { label: "Matriz", to: "/capacitaciones/matriz", icon: Grid3x3 },
     { label: "Estado del módulo", to: "/capacitaciones/estado", icon: ShieldCheck },
   ] },
   { label: "Evaluaciones", icon: ClipboardCheck, landing: "/evaluaciones", children: [
