@@ -81,6 +81,12 @@ async function sesion(page: Page, capacidadesEfectivas = capacidades()) {
   // pantalla de Capacitaciones lee ya sus permisos.
   await page.route(`${CAP}/contexto`, (r) => json(r, capacidadesEfectivas));
   await page.route(`${CAP}/modulo/estado`, (r) => json(r, estadoOperable));
+  const destinos: string[] = [];
+  if (capacidadesEfectivas.puede_editar_catalogo || capacidadesEfectivas.puede_publicar) {
+    destinos.push("/capacitaciones/cursos");
+  }
+  if (capacidadesEfectivas.puede_asignar) destinos.push("/capacitaciones/asignaciones");
+  await page.route(`${API_ORIGIN}/acceso/navegacion`, (r) => json(r, { destinos }));
 }
 
 function cursoBorrador(over: Record<string, unknown> = {}) {
@@ -345,7 +351,7 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     await expect(page.getByRole("button", { name: /publicar versión 1/i })).toBeDisabled();
 
     // --- 3 · A-04 · agregar una lección ---------------------------------------
-    await page.getByRole("button", { name: /agregar la primera/i }).click();
+    await page.getByRole("button", { name: /^agregar lección$/i }).click();
     // Las consultas van dentro del panel: «Título» existe tambien en el
     // formulario del curso que queda debajo, y una consulta global las mezcla.
     const panelLeccion = page.getByRole("dialog");
@@ -381,9 +387,9 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     // abrir la asignacion.
     await page
       .getByRole("table")
-      .getByRole("button", { name: /^enlaces de /i })
-      .first()
+      .getByRole("button", { name: /más acciones para/i })
       .click();
+    await page.getByRole("button", { name: /^enlaces de grupo$/i }).click();
     await expect(page.getByText(/nadie puede entrar todavía/i)).toBeVisible();
     await page.getByRole("button", { name: /generar el primero/i }).click();
     await page.getByRole("dialog").getByRole("button", { name: /^generar enlace$/i }).click();
@@ -415,7 +421,7 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
     // El 403 cubre contrato, bandera y permiso. La pantalla que los distingue
     // es A-08: repetir «sin permiso» dejaría el diagnóstico por eliminación.
     await sesion(page, capacidades({
-      puede_editar_catalogo: false,
+      puede_editar_catalogo: true,
       puede_publicar: false,
       tiene_acceso: true,
     }));
@@ -438,16 +444,14 @@ test.describe("Capacitaciones · recorrido administrativo", () => {
 
     await page.goto("/capacitaciones/cursos");
 
-    // La navegación no ofrece el catálogo: mostrar una sección que responderá
-    // 403 convierte un límite de permisos en algo que parece una avería.
-    // `RoleSidebar` —el componente de la casa— pinta cada entrada como
-    // `button`, no como `link`. Lo que se comprueba es lo mismo: una sección sin
-    // capacidad no aparece, y una con capacidad sí.
+    // La navegación efectiva ofrece las capacidades que el contexto resolvió.
+    // El 403 posterior puede aparecer si la configuración cambia entre esa
+    // lectura y la consulta, y debe conducir al diagnóstico actualizado.
     await expect(
-      page.getByRole("navigation").getByRole("button", { name: "Catálogo" })
-    ).toHaveCount(0);
+      page.getByRole("navigation").getByRole("link", { name: "Catálogo" })
+    ).toBeVisible();
     await expect(
-      page.getByRole("navigation").getByRole("button", { name: "Asignaciones" })
+      page.getByRole("navigation").getByRole("link", { name: "Asignaciones" })
     ).toBeVisible();
 
     await page.getByRole("link", { name: /ver estado del módulo/i }).click();

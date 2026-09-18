@@ -19,6 +19,7 @@ async function preparar(page: Page, conflicto = false) {
     let body: unknown;
     let status = 200;
     if (path === "/auth/me") body = { id: 1, nombre: "Administración REL", empresa_id: "empresa-a", roles: ["SUPER_ADMIN"], permissions: [] };
+    else if (path === "/acceso/navegacion") body = { destinos: ["/superadmin/roles-permisos"] };
     else if (path === "/acceso/catalogo") body = { version: 1, capacidades };
     else if (path === "/acceso/roles") body = { items: roles, hay_mas: false };
     else if (path === "/acceso/roles/vista-previa") {
@@ -43,6 +44,8 @@ test("rol protegido, preview y guardado explícito", async ({ page }) => {
   const guardados = await preparar(page);
   await page.goto("/superadmin/roles-permisos");
   await expect(page.getByRole("heading", { name: "Roles y permisos", exact: true })).toBeVisible();
+  await page.getByText(/Roles protegidos del sistema/).click();
+  await page.getByRole("button", { name: /Administrador de plataforma/ }).click();
   await expect(page.getByRole("button", { name: "Editar", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Crear rol", exact: true }).click();
   await page.getByLabel("Nombre del rol").fill("Responsable de formación");
@@ -52,7 +55,7 @@ test("rol protegido, preview y guardado explícito", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Revisa el impacto" })).toBeVisible();
   expect(guardados()).toBe(0);
   await page.getByRole("button", { name: "Confirmar y guardar" }).click();
-  await expect(page.getByRole("status")).toContainText("Rol guardado");
+  await expect(page.getByText("Rol creado", { exact: true })).toBeVisible();
   expect(guardados()).toBe(1);
 });
 
@@ -78,11 +81,12 @@ test("diagnóstico, escritorio y móvil sin desbordamiento", async ({ page }, te
     await page.screenshot({ path: "../outputs/playwright/iam-escritorio.png", fullPage: true });
   }
   await page.getByRole("button", { name: "Personas y acceso" }).click();
-  await page.getByRole("combobox", { name: "Persona", exact: true }).selectOption("2");
-  await expect(page.getByRole("heading", { name: "Acceso efectivo", exact: true })).toBeVisible();
+  await page.getByRole("combobox", { name: "Persona", exact: true }).click();
+  await page.getByRole("option", { name: /Laura Martínez/ }).click();
+  await expect(page.getByRole("heading", { name: "Qué puede hacer esta persona", exact: true })).toBeVisible();
   await expect(page.getByText("Las condiciones de acceso se cumplen.")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.getByRole("heading", { name: "Acceso efectivo", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Qué puede hacer esta persona", exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(() => [...document.querySelectorAll<HTMLElement>("body *")]
     .filter(elemento => elemento.getBoundingClientRect().right > window.innerWidth + 1)
     .slice(0, 8)

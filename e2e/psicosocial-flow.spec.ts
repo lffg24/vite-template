@@ -145,6 +145,16 @@ async function mockPsicologoSession(page: Page, options: { initiallyAuthenticate
     loginCompleted = true;
     await fulfillJson(route, psicoUser);
   });
+  await page.route(`${API_ORIGIN}/acceso/navegacion`, (route) =>
+    fulfillJson(route, {
+      destinos: [
+        "/psicosocial/dashboard",
+        "/psicosocial/empresas",
+        "/psicosocial/aplicaciones-bt",
+        "/psicosocial/resultados",
+      ],
+    }),
+  );
   await page.route(`${API_ORIGIN}/psicosocial/access/empresas`, (route) =>
     fulfillJson(route, assignedCompanies),
   );
