@@ -39,6 +39,41 @@ import satisfactorio from "@/assets/ilustraciones/satisfactorio.webp";
 import seguridadBloqueo from "@/assets/ilustraciones/seguridad-bloqueo.webp";
 import seguridadUsuario from "@/assets/ilustraciones/seguridad-usuario.webp";
 
+// Ilustraciones 2026-09-17: evaluación, evidencia, auditoría y soporte.
+// Cuadradas (640×640) y sin recortar: el fuente no se reencuadra.
+import courseApprovedSrc from "@/assets/ilustraciones/course-approved.webp";
+import trainingScheduledSrc from "@/assets/ilustraciones/training-scheduled.webp";
+import learningPathSrc from "@/assets/ilustraciones/learning-path.webp";
+import settingsParametersSrc from "@/assets/ilustraciones/settings-parameters.webp";
+import documentReadingSrc from "@/assets/ilustraciones/document-reading.webp";
+import scheduleFailedSrc from "@/assets/ilustraciones/schedule-failed.webp";
+import trainingAnswerFailedSrc from "@/assets/ilustraciones/training-answer-failed.webp";
+import retryNotAllowedSrc from "@/assets/ilustraciones/retry-not-allowed.webp";
+import trainingReminderSrc from "@/assets/ilustraciones/training-reminder.webp";
+import retryAvailableSrc from "@/assets/ilustraciones/retry-available.webp";
+import lessonReplaySrc from "@/assets/ilustraciones/lesson-replay.webp";
+import attendanceRegisterSrc from "@/assets/ilustraciones/attendance-register.webp";
+import auditCollaborationSrc from "@/assets/ilustraciones/audit-collaboration.webp";
+import consentAcceptedSrc from "@/assets/ilustraciones/consent-accepted.webp";
+import constanciaRevokedSrc from "@/assets/ilustraciones/constancia-revoked.webp";
+import constanciaVerifiedSrc from "@/assets/ilustraciones/constancia-verified.webp";
+import evaluationAccessSrc from "@/assets/ilustraciones/evaluation-access.webp";
+import evaluationProgressSrc from "@/assets/ilustraciones/evaluation-progress.webp";
+import evaluationAssignedSrc from "@/assets/ilustraciones/evaluation-assigned.webp";
+import evaluationSubmittedSrc from "@/assets/ilustraciones/evaluation-submitted.webp";
+import questionAnsweredSrc from "@/assets/ilustraciones/question-answered.webp";
+import evaluationRetrySrc from "@/assets/ilustraciones/evaluation-retry.webp";
+import evaluationPassedSrc from "@/assets/ilustraciones/evaluation-passed.webp";
+import evaluationTimedSrc from "@/assets/ilustraciones/evaluation-timed.webp";
+import evidenceReadySrc from "@/assets/ilustraciones/evidence-ready.webp";
+import attendanceSignatureSrc from "@/assets/ilustraciones/attendance-signature.webp";
+import auditAchievedSrc from "@/assets/ilustraciones/audit-achieved.webp";
+import complianceMatrixSrc from "@/assets/ilustraciones/compliance-matrix.webp";
+import rolesPermissionsSrc from "@/assets/ilustraciones/roles-permissions.webp";
+import feedbackRatingSrc from "@/assets/ilustraciones/feedback-rating.webp";
+import supportHelpSrc from "@/assets/ilustraciones/support-help.webp";
+import identityVerifiedSrc from "@/assets/ilustraciones/identity-verified.webp";
+
 import type { IllustrationAsset } from "./illustration.types";
 
 /**
@@ -109,6 +144,39 @@ export const illustrationRegistry = {
   satisfactorio: { src: satisfactorio, variant: "spot" },
   "seguridad-bloqueo": { src: seguridadBloqueo, variant: "spot" },
   "seguridad-usuario": { src: seguridadUsuario, variant: "editorial" },
+  // --- 2026-09-17 · claves por intención ----------------------------------
+  courseApproved: { src: courseApprovedSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  trainingScheduled: { src: trainingScheduledSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  learningPath: { src: learningPathSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  settingsParameters: { src: settingsParametersSrc, variant: "spot", aspectRatio: "1 / 1" },
+  documentReading: { src: documentReadingSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  scheduleFailed: { src: scheduleFailedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  trainingAnswerFailed: { src: trainingAnswerFailedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  retryNotAllowed: { src: retryNotAllowedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  trainingReminder: { src: trainingReminderSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  retryAvailable: { src: retryAvailableSrc, variant: "spot", aspectRatio: "1 / 1" },
+  lessonReplay: { src: lessonReplaySrc, variant: "spot", aspectRatio: "1 / 1" },
+  attendanceRegister: { src: attendanceRegisterSrc, variant: "product", aspectRatio: "1 / 1" },
+  auditCollaboration: { src: auditCollaborationSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  consentAccepted: { src: consentAcceptedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  constanciaRevoked: { src: constanciaRevokedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  constanciaVerified: { src: constanciaVerifiedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  evaluationAccess: { src: evaluationAccessSrc, variant: "spot", aspectRatio: "1 / 1" },
+  evaluationProgress: { src: evaluationProgressSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  evaluationAssigned: { src: evaluationAssignedSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  evaluationSubmitted: { src: evaluationSubmittedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  questionAnswered: { src: questionAnsweredSrc, variant: "spot", aspectRatio: "1 / 1" },
+  evaluationRetry: { src: evaluationRetrySrc, variant: "spot", aspectRatio: "1 / 1" },
+  evaluationPassed: { src: evaluationPassedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  evaluationTimed: { src: evaluationTimedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  evidenceReady: { src: evidenceReadySrc, variant: "product", aspectRatio: "1 / 1" },
+  attendanceSignature: { src: attendanceSignatureSrc, variant: "product", aspectRatio: "1 / 1" },
+  auditAchieved: { src: auditAchievedSrc, variant: "editorial", aspectRatio: "1 / 1" },
+  complianceMatrix: { src: complianceMatrixSrc, variant: "product", aspectRatio: "1 / 1" },
+  rolesPermissions: { src: rolesPermissionsSrc, variant: "product", aspectRatio: "1 / 1" },
+  feedbackRating: { src: feedbackRatingSrc, variant: "spot", aspectRatio: "1 / 1" },
+  supportHelp: { src: supportHelpSrc, variant: "spot", aspectRatio: "1 / 1" },
+  identityVerified: { src: identityVerifiedSrc, variant: "spot", aspectRatio: "1 / 1" },
 } as const satisfies Record<string, IllustrationAsset>;
 
 export type IllustrationName = keyof typeof illustrationRegistry;
