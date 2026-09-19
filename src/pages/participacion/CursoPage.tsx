@@ -23,6 +23,7 @@ import { Cargando, PantallaDeError, PantallaDeEstado } from "@/features/particip
 import { RutaAprendizaje, siguienteLeccion } from "@/features/participacion/RutaAprendizaje";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
+import { BarraAccionesMovil } from "@/shared/ui/BotonAccion";
 
 export default function CursoPage() {
   const navegar = useNavigate();
@@ -203,13 +204,13 @@ export default function CursoPage() {
       {/* En el celular la acción no puede quedar debajo de toda la ruta: la
           barra se queda abajo mientras se lee. Sin ilustración: aquí manda la
           tarea. */}
-      <div className="sticky bottom-3 z-20 mt-6 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-card lg:hidden">
+      <BarraAccionesMovil className="lg:hidden">
         <p className="mb-3 truncate text-sm text-rel-muted">
           <span className="font-semibold text-rel-dark">{tituloPaso}</span>
           {siguiente && !curso.puede_finalizar ? ` · ${textoPaso}` : ""}
         </p>
         {accion}
-      </div>
+      </BarraAccionesMovil>
     </ParticipanteLayout>
   );
 }

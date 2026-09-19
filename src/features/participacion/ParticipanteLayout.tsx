@@ -16,8 +16,8 @@
 
 import type { ReactNode } from "react";
 
-import evaLogoColor from "@/assets/eva-logo-color.png";
-import AbrilWordmark from "@/components/brand/AbrilWordmark";
+import { BotonAccion } from "@/shared/ui/BotonAccion";
+import { CabeceraParticipante } from "@/shared/ui/CabeceraParticipante";
 
 export function ParticipanteLayout({
   children,
@@ -47,30 +47,7 @@ export function ParticipanteLayout({
         </div>
       ) : null}
 
-      <header className="border-b border-rel-border/80 bg-rel-surface">
-        <div className="mx-auto flex min-h-[4rem] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <img
-              src={evaLogoColor}
-              alt=""
-              aria-hidden="true"
-              className="h-9 w-9 object-contain sm:h-10 sm:w-10"
-            />
-            <div>
-              <AbrilWordmark
-                className="font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-2xl"
-                accentClassName="text-rel-primary"
-              />
-              <p className="hidden text-xs text-rel-muted sm:block">
-                Aprende · Avanza · Impacta
-              </p>
-            </div>
-          </div>
-          <span className="rounded-full bg-rel-accent-subtle px-3 py-1.5 text-xs font-semibold text-rel-accent sm:text-sm">
-            Participante
-          </span>
-        </div>
-      </header>
+      <CabeceraParticipante />
 
       <main
         className={`mx-auto flex w-full flex-1 flex-col px-4 py-5 sm:px-6 sm:py-8 lg:px-8 ${
@@ -100,41 +77,14 @@ export function BotonPrincipal({
   children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      {...props}
-      className={
-        "inline-flex min-h-[3rem] w-full items-center justify-center rounded-rel-control bg-rel-primary px-5 text-base font-semibold shadow-sm " +
-        "text-rel-primary-foreground transition-colors duration-rel-micro " +
-        "hover:bg-rel-primary/90 focus-visible:outline-none focus-visible:ring-2 " +
-        "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +
-        "disabled:cursor-not-allowed disabled:bg-rel-neutral disabled:text-white " +
-        (props.className ?? "")
-      }
-    >
-      {children}
-    </button>
-  );
+  return <BotonAccion {...props}>{children}</BotonAccion>;
 }
 
 export function BotonSecundario({
   children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      {...props}
-      className={
-        "inline-flex min-h-[3rem] w-full items-center justify-center rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base " +
-        "font-semibold text-rel-primary transition-colors duration-rel-micro " +
-        "hover:bg-rel-surface focus-visible:outline-none focus-visible:ring-2 " +
-        "focus-visible:ring-rel-primary focus-visible:ring-offset-2 " +
-        (props.className ?? "")
-      }
-    >
-      {children}
-    </button>
-  );
+  return <BotonAccion {...props} variante="secundaria">{children}</BotonAccion>;
 }
 
 /** Tarjeta de contenido. Sólida, nunca translúcida: se lee al sol. */

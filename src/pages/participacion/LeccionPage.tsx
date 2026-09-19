@@ -35,6 +35,7 @@ import {
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
 import { Evaluacion } from "@/features/participacion/Evaluacion";
+import { BarraAccionesMovil } from "@/shared/ui/BotonAccion";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -267,7 +268,7 @@ export default function LeccionPage() {
       ) : null}
 
       {evaluacion ? null : (
-      <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex gap-3 border-t border-rel-border bg-rel-canvas/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:ml-auto lg:w-full lg:max-w-md lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+      <BarraAccionesMovil className="flex gap-3 lg:ml-auto lg:w-full lg:max-w-md">
         {!recurso && bloque > 0 ? (
           <button
             type="button"
@@ -293,7 +294,7 @@ export default function LeccionPage() {
             </span>
           )}
         </BotonPrincipal>
-      </div>
+      </BarraAccionesMovil>
       )}
       </div>
     </ParticipanteLayout>

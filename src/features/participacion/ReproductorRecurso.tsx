@@ -44,10 +44,12 @@ export function urlIncrustable(recurso: RecursoPublico): string | null {
   if (recurso.proveedor === "YOUTUBE") {
     // Tres formas de la misma dirección, y las tres llegan pegadas de verdad:
     // la del navegador, la de «compartir» y la de un enlace de lista.
-    const id =
-      host === "youtu.be"
-        ? u.pathname.slice(1)
-        : u.searchParams.get("v") ?? (u.pathname.startsWith("/embed/") ? u.pathname.slice(7) : "");
+    if (!["youtu.be", "youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com"].includes(host)) return null;
+    const partes = u.pathname.split("/").filter(Boolean);
+    const id = host === "youtu.be"
+      ? partes[0]
+      : u.searchParams.get("v") ?? (["embed", "shorts", "live"].includes(partes[0] ?? "") ? partes[1] : "");
+    if (!id || !/^[A-Za-z0-9_-]{6,20}$/.test(id)) return null;
     return id
       ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?playsinline=1&rel=0`
       : null;
@@ -95,17 +97,17 @@ export function ReproductorRecurso({
             src={incrustable}
             title={recurso.titulo}
             className="h-full w-full"
-            // `allow-same-origin` junto a `allow-scripts` hace falta para que
-            // los reproductores de los proveedores funcionen. Lo que NO se
-            // concede es `allow-top-navigation`: sin eso el material no puede
-            // sacar al participante de su curso.
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+            // El origen ya fue convertido y limitado a proveedores conocidos.
+            // No se usa `sandbox`: YouTube necesita capacidades internas que
+            // varían con el reproductor y un sandbox parcial provoca errores
+            // de configuración aun cuando el video admite incrustación.
             allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen"
             // YouTube rechaza el reproductor con error 153 cuando el navegador
             // elimina por completo el origen. Solo se comparte el origen, no la
             // ruta ni el token del enlace público.
             referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
+            allowFullScreen
           />
         </div>
       ) : (

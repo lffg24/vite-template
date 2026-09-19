@@ -24,6 +24,9 @@ describe("la dirección incrustable", () => {
     expect(
       urlIncrustable(rec({ proveedor: "YOUTUBE", url: "https://www.youtube.com/embed/dQw4w9WgXcQ" }))
     ).toBe(esperada);
+    expect(
+      urlIncrustable(rec({ proveedor: "YOUTUBE", url: "https://www.youtube.com/shorts/dQw4w9WgXcQ" }))
+    ).toBe(esperada);
   });
 
   it("convierte Vimeo y Drive a su forma de reproductor", () => {
@@ -64,30 +67,28 @@ describe("el reproductor", () => {
     // es la única salida que le queda a quien está mirando un rectángulo vacío.
     render(
       <ReproductorRecurso
-        recurso={rec({ proveedor: "YOUTUBE", url: "https://youtu.be/abc" })}
+        recurso={rec({ proveedor: "YOUTUBE", url: "https://youtu.be/dQw4w9WgXcQ" })}
         tipo="VIDEO"
       />
     );
 
     expect(screen.getByRole("link", { name: /ver el video en su sitio/i })).toHaveAttribute(
       "href",
-      "https://youtu.be/abc"
+      "https://youtu.be/dQw4w9WgXcQ"
     );
   });
 
-  it("el marco va con sandbox y sin permiso para navegar por encima", () => {
-    // `allow-top-navigation` dejaría que el material sacara al participante de
-    // su curso. No se concede, y esta prueba es la que lo mantiene así.
+  it("el marco comparte solo el origen y permite pantalla completa", () => {
     const { container } = render(
       <ReproductorRecurso
-        recurso={rec({ proveedor: "YOUTUBE", url: "https://youtu.be/abc" })}
+        recurso={rec({ proveedor: "YOUTUBE", url: "https://youtu.be/dQw4w9WgXcQ" })}
         tipo="VIDEO"
       />
     );
 
     const marco = container.querySelector("iframe");
     expect(marco).toBeTruthy();
-    expect(marco?.getAttribute("sandbox")).not.toContain("allow-top-navigation");
+    expect(marco).toHaveAttribute("allowfullscreen");
     expect(marco?.getAttribute("referrerPolicy") ?? marco?.getAttribute("referrerpolicy")).toBe(
       "strict-origin-when-cross-origin"
     );
