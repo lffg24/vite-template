@@ -76,7 +76,7 @@ export function PageHeader({
           aria-hidden="true"
           className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-rel-primary/15 blur-3xl"
         />
-        <div className="grid min-w-0 items-center gap-5 md:grid-cols-[minmax(0,1fr)_minmax(13rem,30%)_auto]">
+        <div className="grid min-w-0 items-center gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(13rem,30%)_auto]">
           <div className="min-w-0">
             {breadcrumbs ? <div className="mb-3 text-xs text-white/70">{breadcrumbs}</div> : null}
             <div className="flex min-w-0 items-start gap-3 sm:gap-4">
@@ -104,7 +104,7 @@ export function PageHeader({
             </div>
           </div>
 
-          <div className="pointer-events-none hidden h-28 items-center justify-center md:flex" aria-hidden="true">
+          <div className="pointer-events-none hidden h-28 items-center justify-center xl:flex" aria-hidden="true">
             {illustration ? (
               <Illustration
                 name={illustration}
@@ -116,7 +116,7 @@ export function PageHeader({
               />
             ) : null}
           </div>
-          {accion ? <div className="flex w-full shrink-0 items-center md:w-auto">{accion}</div> : null}
+          {accion ? <div className="flex w-full shrink-0 items-center xl:w-auto">{accion}</div> : null}
         </div>
       </section>
     );
