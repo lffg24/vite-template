@@ -23,7 +23,7 @@ export function BotonAccion({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:bg-rel-neutral disabled:text-white",
         variante === "principal"
-          ? "bg-rel-primary text-rel-primary-foreground shadow-sm hover:bg-rel-primary/90"
+          ? "bg-rel-accent text-white shadow-sm hover:bg-rel-accent/90"
           : "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:bg-rel-surface-subtle",
         className
       )}

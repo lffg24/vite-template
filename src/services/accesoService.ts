@@ -12,7 +12,7 @@ export interface VistaAsignacion { huella: string; antes: { activo: boolean; val
 export interface Asignacion { id: number; role_id: number; nombre: string; modulo: string; activo: boolean; vigente: boolean; valido_desde: string | null; valido_hasta: string | null }
 export interface Explicacion { decisiones: (Capacidad & { permitido: boolean; motivo: string })[]; asignaciones: Asignacion[]; roles_globales: { codigo: string; nombre: string }[]; evaluado_en: string }
 export interface Evento { id: number; evento: string; actor_ref: string; creado_en: string; correlation_id: string; payload: Record<string, unknown> }
-export interface Pagina<T> { items: T[]; hay_mas: boolean }
+export interface Pagina<T> { items: T[]; hay_mas: boolean; total?: number; pagina?: number; por_pagina?: number }
 export interface InvitacionCreada {
   id: number;
   estado: string;
@@ -32,8 +32,8 @@ async function consultar<T>(ruta: string, datos?: unknown): Promise<T> {
 }
 export const accesoService = {
   catalogo: () => consultar<{ version: number; capacidades: Capacidad[] }>("/catalogo"),
-  roles: (q = "", pagina = 1) => consultar<Pagina<Rol>>(`/roles?q=${encodeURIComponent(q)}&pagina=${pagina}`),
-  usuarios: (q = "", pagina = 1) => consultar<Pagina<Persona>>(`/usuarios?q=${encodeURIComponent(q)}&pagina=${pagina}`),
+  roles: (q = "", pagina = 1, porPagina = 20) => consultar<Pagina<Rol>>(`/roles?q=${encodeURIComponent(q)}&pagina=${pagina}&por_pagina=${porPagina}`),
+  usuarios: (q = "", pagina = 1, porPagina = 20) => consultar<Pagina<Persona>>(`/usuarios?q=${encodeURIComponent(q)}&pagina=${pagina}&por_pagina=${porPagina}`),
   todasEmpresas: (q = "", pagina = 1) => consultar<Pagina<Empresa>>(`/empresas?q=${encodeURIComponent(q)}&pagina=${pagina}`),
   invitar: (datos: { nombre: string; email: string; empresa_id: string }) => consultar<InvitacionCreada>("/usuarios/invitar", datos),
   reenviarInvitacion: (id: number) => consultar<{ entrega: string }>(`/usuarios/${id}/reenviar-invitacion`, {}),

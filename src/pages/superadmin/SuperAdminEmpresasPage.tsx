@@ -141,8 +141,11 @@ export default function SuperAdminEmpresasPage() {
       <SuperAdminPageHeader
         title="Empresas"
         subtitle="Crea y administra los clientes que usarán los módulos de Abril360."
+        icon={Building2}
+        illustration="companyManagement"
+        variant="dark-illustrated"
         action={
-          <Button variant="rel" onClick={() => abrir(null)}>
+          <Button variant="rel" onClick={() => abrir(null)} className="w-full md:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Nueva empresa
           </Button>

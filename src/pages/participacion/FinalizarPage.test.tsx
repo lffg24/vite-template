@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 import FinalizarPage from "./FinalizarPage";
 import { finalizar, miConstancia, miCurso } from "@/services/participacionService";
+import { descargarElementoComoPdf } from "@/shared/pdf/descargarElementoComoPdf";
 import type { EstadoCurso } from "@/types/participacion";
 
 vi.mock("@/services/participacionService", () => ({
   finalizar: vi.fn(),
   miConstancia: vi.fn(),
   miCurso: vi.fn(),
+}));
+
+vi.mock("@/shared/pdf/descargarElementoComoPdf", () => ({
+  descargarElementoComoPdf: vi.fn(),
 }));
 
 function curso(over: Partial<EstadoCurso> = {}): EstadoCurso {
@@ -117,8 +122,8 @@ describe("cuando se vuelve a una inscripción ya completada", () => {
 
 describe("lo que la pantalla promete", () => {
   it("no ofrece descargar un PDF que no existe", async () => {
-    // La librería sigue sin aprobarse. Un botón que no hiciera nada sería peor
-    // que decir dónde está el límite.
+    // Sin el documento emitido no hay superficie verificable que convertir. El
+    // botón aparece únicamente cuando el servidor entrega la constancia.
     vi.mocked(miCurso).mockResolvedValue(curso());
     vi.mocked(finalizar).mockResolvedValue({
       estado: "COMPLETADA",
@@ -175,11 +180,14 @@ describe("D-09 · el documento de la constancia", () => {
     expect(
       screen.getByRole("img", { name: /Código QR para verificar la constancia ABCD-2345/ })
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Guardar o imprimir/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Descargar PDF/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Verificar/ })).toHaveAttribute(
       "href",
       "/c/verificar/ABCD-2345"
     );
+
+    fireEvent.click(screen.getByRole("button", { name: /Descargar PDF/ }));
+    await waitFor(() => expect(descargarElementoComoPdf).toHaveBeenCalledOnce());
   });
 
   it("si el documento no llega, queda el folio y el código (no una pantalla vacía)", async () => {
@@ -190,7 +198,7 @@ describe("D-09 · el documento de la constancia", () => {
     expect(await screen.findByText(/N.º 12/)).toBeInTheDocument();
     expect(screen.getByText("ABCD-2345")).toBeInTheDocument();
     // Contraprueba: no se finge un documento que no llegó.
-    expect(screen.queryByRole("button", { name: /Guardar o imprimir/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Descargar PDF/ })).toBeNull();
   });
 
   it("una constancia ANULADA lo dice en el documento", async () => {

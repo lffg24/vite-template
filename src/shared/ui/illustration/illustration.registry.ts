@@ -73,6 +73,9 @@ import rolesPermissionsSrc from "@/assets/ilustraciones/roles-permissions.webp";
 import feedbackRatingSrc from "@/assets/ilustraciones/feedback-rating.webp";
 import supportHelpSrc from "@/assets/ilustraciones/support-help.webp";
 import identityVerifiedSrc from "@/assets/ilustraciones/identity-verified.webp";
+import certificateReadyBadgeSrc from "@/assets/ilustraciones/certificate-ready-badge.webp";
+import certificateCornerTopSrc from "@/assets/ilustraciones/certificate-corner-top.webp";
+import certificateCornerBottomSrc from "@/assets/ilustraciones/certificate-corner-bottom.webp";
 
 import type { IllustrationAsset } from "./illustration.types";
 
@@ -177,6 +180,10 @@ export const illustrationRegistry = {
   feedbackRating: { src: feedbackRatingSrc, variant: "spot", aspectRatio: "1 / 1" },
   supportHelp: { src: supportHelpSrc, variant: "spot", aspectRatio: "1 / 1" },
   identityVerified: { src: identityVerifiedSrc, variant: "spot", aspectRatio: "1 / 1" },
+  certificateReadyBadge: { src: certificateReadyBadgeSrc, variant: "spot", aspectRatio: "1 / 1" },
+  certificateCornerTop: { src: certificateCornerTopSrc, variant: "ambient", aspectRatio: "4 / 3" },
+  certificateCornerBottom: { src: certificateCornerBottomSrc, variant: "ambient", aspectRatio: "4 / 3" },
+  companyManagement: { src: auditCollaborationSrc, variant: "product", aspectRatio: "1 / 1" },
 } as const satisfies Record<string, IllustrationAsset>;
 
 export type IllustrationName = keyof typeof illustrationRegistry;

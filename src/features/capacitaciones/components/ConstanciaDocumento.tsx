@@ -32,6 +32,7 @@ import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { CodigoQr } from "@/shared/ui/CodigoQr";
 import { Pill } from "@/shared/ui/Pill";
+import { Illustration } from "@/shared/ui/illustration";
 import type { ConstanciaImprimible } from "@/types/constancia";
 
 /** Minutos a la forma en que se dice una duración de formación. */
@@ -72,14 +73,17 @@ export function ConstanciaDocumento({
       className="hoja-constancia relative mx-auto w-full max-w-4xl overflow-hidden rounded-rel-panel border border-rel-border bg-white text-rel-dark shadow-card print:max-w-none print:rounded-none print:border-0 print:shadow-none"
       aria-label={`${enFrase(tipo)} ${constancia.codigo_verificacion}`}
     >
-      {/* --- adorno: formas orgánicas de la marca, detrás de todo --- */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-[45%_55%_60%_40%/50%_45%_55%_50%] bg-rel-accent-subtle"
+      <Illustration
+        name="certificateCornerTop"
+        size="full"
+        decorative
+        className="pointer-events-none absolute -right-20 -top-20 w-72 opacity-70"
       />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -right-16 h-64 w-96 rounded-[55%_45%_40%_60%/45%_55%_45%_55%] bg-rel-accent-subtle opacity-80"
+      <Illustration
+        name="certificateCornerBottom"
+        size="full"
+        decorative
+        className="pointer-events-none absolute -bottom-28 -left-24 w-80 opacity-60"
       />
 
       <div className="relative grid gap-8 p-6 sm:p-10 md:grid-cols-[minmax(0,1fr)_12rem]">

@@ -24,7 +24,7 @@ const buttonVariants = cva(
         // Variantes REL (constitucion §16 y §24: extender antes de duplicar).
         // Aditivas: ninguna variante existente cambia, asi que Psicosocial se
         // ve exactamente igual despues de este cambio.
-        rel: "bg-rel-primary text-rel-primary-foreground shadow-sm hover:bg-rel-primary/90 focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+        rel: "bg-rel-accent text-white shadow-sm hover:bg-rel-accent/90 focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
         relOutline:
           "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:bg-rel-surface-subtle focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
         relGhost:

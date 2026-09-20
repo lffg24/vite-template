@@ -26,8 +26,12 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 import { AzulejoIcono } from "./AzulejoIcono";
+import {
+  Illustration,
+  type IllustrationName,
+} from "./illustration";
 
-type PageHeaderProps = {
+export type PageHeaderProps = {
   titulo: string;
   /**
    * La superficie o el módulo, sobre el título («Empresa»). Orienta a quien
@@ -39,6 +43,12 @@ type PageHeaderProps = {
   icono?: LucideIcon;
   /** La acción principal. Va a la derecha y hay como mucho una. */
   accion?: ReactNode;
+  /** Cabecera operativa normal o cabecera institucional de entrada a sección. */
+  variant?: "standard" | "dark-illustrated";
+  /** Clave semántica del registro oficial. Nunca una ruta de archivo. */
+  illustration?: IllustrationName;
+  breadcrumbs?: ReactNode;
+  status?: ReactNode;
   className?: string;
 };
 
@@ -48,8 +58,70 @@ export function PageHeader({
   descripcion,
   icono: Icono,
   accion,
+  variant = "standard",
+  illustration,
+  breadcrumbs,
+  status,
   className,
 }: PageHeaderProps) {
+  if (variant === "dark-illustrated") {
+    return (
+      <section
+        className={cn(
+          "relative isolate min-h-[8rem] overflow-hidden rounded-rel-panel border border-white/10 bg-rel-dark px-5 py-6 text-white shadow-card sm:px-7 md:min-h-[9rem] md:py-7",
+          className,
+        )}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-rel-primary/15 blur-3xl"
+        />
+        <div className="grid min-w-0 items-center gap-5 md:grid-cols-[minmax(0,1fr)_minmax(13rem,30%)_auto]">
+          <div className="min-w-0">
+            {breadcrumbs ? <div className="mb-3 text-xs text-white/70">{breadcrumbs}</div> : null}
+            <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+              {Icono ? (
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-rel-control border border-white/15 bg-white/10 text-rel-turquoise sm:h-14 sm:w-14">
+                  <Icono className="h-6 w-6" aria-hidden="true" />
+                </span>
+              ) : null}
+              <div className="min-w-0">
+                {antetitulo ? (
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-rel-turquoise">
+                    {antetitulo}
+                  </p>
+                ) : null}
+                <h1 className="break-words font-rel-heading text-2xl font-black tracking-tight text-white sm:text-3xl">
+                  {titulo}
+                </h1>
+                {descripcion ? (
+                  <p className="mt-1 max-w-2xl font-rel-body text-sm leading-6 text-white/75">
+                    {descripcion}
+                  </p>
+                ) : null}
+                {status ? <div className="mt-3">{status}</div> : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="pointer-events-none hidden h-28 items-center justify-center md:flex" aria-hidden="true">
+            {illustration ? (
+              <Illustration
+                name={illustration}
+                variant="hero"
+                size="full"
+                decorative
+                priority
+                className="max-h-36 w-full object-contain object-center"
+              />
+            ) : null}
+          </div>
+          {accion ? <div className="flex w-full shrink-0 items-center md:w-auto">{accion}</div> : null}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className={cn(
@@ -74,7 +146,7 @@ export function PageHeader({
             ) : null}
           </div>
         </div>
-        {accion ? <div className="flex shrink-0 items-center gap-2">{accion}</div> : null}
+        {accion ? <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">{accion}</div> : null}
       </div>
     </section>
   );

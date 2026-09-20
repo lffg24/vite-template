@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { StandardPagination } from "@/components/common/StandardPagination";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,7 @@ import {
   type Rol,
 } from "@/services/accesoService";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const panel = "rounded-rel-card border border-rel-border bg-rel-surface p-5";
 
@@ -96,7 +98,8 @@ export default function SuperAdminUsuariosPage() {
   const [busqueda, setBusqueda] = useState("");
   const [consulta, setConsulta] = useState("");
   const [pagina, setPagina] = useState(1);
-  const [mas, setMas] = useState(false);
+  const [tamanoPagina, setTamanoPagina] = useState(20);
+  const [total, setTotal] = useState(0);
   const [revision, setRevision] = useState(0);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -123,11 +126,11 @@ export default function SuperAdminUsuariosPage() {
     setCargando(true);
     setError("");
     api
-      .usuarios(consulta, pagina)
+      .usuarios(consulta, pagina, tamanoPagina)
       .then((data) => {
         if (vigente) {
           setPersonas(data.items);
-          setMas(data.hay_mas);
+          setTotal(data.total ?? data.items.length);
         }
       })
       .catch((caught) => {
@@ -139,7 +142,7 @@ export default function SuperAdminUsuariosPage() {
     return () => {
       vigente = false;
     };
-  }, [consulta, pagina, revision]);
+  }, [consulta, pagina, tamanoPagina, revision]);
 
   useEffect(() => {
     if (!modal) return;
@@ -262,18 +265,18 @@ export default function SuperAdminUsuariosPage() {
   }
 
   return (
-    <div className="rel-scope mx-auto max-w-6xl space-y-5 font-rel-body text-rel-dark">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-rel-muted">Administración / Identidad y acceso</p>
-          <h1 className="mt-2 font-rel-heading text-3xl font-bold">Usuarios</h1>
-          <p className="mt-2 text-sm text-rel-muted">Invita personas, vincula empresas y revisa su estado de activación.</p>
-        </div>
-        <Button variant="rel" onClick={abrirInvitacion}>
-          <MailPlus className="mr-2 h-4 w-4" />
-          Invitar usuario
-        </Button>
-      </header>
+    <div className="rel-scope mx-auto max-w-7xl space-y-5 font-rel-body text-rel-dark">
+      <SuperAdminPageHeader
+        title="Usuarios"
+        subtitle="Invita personas, vincula empresas y revisa su estado de activación."
+        icon={Users}
+        action={
+          <Button variant="rel" onClick={abrirInvitacion} className="w-full sm:w-auto">
+            <MailPlus className="mr-2 h-4 w-4" />
+            Invitar usuario
+          </Button>
+        }
+      />
 
       <div className={`${panel} flex flex-wrap items-center gap-3 text-sm`}>
         <Users className="h-6 w-6 text-rel-primary" />
@@ -305,50 +308,63 @@ export default function SuperAdminUsuariosPage() {
         <Button type="submit" variant="outline">Buscar</Button>
       </form>
 
-      <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface">
+      <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-sm">
         {cargando ? (
           <p role="status" className="p-6 text-sm">Cargando usuarios…</p>
         ) : personas.length === 0 ? (
           <p className="p-6 text-sm text-rel-muted">No hay usuarios para esta búsqueda.</p>
         ) : (
           personas.map((persona) => (
-            <article key={persona.id} className="flex flex-col items-start gap-3 border-b border-rel-border px-5 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4">
-              <div className="w-full min-w-0 flex-1 sm:w-auto">
-                <h2 className="font-semibold">{persona.nombre}</h2>
-                <p className="break-words text-sm text-rel-muted">{persona.email || `Cuenta #${persona.id}`}</p>
+            <article key={persona.id} className="grid gap-4 border-b border-rel-border px-5 py-4 last:border-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rel-accent-subtle font-rel-heading text-sm font-black text-rel-accent" aria-hidden="true">
+                  {persona.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <h2 className="break-words font-semibold">{persona.nombre}</h2>
+                  <p className="break-words text-sm text-rel-muted">{persona.email || `Cuenta #${persona.id}`}</p>
+                </div>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-semibold ${persona.estado_cuenta === "PENDIENTE" ? "bg-rel-warning-subtle text-rel-warning" : "bg-rel-success-subtle text-rel-success"}`}>
                 {persona.estado_cuenta === "PENDIENTE" ? "Pendiente de activación" : "Activa"}
               </span>
-              {persona.estado_cuenta === "PENDIENTE" ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={ocupado || persona.estado_entrega === "PENDIENTE" || persona.estado_entrega === "EN_PROCESO"}
-                  onClick={() => reenviar(persona)}
-                  className="w-full sm:w-auto"
-                >
-                  {persona.estado_entrega === "PENDIENTE" || persona.estado_entrega === "EN_PROCESO"
-                    ? "Entrega en cola"
-                    : persona.estado_entrega === "DESCARTADO"
-                      ? "Reintentar entrega"
-                      : "Reenviar invitación"}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {persona.estado_cuenta === "PENDIENTE" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={ocupado || persona.estado_entrega === "PENDIENTE" || persona.estado_entrega === "EN_PROCESO"}
+                    onClick={() => reenviar(persona)}
+                    className="w-full sm:w-auto"
+                  >
+                    {persona.estado_entrega === "PENDIENTE" || persona.estado_entrega === "EN_PROCESO"
+                      ? "Entrega en cola"
+                      : persona.estado_entrega === "DESCARTADO"
+                        ? "Reintentar entrega"
+                        : "Reenviar invitación"}
+                  </Button>
+                ) : null}
+                <Button variant="outline" size="sm" onClick={() => abrirMembresia(persona)} className="w-full sm:w-auto">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Vincular empresa
                 </Button>
-              ) : null}
-              <Button variant="outline" size="sm" onClick={() => abrirMembresia(persona)} className="w-full sm:w-auto">
-                <Building2 className="mr-2 h-4 w-4" />
-                Vincular empresa
-              </Button>
+              </div>
             </article>
           ))
         )}
+        <StandardPagination
+          page={pagina}
+          pageSize={tamanoPagina}
+          total={total}
+          pageSizeOptions={[10, 20, 50, 100]}
+          itemLabel="usuarios"
+          onPageChange={setPagina}
+          onPageSizeChange={(nuevoTamano) => {
+            setTamanoPagina(nuevoTamano);
+            setPagina(1);
+          }}
+        />
       </section>
-
-      <div className="flex items-center justify-end gap-3 text-sm">
-        <Button variant="outline" size="sm" disabled={pagina === 1} onClick={() => setPagina((valor) => valor - 1)}>Anterior</Button>
-        <span>Página {pagina}</span>
-        <Button variant="outline" size="sm" disabled={!mas} onClick={() => setPagina((valor) => valor + 1)}>Siguiente</Button>
-      </div>
 
       <Dialog open={Boolean(modal)} onOpenChange={(open) => {
         if (!open && !ocupado) {

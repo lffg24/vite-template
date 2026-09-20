@@ -14,9 +14,9 @@
 // probatorio al sello HMAC que el registro ya lleva. Fingir el control aquí
 // dejaría a la gente firmando en algo que se descarta.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Copy, Printer, ShieldCheck } from "lucide-react";
+import { Copy, Download, Loader2, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { finalizar, miConstancia, miCurso } from "@/services/participacionService";
@@ -35,6 +35,8 @@ import {
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { ConstanciaDocumento } from "@/features/capacitaciones/components/ConstanciaDocumento";
 import type { ConstanciaImprimible } from "@/types/constancia";
+import { Illustration } from "@/shared/ui/illustration";
+import { descargarElementoComoPdf } from "@/shared/pdf/descargarElementoComoPdf";
 
 export default function FinalizarPage() {
   const navegar = useNavigate();
@@ -121,9 +123,13 @@ export default function FinalizarPage() {
     return (
       <ParticipanteLayout progreso={1}>
         <div className="flex flex-1 flex-col items-center py-4 text-center">
-          <span className="grid h-16 w-16 place-items-center rounded-full bg-rel-success-subtle ring-8 ring-rel-success-subtle/50">
-            <Check className="h-8 w-8 text-rel-success" aria-hidden="true" />
-          </span>
+          <Illustration
+            name="certificateReadyBadge"
+            size="sm"
+            decorative
+            priority
+            className="max-h-28 w-28"
+          />
           {/* Sobrio. Es un documento de cumplimiento, no un logro personal:
               confeti aquí desentona con lo que la persona acaba de hacer. */}
           <h1 className="mt-5 font-rel-heading text-2xl font-black sm:text-3xl">
@@ -131,7 +137,7 @@ export default function FinalizarPage() {
           </h1>
           <p className="mt-2 max-w-xl text-base leading-relaxed text-rel-muted">
             Tu empresa verá el registro en su matriz de cumplimiento. Esta es tu
-            constancia: puedes guardarla o imprimirla.
+            constancia: puedes descargarla en PDF y verificarla en línea.
           </p>
 
           <div className="mt-6 w-full text-left">
@@ -257,6 +263,9 @@ export default function FinalizarPage() {
 function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
   const consulta = useConsulta<ConstanciaImprimible>(() => miConstancia(), [emitida.codigo_verificacion]);
   const urlVerificacion = `${window.location.origin}/c/verificar/${encodeURIComponent(emitida.codigo_verificacion)}`;
+  const documentoRef = useRef<HTMLDivElement>(null);
+  const [descargando, setDescargando] = useState(false);
+  const [errorDescarga, setErrorDescarga] = useState<string | null>(null);
 
   if (consulta.fase === "cargando") {
     return (
@@ -275,11 +284,32 @@ function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
 
   return (
     <div className="space-y-4">
-      <ConstanciaDocumento constancia={consulta.datos} urlVerificacion={urlVerificacion} />
+      <div ref={documentoRef}>
+        <ConstanciaDocumento constancia={consulta.datos} urlVerificacion={urlVerificacion} />
+      </div>
       <div className="mx-auto grid max-w-4xl gap-3 sm:grid-cols-2 print:hidden">
-        <BotonPrincipal onClick={() => window.print()}>
+        <BotonPrincipal
+          disabled={descargando}
+          onClick={async () => {
+            const elemento = documentoRef.current?.querySelector<HTMLElement>(".hoja-constancia");
+            if (!elemento) return;
+            setDescargando(true);
+            setErrorDescarga(null);
+            try {
+              await descargarElementoComoPdf(
+                elemento,
+                `Constancia-${consulta.datos.codigo_verificacion}`,
+              );
+            } catch {
+              setErrorDescarga("No pudimos preparar el PDF. Inténtalo otra vez.");
+            } finally {
+              setDescargando(false);
+            }
+          }}
+        >
           <span className="inline-flex items-center gap-2">
-            <Printer className="h-5 w-5" aria-hidden="true" /> Guardar o imprimir
+            {descargando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Download className="h-5 w-5" aria-hidden="true" />}
+            {descargando ? "Preparando PDF…" : "Descargar PDF"}
           </span>
         </BotonPrincipal>
         <Link
@@ -289,11 +319,8 @@ function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
           <ShieldCheck className="h-5 w-5" aria-hidden="true" /> Verificar
         </Link>
       </div>
-      <p className="mx-auto max-w-4xl text-center text-xs text-rel-muted print:hidden">
-        «Guardar o imprimir» abre la ventana de impresión: elige «Guardar como
-        PDF» para tenerla en el celular. Cualquiera puede comprobarla con el
-        código, sin crear una cuenta.
-      </p>
+      {errorDescarga ? <p role="alert" className="mx-auto max-w-4xl text-center text-sm text-rel-danger print:hidden">{errorDescarga}</p> : null}
+      <p className="mx-auto max-w-4xl text-center text-xs text-rel-muted print:hidden">El archivo se descarga en formato PDF horizontal. Cualquiera puede comprobarlo con el código, sin crear una cuenta.</p>
     </div>
   );
 }

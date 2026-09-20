@@ -35,7 +35,7 @@ function Shell() {
       {/* El salto antecede al menú para que el teclado pueda omitirlo completo. */}
       <a
         href="#contenido-capacitaciones"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-rel-primary-foreground"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
         Saltar al contenido
       </a>
@@ -95,7 +95,7 @@ function SinAccesoAlModulo() {
       </p>
       <a
         href="/"
-        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-primary px-4 py-2 text-sm font-bold text-rel-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-accent px-4 py-2 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
       >
         Volver al inicio
       </a>

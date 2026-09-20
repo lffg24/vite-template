@@ -100,4 +100,20 @@ describe("PageHeader", () => {
     const { container } = render(<PageHeader titulo="Cursos" />);
     expect(container.querySelectorAll("p")).toHaveLength(0);
   });
+
+  it("la variante ilustrada conserva título y acción aunque la imagen sea decorativa", () => {
+    render(
+      <PageHeader
+        variant="dark-illustrated"
+        antetitulo="Gestión"
+        titulo="Empresas"
+        descripcion="Administra clientes"
+        illustration="companyManagement"
+        accion={<button type="button">Nueva empresa</button>}
+      />,
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Empresas" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nueva empresa" })).toBeInTheDocument();
+    expect(screen.getByText("Administra clientes")).toBeInTheDocument();
+  });
 });

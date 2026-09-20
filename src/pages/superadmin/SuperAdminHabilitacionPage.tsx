@@ -24,6 +24,8 @@ import { BookOpen, CheckCircle2, Circle, Loader2, ShieldCheck } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { StandardPagination } from "@/components/common/StandardPagination";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 import { useToast } from "@/hooks/use-toast";
 import { superadminService, type SuperEmpresa } from "@/features/superadmin/api/superadminService";
@@ -82,12 +84,18 @@ export default function SuperAdminHabilitacionPage() {
   const { toast } = useToast();
   const [empresa, setEmpresa] = useState<SuperEmpresa | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const [tamanoPagina, setTamanoPagina] = useState(10);
   const [guardando, setGuardando] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
 
   const empresas = useConsulta(
-    () => superadminService.empresas({ q: busqueda || undefined, page: 1, page_size: 20 }),
-    [busqueda]
+    () => superadminService.empresas({
+      q: busqueda || undefined,
+      page: pagina,
+      page_size: tamanoPagina,
+    }),
+    [busqueda, pagina, tamanoPagina]
   );
 
   const plataforma = useConsulta(
@@ -126,6 +134,7 @@ export default function SuperAdminHabilitacionPage() {
       <SuperAdminPageHeader
         title="Habilitar módulos"
         subtitle="Qué empresa puede usar qué módulo, y qué le falta para poder usarlo."
+        icon={ShieldCheck}
       />
 
       <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5">
@@ -150,44 +159,47 @@ export default function SuperAdminHabilitacionPage() {
                 <p className="font-semibold">{bandera.nombre}</p>
                 <p className="text-sm text-rel-muted">{bandera.para_que}</p>
               </div>
-              <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 accent-rel-primary"
+              <div className="flex shrink-0 items-center gap-2 text-sm">
+                <Switch
                   checked={Boolean(bandera.habilitado_global)}
                   disabled={guardando !== null}
                   aria-label={`${bandera.nombre} global`}
-                  onChange={(event) => conContexto(
+                  onCheckedChange={(checked) => conContexto(
                     `global:${bandera.clave}`,
                     () => cambiarBanderaGlobal({
                       modulo: MODULO,
                       clave: bandera.clave,
-                      habilitado: event.target.checked,
+                      habilitado: checked,
                     }),
                   )}
                 />
                 <span className="text-rel-muted">
                   {bandera.habilitado_global ? "Encendido" : "Apagado"}
                 </span>
-              </label>
+              </div>
             </li>
           ))}
         </ul>
       </section>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="space-y-3">
+        <aside className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface">
+          <div className="space-y-3 p-4">
           <Label htmlFor="buscar-empresa" className="text-rel-dark">
-            Empresa
+            Buscar empresa
           </Label>
           <Input
             id="buscar-empresa"
             type="search"
             value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+            onChange={(e) => {
+              setBusqueda(e.target.value);
+              setPagina(1);
+            }}
             placeholder="Buscar por nombre o NIT"
           />
-          <ul className="space-y-1">
+          </div>
+          <ul className="max-h-[27rem] space-y-1 overflow-y-auto border-t border-rel-border p-2">
             {(empresas.datos?.items ?? []).map((e) => (
               <li key={e.id}>
                 <button
@@ -208,6 +220,19 @@ export default function SuperAdminHabilitacionPage() {
               </li>
             ))}
           </ul>
+          <StandardPagination
+            page={pagina}
+            pageSize={tamanoPagina}
+            total={empresas.datos?.total ?? 0}
+            pageSizeOptions={[10, 20, 50]}
+            itemLabel="empresas"
+            onPageChange={setPagina}
+            onPageSizeChange={(nuevoTamano) => {
+              setTamanoPagina(nuevoTamano);
+              setPagina(1);
+            }}
+            className="px-3"
+          />
         </aside>
 
         <section className="min-w-0 space-y-5">
@@ -326,30 +351,25 @@ export default function SuperAdminHabilitacionPage() {
                         <p className="font-semibold text-rel-dark">{b.nombre}</p>
                         <p className="break-words text-sm text-rel-muted">{b.para_que}</p>
                       </div>
-                      {/* Casilla nativa y no un interruptor pintado: trae el
-                          foco, el anuncio y el manejo por teclado sin que nadie
-                          tenga que acordarse de ponerlos. */}
-                      <label className="flex shrink-0 cursor-pointer items-center gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          className="h-5 w-5 accent-rel-primary"
-                          checked={Boolean(b.efectiva)}
-                          disabled={guardando !== null}
-                          aria-label={`${b.nombre} para ${empresa.nombre}`}
-                          onChange={(e) =>
-                            conContexto(b.clave, () =>
-                              cambiarBandera(empresa.id, {
-                                modulo: MODULO,
-                                clave: b.clave,
-                                habilitado: e.target.checked,
-                              })
-                            )
-                          }
+                       <div className="flex shrink-0 items-center gap-2 text-sm">
+                         <Switch
+                           checked={Boolean(b.efectiva)}
+                           disabled={guardando !== null}
+                           aria-label={`${b.nombre} para ${empresa.nombre}`}
+                           onCheckedChange={(checked) =>
+                             conContexto(b.clave, () =>
+                               cambiarBandera(empresa.id, {
+                                 modulo: MODULO,
+                                 clave: b.clave,
+                                 habilitado: checked,
+                               })
+                             )
+                           }
                         />
                         <span className="text-rel-muted">
                           {b.efectiva ? "Encendida" : "Apagada"}
                         </span>
-                      </label>
+                       </div>
                     </li>
                   ))}
                 </ul>

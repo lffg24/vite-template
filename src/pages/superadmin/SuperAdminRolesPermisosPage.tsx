@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { accesoService as api, type CambioAsignacion, type CambioRol, type Capacidad, type Empresa, type Evento, type Explicacion, type Persona, type Rol, type VistaAsignacion, type VistaRol } from "@/services/accesoService";
+import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const campo = "mt-2 h-10 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary";
 const panel = "rounded-rel-card border border-rel-border bg-rel-surface p-5 sm:p-6";
@@ -169,7 +171,20 @@ export default function SuperAdminRolesPermisosPage() {
   const rolPreferido = roles.find(r => r.id === rolPreferidoId);
 
   return <div className="rel-scope mx-auto min-w-0 max-w-7xl font-rel-body text-rel-dark">
-    <header className="mb-7 flex min-w-0 flex-wrap items-start justify-between gap-4"><div className="min-w-0"><p className="mb-2 break-words text-xs font-semibold uppercase tracking-widest text-rel-muted">Administración / Identidad y acceso</p><h1 className="font-rel-heading text-3xl font-bold tracking-tight">Roles y permisos</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-rel-muted">Acceso claro, cambios con contexto. Define qué puede hacer cada persona y comprueba por qué.</p></div>{seccion === "personas" && <Link to="/superadmin/usuarios" className="inline-flex items-center rounded-rel-control bg-rel-primary px-4 py-2 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-rel-primary"><Plus className="mr-2 h-4 w-4" />Invitar usuario</Link>}{seccion === "roles" && <Button variant="rel" onClick={() => abrirRol()} disabled={cargando}><Plus className="mr-2 h-4 w-4" />Crear rol</Button>}</header>
+    <SuperAdminPageHeader
+      title="Roles y permisos"
+      subtitle="Define qué puede hacer cada persona y comprueba por qué tiene acceso."
+      icon={ShieldCheck}
+      action={seccion === "personas" ? (
+        <Button variant="rel" asChild className="w-full sm:w-auto">
+          <Link to="/superadmin/usuarios"><Plus className="mr-2 h-4 w-4" />Invitar usuario</Link>
+        </Button>
+      ) : seccion === "roles" ? (
+        <Button variant="rel" onClick={() => abrirRol()} disabled={cargando} className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" />Crear rol
+        </Button>
+      ) : undefined}
+    />
     <div className={`${panel} mb-6 flex flex-wrap items-center gap-3 text-sm`}><span className="grid h-10 w-10 place-items-center rounded-rel-control bg-rel-canvas text-rel-primary"><ShieldCheck className="h-5 w-5" /></span><div className="min-w-0 flex-1"><p className="font-semibold">Permisos por módulo</p><p className="text-rel-muted">Consulta Psicosocial, Capacitación y Evaluaciones. Solo se editan capacidades registradas como configurables.</p></div><Badge variant="outline" className="hidden sm:inline-flex">Capacidades registradas</Badge></div>
     <nav aria-label="Administración de acceso" className="mb-6 flex min-w-0 flex-col gap-1 border-b border-rel-border sm:flex-row sm:flex-wrap">{([{ id: "roles", nombre: "Roles y capacidades", Icono: KeyRound }, { id: "personas", nombre: "Personas y acceso", Icono: Users }, { id: "historial", nombre: "Historial", Icono: History }] as const).map(s => <button key={s.id} onClick={() => cambiarSeccion(s.id)} aria-current={seccion === s.id ? "page" : undefined} className={`flex min-w-0 items-center gap-2 border-b-2 px-2 py-3 text-left text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary sm:px-4 ${seccion === s.id ? "border-rel-primary text-rel-primary" : "border-transparent text-rel-muted"}`}><s.Icono className="h-4 w-4 shrink-0" /><span className="min-w-0 break-words">{s.nombre}</span></button>)}</nav>
     {error && !editor && !asignacion && <div role="alert" className="mb-5 rounded-rel-control bg-rel-danger-subtle p-4 text-sm text-rel-danger">{error}<Button className="ml-3" variant="outline" size="sm" onClick={() => setRevision(r => r + 1)}>Reintentar</Button></div>}
@@ -188,10 +203,86 @@ export default function SuperAdminRolesPermisosPage() {
       {seccion === "historial" && <section className={panel}><h2 className="mb-4 text-lg font-bold">Cambios de acceso</h2>{eventos.length === 0 && <p className="py-8 text-center text-sm text-rel-muted">Todavía no hay cambios registrados en este espacio.</p>}{eventos.map(e => <details key={e.id} className="border-t border-rel-border py-4"><summary className="cursor-pointer text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><span className="font-semibold">{nombresEvento[e.evento] ?? e.evento}</span><span className="ml-3 text-rel-muted">{fecha(e.creado_en)} · {e.actor_ref}</span></summary><p className="mt-3 break-all text-xs text-rel-muted">Correlación: {e.correlation_id}</p><pre className="mt-3 overflow-auto rounded-rel-control bg-rel-surface-subtle p-3 text-xs">{JSON.stringify(e.payload, null, 2)}</pre></details>)}</section>}
       <div className="mt-4 flex items-center justify-end gap-3 text-sm text-rel-muted"><Button variant="outline" size="sm" disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} aria-label="Página anterior"><ChevronLeft className="h-4 w-4" /></Button><span>Página {pagina}</span><Button variant="outline" size="sm" disabled={!mas} onClick={() => setPagina(p => p + 1)} aria-label="Página siguiente"><ChevronRight className="h-4 w-4" /></Button></div>
     </>}
-    <Dialog open={!!editor} onOpenChange={v => { if (!v && !ocupado) { setEditor(null); setVistaRol(null); } }}><DialogContent className="rel-scope max-h-[90vh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{vistaRol ? "Revisa el impacto" : editor?.rol_id ? "Editar rol" : "Crear rol configurable"}</DialogTitle><DialogDescription>{vistaRol ? "El servidor volverá a comprobar el impacto al guardar." : "Elige los permisos que este rol podrá conceder dentro de una empresa."}</DialogDescription></DialogHeader>{error && <p role="alert" className="text-sm text-rel-danger">{error}</p>}
-      {editor && !vistaRol && <form id="form-rol" className="space-y-5" onSubmit={e => { e.preventDefault(); ejecutar(async () => setVistaRol(await api.previewRol(editor))); }}><label className="block text-sm font-semibold">Nombre del rol<Input className="mt-2" autoFocus required minLength={3} maxLength={100} value={editor.nombre} onChange={e => setEditor({ ...editor, nombre: e.target.value })} placeholder="Ej. Coordinador de formación" /></label><fieldset className="space-y-5"><legend className="mb-3 text-sm font-semibold">Permisos delegables por empresa ({capacidades.filter(c => c.configurable).length})</legend><p className="rounded-rel-control bg-rel-canvas p-3 text-sm text-rel-muted">Aquí aparecen únicamente los permisos que cada módulo declaró como delegables. Hoy Capacitaciones ofrece dos. Los accesos globales y Psicosocial siguen administrados por roles protegidos.</p>{agrupar(capacidades.filter(c => c.configurable)).map(g => <div key={g.modulo} className="space-y-2"><p className="text-xs font-bold uppercase tracking-wide text-rel-muted">{g.modulo}</p>{g.superficies.map(sup => <div key={sup.superficie} className="space-y-2"><p className="text-xs text-rel-muted">{tituloSuperficie(sup.superficie)}</p>{sup.items.map(c => <label key={c.clave} className="flex gap-3 rounded-rel-control border border-rel-border p-4"><input type="checkbox" className="mt-1 h-4 w-4" checked={editor.permisos.includes(c.clave)} onChange={e => setEditor({ ...editor, permisos: e.target.checked ? [...editor.permisos, c.clave] : editor.permisos.filter(x => x !== c.clave) })} /><span><span className="block text-sm font-semibold">{c.nombre}</span><span className="mt-1 block text-sm text-rel-muted">{c.descripcion}</span></span></label>)}</div>)}</div>)}{capacidades.filter(c => c.configurable).length === 0 && <p className="text-sm text-rel-muted">Ningún módulo registra capacidades configurables por empresa.</p>}</fieldset><p className="text-xs leading-5 text-rel-muted">Clonar copia únicamente capacidades configurables de empresa. Un rol vacío no concede acceso. Contratos y funcionalidades permanecen separados.</p></form>}
-      {vistaRol && <div className="space-y-4 text-sm"><p className="text-lg font-semibold">{vistaRol.despues.nombre}</p><div className="rounded-rel-control bg-rel-canvas p-4"><p><strong>{vistaRol.afectados.length}</strong> personas con sesiones que se invalidarán</p><p className="mt-2 text-rel-muted">Versión {vistaRol.antes?.version ?? 0} → {vistaRol.despues.version}</p></div><p>Se conceden: {vistaRol.agregados.map(nombrePermiso).join(", ") || "Ninguna capacidad adicional"}.</p><p>Se retiran: {vistaRol.retirados.map(nombrePermiso).join(", ") || "Ninguna capacidad"}.</p><p className="text-rel-muted">El nombre anterior era «{vistaRol.antes?.nombre ?? "Rol nuevo"}». Guardar no activa contratos ni funcionalidades.</p></div>}
-      <DialogFooter>{vistaRol ? <><Button type="button" variant="outline" disabled={ocupado} onClick={e => { e.preventDefault(); setVistaRol(null); setError(null); }}>Volver a editar</Button><Button variant="rel" disabled={ocupado} onClick={guardarRol}>{ocupado ? "Guardando…" : "Confirmar y guardar"}</Button></> : <Button variant="rel" form="form-rol" type="submit" disabled={ocupado}><Eye className="mr-2 h-4 w-4" />Vista previa</Button>}</DialogFooter></DialogContent></Dialog>
+    <Dialog open={!!editor} onOpenChange={v => { if (!v && !ocupado) { setEditor(null); setVistaRol(null); } }}>
+      <DialogContent className="rel-scope grid max-h-[92vh] w-[calc(100%-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden p-0 sm:max-w-5xl">
+        <DialogHeader className="border-b border-rel-border px-4 py-5 pr-12 text-left sm:px-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-rel-accent">Identidad y acceso</p>
+          <DialogTitle className="font-rel-heading text-2xl text-rel-dark">
+            {vistaRol ? "Revisa el impacto" : editor?.rol_id ? "Editar rol" : "Crear rol"}
+          </DialogTitle>
+          <DialogDescription>
+            {vistaRol ? "El servidor volverá a comprobar el impacto al guardar." : "Define un nombre y revisa las capacidades de cada módulo antes de conceder acceso."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="min-h-0 overflow-y-auto px-4 py-5 sm:px-6" style={{ scrollbarGutter: "stable" }}>
+          {error ? <p role="alert" className="mb-4 rounded-rel-control bg-rel-danger-subtle p-3 text-sm text-rel-danger">{error}</p> : null}
+          {editor && !vistaRol ? (
+            <form id="form-rol" className="grid gap-6 lg:grid-cols-[minmax(15rem,0.7fr)_minmax(0,1.6fr)]" onSubmit={e => { e.preventDefault(); ejecutar(async () => setVistaRol(await api.previewRol(editor))); }}>
+              <aside className="space-y-4">
+                <label className="block text-sm font-semibold">
+                  Nombre del rol
+                  <Input className="mt-2" autoFocus required minLength={3} maxLength={100} value={editor.nombre} onChange={e => setEditor({ ...editor, nombre: e.target.value })} placeholder="Ej. Encargado de capacitaciones" />
+                </label>
+                <div className="rounded-rel-card border border-rel-border bg-rel-canvas p-4 text-sm">
+                  <p className="font-semibold text-rel-dark">Cómo se conceden</p>
+                  <p className="mt-2 leading-6 text-rel-muted">Las capacidades delegables se asignan por empresa. Las protegidas se muestran para dar contexto, pero se administran mediante los roles globales existentes.</p>
+                </div>
+                <p className="text-xs leading-5 text-rel-muted">Un rol vacío no concede acceso. El contrato y las funcionalidades de la empresa se administran por separado.</p>
+              </aside>
+
+              <fieldset className="min-w-0">
+                <legend className="sr-only">Permisos del rol</legend>
+                <div role="tablist" aria-label="Módulos disponibles" className="mb-4 flex flex-wrap gap-2">
+                  {gruposCatalogo.map(g => (
+                    <button key={g.modulo} type="button" role="tab" aria-selected={moduloSeleccionado === g.modulo} onClick={() => setModuloActivo(g.modulo)} className={`rounded-rel-control border px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary ${moduloSeleccionado === g.modulo ? "border-rel-accent bg-rel-accent text-white" : "border-rel-border bg-rel-surface text-rel-muted hover:bg-rel-surface-subtle"}`}>
+                      {g.modulo}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-4">
+                  {gruposCatalogo.filter(g => g.modulo === moduloSeleccionado).flatMap(g => g.superficies.map(sup => (
+                    <section key={`${g.modulo}:${sup.superficie}`} className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface">
+                      <div className="border-b border-rel-border bg-rel-surface-subtle px-4 py-3">
+                        <h3 className="text-xs font-bold uppercase tracking-wide text-rel-muted">{tituloSuperficie(sup.superficie)}</h3>
+                      </div>
+                      <div className="divide-y divide-rel-border">
+                        {sup.items.map(c => {
+                          const seleccionado = editor.permisos.includes(c.clave);
+                          return (
+                            <div key={c.clave} className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-rel-dark">{c.nombre}</p>
+                                <p className="mt-1 text-sm leading-5 text-rel-muted">{c.descripcion}</p>
+                                {!c.configurable ? <p className="mt-2 text-xs font-semibold text-rel-warning">Protegido por el motor actual · consulta informativa</p> : null}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={seleccionado}
+                                  disabled={!c.configurable}
+                                  aria-label={`${seleccionado ? "Retirar" : "Conceder"} ${c.nombre}`}
+                                  onCheckedChange={(checked) => setEditor({ ...editor, permisos: checked ? [...editor.permisos, c.clave] : editor.permisos.filter(x => x !== c.clave) })}
+                                />
+                                <span className="w-20 text-xs font-semibold text-rel-muted">{c.configurable ? seleccionado ? "Concedido" : "Sin acceso" : "Protegido"}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )))}
+                </div>
+              </fieldset>
+            </form>
+          ) : null}
+          {vistaRol ? <div className="mx-auto max-w-2xl space-y-4 text-sm"><p className="text-lg font-semibold">{vistaRol.despues.nombre}</p><div className="rounded-rel-control bg-rel-canvas p-4"><p><strong>{vistaRol.afectados.length}</strong> personas con sesiones que se invalidarán</p><p className="mt-2 text-rel-muted">Versión {vistaRol.antes?.version ?? 0} → {vistaRol.despues.version}</p></div><p>Se conceden: {vistaRol.agregados.map(nombrePermiso).join(", ") || "Ninguna capacidad adicional"}.</p><p>Se retiran: {vistaRol.retirados.map(nombrePermiso).join(", ") || "Ninguna capacidad"}.</p><p className="text-rel-muted">El nombre anterior era «{vistaRol.antes?.nombre ?? "Rol nuevo"}». Guardar no activa contratos ni funcionalidades.</p></div> : null}
+        </div>
+
+        <DialogFooter className="border-t border-rel-border bg-rel-surface-subtle px-4 py-4 sm:px-6">
+          {vistaRol ? <><Button type="button" variant="outline" disabled={ocupado} onClick={e => { e.preventDefault(); setVistaRol(null); setError(null); }}>Volver a editar</Button><Button variant="rel" disabled={ocupado} onClick={guardarRol}>{ocupado ? "Guardando…" : "Confirmar y guardar"}</Button></> : <Button variant="rel" form="form-rol" type="submit" disabled={ocupado}><Eye className="mr-2 h-4 w-4" />Vista previa</Button>}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     <Dialog open={!!asignacion} onOpenChange={v => { if (!v && !ocupado) { setAsignacion(null); setVistaAsignacion(null); } }}><DialogContent className="rel-scope max-h-[90vh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{vistaAsignacion ? "Confirmar asignación" : "Administrar asignación"}</DialogTitle><DialogDescription>Solo afecta a la empresa seleccionada. La persona tendrá que volver a iniciar sesión.</DialogDescription></DialogHeader>{error && <p role="alert" className="text-sm text-rel-danger">{error}</p>}
       {asignacion && !vistaAsignacion && <form id="form-asignacion" className="space-y-4" onSubmit={e => { e.preventDefault(); ejecutar(async () => setVistaAsignacion(await api.previewAsignacion(asignacion))); }}><div><label id="rol-asignacion-label" className="text-sm font-semibold">Rol</label><Select value={asignacion.rol_id ? String(asignacion.rol_id) : undefined} onValueChange={value => setAsignacion({ ...asignacion, rol_id: Number(value) })}><SelectTrigger aria-labelledby="rol-asignacion-label" className={campo}><SelectValue placeholder="Selecciona un rol" /></SelectTrigger><SelectContent>{roles.filter(r => r.version).map(r => <SelectItem key={r.id} value={String(r.id)}>{r.nombre}</SelectItem>)}</SelectContent></Select></div><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold">Vigente desde<input className={campo} type="datetime-local" value={fechaLocal(asignacion.valido_desde)} onChange={e => setAsignacion({ ...asignacion, valido_desde: fechaISO(e.target.value) })} /></label><label className="text-sm font-semibold">Vigente hasta<input className={campo} type="datetime-local" value={fechaLocal(asignacion.valido_hasta)} onChange={e => setAsignacion({ ...asignacion, valido_hasta: fechaISO(e.target.value) })} /></label></div><p className="text-xs text-rel-muted">Fechas en la zona horaria de tu dispositivo. Vacío significa sin límite en ese extremo.</p><label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={asignacion.activo} onChange={e => setAsignacion({ ...asignacion, activo: e.target.checked })} />Asignación activa</label></form>}
       {vistaAsignacion && <div className="space-y-3 rounded-rel-control bg-rel-canvas p-4 text-sm"><p className="font-semibold">{roles.find(r => r.id === vistaAsignacion.despues.rol_id)?.nombre}</p><p>Estado anterior: {vistaAsignacion.antes ? vistaAsignacion.antes.activo ? "Activa" : "Revocada" : "Sin asignación"}</p><p>Nuevo estado: <strong>{vistaAsignacion.despues.activo ? "Activa" : "Revocada"}</strong></p><p>Desde {fecha(vistaAsignacion.despues.valido_desde)} · hasta {fecha(vistaAsignacion.despues.valido_hasta)}</p><p className="text-rel-muted">El permiso requiere contrato vigente y funcionalidad habilitada.</p></div>}
