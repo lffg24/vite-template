@@ -28,6 +28,7 @@ export function WebDirectIdentificationScreen({
   isSubmitting = false,
   error,
 }: WebDirectIdentificationScreenProps) {
+  const [documentType, setDocumentType] = useState("");
   const [documentNumber, setDocumentNumber] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -35,11 +36,12 @@ export function WebDirectIdentificationScreen({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors: FieldErrors = {};
+    if (!documentType) nextErrors.documentType = "Selecciona tu tipo de documento.";
     if (!documentNumber.trim()) nextErrors.documentNumber = "Ingresa tu número de documento.";
     if (!birthDate) nextErrors.birthDate = "Selecciona tu fecha de nacimiento.";
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-    void onSubmit({ documentNumber: documentNumber.trim(), birthDate });
+    void onSubmit({ documentType, documentNumber: documentNumber.trim(), birthDate });
   }
 
   const today = new Date().toISOString().slice(0, 10);
@@ -67,13 +69,37 @@ export function WebDirectIdentificationScreen({
 
             <div className="mt-8 max-w-2xl space-y-6">
               <div>
+                <Label htmlFor="web-direct-document-type" className="text-sm font-bold">Tipo de documento</Label>
+                <select
+                  id="web-direct-document-type"
+                  name="documentType"
+                  value={documentType}
+                  onChange={(event) => {
+                    setDocumentType(event.target.value);
+                    if (fieldErrors.documentType) setFieldErrors((current) => ({ ...current, documentType: undefined }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.documentType)}
+                  aria-describedby={fieldErrors.documentType ? "web-direct-document-type-error" : undefined}
+                  className="mt-2 h-12 w-full rounded-xl border border-input bg-surface px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="CC">Cédula de ciudadanía</option>
+                  <option value="CE">Cédula de extranjería</option>
+                  <option value="TI">Tarjeta de identidad</option>
+                  <option value="PA">Pasaporte</option>
+                  <option value="PEP">Permiso especial de permanencia</option>
+                  <option value="PPT">Permiso por protección temporal</option>
+                </select>
+                {fieldErrors.documentType ? <p id="web-direct-document-type-error" className="mt-2 text-sm font-semibold text-danger">{fieldErrors.documentType}</p> : null}
+              </div>
+
+              <div>
                 <Label htmlFor="web-direct-document" className="text-sm font-bold">Número de documento</Label>
                 <div className="relative mt-2">
                   <IdCard className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                   <Input
                     id="web-direct-document"
                     name="documentNumber"
-                    inputMode="numeric"
                     autoComplete="off"
                     value={documentNumber}
                     onChange={(event) => {

@@ -122,13 +122,14 @@ export async function getWebDirectWelcome(publicToken: string): Promise<WebDirec
 
 export async function identifyWebDirectParticipant(
   publicToken: string,
-  identification: { documentNumber: string; birthDate: string },
+  identification: { documentType: string; documentNumber: string; birthDate: string },
 ): Promise<WebDirectIdentityResult> {
   return requestPublicJson<WebDirectIdentityResult>(
     `/public/psychosocial/${encodeURIComponent(publicToken)}/identify`,
     {
       method: "POST",
       body: JSON.stringify({
+        tipo_documento: identification.documentType,
         numero_documento: identification.documentNumber,
         fecha_nacimiento: identification.birthDate,
       }),

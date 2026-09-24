@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { requestPublicJson } from "./httpClient";
 import {
   getWebDirectSessionContent,
+  identifyWebDirectParticipant,
   submitWebDirectAttempt,
 } from "./psicoWebDirectPublicService";
 import { createWebDirectAttemptState } from "../web-direct";
@@ -13,6 +14,25 @@ const request = vi.mocked(requestPublicJson);
 
 describe("psicoWebDirectPublicService", () => {
   beforeEach(() => request.mockReset());
+
+  it("envía tipo, número de documento y fecha para identificar al colaborador", async () => {
+    request.mockResolvedValue({ session_token: "temporary-session" });
+
+    await identifyWebDirectParticipant("public-token", {
+      documentType: "CE",
+      documentNumber: "A-12345",
+      birthDate: "1990-05-12",
+    });
+
+    expect(request).toHaveBeenCalledWith("/public/psychosocial/public-token/identify", {
+      method: "POST",
+      body: JSON.stringify({
+        tipo_documento: "CE",
+        numero_documento: "A-12345",
+        fecha_nacimiento: "1990-05-12",
+      }),
+    });
+  });
 
   it("normaliza la forma asignada, conserva el orden y no mezcla profesión con cargo", async () => {
     request.mockResolvedValue({

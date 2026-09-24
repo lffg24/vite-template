@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, Copy, Link2, Loader2, ShieldCheck } from "lucide-react";
+import { Check, Copy, FileSpreadsheet, Link2, Loader2, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import {
   type WebDirectParticipantConfiguration,
 } from "@/features/psicosocial/api/psicoAccessService";
 import type { AplicacionDetalleEmpleado } from "@/features/psicosocial/api/psicoAdminService";
+import { WebDirectBulkUploadModal } from "./WebDirectBulkUploadModal";
 
 type ParticipantDraft = {
   selected: boolean;
@@ -38,7 +39,9 @@ export function WebDirectSetupCard({ applicationId, employees, disabled = false 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
+  const [configuredParticipantCount, setConfiguredParticipantCount] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const selected = eligible.filter((employee) => drafts[employee.id]?.selected);
   const canSubmit = selected.length > 0 && selected.every((employee) => {
@@ -71,6 +74,7 @@ export function WebDirectSetupCard({ applicationId, employees, disabled = false 
       }));
       const result = await configureWebDirectAccess(applicationId, participants);
       setPublicUrl(result.public_url);
+      setConfiguredParticipantCount(result.participantes_habilitados);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No fue posible generar el enlace.");
     } finally {
@@ -93,10 +97,15 @@ export function WebDirectSetupCard({ applicationId, employees, disabled = false 
             </p>
           </div>
         </div>
-        <Button type="button" disabled={disabled || submitting || !canSubmit} onClick={() => void configure()}>
-          {submitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ShieldCheck aria-hidden="true" />}
-          {submitting ? "Generando…" : "Generar enlace"}
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button type="button" variant="outline" disabled={disabled || submitting} onClick={() => setBulkOpen(true)}>
+            <FileSpreadsheet aria-hidden="true" /> Carga masiva virtual
+          </Button>
+          <Button type="button" disabled={disabled || submitting || !canSubmit} onClick={() => void configure()}>
+            {submitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ShieldCheck aria-hidden="true" />}
+            {submitting ? "Generando…" : "Generar enlace"}
+          </Button>
+        </div>
       </div>
 
       {eligible.length === 0 ? (
@@ -157,7 +166,7 @@ export function WebDirectSetupCard({ applicationId, employees, disabled = false 
       {publicUrl ? (
         <div role="status" className="mt-5 rounded-2xl border border-success/25 bg-success/5 p-4">
           <p className="font-heading text-base font-black text-foreground">Enlace listo para compartir</p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Habilitado para {selected.length} colaborador(es). Cada persona debe identificarse con su documento y fecha de nacimiento.</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Habilitado para {configuredParticipantCount} colaborador(es). Cada persona debe identificarse con su tipo y número de documento, y fecha de nacimiento.</p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input readOnly value={publicUrl} aria-label="Enlace público generado" className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm" />
             <Button
@@ -173,6 +182,16 @@ export function WebDirectSetupCard({ applicationId, employees, disabled = false 
           </div>
         </div>
       ) : null}
+      <WebDirectBulkUploadModal
+        applicationId={applicationId}
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        onConfigured={(result) => {
+          setPublicUrl(result.public_url);
+          setConfiguredParticipantCount(result.participantes_habilitados);
+          setError(null);
+        }}
+      />
     </Card>
   );
 }

@@ -6,6 +6,8 @@ import { WebDirectSetupCard } from "./WebDirectSetupCard";
 
 vi.mock("@/features/psicosocial/api/psicoAccessService", () => ({
   configureWebDirectAccess: vi.fn(),
+  previewWebDirectBulkImport: vi.fn(),
+  importWebDirectBulkParticipants: vi.fn(),
 }));
 
 const configure = vi.mocked(configureWebDirectAccess);

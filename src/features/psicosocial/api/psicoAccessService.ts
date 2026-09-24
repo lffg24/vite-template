@@ -61,6 +61,38 @@ export type WebDirectConfigurationResponse = {
   public_url: string;
 };
 
+export type WebDirectBulkPreviewRow = {
+  row: number;
+  nombres: string;
+  apellidos: string;
+  tipo_documento: string;
+  numero_documento: string;
+  fecha_nacimiento: string;
+};
+
+export type WebDirectBulkError = {
+  row: number | null;
+  field: string;
+  message: string;
+};
+
+export type WebDirectBulkPreviewResponse = {
+  ok: boolean;
+  total_rows: number;
+  valid_rows: number;
+  errors: WebDirectBulkError[];
+  preview: WebDirectBulkPreviewRow[];
+};
+
+export type WebDirectBulkParticipant = WebDirectBulkPreviewRow & {
+  forma_asignada: "A" | "B";
+};
+
+export type WebDirectBulkImportResponse = WebDirectConfigurationResponse & {
+  creados: number;
+  actualizados: number;
+};
+
 export const DISABLED_PSICO_FEATURE_FLAGS: PsicoFeatureFlags = {
   web_direct: false,
 };
@@ -133,6 +165,46 @@ export async function configureWebDirectAccess(
     const err = new Error(detail) as Error & { status?: number };
     err.status = res.status;
     throw err;
+  }
+  return res.json();
+}
+
+export async function previewWebDirectBulkImport(
+  applicationId: number,
+  file: File,
+): Promise<WebDirectBulkPreviewResponse> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/import-preview`, {
+    method: "POST",
+    credentials: "include",
+    headers: { Accept: "application/json" },
+    body: form,
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible validar el archivo (${res.status})`);
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+export async function importWebDirectBulkParticipants(
+  applicationId: number,
+  participants: WebDirectBulkParticipant[],
+  certifiedCorrect: boolean,
+): Promise<WebDirectBulkImportResponse> {
+  const res = await fetch(`${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/import`, {
+    method: "POST",
+    credentials: "include",
+    headers: jsonHeaders(),
+    body: JSON.stringify({
+      certifico_datos_correctos: certifiedCorrect,
+      participantes: participants.map(({ row: _row, ...participant }) => participant),
+    }),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible importar los colaboradores (${res.status})`);
+    throw new Error(detail);
   }
   return res.json();
 }

@@ -47,6 +47,7 @@ describe("flujo público WEB_DIRECT", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Validar y continuar/i }));
+    expect(screen.getByText("Selecciona tu tipo de documento.")).toBeInTheDocument();
     expect(screen.getByText("Ingresa tu número de documento.")).toBeInTheDocument();
     expect(screen.getByText("Selecciona tu fecha de nacimiento.")).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
@@ -62,11 +63,12 @@ describe("flujo público WEB_DIRECT", () => {
       />,
     );
 
+    fireEvent.change(screen.getByLabelText("Tipo de documento"), { target: { value: "CC" } });
     fireEvent.change(screen.getByLabelText("Número de documento"), { target: { value: "123456789" } });
     fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), { target: { value: "1990-05-12" } });
     fireEvent.submit(screen.getByRole("button", { name: /Validar y continuar/i }).closest("form")!);
 
-    expect(onSubmit).toHaveBeenCalledWith({ documentNumber: "123456789", birthDate: "1990-05-12" });
+    expect(onSubmit).toHaveBeenCalledWith({ documentType: "CC", documentNumber: "123456789", birthDate: "1990-05-12" });
   });
 
   it("mantiene bloqueada la capacitación hasta que el contenido esté completado", () => {

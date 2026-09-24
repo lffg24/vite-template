@@ -11,6 +11,7 @@ export type WebDirectApplicationContext = {
 };
 
 export type WebDirectIdentification = {
+  documentType: string;
   documentNumber: string;
   birthDate: string;
 };
