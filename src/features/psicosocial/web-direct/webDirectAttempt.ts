@@ -32,6 +32,7 @@ export type WebDirectAttemptState = {
   missingInstrumentCodes: WebDirectInstrumentCode[];
   activeStageCode: WebDirectJourneyCode | null;
   answersByInstrument: Partial<Record<WebDirectInstrumentCode, Record<number, WebDirectAnswer>>>;
+  conditionalAnswersByInstrument: Partial<Record<WebDirectInstrumentCode, Record<string, boolean>>>;
   demographics: WebDirectDemographicValues;
   declarationAccepted: boolean;
   submissionError: string | null;
@@ -40,8 +41,11 @@ export type WebDirectAttemptState = {
 
 export type WebDirectAttemptAction =
   | { type: "start_stage"; code: WebDirectJourneyCode }
+  | { type: "back_to_journey" }
+  | { type: "back_to_instrument_intro" }
   | { type: "begin_instrument" }
   | { type: "answer"; answer: WebDirectAnswer }
+  | { type: "set_conditional"; instrumentCode: WebDirectInstrumentCode; ruleCode: string; value: boolean }
   | { type: "set_demographics"; values: WebDirectDemographicValues }
   | { type: "complete_active_stage" }
   | { type: "continue_after_instrument" }
@@ -67,6 +71,7 @@ function normalizeStages(stages: WebDirectJourneyStage[]): WebDirectJourneyStage
 export function createWebDirectAttemptState(
   form: WebDirectForm,
   evaluations: WebDirectAssignedEvaluation[],
+  initialDemographics: WebDirectDemographicValues = {},
 ): WebDirectAttemptState {
   const journey = buildWebDirectJourney(form, evaluations, "pending");
   return {
@@ -76,7 +81,8 @@ export function createWebDirectAttemptState(
     missingInstrumentCodes: journey.missingInstrumentCodes,
     activeStageCode: null,
     answersByInstrument: {},
-    demographics: {},
+    conditionalAnswersByInstrument: {},
+    demographics: initialDemographics,
     declarationAccepted: false,
     submissionError: null,
     receipt: null,
@@ -103,6 +109,18 @@ export function webDirectAttemptReducer(
         submissionError: null,
       };
     }
+    case "back_to_journey":
+      if (!["instrument_intro", "demographics", "review"].includes(state.phase)) return state;
+      if (state.phase === "review") {
+        const stages = state.stages.map((stage, index) => (
+          index === state.stages.length - 1 ? { ...stage, status: "current" as const } : stage
+        ));
+        return { ...state, phase: "journey", stages, activeStageCode: null, submissionError: null };
+      }
+      return { ...state, phase: "journey", activeStageCode: null, submissionError: null };
+    case "back_to_instrument_intro":
+      if (state.phase !== "instrument") return state;
+      return { ...state, phase: "instrument_intro", submissionError: null };
     case "begin_instrument":
       if (state.phase !== "instrument_intro" || state.activeStageCode === "DATOS_GENERALES" || !state.activeStageCode) return state;
       return { ...state, phase: "instrument" };
@@ -115,6 +133,18 @@ export function webDirectAttemptReducer(
           [action.answer.instrumentCode]: {
             ...state.answersByInstrument[action.answer.instrumentCode],
             [action.answer.questionId]: action.answer,
+          },
+        },
+      };
+    case "set_conditional":
+      if (state.phase !== "instrument" || state.activeStageCode !== action.instrumentCode) return state;
+      return {
+        ...state,
+        conditionalAnswersByInstrument: {
+          ...state.conditionalAnswersByInstrument,
+          [action.instrumentCode]: {
+            ...state.conditionalAnswersByInstrument[action.instrumentCode],
+            [action.ruleCode]: action.value,
           },
         },
       };

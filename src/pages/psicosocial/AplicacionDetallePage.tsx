@@ -41,6 +41,8 @@ import {
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
 import { CreditGuardDialog } from "@/features/psicosocial/components/credits/CreditGuardDialog";
+import { PsicoFeatureFlagGate } from "@/features/psicosocial/components/PsicoFeatureFlagGate";
+import { WebDirectSetupCard } from "@/features/psicosocial/components/WebDirectSetupCard";
 import { getCreditGuardInfo, type CreditGuardInfo } from "@/features/psicosocial/utils/creditGuard";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
@@ -1446,6 +1448,14 @@ export default function AplicacionDetallePage() {
             </div>
           </article>
         </section>
+
+        <PsicoFeatureFlagGate feature="web_direct">
+          <WebDirectSetupCard
+            applicationId={Number(aplicacionId)}
+            employees={data.empleados}
+            disabled={finalizada}
+          />
+        </PsicoFeatureFlagGate>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

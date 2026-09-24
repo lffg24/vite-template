@@ -40,7 +40,7 @@ export function WebDirectConsentScreen({
       progress={{ current: 5, total: 6 }}
       eyebrow="Consentimiento y privacidad"
       title="Revisa y acepta los documentos aplicables"
-      description="La aceptación se registrará para esta aplicación junto con la versión vigente de cada documento."
+      description="Revisa los documentos vigentes antes de continuar con esta aplicación."
       illustration="psicoWebConsentimiento"
       aside={
         <div className="rounded-2xl border border-success/20 bg-success/10 p-5 text-sm leading-6 text-foreground-soft">

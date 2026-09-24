@@ -48,6 +48,19 @@ export type PsicoFeatureFlags = {
   web_direct: boolean;
 };
 
+export type WebDirectParticipantConfiguration = {
+  empleado_id: number;
+  fecha_nacimiento: string;
+  forma_asignada: "A" | "B";
+};
+
+export type WebDirectConfigurationResponse = {
+  ok: boolean;
+  aplicacion_id: number;
+  participantes_habilitados: number;
+  public_url: string;
+};
+
 export const DISABLED_PSICO_FEATURE_FLAGS: PsicoFeatureFlags = {
   web_direct: false,
 };
@@ -103,6 +116,25 @@ export async function getPsicoFeatureFlags(): Promise<PsicoFeatureFlags> {
   }
 
   return normalizePsicoFeatureFlags(await res.json());
+}
+
+export async function configureWebDirectAccess(
+  applicationId: number,
+  participants: WebDirectParticipantConfiguration[],
+): Promise<WebDirectConfigurationResponse> {
+  const res = await fetch(`${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct`, {
+    method: "POST",
+    credentials: "include",
+    headers: jsonHeaders(),
+    body: JSON.stringify({ participantes: participants }),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible habilitar el acceso web (${res.status})`);
+    const err = new Error(detail) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
 }
 
 export async function getEmpresasAsignadasResponse(): Promise<EmpresasAsignadasResponse> {
