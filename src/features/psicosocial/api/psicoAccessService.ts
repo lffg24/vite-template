@@ -44,6 +44,14 @@ export type CrearEmpresaPsicoResponse = {
   message?: string | null;
 };
 
+export type PsicoFeatureFlags = {
+  web_direct: boolean;
+};
+
+export const DISABLED_PSICO_FEATURE_FLAGS: PsicoFeatureFlags = {
+  web_direct: false,
+};
+
 export function getToken(): string | null {
   // La sesión definitiva usa cookie HttpOnly; no existe token legible desde JavaScript.
   return null;
@@ -71,6 +79,30 @@ function jsonHeaders(): HeadersInit {
     Accept: "application/json",
     "Content-Type": "application/json",
   };
+}
+
+export function normalizePsicoFeatureFlags(data: unknown): PsicoFeatureFlags {
+  if (!data || typeof data !== "object") return DISABLED_PSICO_FEATURE_FLAGS;
+  return {
+    web_direct: (data as { web_direct?: unknown }).web_direct === true,
+  };
+}
+
+export async function getPsicoFeatureFlags(): Promise<PsicoFeatureFlags> {
+  const res = await fetch(`${API_URL}/psicosocial/access/features`, {
+    method: "GET",
+    credentials: "include",
+    headers: jsonHeaders(),
+  });
+
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible cargar funcionalidades habilitadas (${res.status})`);
+    const err = new Error(detail) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+
+  return normalizePsicoFeatureFlags(await res.json());
 }
 
 export async function getEmpresasAsignadasResponse(): Promise<EmpresasAsignadasResponse> {
