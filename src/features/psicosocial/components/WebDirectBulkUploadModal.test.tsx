@@ -21,7 +21,7 @@ describe("WebDirectBulkUploadModal", () => {
     importParticipants.mockReset();
   });
 
-  it("solo importa después de asignar forma y certificar los datos", async () => {
+  it("importa el formulario validado en la plantilla después de certificar los datos", async () => {
     previewImport.mockResolvedValue({
       ok: true,
       total_rows: 1,
@@ -34,6 +34,7 @@ describe("WebDirectBulkUploadModal", () => {
         tipo_documento: "CC",
         numero_documento: "123456789",
         fecha_nacimiento: "1990-05-12",
+        forma_asignada: "A",
       }],
     });
     importParticipants.mockResolvedValue({
@@ -66,7 +67,8 @@ describe("WebDirectBulkUploadModal", () => {
     const submit = screen.getByRole("button", { name: /Certificar y generar enlace/i });
     expect(submit).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText("Aplicar forma a todos"), { target: { value: "A" } });
+    expect(screen.queryByLabelText("Aplicar forma a todos")).not.toBeInTheDocument();
+    expect(screen.getByText("Forma A")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("checkbox", { name: /Certifico que los datos/i }));
     expect(submit).toBeEnabled();
     fireEvent.click(submit);

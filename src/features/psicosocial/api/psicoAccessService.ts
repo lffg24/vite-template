@@ -68,6 +68,7 @@ export type WebDirectBulkPreviewRow = {
   tipo_documento: string;
   numero_documento: string;
   fecha_nacimiento: string;
+  forma_asignada: "A" | "B";
 };
 
 export type WebDirectBulkError = {
@@ -84,9 +85,7 @@ export type WebDirectBulkPreviewResponse = {
   preview: WebDirectBulkPreviewRow[];
 };
 
-export type WebDirectBulkParticipant = WebDirectBulkPreviewRow & {
-  forma_asignada: "A" | "B";
-};
+export type WebDirectBulkParticipant = WebDirectBulkPreviewRow;
 
 export type WebDirectBulkImportResponse = WebDirectConfigurationResponse & {
   creados: number;

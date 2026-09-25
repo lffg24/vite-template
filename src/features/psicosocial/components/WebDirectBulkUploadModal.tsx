@@ -19,8 +19,6 @@ import {
   type WebDirectBulkPreviewRow,
 } from "@/features/psicosocial/api/psicoAccessService";
 
-type AssignedRow = WebDirectBulkPreviewRow & { forma_asignada: "" | "A" | "B" };
-
 type WebDirectBulkUploadModalProps = {
   applicationId: number;
   open: boolean;
@@ -36,13 +34,13 @@ export function WebDirectBulkUploadModal({
 }: WebDirectBulkUploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<WebDirectBulkPreviewResponse | null>(null);
-  const [rows, setRows] = useState<AssignedRow[]>([]);
+  const [rows, setRows] = useState<WebDirectBulkPreviewRow[]>([]);
   const [certified, setCertified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canImport = useMemo(
-    () => Boolean(preview?.ok && rows.length > 0 && rows.every((row) => row.forma_asignada) && certified && !loading),
+    () => Boolean(preview?.ok && rows.length > 0 && certified && !loading),
     [certified, loading, preview?.ok, rows],
   );
 
@@ -79,7 +77,7 @@ export function WebDirectBulkUploadModal({
     try {
       const result = await previewWebDirectBulkImport(applicationId, selected);
       setPreview(result);
-      setRows(result.preview.map((row) => ({ ...row, forma_asignada: "" })));
+      setRows(result.preview);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "No fue posible validar el archivo.");
     } finally {
@@ -94,7 +92,7 @@ export function WebDirectBulkUploadModal({
     try {
       const result = await importWebDirectBulkParticipants(
         applicationId,
-        rows.map((row) => ({ ...row, forma_asignada: row.forma_asignada as "A" | "B" })),
+        rows,
         certified,
       );
       onConfigured(result);
@@ -139,7 +137,7 @@ export function WebDirectBulkUploadModal({
             <div className="rounded-2xl border border-border bg-surface-subtle p-5">
               <FileSpreadsheet className="h-8 w-8 text-success" aria-hidden="true" />
               <p className="mt-3 font-heading font-black text-foreground">Plantilla exclusiva</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">Nombres, apellidos, tipo y número de documento, y fecha de nacimiento.</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Nombres, apellidos, tipo y número de documento, fecha de nacimiento y Formulario A/B.</p>
               <Button asChild variant="outline" className="mt-4 w-full">
                 <a href="/templates/plantilla_carga_virtual_psicosocial.xlsx" download>
                   <Download aria-hidden="true" /> Descargar plantilla
@@ -161,50 +159,24 @@ export function WebDirectBulkUploadModal({
 
           {preview?.ok && rows.length ? (
             <section className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
                 <div>
                   <h3 className="font-heading text-lg font-black text-foreground">{rows.length} colaboradores validados</h3>
-                  <p className="text-sm text-muted-foreground">Asigna la forma aplicable antes de habilitar el enlace.</p>
+                  <p className="text-sm text-muted-foreground">Los datos de acceso y el formulario fueron validados desde la plantilla.</p>
                 </div>
-                <label className="text-sm font-bold text-foreground">
-                  Aplicar forma a todos
-                  <select
-                    aria-label="Aplicar forma a todos"
-                    className="ml-2 h-10 rounded-xl border border-border bg-surface px-3 font-normal"
-                    defaultValue=""
-                    onChange={(event) => {
-                      const value = event.target.value as "" | "A" | "B";
-                      if (value) setRows((current) => current.map((row) => ({ ...row, forma_asignada: value })));
-                    }}
-                  >
-                    <option value="">Selecciona</option>
-                    <option value="A">Forma A</option>
-                    <option value="B">Forma B</option>
-                  </select>
-                </label>
               </div>
 
               <div className="max-h-80 space-y-3 overflow-y-auto" aria-label="Colaboradores virtuales validados">
-                {rows.map((row, index) => (
-                  <article key={`${row.tipo_documento}-${row.numero_documento}`} className="grid gap-3 rounded-2xl border border-border bg-surface-subtle p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,.55fr)_9rem] md:items-end">
+                {rows.map((row) => (
+                  <article key={`${row.tipo_documento}-${row.numero_documento}`} className="grid gap-3 rounded-2xl border border-border bg-surface-subtle p-4 sm:grid-cols-[minmax(14rem,1fr)_auto] sm:items-center">
                     <div className="min-w-0">
                       <strong className="block break-words text-sm text-foreground">{row.nombres} {row.apellidos}</strong>
                       <span className="mt-1 block text-xs text-muted-foreground">{row.tipo_documento} {row.numero_documento} · {row.fecha_nacimiento}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">Fila {row.row} validada</span>
-                    <label className="text-sm font-bold text-foreground">
-                      Forma
-                      <select
-                        aria-label={`Forma de ${row.nombres} ${row.apellidos}`}
-                        value={row.forma_asignada}
-                        onChange={(event) => setRows((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, forma_asignada: event.target.value as AssignedRow["forma_asignada"] } : item))}
-                        className="mt-1 h-10 w-full rounded-xl border border-border bg-surface px-3 font-normal"
-                      >
-                        <option value="">Selecciona</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                      </select>
-                    </label>
+                    <div className="flex items-center gap-3 sm:justify-end">
+                      <span className="text-xs text-muted-foreground">Fila {row.row} validada</span>
+                      <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">Forma {row.forma_asignada}</span>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -213,7 +185,7 @@ export function WebDirectBulkUploadModal({
                 <Checkbox checked={certified} onCheckedChange={(value) => setCertified(value === true)} aria-label="Certifico que los datos de acceso son correctos" />
                 <span className="text-sm leading-6 text-foreground">
                   <strong className="block">Certifico que los datos son correctos.</strong>
-                  Confirmo que tipo y número de documento, nombres, apellidos y fecha de nacimiento corresponden a cada colaborador y autorizo su uso como datos de verificación de acceso.
+                  Confirmo que nombres, apellidos, documento, fecha de nacimiento y formulario corresponden a cada colaborador y autorizo su uso para habilitar el acceso.
                 </span>
               </label>
             </section>
