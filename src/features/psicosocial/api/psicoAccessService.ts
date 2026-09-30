@@ -61,6 +61,15 @@ export type WebDirectConfigurationResponse = {
   public_url: string;
 };
 
+export type WebDirectStatusResponse = {
+  ok: boolean;
+  configurado: boolean;
+  activo: boolean;
+  enlace_generado_en: string | null;
+  datos_certificados_en: string | null;
+  participantes_habilitados: number;
+};
+
 export type WebDirectBulkPreviewRow = {
   row: number;
   nombres: string;
@@ -164,6 +173,36 @@ export async function configureWebDirectAccess(
     const err = new Error(detail) as Error & { status?: number };
     err.status = res.status;
     throw err;
+  }
+  return res.json();
+}
+
+export async function getWebDirectStatus(
+  applicationId: number,
+): Promise<WebDirectStatusResponse> {
+  const res = await fetch(`${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/status`, {
+    method: "GET",
+    credentials: "include",
+    headers: jsonHeaders(),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible consultar el enlace virtual (${res.status})`);
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+export async function regenerateWebDirectAccess(
+  applicationId: number,
+): Promise<WebDirectConfigurationResponse> {
+  const res = await fetch(`${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/regenerate`, {
+    method: "POST",
+    credentials: "include",
+    headers: jsonHeaders(),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `No fue posible regenerar el enlace virtual (${res.status})`);
+    throw new Error(detail);
   }
   return res.json();
 }
