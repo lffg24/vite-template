@@ -56,7 +56,7 @@ export function WebDirectTrainingScreen({
           <Button type="button" variant="outline" size="lg" onClick={onBack} className="min-h-12 w-full sm:w-auto">
             <ArrowLeft aria-hidden="true" /> Volver
           </Button>
-          <Button type="button" size="lg" onClick={onContinue} disabled={!completed} className="min-h-12 w-full px-6 text-foreground sm:w-auto">
+          <Button type="button" size="lg" onClick={onContinue} disabled={!completed} className="min-h-12 w-full px-6 sm:w-auto">
             Continuar al instructivo <ArrowRight aria-hidden="true" />
           </Button>
         </div>

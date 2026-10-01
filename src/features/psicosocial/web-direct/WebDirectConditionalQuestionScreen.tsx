@@ -13,7 +13,7 @@ type WebDirectConditionalQuestionScreenProps = {
   value: boolean | null;
   onChange: (ruleCode: string, value: boolean) => void;
   onBack: () => void;
-  onContinue: () => void;
+  onContinue: (selectedValue?: boolean) => void;
 };
 
 export function WebDirectConditionalQuestionScreen({
@@ -64,7 +64,10 @@ export function WebDirectConditionalQuestionScreen({
                     type="radio"
                     name={`conditional-${rule.code}`}
                     checked={selected}
-                    onChange={() => onChange(rule.code, option.selectedValue)}
+                    onChange={() => {
+                      onChange(rule.code, option.selectedValue);
+                      onContinue(option.selectedValue);
+                    }}
                     className="h-5 w-5 accent-[hsl(var(--accent-foreground))]"
                   />
                   {option.label}
@@ -76,7 +79,7 @@ export function WebDirectConditionalQuestionScreen({
 
         <div className="mt-8 flex items-center justify-between gap-3">
           <Button type="button" variant="outline" size="lg" onClick={onBack}><ArrowLeft aria-hidden="true" /> Anterior</Button>
-          <Button type="button" size="lg" disabled={value === null} onClick={onContinue}>Continuar <ArrowRight aria-hidden="true" /></Button>
+          <Button type="button" size="lg" disabled={value === null} onClick={() => onContinue()}>Continuar <ArrowRight aria-hidden="true" /></Button>
         </div>
       </Card>
     </WebDirectParticipantShell>

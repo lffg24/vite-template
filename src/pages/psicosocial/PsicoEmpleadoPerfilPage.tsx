@@ -26,6 +26,7 @@ import {
   type PsicoEmpleadoPerfil,
 } from "@/features/psicosocial/api/psicoEmpleadoService";
 import { psicoAdminService, type AreaEmpresa, type CargoEmpresa } from "@/features/psicosocial/api/psicoAdminService";
+import AbrilDatePicker from "@/features/psicosocial/components/AbrilDatePicker";
 
 const RISK_CLASS: Record<string, string> = {
   SIN_RIESGO: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -51,7 +52,7 @@ function validEmail(value: string) {
 
 function fmtDate(value?: string | null) {
   if (!value) return "Sin fecha";
-  const d = new Date(value);
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00` : value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "2-digit" });
 }
@@ -209,6 +210,7 @@ type BaseEmployeeForm = {
   nombres: string;
   apellidos: string;
   cedula: string;
+  fecha_nacimiento: string;
   identificador_externo: string;
   correo: string;
   telefono: string;
@@ -221,6 +223,7 @@ function formFromPerfil(perfil: PsicoEmpleadoPerfil): BaseEmployeeForm {
     nombres: perfil.nombres || "",
     apellidos: perfil.apellidos || "",
     cedula: perfil.cedula || "",
+    fecha_nacimiento: perfil.fecha_nacimiento?.slice(0, 10) || "",
     identificador_externo: perfil.identificador_externo || "",
     correo: perfil.correo || "",
     telefono: perfil.telefono || "",
@@ -322,6 +325,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
           nombres: form.nombres.trim(),
           apellidos: form.apellidos.trim(),
           cedula: form.cedula.trim(),
+          fecha_nacimiento: form.fecha_nacimiento || null,
           identificador_externo: form.identificador_externo.trim() || null,
           email: form.correo.trim().toLowerCase() || null,
           telefono: form.telefono.trim() || null,
@@ -360,6 +364,16 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
             <BaseField label="Nombres *" error={errors.nombres}><TextInput value={form.nombres} onChange={(value) => update("nombres", value)} /></BaseField>
             <BaseField label="Apellidos *" error={errors.apellidos}><TextInput value={form.apellidos} onChange={(value) => update("apellidos", value)} /></BaseField>
             <BaseField label="Cédula *" error={errors.cedula}><TextInput value={form.cedula} onChange={(value) => update("cedula", value)} inputMode="numeric" /></BaseField>
+            <AbrilDatePicker
+              id="employee-birth-date"
+              label="Fecha de nacimiento"
+              value={form.fecha_nacimiento}
+              min="1900-01-01"
+              max={new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)}
+              error={errors.fecha_nacimiento}
+              describedBy={errors.fecha_nacimiento ? "employee-birth-date-error" : undefined}
+              onChange={(value) => update("fecha_nacimiento", value)}
+            />
             <BaseField label="Identificador externo"><TextInput value={form.identificador_externo} onChange={(value) => update("identificador_externo", value)} /></BaseField>
             <BaseField label="Correo" error={errors.correo}><TextInput type="email" value={form.correo} onChange={(value) => update("correo", value)} /></BaseField>
             <BaseField label="Teléfono" error={errors.telefono}><TextInput value={form.telefono} onChange={(value) => update("telefono", value)} inputMode="numeric" /></BaseField>
@@ -524,7 +538,7 @@ export default function PsicoEmpleadoPerfilPage() {
         {tab === "perfil" ? (
           <section className="grid gap-5 lg:grid-cols-3">
             <SectionCard number={1} title="Identificación y contacto">
-              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Nombres" value={perfil?.nombres} /><InfoRow label="Apellidos" value={perfil?.apellidos} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Identificador externo" value={perfil?.identificador_externo} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
+              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Nombres" value={perfil?.nombres} /><InfoRow label="Apellidos" value={perfil?.apellidos} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Fecha de nacimiento" value={perfil?.fecha_nacimiento ? fmtDate(perfil.fecha_nacimiento) : null} /><InfoRow label="Identificador externo" value={perfil?.identificador_externo} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
             </SectionCard>
             <SectionCard number={2} title="Asignación organizacional">
               <InfoRow label="Empresa" value={perfil?.empresa} /><InfoRow label="Área / departamento" value={perfil?.area} /><InfoRow label="Cargo" value={perfil?.cargo} />

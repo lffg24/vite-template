@@ -26,7 +26,7 @@ export function WebDirectReviewScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Revisión final"
-      progress={{ current: 5, total: 6, label: "Revisión final" }}
+      progress={{ current: 5, total: 5, label: "Revisión final" }}
       eyebrow="Revisión final"
       title="Resumen de tu batería"
       description="Comprueba que todos los componentes estén completos antes de continuar con la declaración final."

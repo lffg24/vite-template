@@ -3,6 +3,7 @@ import archivosInformacion from "@/assets/ilustraciones/archivos-informacion.web
 import buscar from "@/assets/ilustraciones/buscar.webp";
 import psicoWebBienvenida from "@/assets/ilustraciones/psico-web/bienvenida.webp";
 import psicoWebCapacitacion from "@/assets/ilustraciones/psico-web/capacitacion.webp";
+import psicoWebCompartirQr from "@/assets/ilustraciones/psico-web/compartir-qr-link.webp";
 import psicoWebConsentimiento from "@/assets/ilustraciones/psico-web/consentimiento.webp";
 import psicoWebDatosGenerales from "@/assets/ilustraciones/psico-web/datos-generales.webp";
 import psicoWebDeclaracion from "@/assets/ilustraciones/psico-web/declaracion.webp";
@@ -25,6 +26,7 @@ export const illustrationRegistry = {
   buscar: { src: buscar, variant: "spot", aspectRatio: "4 / 3" },
   psicoWebBienvenida: { src: psicoWebBienvenida, variant: "hero", aspectRatio: "4 / 3" },
   psicoWebCapacitacion: { src: psicoWebCapacitacion, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebCompartirQr: { src: psicoWebCompartirQr, variant: "spot", aspectRatio: "4 / 3" },
   psicoWebConsentimiento: { src: psicoWebConsentimiento, variant: "hero", aspectRatio: "4 / 3" },
   psicoWebDatosGenerales: { src: psicoWebDatosGenerales, variant: "hero", aspectRatio: "4 / 3" },
   psicoWebDeclaracion: { src: psicoWebDeclaracion, variant: "hero", aspectRatio: "4 / 3" },

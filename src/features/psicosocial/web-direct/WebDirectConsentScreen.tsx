@@ -37,7 +37,7 @@ export function WebDirectConsentScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Privacidad y autorización"
-      progress={{ current: 5, total: 6 }}
+      progress={{ current: 4, total: 5 }}
       eyebrow="Consentimiento y privacidad"
       title="Revisa y acepta los documentos aplicables"
       description="Revisa los documentos vigentes antes de continuar con esta aplicación."
@@ -59,7 +59,7 @@ export function WebDirectConsentScreen({
             size="lg"
             disabled={!allAccepted || isSubmitting}
             onClick={() => onContinue(acceptedDocumentIds)}
-            className="min-h-12 w-full px-6 text-foreground sm:w-auto"
+            className="min-h-12 w-full px-6 sm:w-auto"
           >
             {isSubmitting ? "Registrando…" : "Aceptar y continuar"}
             {!isSubmitting ? <ArrowRight aria-hidden="true" /> : null}

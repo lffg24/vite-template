@@ -77,9 +77,13 @@ export function WebDirectQuestionScreen({
   const stateCopy = answerStateCopy[answerState];
 
   return (
-    <WebDirectParticipantShell stepLabel={`${instrumentLabel} · Forma ${form}`} className="max-w-5xl">
+    <WebDirectParticipantShell
+      stepLabel={`${instrumentLabel} · Forma ${form}`}
+      showStepLabel={false}
+      className="max-w-6xl"
+    >
       <section aria-labelledby="question-title">
-        <div className="mb-5 rounded-2xl border border-border bg-surface px-4 py-4 shadow-sm sm:px-6">
+        <div className="mb-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-primary">{instrumentLabel}</p>
@@ -92,18 +96,20 @@ export function WebDirectQuestionScreen({
               </span>
             ) : null}
           </div>
-          <Progress className="mt-4" value={percentage} aria-label={`${percentage}% de ${instrumentLabel} completado`} />
+          <Progress className="mt-3" value={percentage} aria-label={`${percentage}% de ${instrumentLabel} completado`} />
         </div>
 
-        <Card className="rounded-[1.5rem] border-border bg-surface p-5 shadow-soft sm:rounded-[2rem] sm:p-9 lg:p-11">
+        <Card className="rounded-[1.5rem] border-border bg-surface p-5 shadow-soft sm:rounded-[2rem] sm:p-7 lg:p-8">
           <fieldset aria-labelledby="question-title">
             <legend className="sr-only">Pregunta {currentIndex + 1}</legend>
-            <h1 id="question-title" className="max-w-4xl font-heading text-2xl font-black leading-tight text-foreground sm:text-3xl lg:text-4xl">
+            <h1 id="question-title" className="max-w-5xl font-heading text-2xl font-black leading-tight text-foreground sm:text-3xl lg:text-[2rem]">
               {question.text}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Selecciona la opción que mejor refleje tu experiencia.</p>
+            <p className="mt-2 max-w-5xl text-sm leading-5 text-muted-foreground">
+              {question.helpText || "Selecciona la opción que mejor refleje tu experiencia."}
+            </p>
 
-            <div className="mt-7 grid gap-3" role="radiogroup" aria-required={question.required ?? true}>
+            <div className="mt-5 grid gap-2.5" role="radiogroup" aria-required={question.required ?? true}>
               {question.options.map((option) => {
                 const inputId = `question-${question.questionId}-${option.value}`;
                 const selected = selectedValue === option.value;
@@ -112,7 +118,7 @@ export function WebDirectQuestionScreen({
                     key={option.value}
                     htmlFor={inputId}
                     className={cn(
-                      "flex min-h-14 cursor-pointer items-center gap-4 rounded-2xl border border-border px-4 py-3 text-base font-semibold transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                      "flex min-h-12 cursor-pointer items-center gap-4 rounded-2xl border border-border px-4 py-2.5 text-base font-semibold transition-colors duration-standard focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
                       selected && "border-accent-foreground/40 bg-accent text-accent-foreground",
                     )}
                   >
@@ -122,14 +128,17 @@ export function WebDirectQuestionScreen({
                       name={`question-${question.questionId}`}
                       value={option.value}
                       checked={selected}
-                      onChange={() => onAnswer({
-                        questionId: question.questionId,
-                        order: question.order,
-                        value: option.value,
-                        instrumentCode,
-                        dimensionCode: question.dimensionCode,
-                        domainCode: question.domainCode,
-                      })}
+                      onChange={() => {
+                        onAnswer({
+                          questionId: question.questionId,
+                          order: question.order,
+                          value: option.value,
+                          instrumentCode,
+                          dimensionCode: question.dimensionCode,
+                          domainCode: question.domainCode,
+                        });
+                        onNext(question);
+                      }}
                       className="h-5 w-5 shrink-0 accent-[hsl(var(--accent-foreground))]"
                     />
                     <span>{option.label}</span>
@@ -139,11 +148,11 @@ export function WebDirectQuestionScreen({
             </div>
           </fieldset>
 
-          <div className="mt-8 flex items-center justify-between gap-3">
-            <Button type="button" variant="outline" size="lg" disabled={currentIndex === 0} onClick={() => onPrevious(question)}>
+          <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button type="button" variant="outline" size="lg" disabled={currentIndex === 0} onClick={() => onPrevious(question)} className="w-full sm:w-auto">
               <ArrowLeft aria-hidden="true" /> Anterior
             </Button>
-            <Button type="button" size="lg" disabled={!selectedValue} onClick={() => onNext(question)}>
+            <Button type="button" size="lg" disabled={!selectedValue} onClick={() => onNext(question)} className="w-full sm:w-auto">
               {currentIndex === applicableQuestions.length - 1 ? "Completar instrumento" : "Siguiente"}
               {currentIndex === applicableQuestions.length - 1 ? <Check aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
             </Button>

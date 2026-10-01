@@ -20,15 +20,19 @@ import {
   FileArchive,
   FilePenLine,
   FileText,
+  Info,
   Loader2,
   Lock,
+  Mars,
   Plus,
   RotateCcw,
   Search,
   ShieldCheck,
   Trash2,
   Upload,
+  UserRound,
   Users,
+  Venus,
   X,
   XCircle,
 } from "lucide-react";
@@ -43,9 +47,24 @@ import {
 import { CreditGuardDialog } from "@/features/psicosocial/components/credits/CreditGuardDialog";
 import { PsicoFeatureFlagGate } from "@/features/psicosocial/components/PsicoFeatureFlagGate";
 import { WebDirectSetupCard } from "@/features/psicosocial/components/WebDirectSetupCard";
+import AbrilDatePicker from "@/features/psicosocial/components/AbrilDatePicker";
+import { assignWebDirectParticipant } from "@/features/psicosocial/api/psicoAccessService";
 import { getCreditGuardInfo, type CreditGuardInfo } from "@/features/psicosocial/utils/creditGuard";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { ConfirmDialog } from "@/components/feedback/ConfirmDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   BulkUploadModal,
   bulkErrorResult,
@@ -130,6 +149,8 @@ type EmployeeFormState = {
   telefono: string;
   area_id: string;
   cargo_id: string;
+  fecha_nacimiento: string;
+  forma_asignada: "" | "A" | "B";
 };
 const emptyEmployeeForm: EmployeeFormState = {
   nombres: "",
@@ -140,6 +161,8 @@ const emptyEmployeeForm: EmployeeFormState = {
   telefono: "",
   area_id: "",
   cargo_id: "",
+  fecha_nacimiento: "",
+  forma_asignada: "",
 };
 
 const emptyEmployeeSocioForm: FichaSociodemografica = {
@@ -435,6 +458,12 @@ export default function AplicacionDetallePage() {
     Record<string, string>
   >({});
   const [savingEmployee, setSavingEmployee] = useState(false);
+  const [employeeDetailTarget, setEmployeeDetailTarget] =
+    useState<AplicacionDetalle["empleados"][number] | null>(null);
+  const [detailAssignedForm, setDetailAssignedForm] = useState<"" | "A" | "B">("");
+  const [detailBirthDate, setDetailBirthDate] = useState("");
+  const [detailAssignmentError, setDetailAssignmentError] = useState<string | null>(null);
+  const [savingDetailAssignment, setSavingDetailAssignment] = useState(false);
   const [openBulkUpload, setOpenBulkUpload] = useState(false);
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [bulkResult, setBulkResult] = useState<EmpleadoImportResponse | null>(
@@ -487,9 +516,9 @@ export default function AplicacionDetallePage() {
     setShowClosureGuide(false);
   };
 
-  const load = async () => {
+  const load = async (options?: { silent?: boolean }) => {
     if (!empresaId || !aplicacionId) return;
-    setLoading(true);
+    if (!options?.silent) setLoading(true);
     setError(null);
     try {
       setData(
@@ -503,7 +532,7 @@ export default function AplicacionDetallePage() {
         e?.message || "No fue posible cargar el detalle de la aplicación.",
       );
     } finally {
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
     }
   };
 
@@ -580,6 +609,7 @@ export default function AplicacionDetallePage() {
   };
 
   const openAddEmployee = async () => {
+    setEmployeeForm(emptyEmployeeForm);
     setEmployeeFieldErrors({});
     setEmployeeSocioForm({ ...emptyEmployeeSocioForm });
     setEmployeeResQuery("");
@@ -789,6 +819,8 @@ export default function AplicacionDetallePage() {
       next.telefono = "Teléfono debe tener mínimo 7 dígitos.";
     if (!employeeForm.area_id) next.area_id = "Área es obligatoria.";
     if (!employeeForm.cargo_id) next.cargo_id = "Cargo es obligatorio.";
+    if (employeeForm.forma_asignada && !employeeForm.fecha_nacimiento)
+      next.fecha_nacimiento = "La fecha de nacimiento es obligatoria para asignar el formulario web.";
     setEmployeeFieldErrors(next);
     if (Object.keys(next).length)
       notify({
@@ -814,6 +846,7 @@ export default function AplicacionDetallePage() {
           employeeForm.identificador_externo.trim() || undefined,
         email: employeeForm.email.trim().toLowerCase() || undefined,
         telefono: employeeForm.telefono.trim() || undefined,
+        fecha_nacimiento: employeeForm.fecha_nacimiento || undefined,
       };
       const created = await psicoAdminService.crearEmpleado(empresaId, payload);
       const socioDraft = buildApplicationEmployeeSocioDraft(
@@ -823,6 +856,7 @@ export default function AplicacionDetallePage() {
       );
       const shouldSaveSocio = hasApplicationEmployeeSocioData(employeeSocioForm);
       let socioWarning = "";
+      let assignmentWarning = "";
       if (shouldSaveSocio && created.empleado_id) {
         try {
           await guardarFichaSociodemografica(created.empleado_id, aplicacionId, socioDraft);
@@ -830,17 +864,35 @@ export default function AplicacionDetallePage() {
           socioWarning = e?.message || "No fue posible guardar el perfil sociodemográfico.";
         }
       }
+      if (
+        employeeForm.forma_asignada &&
+        employeeForm.fecha_nacimiento &&
+        created.empleado_id
+      ) {
+        try {
+          await assignWebDirectParticipant(Number(aplicacionId), {
+            empleado_id: created.empleado_id,
+            fecha_nacimiento: employeeForm.fecha_nacimiento,
+            forma_asignada: employeeForm.forma_asignada,
+          });
+        } catch (e: any) {
+          assignmentWarning =
+            e?.message || "No fue posible asignar el formulario de aplicación web.";
+        }
+      }
       setEmployeeForm(emptyEmployeeForm);
       setEmployeeSocioForm({ ...emptyEmployeeSocioForm });
       setOpenEmployeeDrawer(false);
       notify({
-        type: socioWarning ? "warning" : "success",
+        type: socioWarning || assignmentWarning ? "warning" : "success",
         title: "Colaborador creado",
-        message: socioWarning
-          ? `Se agregó el colaborador, pero la ficha opcional quedó pendiente: ${socioWarning}`
+        message: socioWarning || assignmentWarning
+          ? `Se agregó el colaborador, pero quedó una actualización pendiente: ${[socioWarning, assignmentWarning].filter(Boolean).join(" · ")}`
           : shouldSaveSocio
             ? "Se agregó a la empresa y se guardó la ficha sociodemográfica en borrador."
-            : "Se agregó a la empresa y se actualizará el listado de esta aplicación.",
+            : employeeForm.forma_asignada
+              ? `Se agregó a la empresa y se asignó la Forma ${employeeForm.forma_asignada} para la aplicación web.`
+              : "Se agregó a la empresa y se actualizará el listado de esta aplicación.",
       });
       await load();
     } catch (e: any) {
@@ -960,6 +1012,13 @@ export default function AplicacionDetallePage() {
 
   const cleanupBlocked =
     estadoAplicacion === "FINALIZADA" || estadoAplicacion === "CALCULANDO";
+  const webDirectAvailable = ![
+    "CALCULANDO",
+    "FINALIZADA",
+    "FINALIZADO",
+    "CERRADA",
+    "CERRADO",
+  ].includes(estadoAplicacion);
   const canOpenParticipant = (emp: any) =>
     !finalizada ||
     Boolean(
@@ -967,6 +1026,77 @@ export default function AplicacionDetallePage() {
       emp.completo ||
       (emp.instrumentos_registrados || []).length > 0,
     );
+  const openEmployeeDetail = (emp: AplicacionDetalle["empleados"][number]) => {
+    setEmployeeDetailTarget(emp);
+    setDetailAssignedForm(emp.web_direct_assignment?.forma_asignada || "");
+    setDetailBirthDate(
+      emp.web_direct_assignment?.fecha_nacimiento || emp.fecha_nacimiento || "",
+    );
+    setDetailAssignmentError(null);
+  };
+  const saveDetailWebAssignment = async () => {
+    if (!employeeDetailTarget || !detailAssignedForm || !detailBirthDate) {
+      setDetailAssignmentError(
+        "Selecciona la Forma A/B y confirma la fecha de nacimiento.",
+      );
+      return;
+    }
+    setSavingDetailAssignment(true);
+    setDetailAssignmentError(null);
+    try {
+      await assignWebDirectParticipant(Number(aplicacionId), {
+        empleado_id: employeeDetailTarget.id,
+        fecha_nacimiento: detailBirthDate,
+        forma_asignada: detailAssignedForm,
+      });
+      setEmployeeDetailTarget((current) =>
+        current
+          ? {
+              ...current,
+              fecha_nacimiento: detailBirthDate,
+              web_direct_assignment: {
+                forma_asignada: detailAssignedForm,
+                fecha_nacimiento: detailBirthDate,
+                habilitado: true,
+              },
+            }
+          : current,
+      );
+      notify({
+        type: "success",
+        title: "Formulario actualizado",
+        message: `Se asignó la Forma ${detailAssignedForm} para la aplicación web.`,
+      });
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              empleados: current.empleados.map((employee) =>
+                employee.id === employeeDetailTarget.id
+                  ? {
+                      ...employee,
+                      fecha_nacimiento: detailBirthDate,
+                      web_direct_assignment: {
+                        forma_asignada: detailAssignedForm,
+                        fecha_nacimiento: detailBirthDate,
+                        habilitado: true,
+                      },
+                    }
+                  : employee,
+              ),
+            }
+          : current,
+      );
+    } catch (reason) {
+      setDetailAssignmentError(
+        reason instanceof Error
+          ? reason.message
+          : "No fue posible actualizar el formulario web.",
+      );
+    } finally {
+      setSavingDetailAssignment(false);
+    }
+  };
   const participantSortAria = (key: ParticipantSortKey) =>
     participantSort.key === key
       ? participantSort.direction === "asc"
@@ -1210,12 +1340,6 @@ export default function AplicacionDetallePage() {
   const pendientesCompletar = Number(
     resumen.participantes_pendientes_completar ?? resumen.pendientes ?? 0,
   );
-  const creditosReservadosCaptura = Number(
-    resumen.creditos_reservados ??
-      creditosAplicacion?.registros_consumidos ??
-      resumen.participantes_registrados ??
-      0,
-  );
   const creditosConsumidosCaptura = Number(
     creditosAplicacion?.creditos_consumidos ??
       resumen.creditos_consumidos ??
@@ -1356,6 +1480,15 @@ export default function AplicacionDetallePage() {
               >
                 <BarChart3 className="h-4 w-4" /> Dashboard de resultados
               </button>
+              {webDirectAvailable && (
+                <PsicoFeatureFlagGate feature="web_direct">
+                  <WebDirectSetupCard
+                    applicationId={Number(aplicacionId)}
+                    employees={data.empleados}
+                    onParticipantsChanged={() => load({ silent: true })}
+                  />
+                </PsicoFeatureFlagGate>
+              )}
               {finalizada && (
                 <button
                   onClick={() =>
@@ -1441,21 +1574,9 @@ export default function AplicacionDetallePage() {
               <strong className="text-3xl font-black text-foreground">
                 {creditosConsumidosCaptura}
               </strong>
-              <p className="mt-1 text-xs leading-5 text-foreground-soft">
-                Reservados/iniciados: {creditosReservadosCaptura}. Estimados:{" "}
-                {resumen.creditos_estimados}
-              </p>
             </div>
           </article>
         </section>
-
-        <PsicoFeatureFlagGate feature="web_direct">
-          <WebDirectSetupCard
-            applicationId={Number(aplicacionId)}
-            employees={data.empleados}
-            disabled={finalizada}
-          />
-        </PsicoFeatureFlagGate>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -1539,13 +1660,25 @@ export default function AplicacionDetallePage() {
                 {paginatedEmpleados.map((emp) => (
                   <tr key={emp.id} className="hover:bg-slate-50">
                     <td className="break-words px-3 py-4">
-                      <strong className="block break-words text-slate-950">
-                        {emp.nombre}
-                      </strong>
-                      <span className="break-all text-xs text-slate-500">
-                        CC {emp.cedula}
-                        {emp.email ? ` · ${emp.email}` : ""}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => openEmployeeDetail(emp)}
+                        className="group flex max-w-full items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                        aria-label={`Ver datos de ${emp.nombre}`}
+                      >
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                          <EmployeeGenderIcon sexo={emp.sexo} />
+                        </span>
+                        <span className="min-w-0">
+                          <strong className="block break-words text-slate-950 underline-offset-4 group-hover:text-brand-primary group-hover:underline">
+                            {emp.nombre}
+                          </strong>
+                          <span className="block break-all text-xs text-slate-500">
+                            CC {emp.cedula}
+                            {emp.email ? ` · ${emp.email}` : ""}
+                          </span>
+                        </span>
+                      </button>
                     </td>
                     <td className="break-words px-3 py-4">
                       <span className="block break-words font-bold">
@@ -1840,6 +1973,158 @@ export default function AplicacionDetallePage() {
         </div>
       )}
 
+      {employeeDetailTarget && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+          <aside
+            className="h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-2xl sm:p-6"
+            aria-label={`Datos de ${employeeDetailTarget.nombre}`}
+          >
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                  <EmployeeGenderIcon sexo={employeeDetailTarget.sexo} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
+                    Datos del colaborador
+                  </p>
+                  <h2 className="break-words text-2xl font-black text-slate-950">
+                    {employeeDetailTarget.nombre}
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    Información base y asignación para esta aplicación.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEmployeeDetailTarget(null)}
+                className="shrink-0 rounded-2xl border border-slate-200 p-2 hover:bg-slate-50"
+                aria-label="Cerrar datos del colaborador"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-4">
+              <h3 className="font-black text-slate-950">Información base</h3>
+              <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
+                <EmployeeDetailField label="Documento" value={`CC ${employeeDetailTarget.cedula}`} />
+                <EmployeeDetailField label="Identificador externo" value={employeeDetailTarget.identificador_externo} />
+                <EmployeeDetailField label="Correo" value={employeeDetailTarget.email} />
+                <EmployeeDetailField label="Teléfono" value={employeeDetailTarget.telefono} />
+                <EmployeeDetailField label="Área" value={employeeDetailTarget.area} />
+                <EmployeeDetailField label="Cargo" value={employeeDetailTarget.cargo} />
+              </dl>
+            </section>
+
+            <PsicoFeatureFlagGate feature="web_direct">
+              <section className="mt-4 rounded-3xl border border-info/25 bg-info/5 p-4">
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-slate-950">
+                        Formulario de aplicación web
+                      </h3>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label="Información sobre el formulario asignado"
+                              className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs bg-foreground text-surface">
+                            Define si el colaborador responderá la Forma A o B mediante el enlace público de esta aplicación.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {!webDirectAvailable
+                        ? "La asignación queda en consulta mientras la aplicación esté cerrada."
+                        : "Puedes agregarla o actualizarla sin regenerar el enlace existente."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid items-start gap-4 sm:grid-cols-2">
+                  <Field label="Formulario asignado">
+                    <Select
+                      value={detailAssignedForm || "unassigned"}
+                      onValueChange={(value) => {
+                        setDetailAssignedForm(
+                          value === "unassigned" ? "" : value as "A" | "B",
+                        );
+                        setDetailAssignmentError(null);
+                      }}
+                      disabled={!webDirectAvailable || savingDetailAssignment}
+                    >
+                      <SelectTrigger className="h-12 rounded-2xl px-4 font-semibold">
+                        <SelectValue placeholder="Selecciona una forma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Sin asignar</SelectItem>
+                        <SelectItem value="A">Forma A</SelectItem>
+                        <SelectItem value="B">Forma B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <AbrilDatePicker
+                    id="detail-web-birth-date"
+                    label="Fecha de nacimiento"
+                    value={detailBirthDate}
+                    onChange={(value) => {
+                      setDetailBirthDate(value);
+                      setDetailAssignmentError(null);
+                    }}
+                    max={new Date(Date.now() - 86_400_000)
+                      .toISOString()
+                      .slice(0, 10)}
+                    required={Boolean(detailAssignedForm)}
+                    disabled={!webDirectAvailable || savingDetailAssignment}
+                  />
+                </div>
+
+                {detailAssignmentError ? (
+                  <p
+                    role="alert"
+                    className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+                  >
+                    {detailAssignmentError}
+                  </p>
+                ) : null}
+
+                {webDirectAvailable && (
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => void saveDetailWebAssignment()}
+                      disabled={
+                        savingDetailAssignment ||
+                        !detailAssignedForm ||
+                        !detailBirthDate
+                      }
+                      className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {savingDetailAssignment ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      Guardar asignación
+                    </button>
+                  </div>
+                )}
+              </section>
+            </PsicoFeatureFlagGate>
+          </aside>
+        </div>
+      )}
+
       {openEmployeeDrawer && (
         <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
           <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
@@ -1978,6 +2263,70 @@ export default function AplicacionDetallePage() {
                   </div>
                 </Field>
               </div>
+              <PsicoFeatureFlagGate feature="web_direct">
+                <div className="mt-4 rounded-2xl border border-info/25 bg-info/5 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-black text-slate-950">
+                          Asignación para aplicación web
+                        </h4>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Información sobre la asignación web"
+                                className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
+                              >
+                                <Info className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs bg-foreground text-surface">
+                              Esta asignación se usa únicamente para el acceso público de esta aplicación. No cambia los cálculos ni otros formularios del colaborador.
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Opcional. Puedes dejarla pendiente y completarla después desde el detalle del colaborador.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <Field label="Formulario asignado">
+                      <select
+                        value={employeeForm.forma_asignada}
+                        onChange={(event) =>
+                          updateEmployeeForm(
+                            "forma_asignada",
+                            event.target.value as "" | "A" | "B",
+                          )
+                        }
+                        className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
+                      >
+                        <option value="">Sin asignar por ahora</option>
+                        <option value="A">Forma A</option>
+                        <option value="B">Forma B</option>
+                      </select>
+                    </Field>
+                    <AbrilDatePicker
+                      id="new-employee-web-birth-date"
+                      label="Fecha de nacimiento"
+                      value={employeeForm.fecha_nacimiento}
+                      onChange={(value) =>
+                        updateEmployeeForm("fecha_nacimiento", value)
+                      }
+                      max={new Date(Date.now() - 86_400_000)
+                        .toISOString()
+                        .slice(0, 10)}
+                      required={Boolean(employeeForm.forma_asignada)}
+                      disabled={!employeeForm.forma_asignada}
+                      error={employeeFieldErrors.fecha_nacimiento}
+                    />
+                  </div>
+                </div>
+              </PsicoFeatureFlagGate>
               </section>
 
               <section className="rounded-3xl border border-accent bg-accent/50 p-4">
@@ -2237,6 +2586,36 @@ export default function AplicacionDetallePage() {
   );
 }
 
+function EmployeeGenderIcon({ sexo }: { sexo?: string | null }) {
+  const normalized = String(sexo || "").trim().toLowerCase();
+  if (normalized.includes("femen") || normalized.includes("mujer")) {
+    return <Venus className="h-5 w-5" aria-hidden="true" />;
+  }
+  if (normalized.includes("mascul") || normalized.includes("hombre")) {
+    return <Mars className="h-5 w-5" aria-hidden="true" />;
+  }
+  return <UserRound className="h-5 w-5" aria-hidden="true" />;
+}
+
+function EmployeeDetailField({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) {
+  return (
+    <div className="rounded-2xl bg-slate-50 px-4 py-3">
+      <dt className="text-xs font-black uppercase tracking-wide text-slate-500">
+        {label}
+      </dt>
+      <dd className="mt-1 break-words font-semibold text-slate-900">
+        {value || "Sin dato"}
+      </dd>
+    </div>
+  );
+}
+
 function Card({
   icon,
   label,
@@ -2269,8 +2648,8 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="space-y-1 text-sm font-bold text-slate-700">
-      {label}
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
+      <span className="block">{label}</span>
       {children}
       {error && (
         <span className="block text-xs font-semibold text-red-600">

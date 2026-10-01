@@ -1,20 +1,24 @@
 import type { ReactNode } from "react";
-import { HelpCircle, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import evaIsotype from "@/assets/eva-isotipo-white.png";
 import AbrilWordmark from "@/components/brand/AbrilWordmark";
 import { cn } from "@/lib/utils";
 
+import { WebDirectHelpCenter } from "./WebDirectHelpCenter";
+
 type WebDirectParticipantShellProps = {
   children: ReactNode;
   stepLabel: string;
   className?: string;
+  showStepLabel?: boolean;
 };
 
 export function WebDirectParticipantShell({
   children,
   stepLabel,
   className,
+  showStepLabel = true,
 }: WebDirectParticipantShellProps) {
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
@@ -43,9 +47,7 @@ export function WebDirectParticipantShell({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden items-center gap-2 text-sm text-sidebar-muted sm:inline-flex">
-              <HelpCircle className="h-4 w-4" aria-hidden="true" /> ¿Necesitas ayuda?
-            </span>
+            <WebDirectHelpCenter />
             <span className="inline-flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-hover px-3 py-2 text-xs font-bold text-sidebar-foreground">
               <ShieldCheck className="h-4 w-4 text-sidebar-active" aria-hidden="true" />
               <span className="hidden sm:inline">Proceso seguro y confidencial</span>
@@ -58,13 +60,15 @@ export function WebDirectParticipantShell({
       <main
         id="contenido-principal"
         className={cn(
-          "mx-auto w-full max-w-7xl px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-5 sm:px-8 sm:pt-8 lg:px-12",
+          "mx-auto w-full max-w-7xl px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-1 motion-safe:duration-500 motion-safe:ease-out sm:px-8 sm:pt-6 lg:px-12",
           className,
         )}
       >
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground sm:mb-5">
-          {stepLabel}
-        </p>
+        {showStepLabel ? (
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground sm:mb-5">
+            {stepLabel}
+          </p>
+        ) : null}
         {children}
       </main>
     </div>

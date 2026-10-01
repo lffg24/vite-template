@@ -36,7 +36,7 @@ export function WebDirectJourneyScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Tu batería"
-      progress={{ current: 6, total: 6, label: "Preparación completada" }}
+      progress={{ current: 5, total: 5, label: "Preparación completada" }}
       eyebrow="Recorrido asignado"
       title="Tu batería"
       description={`Responderás el cuestionario intralaboral Forma ${form}, extralaboral, estrés y al final tus datos generales.`}

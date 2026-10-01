@@ -194,7 +194,7 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page.getByText("Empresa Andina SAS · Estado En captura")).toBeVisible();
     await expect(page.getByText("Laura Gomez")).toBeVisible();
     await expect(page.locator("article").filter({ hasText: "Créditos consumidos" }).getByText("7")).toBeVisible();
-    await expect(page.getByText("Estimados: 9")).toBeVisible();
+    await expect(page.getByText("Estimados: 9")).toHaveCount(0);
     expect(tenantHeader).toBe("empresa-1");
   });
 

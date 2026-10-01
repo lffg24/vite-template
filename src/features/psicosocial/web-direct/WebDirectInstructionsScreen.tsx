@@ -22,7 +22,7 @@ export function WebDirectInstructionsScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Preparación del proceso"
-      progress={{ current: 4, total: 6 }}
+      progress={{ current: 3, total: 5 }}
       eyebrow="Instructivo oficial"
       title="Lee cómo debes responder"
       description="Estas instrucciones provienen del contenido autorizado para el instrumento asignado y podrás volver a consultarlas durante el diligenciamiento."
@@ -39,7 +39,7 @@ export function WebDirectInstructionsScreen({
           <Button type="button" variant="outline" size="lg" onClick={onBack} className="min-h-12 w-full sm:w-auto">
             <ArrowLeft aria-hidden="true" /> Volver
           </Button>
-          <Button type="button" size="lg" onClick={onContinue} className="min-h-12 w-full px-6 text-foreground sm:w-auto">
+          <Button type="button" size="lg" onClick={onContinue} className="min-h-12 w-full px-6 sm:w-auto">
             Continuar al consentimiento <ArrowRight aria-hidden="true" />
           </Button>
         </div>

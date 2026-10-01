@@ -24,10 +24,12 @@ export {
   getIncompleteWebDirectStages,
   getJourneyCompletion,
   getMissingRequiredQuestionIds,
+  getNextPendingWebDirectConditional,
 } from "./webDirectFlow";
 export type {
   WebDirectAnswer,
   WebDirectApplicationContext,
+  WebDirectCompanyContact,
   WebDirectAssignedEvaluation,
   WebDirectConditionalRule,
   WebDirectConsentDocument,
@@ -38,6 +40,7 @@ export type {
   WebDirectForm,
   WebDirectIdentification,
   WebDirectInstrumentCode,
+  WebDirectMunicipality,
   WebDirectJourneyCode,
   WebDirectJourneyStage,
   WebDirectQuestion,

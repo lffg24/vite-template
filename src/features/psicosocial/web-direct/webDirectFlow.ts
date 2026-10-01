@@ -85,13 +85,28 @@ export function getApplicableWebDirectQuestions(
 ): WebDirectQuestion[] {
   const omittedOrders = new Set(
     conditionalRules
-      .filter((rule) => rule.answer === false)
+      .filter((rule) => rule.answer !== true)
       .flatMap((rule) => rule.questionOrders),
   );
 
   return [...questions]
     .filter((question) => !omittedOrders.has(question.order))
     .sort((left, right) => left.order - right.order || left.questionId - right.questionId);
+}
+
+export function getNextPendingWebDirectConditional(
+  conditionalRules: WebDirectConditionalRule[],
+  afterOrder: number,
+  nextQuestionOrder = Number.POSITIVE_INFINITY,
+): WebDirectConditionalRule | undefined {
+  return [...conditionalRules]
+    .sort((left, right) => Math.min(...left.questionOrders) - Math.min(...right.questionOrders))
+    .find((rule) => {
+      const firstControlled = Math.min(...rule.questionOrders);
+      return (rule.answer === null || rule.answer === undefined)
+        && firstControlled > afterOrder
+        && firstControlled <= nextQuestionOrder;
+    });
 }
 
 export function getJourneyCompletion(stages: WebDirectJourneyStage[]): number {

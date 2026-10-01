@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { WebDirectJourneyScreen } from "./WebDirectJourneyScreen";
 import { WebDirectQuestionScreen } from "./WebDirectQuestionScreen";
-import { buildWebDirectJourney, getApplicableWebDirectQuestions } from "./webDirectFlow";
+import { buildWebDirectJourney, getApplicableWebDirectQuestions, getNextPendingWebDirectConditional } from "./webDirectFlow";
 import type { WebDirectAssignedEvaluation, WebDirectQuestion } from "./types";
 
 const evaluations: WebDirectAssignedEvaluation[] = [
@@ -29,6 +29,7 @@ const questions: WebDirectQuestion[] = [
     questionId: 10,
     order: 1,
     text: "Primera pregunta",
+    helpText: "Texto de apoyo específico para esta pregunta.",
     options: [
       { label: "Siempre", value: "Siempre" },
       { label: "Nunca", value: "Nunca" },
@@ -72,6 +73,29 @@ describe("recorrido WEB_DIRECT por asignación", () => {
     expect(questions.map((question) => question.order)).toEqual([2, 1]);
   });
 
+  it("reserva las preguntas controladas hasta responder su pregunta de contexto", () => {
+    const pending = getApplicableWebDirectQuestions(questions, [
+      { code: "contexto-final", questionOrders: [2], answer: null },
+    ]);
+    const enabled = getApplicableWebDirectQuestions(questions, [
+      { code: "contexto-final", questionOrders: [2], answer: true },
+    ]);
+
+    expect(pending.map((question) => question.order)).toEqual([1]);
+    expect(enabled.map((question) => question.order)).toEqual([1, 2]);
+  });
+
+  it("ubica las preguntas de contexto justo antes de sus bloques oficiales", () => {
+    const rules = [
+      { code: "clientes", questionOrders: [106, 107, 108], answer: null },
+      { code: "jefatura", questionOrders: [115, 116], answer: null },
+    ];
+
+    expect(getNextPendingWebDirectConditional(rules, 104, 105)).toBeUndefined();
+    expect(getNextPendingWebDirectConditional(rules, 105)?.code).toBe("clientes");
+    expect(getNextPendingWebDirectConditional([{ ...rules[0], answer: true }, rules[1]], 114)?.code).toBe("jefatura");
+  });
+
   it("expone el recorrido como sesión única sin guardar ni retomar", () => {
     const { stages } = buildWebDirectJourney("B", evaluations, "pending");
     render(
@@ -93,6 +117,7 @@ describe("recorrido WEB_DIRECT por asignación", () => {
 
   it("conserva instrumento, orden, dimensión y dominio al responder", () => {
     const onAnswer = vi.fn();
+    const onNext = vi.fn();
     render(
       <WebDirectQuestionScreen
         form="B"
@@ -103,11 +128,13 @@ describe("recorrido WEB_DIRECT por asignación", () => {
         answers={{}}
         onAnswer={onAnswer}
         onPrevious={() => undefined}
-        onNext={() => undefined}
+        onNext={onNext}
       />,
     );
 
     expect(screen.getByRole("heading", { name: "Primera pregunta" })).toBeInTheDocument();
+    expect(screen.getByText("Texto de apoyo específico para esta pregunta.")).toBeInTheDocument();
+    expect(screen.queryByText("Selecciona la opción que mejor refleje tu experiencia.")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "Siempre" }));
     expect(onAnswer).toHaveBeenCalledWith({
       questionId: 10,
@@ -117,5 +144,6 @@ describe("recorrido WEB_DIRECT por asignación", () => {
       dimensionCode: "demandas_ambientales_esfuerzo",
       domainCode: "demandas_del_trabajo",
     });
+    expect(onNext).toHaveBeenCalledWith(expect.objectContaining({ questionId: 10, order: 1 }));
   });
 });

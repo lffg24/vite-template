@@ -7,6 +7,7 @@ import { WebDirectIdentificationScreen } from "./WebDirectIdentificationScreen";
 import { WebDirectInstructionsScreen } from "./WebDirectInstructionsScreen";
 import { WebDirectTrainingScreen } from "./WebDirectTrainingScreen";
 import { WebDirectWelcomeScreen } from "./WebDirectWelcomeScreen";
+import { WebDirectSupportProvider } from "./WebDirectSupportContext";
 
 const context = {
   companyName: "Empresa de prueba",
@@ -16,6 +17,11 @@ const context = {
     email: "maria@example.com",
     phone: "+57 300 000 0000",
   },
+  company: {
+    name: "Empresa de prueba",
+    email: "bienestar@empresa.com",
+    phone: "+57 601 555 0101",
+  },
 };
 
 describe("flujo público WEB_DIRECT", () => {
@@ -24,7 +30,8 @@ describe("flujo público WEB_DIRECT", () => {
     render(<WebDirectWelcomeScreen context={context} onStart={onStart} />);
 
     expect(screen.getByRole("heading", { name: "Bienvenido a tu proceso de evaluación" })).toBeInTheDocument();
-    expect(screen.getByText(/Empresa de prueba te invita/i)).toBeInTheDocument();
+    expect(screen.getByText(/espacio seguro, privado y confidencial/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Empresa de prueba/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/nivel de riesgo/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Comenzar/i }));
     expect(onStart).toHaveBeenCalledOnce();
@@ -34,6 +41,19 @@ describe("flujo público WEB_DIRECT", () => {
     render(<WebDirectWelcomeScreen context={context} onStart={() => undefined} />);
     expect(screen.getByRole("link", { name: "maria@example.com" })).toHaveAttribute("href", "mailto:maria@example.com");
     expect(screen.getByRole("link", { name: "+57 300 000 0000" })).toHaveAttribute("href", "tel:+57 300 000 0000");
+  });
+
+  it("abre el centro de ayuda con los canales registrados del profesional y la empresa", () => {
+    render(
+      <WebDirectSupportProvider value={context}>
+        <WebDirectWelcomeScreen context={context} onStart={() => undefined} />
+      </WebDirectSupportProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir centro de ayuda" }));
+    expect(screen.getByText("Centro de ayuda")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "bienestar@empresa.com" })).toHaveAttribute("href", "mailto:bienestar@empresa.com");
+    expect(screen.getByRole("link", { name: "+57 601 555 0101" })).toHaveAttribute("href", "tel:+57 601 555 0101");
   });
 
   it("valida campos obligatorios antes de entregar la identificación", () => {
@@ -63,12 +83,26 @@ describe("flujo público WEB_DIRECT", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Tipo de documento"), { target: { value: "CC" } });
+    fireEvent.click(screen.getByRole("combobox", { name: "Tipo de documento" }));
+    fireEvent.click(screen.getByRole("option", { name: "Cédula de ciudadanía" }));
     fireEvent.change(screen.getByLabelText("Número de documento"), { target: { value: "123456789" } });
-    fireEvent.change(screen.getByLabelText("Fecha de nacimiento"), { target: { value: "1990-05-12" } });
+    fireEvent.click(screen.getByRole("button", { name: "Fecha de nacimiento" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "Año" }));
+    fireEvent.click(screen.getByRole("option", { name: "1990" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "Mes" }));
+    fireEvent.click(screen.getByRole("option", { name: "mayo" }));
+    fireEvent.click(screen.getByRole("gridcell", { name: /12 de mayo de 1990/i }));
     fireEvent.submit(screen.getByRole("button", { name: /Validar y continuar/i }).closest("form")!);
 
     expect(onSubmit).toHaveBeenCalledWith({ documentType: "CC", documentNumber: "123456789", birthDate: "1990-05-12" });
+  }, 15_000);
+
+  it("descarta caracteres del número de documento", () => {
+    render(
+      <WebDirectIdentificationScreen context={context} onBack={() => undefined} onSubmit={() => undefined} />,
+    );
+    fireEvent.change(screen.getByLabelText("Número de documento"), { target: { value: "12A.34-56" } });
+    expect(screen.getByLabelText("Número de documento")).toHaveValue("123456");
   });
 
   it("mantiene bloqueada la capacitación hasta que el contenido esté completado", () => {

@@ -4,6 +4,7 @@ import { requestPublicJson } from "./httpClient";
 import {
   getWebDirectSessionContent,
   identifyWebDirectParticipant,
+  searchWebDirectMunicipalities,
   submitWebDirectAttempt,
 } from "./psicoWebDirectPublicService";
 import { createWebDirectAttemptState } from "../web-direct";
@@ -20,7 +21,7 @@ describe("psicoWebDirectPublicService", () => {
 
     await identifyWebDirectParticipant("public-token", {
       documentType: "CE",
-      documentNumber: "A-12345",
+      documentNumber: "12345",
       birthDate: "1990-05-12",
     });
 
@@ -28,7 +29,7 @@ describe("psicoWebDirectPublicService", () => {
       method: "POST",
       body: JSON.stringify({
         tipo_documento: "CE",
-        numero_documento: "A-12345",
+        numero_documento: "12345",
         fecha_nacimiento: "1990-05-12",
       }),
     });
@@ -43,6 +44,7 @@ describe("psicoWebDirectPublicService", () => {
         ocupacion_profesion: "Ingeniera industrial",
         cargo: "Coordinadora HSEQ",
       },
+      areas_disponibles: ["Operaciones", "Talento Humano"],
       instrumentos: [
         {
           evaluacion_id: 31,
@@ -68,7 +70,19 @@ describe("psicoWebDirectPublicService", () => {
     expect(result.instruments.PSICO_INTRA_B?.questions[0]).toMatchObject({ dimensionCode: "liderazgo", domainCode: "relaciones" });
     expect(result.demographics.ocupacion_profesion).toBe("Ingeniera industrial");
     expect(result.demographics.cargo).toBe("Coordinadora HSEQ");
+    expect(result.areaOptions).toEqual(["Operaciones", "Talento Humano"]);
     expect(request).toHaveBeenCalledWith("/public/psychosocial/session/content", {
+      headers: { Authorization: "Bearer temporary-session" },
+    });
+  });
+
+  it("busca municipios con la sesión pública y conserva el departamento", async () => {
+    request.mockResolvedValue({ ok: true, items: [{ id: 1, municipio: "Bogotá, D.C.", departamento: "Bogotá, D.C." }] });
+
+    const result = await searchWebDirectMunicipalities("temporary-session", "bogo");
+
+    expect(result[0]).toMatchObject({ municipio: "Bogotá, D.C.", departamento: "Bogotá, D.C." });
+    expect(request).toHaveBeenCalledWith("/public/psychosocial/session/municipios?q=bogo", {
       headers: { Authorization: "Bearer temporary-session" },
     });
   });

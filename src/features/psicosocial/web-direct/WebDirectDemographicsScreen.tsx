@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 import { WebDirectContentFrame } from "./WebDirectContentFrame";
-import type { WebDirectDemographicSection, WebDirectDemographicValues } from "./types";
+import { FieldError, WebDirectMunicipalityField, WebDirectSelectField } from "./WebDirectFieldControls";
+import type { WebDirectDemographicSection, WebDirectDemographicValues, WebDirectMunicipality } from "./types";
 
 type WebDirectDemographicsScreenProps = {
   sections: WebDirectDemographicSection[];
@@ -17,6 +18,7 @@ type WebDirectDemographicsScreenProps = {
   onContinue: (values: WebDirectDemographicValues) => void;
   loading?: boolean;
   error?: string | null;
+  onMunicipalitySearch?: (query: string) => Promise<WebDirectMunicipality[]>;
 };
 
 export function WebDirectDemographicsScreen({
@@ -27,6 +29,7 @@ export function WebDirectDemographicsScreen({
   onContinue,
   loading = false,
   error,
+  onMunicipalitySearch = async () => [],
 }: WebDirectDemographicsScreenProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -83,42 +86,59 @@ export function WebDirectDemographicsScreen({
                 {section.fields.map((field) => {
                   const fieldId = `web-direct-demographic-${field.id}`;
                   const errorId = `${fieldId}-error`;
-                  const commonClass = cn("h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", fieldErrors[field.id] && "border-destructive");
                   return (
-                    <div key={field.id}>
-                      <Label htmlFor={fieldId} className="font-bold">
-                        {field.label}{field.required ? <span className="ml-1 text-primary" aria-hidden="true">*</span> : null}
-                      </Label>
+                    <div key={field.id} className="min-w-0">
                       {field.type === "select" ? (
-                        <select
+                        <WebDirectSelectField
                           id={fieldId}
+                          label={field.label}
                           value={values[field.id] ?? ""}
-                          onChange={(event) => updateValue(field.id, event.target.value)}
-                          required={field.required}
-                          aria-invalid={Boolean(fieldErrors[field.id])}
-                          aria-describedby={fieldErrors[field.id] ? errorId : undefined}
-                          className={cn(commonClass, "mt-2")}
-                        >
-                          <option value="">{field.placeholder ?? "Selecciona una opción"}</option>
-                          {(field.options ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                        </select>
-                      ) : (
-                        <Input
-                          id={fieldId}
-                          type={field.type}
-                          value={values[field.id] ?? ""}
-                          onChange={(event) => updateValue(field.id, event.target.value)}
+                          options={field.options ?? []}
                           placeholder={field.placeholder}
-                          autoComplete={field.autoComplete}
-                          min={field.min}
-                          max={field.max}
                           required={field.required}
-                          aria-invalid={Boolean(fieldErrors[field.id])}
-                          aria-describedby={fieldErrors[field.id] ? errorId : undefined}
-                          className="mt-2"
+                          error={fieldErrors[field.id]}
+                          onChange={(value) => updateValue(field.id, value)}
                         />
+                      ) : field.type === "municipality" ? (
+                        <WebDirectMunicipalityField
+                          id={fieldId}
+                          label={field.label}
+                          value={values[field.id] ?? ""}
+                          required={field.required}
+                          error={fieldErrors[field.id]}
+                          onSearch={onMunicipalitySearch}
+                          onSelect={(item) => {
+                            onValuesChange({
+                              ...values,
+                              [field.id]: item.municipio,
+                              ...(field.departmentFieldId ? { [field.departmentFieldId]: item.departamento ?? "" } : {}),
+                            });
+                            setFieldErrors((current) => ({ ...current, [field.id]: "" }));
+                          }}
+                        />
+                      ) : (
+                        <>
+                          <Label htmlFor={fieldId} className="font-bold">
+                            {field.label}{field.required ? <span className="ml-1 text-primary" aria-hidden="true">*</span> : null}
+                          </Label>
+                          <Input
+                            id={fieldId}
+                            type={field.type}
+                            value={values[field.id] ?? ""}
+                            readOnly={field.readOnly}
+                            onChange={(event) => updateValue(field.id, event.target.value)}
+                            placeholder={field.placeholder}
+                            autoComplete={field.autoComplete}
+                            min={field.min}
+                            max={field.max}
+                            required={field.required}
+                            aria-invalid={Boolean(fieldErrors[field.id])}
+                            aria-describedby={fieldErrors[field.id] ? errorId : undefined}
+                            className={cn("mt-2", field.readOnly && "bg-muted/60 text-muted-foreground")}
+                          />
+                          {fieldErrors[field.id] ? <FieldError id={errorId}>{fieldErrors[field.id]}</FieldError> : null}
+                        </>
                       )}
-                      {fieldErrors[field.id] ? <p id={errorId} className="mt-2 text-sm font-semibold text-destructive">{fieldErrors[field.id]}</p> : null}
                     </div>
                   );
                 })}

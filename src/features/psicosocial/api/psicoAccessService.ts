@@ -61,6 +61,13 @@ export type WebDirectConfigurationResponse = {
   public_url: string;
 };
 
+export type WebDirectParticipantAssignmentResponse = {
+  ok: boolean;
+  aplicacion_id: number;
+  empleado_id: number;
+  forma_asignada: "A" | "B";
+};
+
 export type WebDirectStatusResponse = {
   ok: boolean;
   configurado: boolean;
@@ -68,6 +75,7 @@ export type WebDirectStatusResponse = {
   enlace_generado_en: string | null;
   datos_certificados_en: string | null;
   participantes_habilitados: number;
+  public_url?: string | null;
 };
 
 export type WebDirectBulkPreviewRow = {
@@ -173,6 +181,29 @@ export async function configureWebDirectAccess(
     const err = new Error(detail) as Error & { status?: number };
     err.status = res.status;
     throw err;
+  }
+  return res.json();
+}
+
+export async function assignWebDirectParticipant(
+  applicationId: number,
+  participant: WebDirectParticipantConfiguration,
+): Promise<WebDirectParticipantAssignmentResponse> {
+  const res = await fetch(
+    `${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/participants`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: jsonHeaders(),
+      body: JSON.stringify(participant),
+    },
+  );
+  if (!res.ok) {
+    const detail = await parseApiError(
+      res,
+      `No fue posible asignar el formulario web (${res.status})`,
+    );
+    throw new Error(detail);
   }
   return res.json();
 }
