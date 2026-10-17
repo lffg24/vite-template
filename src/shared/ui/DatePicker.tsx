@@ -41,6 +41,8 @@ export type DatePickerProps = {
   min?: string;
   max?: string;
   disabled?: boolean;
+  required?: boolean;
+  describedBy?: string;
 };
 
 /** Selector común de fecha para módulos actuales y futuros de ABRIL360. */
@@ -54,6 +56,8 @@ export function DatePicker({
   min,
   max,
   disabled = false,
+  required = false,
+  describedBy,
 }: DatePickerProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -88,15 +92,21 @@ export function DatePicker({
 
   return (
     <div className="space-y-1.5">
-      {!hideLabel ? <Label htmlFor={inputId} className="text-rel-dark">{label}</Label> : null}
+      {!hideLabel ? (
+        <Label htmlFor={inputId} className="text-rel-dark">
+          {label}
+          {required ? <span className="ml-1 text-rel-primary" aria-hidden="true">*</span> : null}
+        </Label>
+      ) : null}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             id={inputId}
             type="button"
             disabled={disabled}
+            aria-required={required || undefined}
             aria-invalid={Boolean(error)}
-            aria-describedby={error ? `${inputId}-error` : undefined}
+            aria-describedby={describedBy ?? (error ? `${inputId}-error` : undefined)}
             className={cn(
               "flex h-10 w-full items-center justify-between rounded-rel-control border bg-rel-surface px-3 text-left text-sm outline-none transition",
               "focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
@@ -134,7 +144,11 @@ export function DatePicker({
           <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-rel-muted">
             {WEEK.map((day) => <span key={day} className="py-1">{day}</span>)}
           </div>
-          <div className="mt-1 grid grid-cols-7 gap-1">
+          <div
+            className="mt-1 grid grid-cols-7 gap-1"
+            role="grid"
+            aria-label={`${MONTHS[view.getMonth()]} de ${view.getFullYear()}`}
+          >
             {days.map((day) => {
               const iso = isoLocal(day);
               const active = value === iso;
@@ -144,10 +158,12 @@ export function DatePicker({
               return (
                 <button
                   type="button"
+                  role="gridcell"
                   key={iso}
                   disabled={blocked}
                   aria-label={new Intl.DateTimeFormat("es-CO", { dateStyle: "long" }).format(day)}
                   aria-current={today ? "date" : undefined}
+                  aria-selected={active}
                   onClick={() => { onChange(iso); setOpen(false); }}
                   className={cn(
                     "h-9 rounded-rel-control text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary",

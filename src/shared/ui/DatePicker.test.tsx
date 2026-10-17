@@ -18,8 +18,8 @@ describe("DatePicker compartido", () => {
 
     expect(screen.getByRole("combobox", { name: "Mes" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Año" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /15 de septiembre de 2026/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /16 de septiembre de 2026/i })).toBeEnabled();
+    expect(screen.getByRole("gridcell", { name: /15 de septiembre de 2026/i })).toBeDisabled();
+    expect(screen.getByRole("gridcell", { name: /16 de septiembre de 2026/i })).toBeEnabled();
   });
 
   it("devuelve la fecha elegida en formato estable", () => {
@@ -34,7 +34,7 @@ describe("DatePicker compartido", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /fecha objetivo/i }));
-    fireEvent.click(screen.getByRole("button", { name: /20 de septiembre de 2026/i }));
+    fireEvent.click(screen.getByRole("gridcell", { name: /20 de septiembre de 2026/i }));
     expect(onChange).toHaveBeenCalledWith("2026-09-20");
   });
 });

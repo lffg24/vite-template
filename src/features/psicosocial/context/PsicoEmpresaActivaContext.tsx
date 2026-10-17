@@ -3,8 +3,11 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import {
   EmpresaAsignada,
   CrearEmpresaPsicoPayload,
+  DISABLED_PSICO_FEATURE_FLAGS,
+  type PsicoFeatureFlags,
   crearEmpresaPsicologo,
   getEmpresasAsignadasResponse,
+  getPsicoFeatureFlags,
 } from "@/features/psicosocial/api/psicoAccessService";
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,6 +18,7 @@ type PsicoEmpresaContextValue = {
   errorStatus?: number;
   onboardingRequired: boolean;
   message?: string | null;
+  featureFlags: PsicoFeatureFlags;
   recargarEmpresas: () => Promise<void>;
   crearEmpresa: (payload: CrearEmpresaPsicoPayload) => Promise<EmpresaAsignada>;
 };
@@ -29,6 +33,7 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
   const [errorStatus, setErrorStatus] = useState<number | undefined>();
   const [onboardingRequired, setOnboardingRequired] = useState(false);
   const [message, setMessage] = useState<string | null | undefined>();
+  const [featureFlags, setFeatureFlags] = useState<PsicoFeatureFlags>(DISABLED_PSICO_FEATURE_FLAGS);
 
   const recargarEmpresas = async () => {
     if (passwordChangeRequired) {
@@ -37,6 +42,7 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
       setErrorStatus(undefined);
       setOnboardingRequired(false);
       setMessage(null);
+      setFeatureFlags(DISABLED_PSICO_FEATURE_FLAGS);
       setLoading(false);
       return;
     }
@@ -44,15 +50,20 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
     setError(undefined);
     setErrorStatus(undefined);
     try {
-      const response = await getEmpresasAsignadasResponse();
+      const [response, loadedFeatureFlags] = await Promise.all([
+        getEmpresasAsignadasResponse(),
+        getPsicoFeatureFlags().catch(() => DISABLED_PSICO_FEATURE_FLAGS),
+      ]);
       const list = response.empresas ?? [];
       setEmpresas(list);
+      setFeatureFlags(loadedFeatureFlags);
       setOnboardingRequired(Boolean(response.onboarding_required ?? list.length === 0));
       setMessage(response.message ?? null);
     } catch (err) {
       const status = (err as Error & { status?: number })?.status;
       setErrorStatus(status);
       setEmpresas([]);
+      setFeatureFlags(DISABLED_PSICO_FEATURE_FLAGS);
       if (status === 403 && err instanceof Error && err.message === "PASSWORD_CHANGE_REQUIRED") {
         setError(undefined);
         setOnboardingRequired(false);
@@ -94,10 +105,11 @@ export function PsicoEmpresaActivaProvider({ children }: { children: React.React
       errorStatus,
       onboardingRequired,
       message,
+      featureFlags,
       recargarEmpresas,
       crearEmpresa,
     }),
-    [empresas, loading, error, errorStatus, onboardingRequired, message]
+    [empresas, loading, error, errorStatus, onboardingRequired, message, featureFlags]
   );
 
   return <PsicoEmpresaActivaContext.Provider value={value}>{children}</PsicoEmpresaActivaContext.Provider>;

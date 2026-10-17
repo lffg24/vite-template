@@ -15,6 +15,7 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
+        accent: "border-transparent bg-accent text-accent-foreground",
         // Semantica de estado REL. Separada de la marca a proposito (§5): el
         // turquesa corporativo no significa "exito" ni el azul "informacion".
         relSuccess:

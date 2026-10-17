@@ -38,6 +38,20 @@ import pdf from "@/assets/ilustraciones/pdf.webp";
 import satisfactorio from "@/assets/ilustraciones/satisfactorio.webp";
 import seguridadBloqueo from "@/assets/ilustraciones/seguridad-bloqueo.webp";
 import seguridadUsuario from "@/assets/ilustraciones/seguridad-usuario.webp";
+import psicoWebBienvenida from "@/assets/ilustraciones/psico-web/bienvenida.webp";
+import psicoWebCapacitacion from "@/assets/ilustraciones/psico-web/capacitacion.webp";
+import psicoWebCompartirQr from "@/assets/ilustraciones/psico-web/compartir-qr-link.webp";
+import psicoWebConsentimiento from "@/assets/ilustraciones/psico-web/consentimiento.webp";
+import psicoWebDatosGenerales from "@/assets/ilustraciones/psico-web/datos-generales.webp";
+import psicoWebDeclaracion from "@/assets/ilustraciones/psico-web/declaracion.webp";
+import psicoWebEnvioCompletado from "@/assets/ilustraciones/psico-web/envio-completado.webp";
+import psicoWebIdentificacion from "@/assets/ilustraciones/psico-web/identificacion.webp";
+import psicoWebInstrumento from "@/assets/ilustraciones/psico-web/instrumento.webp";
+import psicoWebInstrumentoCompletado from "@/assets/ilustraciones/psico-web/instrumento-completado.webp";
+import psicoWebInstructivo from "@/assets/ilustraciones/psico-web/instructivo.webp";
+import psicoWebRecorrido from "@/assets/ilustraciones/psico-web/recorrido.webp";
+import psicoWebResumen from "@/assets/ilustraciones/psico-web/resumen.webp";
+import recuperacionAcceso from "@/assets/password-recovery-sent.png";
 
 // Ilustraciones 2026-09-17: evaluación, evidencia, auditoría y soporte.
 // Cuadradas (640×640) y sin recortar: el fuente no se reencuadra.
@@ -147,6 +161,21 @@ export const illustrationRegistry = {
   satisfactorio: { src: satisfactorio, variant: "spot" },
   "seguridad-bloqueo": { src: seguridadBloqueo, variant: "spot" },
   "seguridad-usuario": { src: seguridadUsuario, variant: "editorial" },
+  // --- PSICOSOCIAL WEB DIRECTO --------------------------------------------
+  psicoWebBienvenida: { src: psicoWebBienvenida, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebCapacitacion: { src: psicoWebCapacitacion, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebCompartirQr: { src: psicoWebCompartirQr, variant: "spot", aspectRatio: "4 / 3" },
+  psicoWebConsentimiento: { src: psicoWebConsentimiento, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebDatosGenerales: { src: psicoWebDatosGenerales, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebDeclaracion: { src: psicoWebDeclaracion, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebEnvioCompletado: { src: psicoWebEnvioCompletado, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebIdentificacion: { src: psicoWebIdentificacion, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebInstrumento: { src: psicoWebInstrumento, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebInstrumentoCompletado: { src: psicoWebInstrumentoCompletado, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebInstructivo: { src: psicoWebInstructivo, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebRecorrido: { src: psicoWebRecorrido, variant: "hero", aspectRatio: "4 / 3" },
+  psicoWebResumen: { src: psicoWebResumen, variant: "hero", aspectRatio: "4 / 3" },
+  recuperacionAcceso: { src: recuperacionAcceso, variant: "spot", aspectRatio: "4 / 3" },
   // --- 2026-09-17 · claves por intención ----------------------------------
   courseApproved: { src: courseApprovedSrc, variant: "editorial", aspectRatio: "1 / 1" },
   trainingScheduled: { src: trainingScheduledSrc, variant: "editorial", aspectRatio: "1 / 1" },

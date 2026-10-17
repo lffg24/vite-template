@@ -51,6 +51,11 @@ export type EmpleadoEmpresa = {
   id: number;
   cedula: string;
   nombre: string;
+  nombres?: string;
+  apellidos?: string;
+  identificador_externo?: string;
+  fecha_nacimiento?: string | null;
+  sexo?: string | null;
   cargo: string;
   area: string;
   email?: string;
@@ -69,6 +74,7 @@ export type CrearEmpleadoPayload = {
   email?: string;
   telefono?: string;
   identificador_externo?: string;
+  fecha_nacimiento?: string;
 };
 
 export type EmpleadoImportError = {
@@ -149,6 +155,11 @@ export type PsicoApplicationCreditSummary = {
 };
 
 export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
+  web_direct_assignment?: {
+    forma_asignada?: "A" | "B" | null;
+    fecha_nacimiento?: string | null;
+    habilitado: boolean;
+  } | null;
   registrado: boolean;
   completo?: boolean;
   instrumentos_registrados: string[];

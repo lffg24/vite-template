@@ -78,6 +78,13 @@
     --radius-lg: 1rem;
     --radius-xl: 1.25rem;
 
+    --illustration-size-xs: 5rem;
+    --illustration-size-sm: 8rem;
+    --illustration-size-md: 12rem;
+    --illustration-size-lg: clamp(14rem, 24vw, 20rem);
+    --illustration-size-xl: clamp(18rem, 32vw, 26rem);
+    --illustration-radius: var(--radius-lg);
+
     --motion-fast: 160ms;
     --motion-standard: 220ms;
     --motion-slow: 300ms;

@@ -56,7 +56,9 @@ export function IllustratedFormSheet({
           </IllustrationSurface>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 sm:px-7">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-7">
+        {children}
+      </div>
     </SheetContent>
   );
 }

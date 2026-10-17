@@ -20,6 +20,7 @@ const Logout = lazy(() => import("@/pages/Logout"));
 const SinAcceso = lazy(() => import("@/pages/SinAcceso"));
 const ResponderEvaluacion = lazy(() => import("@/pages/ResponderEvaluacion"));
 const RecursosAbril360Page = lazy(() => import("@/pages/RecursosAbril360Page"));
+const WebDirectPublicPage = lazy(() => import("@/pages/psicosocial/WebDirectPublicPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -107,6 +108,7 @@ function App() {
           <Route path="/recursos/ficha-tecnica" element={<RecursosAbril360Page page="ficha-tecnica" />} />
           <Route path="/recursos/seguridad-cumplimiento" element={<RecursosAbril360Page page="seguridad-cumplimiento" />} />
           <Route path="/recursos/certificacion" element={<RecursosAbril360Page page="certificacion" />} />
+          <Route path="/public/psychosocial/:publicToken" element={<WebDirectPublicPage />} />
 
           {/* Recorrido público del participante. Fuera de `ProtectedRoute` a
               propósito: su único público es gente sin cuenta, y exigirles sesión

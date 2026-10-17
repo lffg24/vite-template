@@ -32,7 +32,11 @@ async function parseError(res: Response): Promise<{ message: string; detail?: un
   }
 }
 
-export async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function requestJsonWithPolicy<T>(
+  path: string,
+  init: RequestInit,
+  emitUnauthorized: boolean,
+): Promise<T> {
   const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
   const headers: HeadersInit = {
     Accept: "application/json",
@@ -48,10 +52,19 @@ export async function requestJson<T>(path: string, init: RequestInit = {}): Prom
 
   if (!res.ok) {
     const { message, detail } = await parseError(res);
-    if (res.status === 401) emitSessionExpired();
+    if (res.status === 401 && emitUnauthorized) emitSessionExpired();
     throw new AbrilApiError(message, res.status, detail);
   }
 
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
+}
+
+export async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return requestJsonWithPolicy<T>(path, init, true);
+}
+
+/** Solicitudes de enlaces públicos que no dependen de la sesión del panel. */
+export async function requestPublicJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return requestJsonWithPolicy<T>(path, init, false);
 }
