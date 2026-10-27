@@ -78,6 +78,27 @@ export type EmpleadoDeletionPreview = {
   total_registros: number;
 };
 
+export type EmpresaDeletionApplication = {
+  id: number;
+  nombre: string;
+  estado: string;
+  estado_label: string;
+  colaboradores_registrados: number;
+};
+
+export type EmpresaDeletionPreview = {
+  ok: boolean;
+  empresa: { id: string; nombre: string; nit?: string | null };
+  bloqueada: boolean;
+  puede_eliminar: boolean;
+  aplicaciones_finalizadas: EmpresaDeletionApplication[];
+  aplicaciones_en_curso: EmpresaDeletionApplication[];
+  total_colaboradores: number;
+  colaboradores_registrados: Array<{ id: number; nombre: string; documento?: string | null }>;
+  creditos_consumidos: number;
+  creditos_no_restituidos: boolean;
+};
+
 export type CrearEmpleadoPayload = {
   nombres: string;
   apellidos: string;
@@ -228,6 +249,17 @@ export const psicoAdminService = {
         headers: { "X-Empresa-Id": empresaId },
         body: JSON.stringify(payload),
       },
+    ),
+
+  previewEliminarEmpresa: (empresaId: string) =>
+    requestJson<EmpresaDeletionPreview>(`/psicosocial/admin/empresas/${empresaId}/eliminacion-preview`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  eliminarEmpresa: (empresaId: string) =>
+    requestJson<{ ok: boolean; deleted_empresa_id: string; message: string; creditos_consumidos_no_restituidos: number }>(
+      `/psicosocial/admin/empresas/${empresaId}?confirm=true`,
+      { method: "DELETE", headers: { "X-Empresa-Id": empresaId } },
     ),
 
   listarAreas: (empresaId: string, includeInactive = false) =>

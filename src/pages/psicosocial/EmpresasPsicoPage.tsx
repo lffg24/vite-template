@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { AlertCircle, BarChart3, Building2, ClipboardList, Eye, Loader2, Plus, Search, Users, X } from "lucide-react";
+import { AlertCircle, BarChart3, Building2, ClipboardList, Eye, Loader2, Plus, Search, Trash2, TriangleAlert, Users, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmpresaAsignada } from "@/features/psicosocial/api/psicoAccessService";
 import { usePsicoEmpresaActiva } from "@/features/psicosocial/context/PsicoEmpresaActivaContext";
+import { EmpresaDeletionPreview, psicoAdminService } from "@/features/psicosocial/api/psicoAdminService";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 function n(value: unknown) {
   const num = Number(value ?? 0);
@@ -15,6 +18,10 @@ export default function EmpresasPsicoPage() {
   const { empresas, loading, error, errorStatus, onboardingRequired, message, crearEmpresa, recargarEmpresas } = usePsicoEmpresaActiva();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [empresaToDelete, setEmpresaToDelete] = useState<EmpresaAsignada | null>(null);
+  const [deletionPreview, setDeletionPreview] = useState<EmpresaDeletionPreview | null>(null);
+  const [deletionLoading, setDeletionLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -50,18 +57,63 @@ export default function EmpresasPsicoPage() {
           <div className="overflow-hidden rounded-2xl border border-slate-200">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Empresa</th><th className="px-4 py-3">Rol / Permisos</th><th className="px-4 py-3">Empleados</th><th className="px-4 py-3">Aplicaciones</th><th className="px-4 py-3">Resultados</th><th className="px-4 py-3 text-right">Acciones</th></tr></thead>
-              <tbody className="divide-y divide-slate-100">{filtered.map((e) => <EmpresaRow key={e.empresa_id} empresa={e} onView={() => navigate(`/psicosocial/empresas/${e.empresa_id}`)} />)}</tbody>
+              <tbody className="divide-y divide-slate-100">{filtered.map((e) => <EmpresaRow key={e.empresa_id} empresa={e} onView={() => navigate(`/psicosocial/empresas/${e.empresa_id}`)} onDelete={() => void openDeletionDialog(e)} />)}</tbody>
             </table>
           </div>
         )}
       </section>
 
       <CrearEmpresaDrawer open={open} onClose={() => setOpen(false)} onCreate={async (payload) => { const result = await crearEmpresa(payload); setOpen(false); const empresaId = result?.empresa_id; if (empresaId) navigate(`/psicosocial/empresas/${empresaId}`); }} />
+      <AlertDialog open={Boolean(empresaToDelete)} onOpenChange={(next) => { if (!next && !deletionLoading && !deleting) closeDeletionDialog(); }}>
+        <AlertDialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-[28px] border-slate-200 p-6 sm:max-w-2xl">
+          <AlertDialogHeader>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-destructive">Eliminar empresa</p>
+            <AlertDialogTitle className="font-heading text-2xl font-black text-foreground">{empresaToDelete?.nombre}</AlertDialogTitle>
+            <AlertDialogDescription className="leading-6">Se eliminarán los colaboradores y las aplicaciones que estén en curso. Esta acción nunca restaura créditos ya consumidos.</AlertDialogDescription>
+          </AlertDialogHeader>
+          {deletionLoading && <div className="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-semibold text-slate-700"><Loader2 className="h-5 w-5 animate-spin text-brand-sky" /> Validando aplicaciones y registros…</div>}
+          {!deletionLoading && deletionPreview?.bloqueada && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="font-heading font-black text-amber-950">La eliminación está bloqueada</p><p className="mt-1 text-sm leading-6 text-amber-900">Hay baterías finalizadas. Conservamos esos resultados y por eso la empresa no puede eliminarse.</p></div></div><ApplicationList title="Baterías finalizadas" items={deletionPreview.aplicaciones_finalizadas} /></div>}
+          {!deletionLoading && deletionPreview?.puede_eliminar && <div className="space-y-3 rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm leading-6 text-slate-800"><p className="font-heading font-black text-foreground">Confirmación requerida</p><p>Se eliminarán {deletionPreview.aplicaciones_en_curso.length} aplicación(es) en curso y {deletionPreview.total_colaboradores} colaborador(es) registrado(s).</p><ApplicationList title="Aplicaciones que se eliminarán" items={deletionPreview.aplicaciones_en_curso} /><p className="rounded-xl border border-amber-200 bg-amber-50 p-3 font-semibold text-amber-950">Los {deletionPreview.creditos_consumidos} crédito(s) ya consumido(s) no se restauran.</p></div>}
+          {!deletionLoading && !deletionPreview && <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">No fue posible validar la eliminación. Cierra el modal e inténtalo nuevamente.</div>}
+          <AlertDialogFooter className="gap-3 sm:gap-3"><AlertDialogCancel disabled={deletionLoading || deleting} className="rounded-2xl">Cancelar</AlertDialogCancel>{deletionPreview?.puede_eliminar && <Button type="button" variant="destructive" disabled={deleting} onClick={() => void confirmDeletion()} className="rounded-2xl">{deleting ? <Loader2 className="animate-spin" /> : <Trash2 />} Eliminar empresa</Button>}</AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
+  function closeDeletionDialog() {
+    setEmpresaToDelete(null);
+    setDeletionPreview(null);
+  }
+
+  async function openDeletionDialog(empresa: EmpresaAsignada) {
+    setEmpresaToDelete(empresa);
+    setDeletionPreview(null);
+    setDeletionLoading(true);
+    try {
+      setDeletionPreview(await psicoAdminService.previewEliminarEmpresa(empresa.empresa_id));
+    } finally {
+      setDeletionLoading(false);
+    }
+  }
+
+  async function confirmDeletion() {
+    if (!empresaToDelete || !deletionPreview?.puede_eliminar) return;
+    setDeleting(true);
+    try {
+      await psicoAdminService.eliminarEmpresa(empresaToDelete.empresa_id);
+      closeDeletionDialog();
+      await recargarEmpresas();
+    } catch (error: any) {
+      const detail = error?.detail as EmpresaDeletionPreview | undefined;
+      if (error?.status === 409 && detail?.aplicaciones_finalizadas) setDeletionPreview(detail);
+    } finally {
+      setDeleting(false);
+    }
+  }
 }
 
-function EmpresaRow({ empresa, onView }: { empresa: EmpresaAsignada; onView: () => void }) {
+function EmpresaRow({ empresa, onView, onDelete }: { empresa: EmpresaAsignada; onView: () => void; onDelete: () => void }) {
   const empleados = n((empresa as any).empleados);
   const aplicaciones = n((empresa as any).aplicaciones);
   const resultados = n((empresa as any).resultados ?? (empresa as any).evaluaciones_calculadas);
@@ -72,9 +124,14 @@ function EmpresaRow({ empresa, onView }: { empresa: EmpresaAsignada; onView: () 
       <td className="px-4 py-4"><Metric icon={<Users className="h-4 w-4 text-brand-primary" />} value={empleados} /></td>
       <td className="px-4 py-4"><Metric icon={<ClipboardList className="h-4 w-4 text-brand-primary" />} value={aplicaciones} /></td>
       <td className="px-4 py-4"><Metric icon={<BarChart3 className="h-4 w-4 text-brand-primary" />} value={resultados} /></td>
-      <td className="px-4 py-4 text-right"><button onClick={onView} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><Eye className="h-4 w-4" /> Ver</button></td>
+      <td className="px-4 py-4 text-right"><div className="flex justify-end gap-2"><button onClick={onView} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 font-bold hover:bg-slate-50"><Eye className="h-4 w-4" /> Ver</button><button onClick={onDelete} className="inline-flex items-center gap-2 rounded-xl border border-destructive/25 px-3 py-2 font-bold text-destructive hover:bg-destructive/5" aria-label={`Eliminar ${empresa.nombre}`}><Trash2 className="h-4 w-4" /><span className="sr-only sm:not-sr-only">Eliminar</span></button></div></td>
     </tr>
   );
+}
+
+function ApplicationList({ title, items }: { title: string; items: EmpresaDeletionPreview["aplicaciones_en_curso"] }) {
+  if (!items.length) return null;
+  return <div className="mt-3"><p className="text-xs font-black uppercase tracking-wide text-slate-600">{title}</p><ul className="mt-2 max-h-40 space-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-3 text-sm">{items.map((item) => <li key={item.id} className="flex items-center justify-between gap-3"><span className="font-semibold text-slate-800">{item.nombre}</span><span className="shrink-0 text-slate-500">{item.estado_label}</span></li>)}</ul></div>;
 }
 
 function Metric({ icon, value }: { icon: ReactNode; value: number }) { return <span className="inline-flex items-center gap-2 font-black text-slate-950">{icon}{value.toLocaleString("es-CO")}</span>; }
