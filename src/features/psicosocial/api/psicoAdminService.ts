@@ -195,6 +195,7 @@ export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
     forma_asignada?: "A" | "B" | null;
     fecha_nacimiento?: string | null;
     habilitado: boolean;
+    respondio_por_enlace?: boolean;
   } | null;
   registrado: boolean;
   completo?: boolean;

@@ -6,6 +6,7 @@ import {
   participantActionLabel,
   participantInstrumentChips,
   participantStatusLabel,
+  respondioPorEnlaceWeb,
   sortApplicationParticipants,
 } from "./AplicacionDetallePage";
 import { normalizeSocioOptions } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
@@ -121,6 +122,11 @@ describe("application participant status chips", () => {
     expect(participantStatusLabel({ registrado: false, completo: false })).toBe("Por tabular");
     expect(participantStatusLabel({ registrado: true, completo: false })).toBe("En captura");
     expect(participantStatusLabel({ registrado: true, completo: true })).toBe("Completo");
+  });
+
+  it("distingue una respuesta completada por enlace de una mera asignación web", () => {
+    expect(respondioPorEnlaceWeb({ web_direct_assignment: { habilitado: true, respondio_por_enlace: true } })).toBe(true);
+    expect(respondioPorEnlaceWeb({ web_direct_assignment: { habilitado: true, respondio_por_enlace: false } })).toBe(false);
   });
 
   it("ordena por defecto por estado y luego por nombre", () => {
