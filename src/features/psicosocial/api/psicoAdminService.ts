@@ -63,6 +63,21 @@ export type EmpleadoEmpresa = {
   activo?: boolean;
 };
 
+export type EmpleadoDeletionRecord = {
+  tipo: string;
+  label: string;
+  cantidad: number;
+};
+
+export type EmpleadoDeletionPreview = {
+  ok: boolean;
+  empleado: Pick<EmpleadoEmpresa, "id"> & { nombre: string; documento?: string | null };
+  bloqueada: boolean;
+  puede_eliminar: boolean;
+  registros: EmpleadoDeletionRecord[];
+  total_registros: number;
+};
+
 export type CrearEmpleadoPayload = {
   nombres: string;
   apellidos: string;
@@ -281,6 +296,17 @@ export const psicoAdminService = {
       method: "POST",
       headers: { "X-Empresa-Id": empresaId },
       body: JSON.stringify(payload),
+    }),
+
+  previewEliminarEmpleado: (empresaId: string, empleadoId: number) =>
+    requestJson<EmpleadoDeletionPreview>(`/psicosocial/admin/empresas/${empresaId}/empleados/${empleadoId}/eliminacion-preview`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  eliminarEmpleado: (empresaId: string, empleadoId: number) =>
+    requestJson<{ ok: boolean; deleted_id: number; message: string }>(`/psicosocial/admin/empresas/${empresaId}/empleados/${empleadoId}?confirm=true`, {
+      method: "DELETE",
+      headers: { "X-Empresa-Id": empresaId },
     }),
 
   importarEmpleados: (empresaId: string, file: File, dryRun = true) => {

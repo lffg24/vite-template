@@ -1,16 +1,19 @@
 import type { ReactNode } from "react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, CloudUpload, Download, FileDown, FileSpreadsheet, Info, Loader2, Plus, Search, ShieldCheck, Table2, TriangleAlert, Upload, UserRound, UsersRound, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, CloudUpload, Download, FileDown, FileSpreadsheet, Info, Loader2, Plus, Search, ShieldCheck, Table2, Trash2, TriangleAlert, Upload, UserRound, UsersRound, X } from "lucide-react";
 import {
   AreaEmpresa,
   CargoEmpresa,
   CrearEmpleadoPayload,
+  EmpleadoDeletionPreview,
   EmpleadoEmpresa,
   EmpleadoImportResponse,
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 
 type FormState = { nombres: string; apellidos: string; cedula: string; identificador_externo: string; email: string; telefono: string; area_id: string; cargo_id: string };
@@ -64,6 +67,10 @@ export default function EmpresaEmpleadosPage() {
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [bulkResult, setBulkResult] = useState<EmpleadoImportResponse | null>(null);
   const [bulkSaving, setBulkSaving] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<EmpleadoEmpresa | null>(null);
+  const [deletionPreview, setDeletionPreview] = useState<EmpleadoDeletionPreview | null>(null);
+  const [deletionLoading, setDeletionLoading] = useState(false);
+  const [deletingEmployee, setDeletingEmployee] = useState(false);
   const bulkRunId = useRef(0);
   const [toast, setToast] = useState<ToastPayload | null>(null);
   const [page, setPage] = useState(1);
@@ -199,6 +206,52 @@ export default function EmpresaEmpleadosPage() {
     resetBulk();
   };
 
+  const closeDeletionDialog = () => {
+    if (deletionLoading || deletingEmployee) return;
+    setEmployeeToDelete(null);
+    setDeletionPreview(null);
+  };
+
+  const openDeletionDialog = async (employee: EmpleadoEmpresa) => {
+    setEmployeeToDelete(employee);
+    setDeletionPreview(null);
+    setDeletionLoading(true);
+    try {
+      setDeletionPreview(await psicoAdminService.previewEliminarEmpleado(empresaId, employee.id));
+    } catch (e: any) {
+      notify({ type: "error", title: "No fue posible validar la eliminación", message: e?.message || "Intenta nuevamente." });
+    } finally {
+      setDeletionLoading(false);
+    }
+  };
+
+  const confirmEmployeeDeletion = async () => {
+    if (!employeeToDelete || !deletionPreview?.puede_eliminar) return;
+    setDeletingEmployee(true);
+    try {
+      await psicoAdminService.eliminarEmpleado(empresaId, employeeToDelete.id);
+      notify({ type: "success", title: "Colaborador eliminado", message: "El registro no tenía respuestas ni información asociada." });
+      setEmployeeToDelete(null);
+      setDeletionPreview(null);
+      await load();
+    } catch (e: any) {
+      const detail = e?.detail as Partial<EmpleadoDeletionPreview> | undefined;
+      if (e?.status === 409 && detail?.registros && employeeToDelete) {
+        setDeletionPreview({
+          ok: true,
+          empleado: { id: employeeToDelete.id, nombre: employeeToDelete.nombre, documento: employeeToDelete.cedula },
+          bloqueada: true,
+          puede_eliminar: false,
+          registros: detail.registros,
+          total_registros: Number(detail.total_registros || 0),
+        });
+      }
+      notify({ type: "warning", title: "El colaborador no fue eliminado", message: e?.message || "Tiene registros asociados." });
+    } finally {
+      setDeletingEmployee(false);
+    }
+  };
+
   const runBulkImport = async (dryRun: boolean, fileOverride?: File | null, runIdOverride?: number) => {
     const selectedFile = fileOverride ?? bulkFile;
     if (!selectedFile) {
@@ -286,10 +339,27 @@ export default function EmpresaEmpleadosPage() {
     <div className="mx-auto max-w-7xl space-y-6">
       <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm"><ArrowLeft className="h-4 w-4" /> Volver a empresa</button>
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-4"><div><h1 className="text-3xl font-black text-slate-950">Empleados</h1><p className="text-sm text-slate-500">Listado de colaboradores vinculados a esta empresa.</p></div><div className="flex flex-wrap gap-3"><button onClick={() => setOpenManual(true)} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover"><Plus className="h-4 w-4" /> Agregar manualmente</button><button onClick={() => setOpenBulk(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-800 hover:bg-slate-50"><Upload className="h-4 w-4" /> Carga masiva</button></div></div></section>
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3"><Search className="h-4 w-4 text-slate-400" /><input value={q} onChange={(e) => setQ(e.target.value)} className="w-full outline-none" placeholder="Buscar por cédula, nombre, área o cargo..." /></div>{error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button onClick={load} className="ml-3 font-bold underline">Reintentar</button></div>}{loading ? <div className="p-8 text-center text-slate-500">Cargando empleados...</div> : <EmployeeTable items={paginatedItems} totalItems={items.length} page={safePage} pageSize={pageSize} totalPages={totalPages} onPageChange={setPage} onPageSizeChange={setPageSize} navigate={navigate} />}</section>
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><div className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3"><Search className="h-4 w-4 text-slate-400" /><input value={q} onChange={(e) => setQ(e.target.value)} className="w-full outline-none" placeholder="Buscar por cédula, nombre, área o cargo..." /></div>{error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button onClick={load} className="ml-3 font-bold underline">Reintentar</button></div>}{loading ? <div className="p-8 text-center text-slate-500">Cargando empleados...</div> : <EmployeeTable items={paginatedItems} totalItems={items.length} page={safePage} pageSize={pageSize} totalPages={totalPages} onPageChange={setPage} onPageSizeChange={setPageSize} navigate={navigate} onDelete={openDeletionDialog} />}</section>
     </div>
     {openManual && <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm"><aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl"><div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-widest text-brand-primary">Nuevo colaborador</p><h2 className="text-2xl font-black text-slate-950">Agregar empleado manualmente</h2><p className="mt-1 text-sm text-slate-500">Nombres, apellidos, cédula, área y cargo son obligatorios.</p></div><button onClick={() => setOpenManual(false)} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" /></button></div><form onSubmit={submitManual} className="space-y-4"><div className="grid gap-4 sm:grid-cols-2"><Field label="Nombres *" error={fieldErrors.nombres}><Input value={form.nombres} onChange={(v) => updateForm("nombres", v)} /></Field><Field label="Apellidos *" error={fieldErrors.apellidos}><Input value={form.apellidos} onChange={(v) => updateForm("apellidos", v)} /></Field><Field label="Cédula *" error={fieldErrors.cedula}><Input value={form.cedula} onChange={(v) => updateForm("cedula", v)} inputMode="numeric" /></Field><Field label="Identificador externo"><Input value={form.identificador_externo} onChange={(v) => updateForm("identificador_externo", v)} /></Field><Field label="Correo" error={fieldErrors.email}><Input value={form.email} onChange={(v) => updateForm("email", v)} type="email" /></Field><Field label="Teléfono" error={fieldErrors.telefono}><Input value={form.telefono} onChange={(v) => updateForm("telefono", v)} inputMode="numeric" /></Field><Field label="Área *" error={fieldErrors.area_id}><div className="flex gap-2"><Combo value={form.area_id} label={selectedArea?.nombre || "Selecciona área"} options={areas.map((a) => ({ value: String(a.id), label: a.nombre }))} onChange={(v) => updateForm("area_id", v)} placeholder="Selecciona área" emptyMessage="No hay áreas registradas" /><button type="button" onClick={() => setCatalogModal("area")} className="rounded-2xl border border-accent px-4 font-bold text-brand-primary hover:bg-accent">Nuevo</button></div></Field><Field label="Cargo *" error={fieldErrors.cargo_id}><div className="flex gap-2"><Combo value={form.cargo_id} label={selectedCargo?.nombre || "Selecciona cargo"} options={visibleCargos.map((c) => ({ value: String(c.id), label: c.nombre }))} onChange={(v) => updateForm("cargo_id", v)} disabled={!form.area_id} placeholder="Selecciona cargo" emptyMessage="No hay cargos asociados a esta área" helper={form.area_id ? "Selecciona el cargo correspondiente" : "Selecciona primero un área"} /><button type="button" disabled={!form.area_id} onClick={() => setCatalogModal("cargo")} title={form.area_id ? "Crear cargo para el área seleccionada" : "Selecciona primero un área"} className="rounded-2xl border border-accent px-4 font-bold text-brand-primary hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50">Nuevo</button></div></Field></div><div className="flex justify-end gap-3 pt-4"><button type="button" onClick={() => setOpenManual(false)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button><button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />} Guardar empleado</button></div></form></aside></div>}
     {openBulk && <BulkUploadModal file={bulkFile} result={bulkResult} saving={bulkSaving} onFileChange={handleBulkFileChange} onValidate={() => runBulkImport(true)} onImport={() => runBulkImport(false)} onClose={closeBulk} />}
+    <AlertDialog open={Boolean(employeeToDelete)} onOpenChange={(open) => { if (!open) closeDeletionDialog(); }}>
+      <AlertDialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-[28px] border-slate-200 p-6 sm:max-w-xl">
+        <AlertDialogHeader>
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-destructive">Eliminar colaborador</p>
+          <AlertDialogTitle className="font-heading text-2xl font-black text-foreground">{employeeToDelete?.nombre}</AlertDialogTitle>
+          <AlertDialogDescription className="leading-6">Esta acción elimina el registro maestro de la empresa. Nunca elimina respuestas ni resultados: si existe cualquier registro asociado, la eliminación queda bloqueada.</AlertDialogDescription>
+        </AlertDialogHeader>
+        {deletionLoading && <div className="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-semibold text-slate-700"><Loader2 className="h-5 w-5 animate-spin text-brand-sky" /> Validando historial del colaborador…</div>}
+        {!deletionLoading && deletionPreview?.bloqueada && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="font-heading font-black text-amber-950">La eliminación no está disponible</p><p className="mt-1 text-sm leading-6 text-amber-900">Este colaborador tiene {deletionPreview.total_registros} registro(s) asociado(s). Conservamos la evidencia de la batería.</p></div></div><ul className="mt-3 space-y-2 rounded-xl border border-amber-200/80 bg-white/70 p-3 text-sm text-amber-950">{deletionPreview.registros.map((record) => <li key={record.tipo} className="flex justify-between gap-3"><span>{record.label}</span><strong>{record.cantidad}</strong></li>)}</ul></div>}
+        {!deletionLoading && deletionPreview?.puede_eliminar && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950"><p className="font-heading font-black">Sin registros asociados</p><p className="mt-1">Puedes eliminar a este colaborador porque no tiene respuestas, resultados, fichas ni asignaciones registradas.</p></div>}
+        {!deletionLoading && !deletionPreview && <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">No fue posible cargar la validación. Cierra el modal e inténtalo nuevamente.</div>}
+        <AlertDialogFooter className="gap-3 sm:gap-3">
+          <AlertDialogCancel disabled={deletingEmployee || deletionLoading} className="rounded-2xl">Cancelar</AlertDialogCancel>
+          {deletionPreview?.puede_eliminar && <Button type="button" variant="destructive" disabled={deletingEmployee} onClick={confirmEmployeeDeletion} className="rounded-2xl">{deletingEmployee ? <Loader2 className="animate-spin" /> : <Trash2 />} Eliminar colaborador</Button>}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     {catalogModal && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm"><form onSubmit={saveCatalog} className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl"><div className="mb-5 flex items-start justify-between"><div><p className="text-xs font-black uppercase tracking-widest text-brand-primary">Catálogo</p><h3 className="text-xl font-black">Agregar {catalogModal === "area" ? "área" : "cargo"}</h3><p className="text-sm text-slate-500">{catalogModal === "cargo" ? `Se vinculará al área: ${selectedArea?.nombre || "seleccionada"}.` : "Se vinculará únicamente a esta empresa."}</p></div><button type="button" onClick={() => setCatalogModal(null)} className="rounded-2xl border p-2"><X className="h-4 w-4" /></button></div>{catalogModal === "cargo" && !form.area_id && <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Selecciona primero un área para vincular el cargo.</div>}<Field label="Nombre"><Input value={catalogName} onChange={setCatalogName} placeholder={catalogModal === "area" ? "Ej. Operaciones" : "Ej. Analista SST"} autoFocus /></Field><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setCatalogModal(null)} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button><button disabled={catalogSaving || !catalogName.trim() || (catalogModal === "cargo" && !form.area_id)} className="rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground disabled:opacity-50">Crear</button></div></form></div>}
   </main>;
 }
@@ -475,6 +545,7 @@ function EmployeeTable({
   onPageChange,
   onPageSizeChange,
   navigate,
+  onDelete,
 }: {
   items: EmpleadoEmpresa[];
   totalItems: number;
@@ -484,6 +555,7 @@ function EmployeeTable({
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   navigate: ReturnType<typeof useNavigate>;
+  onDelete: (employee: EmpleadoEmpresa) => void;
 }) {
   const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(totalItems, page * pageSize);
@@ -509,17 +581,18 @@ function EmployeeTable({
     </div>
 
     <div className="overflow-x-auto">
-      <table className="min-w-[860px] w-full text-left text-sm">
+      <table className="min-w-[960px] w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3">Colaborador</th>
             <th className="px-4 py-3">Área / cargo</th>
             <th className="px-4 py-3">Contacto</th>
             <th className="px-4 py-3">Estado</th>
+            <th className="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {items.length === 0 && <tr><td colSpan={4} className="px-4 py-12 text-center text-slate-500">No hay colaboradores para mostrar. Ajusta la búsqueda o agrega uno manualmente.</td></tr>}
+          {items.length === 0 && <tr><td colSpan={5} className="px-4 py-12 text-center text-slate-500">No hay colaboradores para mostrar. Ajusta la búsqueda o agrega uno manualmente.</td></tr>}
           {items.map((e) => <tr key={e.id} className="transition hover:bg-accent/40">
             <td className="px-4 py-4">
               <button onClick={() => navigate(`/psicosocial/empleados/${e.id}`)} className="group inline-flex items-center gap-3 text-left">
@@ -533,6 +606,7 @@ function EmployeeTable({
             <td className="px-4 py-4"><strong className="text-slate-900">{e.area || "Sin área"}</strong><br /><span className="text-slate-500">{e.cargo || "Sin cargo"}</span></td>
             <td className="px-4 py-4 text-slate-600"><span className="block max-w-[260px] truncate">{e.email || "Sin correo"}</span><span>{e.telefono || "Sin teléfono"}</span></td>
             <td className="px-4 py-4"><span className={`rounded-full border px-3 py-1 text-xs font-black ${e.activo === false ? "border-slate-200 bg-slate-50 text-slate-500" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>{e.activo === false ? "Inactivo" : "Activo"}</span></td>
+            <td className="px-4 py-4 text-right"><button type="button" onClick={() => onDelete(e)} className="inline-flex items-center gap-2 rounded-xl border border-destructive/25 bg-white px-3 py-2 text-xs font-bold text-destructive transition hover:bg-destructive/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Trash2 className="h-4 w-4" /> Eliminar</button></td>
           </tr>)}
         </tbody>
       </table>
