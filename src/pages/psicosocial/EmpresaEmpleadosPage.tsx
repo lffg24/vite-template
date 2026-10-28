@@ -230,7 +230,7 @@ export default function EmpresaEmpleadosPage() {
     setDeletingEmployee(true);
     try {
       await psicoAdminService.eliminarEmpleado(empresaId, employeeToDelete.id);
-      notify({ type: "success", title: "Colaborador eliminado", message: "El registro no tenía respuestas ni información asociada." });
+      notify({ type: "success", title: "Colaborador eliminado", message: "No tenía respuestas ni resultados registrados." });
       setEmployeeToDelete(null);
       setDeletionPreview(null);
       await load();
@@ -348,11 +348,11 @@ export default function EmpresaEmpleadosPage() {
         <AlertDialogHeader>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-destructive">Eliminar colaborador</p>
           <AlertDialogTitle className="font-heading text-2xl font-black text-foreground">{employeeToDelete?.nombre}</AlertDialogTitle>
-          <AlertDialogDescription className="leading-6">Esta acción elimina el registro maestro de la empresa. Nunca elimina respuestas ni resultados: si existe cualquier registro asociado, la eliminación queda bloqueada.</AlertDialogDescription>
+          <AlertDialogDescription className="leading-6">Esta acción elimina el registro maestro de la empresa y sus asignaciones pendientes. Nunca elimina respuestas ni resultados: solo se bloquea si existe evidencia de batería registrada.</AlertDialogDescription>
         </AlertDialogHeader>
         {deletionLoading && <div className="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-semibold text-slate-700"><Loader2 className="h-5 w-5 animate-spin text-brand-sky" /> Validando historial del colaborador…</div>}
         {!deletionLoading && deletionPreview?.bloqueada && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" /><div><p className="font-heading font-black text-amber-950">La eliminación no está disponible</p><p className="mt-1 text-sm leading-6 text-amber-900">Este colaborador tiene {deletionPreview.total_registros} registro(s) asociado(s). Conservamos la evidencia de la batería.</p></div></div><ul className="mt-3 space-y-2 rounded-xl border border-amber-200/80 bg-white/70 p-3 text-sm text-amber-950">{deletionPreview.registros.map((record) => <li key={record.tipo} className="flex justify-between gap-3"><span>{record.label}</span><strong>{record.cantidad}</strong></li>)}</ul></div>}
-        {!deletionLoading && deletionPreview?.puede_eliminar && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950"><p className="font-heading font-black">Sin registros asociados</p><p className="mt-1">Puedes eliminar a este colaborador porque no tiene respuestas, resultados, fichas ni asignaciones registradas.</p></div>}
+        {!deletionLoading && deletionPreview?.puede_eliminar && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950"><p className="font-heading font-black">Sin evidencia de batería</p><p className="mt-1">Puedes eliminar a este colaborador porque no tiene respuestas ni resultados registrados. Las asignaciones pendientes de aplicación web también se retirarán.</p></div>}
         {!deletionLoading && !deletionPreview && <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">No fue posible cargar la validación. Cierra el modal e inténtalo nuevamente.</div>}
         <AlertDialogFooter className="gap-3 sm:gap-3">
           <AlertDialogCancel disabled={deletingEmployee || deletionLoading} className="rounded-2xl">Cancelar</AlertDialogCancel>
