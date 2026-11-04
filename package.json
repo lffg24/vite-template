@@ -80,7 +80,7 @@
   "overrides": {
     "@types/react": "18.3.30",
     "@types/react-dom": "18.3.7",
-    "follow-redirects": "1.16.1",
+    "follow-redirects": "1.16.2",
     "postcss-selector-parser": "6.1.5",
     "source-map-js": "1.2.2",
     "ws": "^8.20.1",
