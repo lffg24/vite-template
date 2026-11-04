@@ -21,6 +21,7 @@ import {
   FilePenLine,
   FileText,
   Info,
+  Link2,
   Loader2,
   Lock,
   Mars,
@@ -308,6 +309,10 @@ export function participantStatusLabel(emp: Partial<AplicacionDetalle["empleados
   if (emp.completo) return "Completo";
   if (emp.registrado) return "En captura";
   return "Por tabular";
+}
+
+export function respondioPorEnlaceWeb(emp: Partial<AplicacionDetalle["empleados"][number]>) {
+  return Boolean(emp.web_direct_assignment?.respondio_por_enlace);
 }
 
 export function participantActionLabel(
@@ -1690,6 +1695,23 @@ export default function AplicacionDetallePage() {
                     </td>
                     <td className="px-3 py-4">
                       <div className="flex flex-wrap gap-2">
+                        {respondioPorEnlaceWeb(emp) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span
+                                  className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-xs font-black text-primary-foreground"
+                                  aria-label="Respondió mediante el enlace web"
+                                >
+                                  <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                  <span className="hidden lg:inline">Enlace</span>
+                                  <span className="sr-only">Respondió mediante el enlace web</span>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>Respondió mediante el enlace web</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         {participantInstrumentChips(data.instrumentos, emp).map((chip) => {
                           const chipClass =
                             chip.state === "complete"
