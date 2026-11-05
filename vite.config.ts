@@ -33,5 +33,10 @@ export default defineConfig({
     // codigo y ensena a volver a lanzar la suite hasta que pase, que es la peor
     // costumbre que puede coger un equipo.
     testTimeout: 20_000,
+    // Un equipo con muchos nucleos hace que Vitest intente levantar decenas de
+    // procesos jsdom a la vez. En Windows varios workers agotaban el tiempo de
+    // arranque antes de ejecutar una sola asercion; limitar la concurrencia
+    // mantiene el mismo conjunto de pruebas y tambien reduce variabilidad en CI.
+    maxWorkers: 4,
   },
 });
