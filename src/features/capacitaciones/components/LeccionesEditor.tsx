@@ -45,6 +45,7 @@ import {
 import {
   Sheet,
   SheetFooter,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { IllustratedFormSheet } from "@/shared/ui/illustration";
 import { useToast } from "@/hooks/use-toast";
@@ -189,6 +190,13 @@ export function LeccionesEditor({
 
   const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
 
+  function confirmarApertura() {
+    // Radix abre desde el trigger. Firefox puede procesar el mismo gesto como
+    // interacción exterior cuando el contenido se monta en un portal; repetir
+    // el estado en el cuadro siguiente evita que ese gesto cierre el panel.
+    window.requestAnimationFrame(() => setAbierto(true));
+  }
+
   function abrirNueva(tipo: "NATIVA" | "EVALUACION") {
     setEditandoId(null);
     setForm(formularioNuevo(tipo));
@@ -196,7 +204,7 @@ export function LeccionesEditor({
     setErrorUrl(null);
     setErrorEvaluacion(null);
     setErrorServidor(null);
-    setAbierto(true);
+    confirmarApertura();
   }
 
   function abrirEdicion(l: Leccion) {
@@ -219,7 +227,7 @@ export function LeccionesEditor({
     setErrorUrl(null);
     setErrorEvaluacion(null);
     setErrorServidor(null);
-    setAbierto(true);
+    confirmarApertura();
   }
 
   async function enviar(e: React.FormEvent) {
@@ -385,6 +393,7 @@ export function LeccionesEditor({
   const editandoEvaluacion = form.tipo === "EVALUACION";
 
   return (
+    <Sheet open={abierto} onOpenChange={setAbierto}>
     <SeccionPlegable
       titulo="Lecciones"
       claveMemoria="abril360.capacitaciones.curso.lecciones"
@@ -401,14 +410,18 @@ export function LeccionesEditor({
       accion={
         editable && lecciones.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            <Button variant="relOutline" size="sm" onClick={() => abrirNueva("NATIVA")}>
-              <Plus aria-hidden="true" />
-              Agregar lección
-            </Button>
-            <Button variant="relOutline" size="sm" onClick={() => abrirNueva("EVALUACION")}>
-              <Plus aria-hidden="true" />
-              Agregar evaluación
-            </Button>
+            <SheetTrigger asChild>
+              <Button variant="relOutline" size="sm" onClick={() => abrirNueva("NATIVA")}>
+                <Plus aria-hidden="true" />
+                Agregar lección
+              </Button>
+            </SheetTrigger>
+            <SheetTrigger asChild>
+              <Button variant="relOutline" size="sm" onClick={() => abrirNueva("EVALUACION")}>
+                <Plus aria-hidden="true" />
+                Agregar evaluación
+              </Button>
+            </SheetTrigger>
           </div>
         ) : null
       }
@@ -421,14 +434,18 @@ export function LeccionesEditor({
             accion={
               editable ? (
                 <div className="flex flex-wrap justify-center gap-2">
-                  <Button variant="rel" onClick={() => abrirNueva("NATIVA")}>
-                    <Plus aria-hidden="true" />
-                    Agregar lección
-                  </Button>
-                  <Button variant="relOutline" onClick={() => abrirNueva("EVALUACION")}>
-                    <Plus aria-hidden="true" />
-                    Agregar evaluación
-                  </Button>
+                  <SheetTrigger asChild>
+                    <Button variant="rel" onClick={() => abrirNueva("NATIVA")}>
+                      <Plus aria-hidden="true" />
+                      Agregar lección
+                    </Button>
+                  </SheetTrigger>
+                  <SheetTrigger asChild>
+                    <Button variant="relOutline" onClick={() => abrirNueva("EVALUACION")}>
+                      <Plus aria-hidden="true" />
+                      Agregar evaluación
+                    </Button>
+                  </SheetTrigger>
                 </div>
               ) : undefined
             }
@@ -486,15 +503,17 @@ export function LeccionesEditor({
                 </div>
                 {editable ? (
                   <div className="flex shrink-0 gap-1">
-                    <Button
-                      variant="relGhost"
-                      size="sm"
-                      onClick={() => abrirEdicion(l)}
-                      aria-label={`Editar ${l.tipo === "EVALUACION" ? "la evaluación" : "la lección"} ${l.titulo}`}
-                    >
-                      <Pencil aria-hidden="true" />
-                      <span className="hidden sm:inline">Editar</span>
-                    </Button>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="relGhost"
+                        size="sm"
+                        onClick={() => abrirEdicion(l)}
+                        aria-label={`Editar ${l.tipo === "EVALUACION" ? "la evaluación" : "la lección"} ${l.titulo}`}
+                      >
+                        <Pencil aria-hidden="true" />
+                        <span className="hidden sm:inline">Editar</span>
+                      </Button>
+                    </SheetTrigger>
                     <Button
                       variant="relGhost"
                       size="sm"
@@ -515,12 +534,6 @@ export function LeccionesEditor({
 
 
       {/* --- alta y edición --- */}
-      <Sheet
-        open={abierto}
-        onOpenChange={(v) => {
-          if (!v) setAbierto(false);
-        }}
-      >
         <IllustratedFormSheet
           eyebrow={editandoEvaluacion ? "Evaluación del curso" : "Contenido del curso"}
           title={
@@ -848,7 +861,6 @@ export function LeccionesEditor({
             </SheetFooter>
           </form>
         </IllustratedFormSheet>
-      </Sheet>
 
       {/* --- confirmación destructiva --- */}
       <AlertDialog open={aEliminar !== null} onOpenChange={(v) => !v && setAEliminar(null)}>
@@ -879,5 +891,6 @@ export function LeccionesEditor({
         </AlertDialogContent>
       </AlertDialog>
     </SeccionPlegable>
+    </Sheet>
   );
 }

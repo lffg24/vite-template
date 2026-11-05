@@ -41,6 +41,10 @@ async function preparar(page: Page, conflicto = false) {
 }
 
 test("rol protegido, preview y guardado explícito", async ({ page }) => {
+  // La primera visita compila en frío el chunk de IAM. En equipos Windows y
+  // en Firefox esa compilación puede consumir casi todo el timeout base,
+  // aunque el recorrido y sus aserciones terminen correctamente.
+  test.slow();
   const guardados = await preparar(page);
   await page.goto("/superadmin/roles-permisos");
   await expect(page.getByRole("heading", { name: "Roles y permisos", exact: true })).toBeVisible();
@@ -49,7 +53,7 @@ test("rol protegido, preview y guardado explícito", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Editar", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Crear rol", exact: true }).click();
   await page.getByLabel("Nombre del rol").fill("Responsable de formación");
-  await page.getByRole("checkbox").check();
+  await page.getByRole("switch", { name: "Conceder Gestionar asignaciones" }).check();
   expect(guardados()).toBe(0);
   await page.getByRole("button", { name: "Vista previa", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Revisa el impacto" })).toBeVisible();
