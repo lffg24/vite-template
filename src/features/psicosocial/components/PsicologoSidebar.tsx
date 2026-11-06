@@ -1,28 +1,11 @@
-import {
-  BarChart3,
-  Building2,
-  CircleHelp,
-  FileText,
-  Home,
-  Layers3,
-  Settings,
-} from "lucide-react";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
 import { useAuth } from "@/context/AuthContext";
-
-const items = [
-  { label: "Dashboard", to: "/psicosocial/dashboard", icon: Home },
-  { label: "Empresas", to: "/psicosocial/empresas", icon: Building2 },
-  { label: "Aplicaciones BT", to: "/psicosocial/aplicaciones-bt", icon: Layers3 },
-  { label: "Resultados", to: "/psicosocial/resultados", icon: BarChart3 },
-  { label: "Informes", to: "/psicosocial/reportes-oficiales", icon: FileText },
-  { label: "Centro de ayuda", to: "/psicosocial/centro-ayuda", icon: CircleHelp },
-  { label: "Configuración", to: "/psicosocial/perfil", icon: Settings },
-];
+import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
 
 export default function PsicologoSidebar() {
   const { user } = useAuth();
-  const displayName = user?.nombre?.trim() || "Usuario ABRIL360";
+  const menu = useEffectiveNavigation();
+  const displayName = user?.nombre?.trim() || "Usuario Abril360";
   const initials = displayName
     .split(/\s+/)
     .filter(Boolean)
@@ -33,7 +16,11 @@ export default function PsicologoSidebar() {
 
   return (
     <RoleSidebar
-      items={items}
+      items={menu.items}
+      loading={menu.loading}
+      error={menu.error}
+      onRetry={menu.retry}
+      tone="rel"
       storageKey="abril360.psico.sidebar.collapsed"
       brandTitle="ABRIL360"
       brandSubtitle="Riesgo psicosocial"

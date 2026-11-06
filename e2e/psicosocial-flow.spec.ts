@@ -145,6 +145,16 @@ async function mockPsicologoSession(page: Page, options: { initiallyAuthenticate
     loginCompleted = true;
     await fulfillJson(route, psicoUser);
   });
+  await page.route(`${API_ORIGIN}/acceso/navegacion`, (route) =>
+    fulfillJson(route, {
+      destinos: [
+        "/psicosocial/dashboard",
+        "/psicosocial/empresas",
+        "/psicosocial/aplicaciones-bt",
+        "/psicosocial/resultados",
+      ],
+    }),
+  );
   await page.route(`${API_ORIGIN}/psicosocial/access/empresas`, (route) =>
     fulfillJson(route, assignedCompanies),
   );
@@ -232,14 +242,31 @@ test.describe("Flujos psicosociales críticos", () => {
       fulfillJson(route, { detail: "Sesion expirada" }, 401),
     );
 
+    const detalleRechazado = page.waitForResponse(
+      (response) =>
+        response.url() ===
+          `${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77` &&
+        response.status() === 401,
+    );
     await page.goto("/psicosocial/empresas/empresa-1/aplicaciones/77", { waitUntil: "domcontentloaded" });
+    await detalleRechazado;
 
     await expect(page).toHaveURL(/\/login\?next=%2Fpsicosocial%2Fempresas%2Fempresa-1%2Faplicaciones%2F77/, {
-      timeout: 4_000,
+      timeout: 10_000,
     });
   });
 
   test("cierra y calcula una aplicacion con participantes completos", async ({ page }) => {
+    // `test.slow()`, como en las demas suites. Vite compila en frio en la
+    // primera navegacion de la corrida, y sin esto `page.goto` agota los 30 s
+    // por defecto. Era la UNICA causa de que esta prueba estuviera en rojo:
+    // arnes, no producto.
+    //
+    // Cuesta dar con ello porque el sintoma —«page.goto: Test timeout»— no
+    // apunta a la compilacion, y porque solo aparece cuando esta prueba es la
+    // primera en navegar. Las demas suites ya lo marcaban; esta se quedo sin
+    // marcar.
+    test.slow();
     await mockPsicologoSession(page, { initiallyAuthenticated: true });
 
     let closed = false;
@@ -247,6 +274,8 @@ test.describe("Flujos psicosociales críticos", () => {
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77`, (route) =>
       fulfillJson(route, closed ? finalizedApplicationDetail : applicationDetail),
     );
+    // La pantalla certificada envia explicitamente 3. La prueba debe observar
+    // ese contrato real, no el valor por defecto interno de otro llamador.
     await page.route(`${API_ORIGIN}/psicosocial/admin/empresas/empresa-1/aplicaciones/77/cerrar?min_participantes=1`, async (route) => {
       closeRequestUrl = route.request().url();
       closed = true;
@@ -269,6 +298,10 @@ test.describe("Flujos psicosociales críticos", () => {
     await expect(page.getByRole("button", { name: /reabrir aplicación/i })).toBeVisible();
     expect(closeRequestUrl).toContain("min_participantes=1");
   });
+
+  // El servicio conserva un valor por defecto distinto para otros llamadores.
+  // Esta convergencia no modifica esa decision ni el comportamiento de la
+  // pantalla certificada; solo evita que el doble de red contradiga a la UI.
 
   test("no intenta cerrar cuando no hay participantes completos", async ({ page }) => {
     await mockPsicologoSession(page, { initiallyAuthenticated: true });

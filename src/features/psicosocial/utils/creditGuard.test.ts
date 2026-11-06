@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AbrilApiError } from "@/features/psicosocial/api/httpClient";
-import { CREDIT_PURCHASE_WHATSAPP_URL, REL_PRIMARY_COLOR, getCreditGuardInfo } from "./creditGuard";
+import { CREDIT_PURCHASE_WHATSAPP_URL, getCreditGuardInfo } from "./creditGuard";
 
 describe("creditGuard", () => {
   it("detecta errores de saldo insuficiente y expone el enlace comercial", () => {
@@ -18,7 +18,6 @@ describe("creditGuard", () => {
     expect(info.requeridos).toBe(1);
     expect(info.message).toBe("No hay créditos disponibles.");
     expect(CREDIT_PURCHASE_WHATSAPP_URL).toBe("https://wa.me/573002458438");
-    expect(REL_PRIMARY_COLOR).toBe("#00b89f");
   });
 
   it("mantiene errores no relacionados como errores comunes", () => {

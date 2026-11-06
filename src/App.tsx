@@ -10,8 +10,8 @@ import {
 import { Toaster } from "@/components/ui/toaster";
 
 import ProtectedRoute from "@/routes/ProtectedRoute";
-import { LEGACY_APP_ROUTES, routeByAccess } from "@/lib/accessRoutes";
-import { useAuth } from "@/context/AuthContext";
+import { LEGACY_APP_ROUTES } from "@/lib/accessRoutes";
+import { EffectiveAccessRedirect } from "@/features/navigation/EffectiveAccessRedirect";
 
 const Login = lazy(() => import("@/pages/Login"));
 const SolicitarRecuperacionClave = lazy(() => import("@/pages/SolicitarRecuperacionClave"));
@@ -41,12 +41,47 @@ const PsicoEmpleadoInformesPage = lazy(() => import("@/pages/psicosocial/PsicoEm
 const ReportesPsico = lazy(() => import("@/pages/ReportesPsico"));
 const ReportesOficialesPsicoPage = lazy(() => import("@/pages/ReportesOficialesPsicoPage"));
 
+const AterrizajePage = lazy(() => import("@/pages/participacion/AterrizajePage"));
+const CursoPage = lazy(() => import("@/pages/participacion/CursoPage"));
+const LeccionPage = lazy(() => import("@/pages/participacion/LeccionPage"));
+const FinalizarPage = lazy(() => import("@/pages/participacion/FinalizarPage"));
+const VerificarPage = lazy(() => import("@/pages/participacion/VerificarPage"));
+const InvitacionPage = lazy(() => import("@/pages/participacion/InvitacionPage"));
+
+const CapacitacionesLayout = lazy(() => import("@/layout/CapacitacionesLayout"));
+const IndiceCapacitaciones = lazy(() =>
+  import("@/features/capacitaciones/ContextoCapacitaciones").then((m) => ({
+    default: m.IndiceCapacitaciones,
+  }))
+);
+const CapacitacionesInicioPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInicioPage"));
+const CapacitacionesAvancePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAvancePage"));
+const CapacitacionesCursosPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursosPage"));
+const CapacitacionesCursoDetallePage = lazy(() => import("@/pages/capacitaciones/CapacitacionesCursoDetallePage"));
+const CapacitacionesAsignacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesAsignacionesPage"));
+const CapacitacionesEnlacesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEnlacesPage"));
+const CapacitacionesEstadoPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesEstadoPage"));
+const CapacitacionesConstanciasPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesConstanciasPage"));
+const CapacitacionesMatrizPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesMatrizPage"));
+const CapacitacionesParticipantesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesParticipantesPage"));
+const CapacitacionesInvitacionesPage = lazy(() => import("@/pages/capacitaciones/CapacitacionesInvitacionesPage"));
+const EvaluacionesPage = lazy(() => import("@/pages/evaluaciones/EvaluacionesPage"));
+const EvaluacionDetallePage = lazy(
+  () => import("@/pages/evaluaciones/EvaluacionDetallePage")
+);
+const SeleccionDeAsignacion = lazy(
+  () => import("@/features/capacitaciones/components/SeleccionDeAsignacion")
+);
+
 const SuperAdminLayout = lazy(() => import("@/layout/SuperAdminLayout"));
 const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdminDashboardPage"));
 const SuperAdminEmpresasPage = lazy(() => import("@/pages/superadmin/SuperAdminEmpresasPage"));
 const SuperAdminPsicologosPage = lazy(() => import("@/pages/superadmin/SuperAdminPsicologosPage"));
 const SuperAdminCreditosPage = lazy(() => import("@/pages/superadmin/SuperAdminCreditosPage"));
+const SuperAdminHabilitacionPage = lazy(() => import("@/pages/superadmin/SuperAdminHabilitacionPage"));
 const SuperAdminRolesPermisosPage = lazy(() => import("@/pages/superadmin/SuperAdminRolesPermisosPage"));
+const SuperAdminUsuariosPage = lazy(() => import("@/pages/superadmin/SuperAdminUsuariosPage"));
+const ActivarCuenta = lazy(() => import("@/pages/ActivarCuenta"));
 const SuperAdminAuditoriaPage = lazy(() => import("@/pages/superadmin/SuperAdminAuditoriaPage"));
 const SuperAdminPlaceholderPage = lazy(() => import("@/pages/superadmin/SuperAdminPlaceholderPage"));
 
@@ -58,11 +93,6 @@ function RouteFallback() {
   );
 }
 
-function AccessRedirect() {
-  const { roles, permissions } = useAuth();
-  return <Navigate to={routeByAccess(roles, permissions)} replace />;
-}
-
 function App() {
   return (
     <Router>
@@ -70,6 +100,7 @@ function App() {
         <Routes>
           {/* Públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/activar-cuenta" element={<ActivarCuenta />} />
           <Route path="/recuperar-clave" element={<SolicitarRecuperacionClave />} />
           <Route path="/restablecer-clave" element={<RestablecerClave />} />
           <Route path="/logout" element={<Logout />} />
@@ -79,12 +110,32 @@ function App() {
           <Route path="/recursos/certificacion" element={<RecursosAbril360Page page="certificacion" />} />
           <Route path="/public/psychosocial/:publicToken" element={<WebDirectPublicPage />} />
 
+          {/* Recorrido público del participante. Fuera de `ProtectedRoute` a
+              propósito: su único público es gente sin cuenta, y exigirles sesión
+              lo dejaría inservible. La autorización va por el enlace y por la
+              cookie del participante, que el backend comprueba.
+
+              `/c/sesion` va ANTES que `/c/:token`: si no, «sesion» se leería
+              como un token y la reanudación respondería «enlace no disponible».*/}
+          <Route path="/c/sesion" element={<CursoPage />} />
+          <Route path="/c/sesion/leccion/:leccionId" element={<LeccionPage />} />
+          <Route path="/c/sesion/finalizar" element={<FinalizarPage />} />
+          {/* D-10. Con codigo en la ruta (lo que imprimira el QR cuando exista)
+              y sin el, para teclearlo. Las dos ANTES que `/c/:token` por la
+              misma razon que `/c/sesion`. */}
+          {/* D-01b. La invitacion personal. Dos segmentos, asi que no compite
+              con `/c/:token`. */}
+          <Route path="/c/i/:token" element={<InvitacionPage />} />
+          <Route path="/c/verificar" element={<VerificarPage />} />
+          <Route path="/c/verificar/:codigo" element={<VerificarPage />} />
+          <Route path="/c/:token" element={<AterrizajePage />} />
+
           {/* Rutas piloto dadas de baja: se redirigen al módulo permitido del usuario. */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<AccessRedirect />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
             <Route path="/sin-acceso" element={<SinAcceso />} />
             {LEGACY_APP_ROUTES.map((path) => (
-              <Route key={path} path={`${path}/*`} element={<AccessRedirect />} />
+              <Route key={path} path={`${path}/*`} element={<EffectiveAccessRedirect />} />
             ))}
           </Route>
 
@@ -97,10 +148,69 @@ function App() {
               <Route path="empresas" element={<SuperAdminEmpresasPage />} />
               <Route path="psicologos" element={<SuperAdminPsicologosPage />} />
               <Route path="creditos" element={<SuperAdminCreditosPage />} />
+              <Route path="habilitacion" element={<SuperAdminHabilitacionPage />} />
               <Route path="roles-permisos" element={<SuperAdminRolesPermisosPage />} />
+              <Route path="usuarios" element={<SuperAdminUsuariosPage />} />
               <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
               <Route path="planes" element={<SuperAdminPlaceholderPage title="Planes y suscripciones" />} />
               <Route path="configuracion" element={<SuperAdminPlaceholderPage title="Configuración global" />} />
+            </Route>
+          </Route>
+
+          {/* Privadas con layout de Capacitaciones.
+              La guarda solo exige SESIÓN, no permisos, y es deliberado:
+              `requirePermission` compara contra la lista plana del JWT, que sale
+              del RBAC global y no conoce las asignaciones con alcance de
+              empresa. Un usuario autorizado por el backend habría rebotado aquí
+              antes de llegar a llamar la API — la misma divergencia que este
+              lote elimina, escondida en el enrutador.
+              Quien puede entrar lo decide `GET /capacitaciones/contexto`, y el
+              layout muestra una pantalla que lo explica cuando la respuesta es
+              que no. */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
+              {/* El indice lo decide el contexto de capacidades, no una ruta
+                  fija: mandar siempre al catalogo aterrizaba en un 403 a quien
+                  solo puede asignar. */}
+              <Route index element={<IndiceCapacitaciones />} />
+              <Route path="inicio" element={<CapacitacionesInicioPage />} />
+              <Route path="cursos" element={<CapacitacionesCursosPage />} />
+              <Route path="cursos/:cursoId" element={<CapacitacionesCursoDetallePage />} />
+              <Route path="asignaciones" element={<CapacitacionesAsignacionesPage />} />
+              <Route
+                path="asignaciones/:asignacionId/enlaces"
+                element={<CapacitacionesEnlacesPage />}
+              />
+              <Route
+                path="asignaciones/:asignacionId/avance"
+                element={<CapacitacionesAvancePage />}
+              />
+              <Route path="participantes" element={<CapacitacionesParticipantesPage />} />
+              <Route
+                path="asignaciones/:asignacionId/invitaciones"
+                element={<CapacitacionesInvitacionesPage />}
+              />
+              {/* Las dos entradas del menú a lo que antes solo se alcanzaba
+                  desde una fila de la tabla de Asignaciones. La ruta profunda
+                  sigue siendo la que se comparte; estas eligen a qué asignación
+                  y redirigen allí. */}
+              <Route
+                path="invitaciones"
+                element={<SeleccionDeAsignacion destino="invitaciones" />}
+              />
+              <Route path="enlaces" element={<SeleccionDeAsignacion destino="enlaces" />} />
+              <Route path="constancias" element={<CapacitacionesConstanciasPage />} />
+              <Route path="matriz" element={<CapacitacionesMatrizPage />} />
+              <Route path="estado" element={<CapacitacionesEstadoPage />} />
+            </Route>
+
+            {/* El banco de evaluaciones vive FUERA de `/capacitaciones`, y es
+                deliberado: es catálogo de plataforma y lo van a consumir varios
+                módulos. Colgarlo del layout de Capacitaciones lo dejaría
+                pareciendo suyo, y mañana una 360 tendría que entrar por ahí. */}
+            <Route path="/evaluaciones" element={<CapacitacionesLayout />}>
+              <Route index element={<EvaluacionesPage />} />
+              <Route path=":cuestionarioId" element={<EvaluacionDetallePage />} />
             </Route>
           </Route>
 

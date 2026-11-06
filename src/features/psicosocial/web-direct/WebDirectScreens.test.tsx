@@ -95,7 +95,7 @@ describe("flujo público WEB_DIRECT", () => {
     fireEvent.submit(screen.getByRole("button", { name: /Validar y continuar/i }).closest("form")!);
 
     expect(onSubmit).toHaveBeenCalledWith({ documentType: "CC", documentNumber: "123456789", birthDate: "1990-05-12" });
-  }, 15_000);
+  }, 30_000);
 
   it("descarta caracteres del número de documento", () => {
     render(

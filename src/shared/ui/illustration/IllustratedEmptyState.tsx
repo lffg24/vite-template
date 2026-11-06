@@ -25,8 +25,8 @@ export function IllustratedEmptyState({
         <Illustration name={illustration} variant="spot" size="sm" />
       </IllustrationSurface>
       <div className="self-center">
-        <h3 className="font-heading text-lg font-bold text-foreground">{title}</h3>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <h3 className="font-rel-heading text-lg font-bold text-rel-dark">{title}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-rel-muted">{description}</p>
         {action ? <div className="mt-4">{action}</div> : null}
       </div>
     </section>

@@ -4,6 +4,14 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Login from "@/pages/Login";
+import { EffectiveAccessRedirect } from "@/features/navigation/EffectiveAccessRedirect";
+
+function navigationResponse(destinos: string[]) {
+  return new Response(JSON.stringify({ destinos }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  }) as any;
+}
 
 function meResponse(roles: string[], permissions: string[] = [], passwordChangeRequired = false) {
   return {
@@ -30,13 +38,15 @@ describe("Login", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["PSICOLOGO_EVALUADOR"], ["psico.dashboard.view"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }) as any);
+      }) as any)
+      .mockResolvedValueOnce(navigationResponse(["/psicosocial/dashboard"]));
 
     render(
       <AuthProvider>
         <MemoryRouter initialEntries={["/login"]}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
             <Route path="/psicosocial/dashboard" element={<div>HOME PSICO</div>} />
           </Routes>
         </MemoryRouter>
@@ -62,13 +72,15 @@ describe("Login", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["SUPER_ADMIN"], ["superadmin.dashboard.view"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }) as any);
+      }) as any)
+      .mockResolvedValueOnce(navigationResponse(["/superadmin/dashboard"]));
 
     render(
       <AuthProvider>
         <MemoryRouter initialEntries={["/login"]}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
             <Route
               path="/superadmin/dashboard"
               element={<div>HOME SUPERADMIN</div>}
@@ -97,13 +109,15 @@ describe("Login", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["PSICOLOGO_EVALUADOR"], ["psico.dashboard.view"])), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }) as any);
+      }) as any)
+      .mockResolvedValueOnce(navigationResponse(["/psicosocial/dashboard"]));
 
     render(
       <AuthProvider>
         <MemoryRouter initialEntries={["/login?next=/usuarios"]}>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
             <Route path="/usuarios" element={<div>RUTA PILOTO</div>} />
             <Route path="/psicosocial/dashboard" element={<div>HOME PSICO</div>} />
           </Routes>
@@ -157,5 +171,36 @@ describe("Login", () => {
       expect(screen.getByText("PERFIL CAMBIO OBLIGATORIO")).toBeInTheDocument()
     );
     expect(screen.queryByText("HOME PSICO")).not.toBeInTheDocument();
+  });
+
+  it("envía a Capacitaciones con permisos empresariales aunque el JWT no tenga permisos globales", async () => {
+    vi.spyOn(global, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 401 }) as any)
+      .mockResolvedValueOnce(new Response(JSON.stringify(meResponse(["EMPLEADO"], [])), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }) as any)
+      .mockResolvedValueOnce(navigationResponse([
+        "/capacitaciones/inicio",
+        "/capacitaciones/asignaciones",
+      ]));
+
+    render(
+      <AuthProvider>
+        <MemoryRouter initialEntries={["/login"]}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<EffectiveAccessRedirect />} />
+            <Route path="/capacitaciones/inicio" element={<div>HOME CAPACITACIONES</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthProvider>
+    );
+
+    fireEvent.change(await screen.findByLabelText(/correo/i), { target: { value: "info@relconsilium.com" } });
+    fireEvent.change(screen.getByPlaceholderText(/ingresa tu contraseña/i), { target: { value: "Abril360.Local!" } });
+    fireEvent.click(screen.getByRole("button", { name: /iniciar sesión/i }));
+
+    expect(await screen.findByText("HOME CAPACITACIONES")).toBeInTheDocument();
   });
 });

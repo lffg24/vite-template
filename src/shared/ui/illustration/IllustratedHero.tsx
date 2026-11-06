@@ -22,8 +22,8 @@ export function IllustratedHero({
   return (
     <section className={cn("grid items-center gap-6 lg:grid-cols-[3fr_2fr]", className)}>
       <div>
-        <h2 className="font-heading text-2xl font-black text-foreground sm:text-3xl">{title}</h2>
-        {description ? <p className="mt-3 text-muted-foreground">{description}</p> : null}
+        <h2 className="font-rel-heading text-2xl font-black text-rel-dark sm:text-3xl">{title}</h2>
+        {description ? <p className="mt-3 text-rel-muted">{description}</p> : null}
         {action ? <div className="mt-5">{action}</div> : null}
       </div>
       <IllustrationSurface className="min-h-[12rem]">

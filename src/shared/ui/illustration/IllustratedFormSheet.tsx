@@ -33,21 +33,21 @@ export function IllustratedFormSheet({
   return (
     <SheetContent
       className={cn(
-        "flex h-full w-full flex-col overflow-hidden bg-surface p-0 font-body",
+        "rel-scope flex h-full w-full flex-col overflow-hidden bg-rel-surface p-0 font-rel-body",
         WIDTHS[width],
         className
       )}
     >
-      <div className="shrink-0 border-b border-border bg-surface px-5 pb-5 pt-6 sm:px-7 sm:pb-6">
+      <div className="shrink-0 border-b border-rel-border bg-rel-surface px-5 pb-5 pt-6 sm:px-7 sm:pb-6">
         <div className="grid grid-cols-[1fr_5.5rem] items-center gap-4 sm:grid-cols-[1fr_8rem]">
           <SheetHeader className="min-w-0 text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-primary">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-rel-accent">
               {eyebrow}
             </p>
-            <SheetTitle className="font-heading text-xl font-black text-foreground sm:text-2xl">
+            <SheetTitle className="font-rel-heading text-xl font-black text-rel-dark sm:text-2xl">
               {title}
             </SheetTitle>
-            <SheetDescription className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            <SheetDescription className="max-w-2xl text-sm leading-relaxed text-rel-muted">
               {description}
             </SheetDescription>
           </SheetHeader>
@@ -56,7 +56,9 @@ export function IllustratedFormSheet({
           </IllustrationSurface>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-7">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-7">
+        {children}
+      </div>
     </SheetContent>
   );
 }

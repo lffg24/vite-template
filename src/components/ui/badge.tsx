@@ -4,18 +4,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover",
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-muted",
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline: "border-border bg-surface text-foreground-soft",
+          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
+        outline: "text-foreground",
         accent: "border-transparent bg-accent text-accent-foreground",
+        // Semantica de estado REL. Separada de la marca a proposito (§5): el
+        // turquesa corporativo no significa "exito" ni el azul "informacion".
+        relSuccess:
+          "border-transparent bg-rel-success-subtle text-rel-success",
+        relInfo: "border-transparent bg-rel-info-subtle text-rel-info",
+        relWarning:
+          "border-transparent bg-rel-warning-subtle text-rel-warning",
+        relDanger: "border-transparent bg-rel-danger-subtle text-rel-danger",
+        relNeutral:
+          "border-transparent bg-rel-neutral-subtle text-rel-neutral",
+        relBrand: "border-rel-border bg-rel-canvas text-rel-dark",
       },
     },
     defaultVariants: {

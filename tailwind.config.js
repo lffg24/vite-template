@@ -11,12 +11,79 @@ export default {
       },
     },
     extend: {
+      transitionDuration: {
+        'rel-micro': 'var(--rel-motion-micro)',
+        'rel-panel': 'var(--rel-motion-panel)',
+        'rel-context': 'var(--rel-motion-context)',
+      },
       fontFamily: {
+        'rel-heading': 'var(--rel-font-heading)',
+        'rel-body': 'var(--rel-font-body)',
         sans: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
         heading: ["var(--font-heading)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
+			/* Espacio de nombres ADITIVO. No toca ninguna clave existente:
+			   `bg-primary` sigue siendo el de la casa.
+
+			   Los valores viven en `index.css` y REPITEN los tokens de marca,
+			   no proponen ninguno. Existe para que Capacitaciones consuma el
+			   sistema sin tocar las clases que ya usan las pantallas hechas.  */
+			rel: {
+				primary: {
+					DEFAULT: 'hsl(var(--rel-primary))',
+					foreground: 'hsl(var(--rel-primary-foreground))'
+				},
+				accent: {
+					DEFAULT: 'hsl(var(--rel-accent))',
+					subtle: 'hsl(var(--rel-accent-subtle))'
+				},
+				turquoise: {
+					DEFAULT: 'hsl(var(--rel-turquoise))',
+					foreground: 'hsl(var(--rel-turquoise-foreground))'
+				},
+				sky: {
+					DEFAULT: 'hsl(var(--rel-sky))',
+					foreground: 'hsl(var(--rel-sky-foreground))'
+				},
+				dark: 'hsl(var(--rel-dark))',
+				canvas: 'hsl(var(--rel-canvas))',
+				surface: {
+					DEFAULT: 'hsl(var(--rel-surface))',
+					subtle: 'hsl(var(--rel-surface-subtle))'
+				},
+				border: {
+					DEFAULT: 'hsl(var(--rel-border))',
+					strong: 'hsl(var(--rel-border-strong))'
+				},
+				muted: 'hsl(var(--rel-muted-foreground))',
+				success: {
+					DEFAULT: 'hsl(var(--rel-success))',
+					foreground: 'hsl(var(--rel-success-foreground))',
+					subtle: 'hsl(var(--rel-success-subtle))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--rel-info))',
+					foreground: 'hsl(var(--rel-info-foreground))',
+					subtle: 'hsl(var(--rel-info-subtle))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--rel-warning))',
+					foreground: 'hsl(var(--rel-warning-foreground))',
+					subtle: 'hsl(var(--rel-warning-subtle))'
+				},
+				danger: {
+					DEFAULT: 'hsl(var(--rel-danger))',
+					foreground: 'hsl(var(--rel-danger-foreground))',
+					subtle: 'hsl(var(--rel-danger-subtle))'
+				},
+				neutral: {
+					DEFAULT: 'hsl(var(--rel-neutral))',
+					subtle: 'hsl(var(--rel-neutral-subtle))'
+				}
+			},
+
         border: "hsl(var(--border))",
         "border-strong": "hsl(var(--border-strong))",
         input: "hsl(var(--input))",
@@ -113,6 +180,9 @@ export default {
         },
       },
       borderRadius: {
+        'rel-control': 'var(--rel-radius-control)',
+        'rel-card': 'var(--rel-radius-card)',
+        'rel-panel': 'var(--rel-radius-panel)',
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",

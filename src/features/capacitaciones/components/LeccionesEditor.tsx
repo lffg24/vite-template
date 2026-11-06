@@ -1,0 +1,896 @@
+// src/features/capacitaciones/components/LeccionesEditor.tsx · A-04
+//
+// Constructor de lecciones.
+//
+// Dos cosas que esta pantalla deliberadamente NO hace:
+//
+// - **No reordena.** El orden lo calcula la base dentro del mismo bloqueo que
+//   inserta la lección, y al eliminar lo compacta con `ROW_NUMBER()`. Un
+//   arrastrar-y-soltar aquí necesitaría un endpoint de reordenamiento que no
+//   existe, y fingirlo en el cliente dejaría la pantalla mostrando un orden que
+//   el servidor no tiene.
+// - **No deja elegir un tipo sin reproductor.** Están a la vista y
+//   deshabilitados con su motivo, porque el backend rechaza publicar una
+//   versión que los use. Ocultarlos haría que la limitación se descubriera al
+//   pulsar «Publicar», con la lección ya redactada.
+
+import { useState } from "react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
+import { FilaOrdenable, ListaOrdenable } from "@/shared/ui/ListaOrdenable";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetFooter,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { IllustratedFormSheet } from "@/shared/ui/illustration";
+import { useToast } from "@/hooks/use-toast";
+import {
+  agregarLeccion,
+  editarLeccion,
+  eliminarLeccion,
+  reordenarLecciones,
+} from "@/services/capacitacionesService";
+import type {
+  BloqueLeccion,
+  ErrorApi,
+  EvaluacionLeccion,
+  Leccion,
+  ProveedorRecurso,
+  TipoLeccion,
+} from "@/types/capacitaciones";
+import {
+  ConstructorEvaluacion,
+  EVALUACION_VACIA,
+} from "@/features/capacitaciones/components/ConstructorEvaluacion";
+import { SelectorCuestionarioBanco } from "@/features/capacitaciones/components/SelectorCuestionarioBanco";
+import {
+  ETIQUETA_TIPO_LECCION,
+  ETIQUETA_PROVEEDOR,
+  PROVEEDORES_RECURSO,
+  TIPOS_LECCION,
+  TIPOS_LECCION_CON_RECURSO,
+  TIPOS_LECCION_IMPLEMENTADOS,
+  TIPOS_LECCION_NUNCA_OBLIGATORIOS,
+} from "@/types/capacitaciones";
+import { TipoLeccionBadge } from "./Insignias";
+import { formatearIntensidad } from "../formato";
+import { SinDatos } from "./EstadoPantalla";
+
+function estaImplementado(tipo: TipoLeccion) {
+  return TIPOS_LECCION_IMPLEMENTADOS.includes(tipo);
+}
+
+/**
+ * Los bloques se editan como texto plano separado por líneas en blanco.
+ *
+ * No es una simplificación temporal disfrazada: un editor enriquecido produce
+ * marcado que después hay que sanear antes de pintarlo en el navegador del
+ * participante, y esa decisión no está tomada. Texto plano se puede escapar sin
+ * ambigüedad y se puede migrar a algo más rico sin perder contenido.
+ */
+function bloquesATexto(bloques: BloqueLeccion[] | null | undefined): string {
+  if (!bloques || bloques.length === 0) return "";
+  return bloques.map((b) => b.contenido).join("\n\n");
+}
+
+function textoABloques(texto: string): BloqueLeccion[] {
+  return texto
+    .split(/\n\s*\n/)
+    .map((t) => t.trim())
+    .filter((t) => t !== "")
+    .map((contenido) => ({ tipo: "texto" as const, contenido }));
+}
+
+/**
+ * De dónde sale el cuestionario de una lección de evaluación.
+ *
+ * Son excluyentes y el servidor rechaza las dos a la vez: con ambas no estaría
+ * decidido cuál se congela al publicar el curso. Por eso la pantalla lo plantea
+ * como una elección y no como dos secciones que se puedan rellenar.
+ */
+type OrigenEvaluacion = "BANCO" | "PROPIA";
+
+interface FormLeccion {
+  tipo: TipoLeccion;
+  titulo: string;
+  contenido: string;
+  proveedor: ProveedorRecurso;
+  url: string;
+  tituloRecurso: string;
+  origenEvaluacion: OrigenEvaluacion;
+  /** `cuestionario_version_id` cuando el origen es el banco. */
+  versionBanco: string;
+  evaluacion: EvaluacionLeccion;
+  duracion: string;
+  obligatoria: boolean;
+}
+
+const FORM_VACIO: FormLeccion = {
+  tipo: "NATIVA",
+  titulo: "",
+  contenido: "",
+  proveedor: "YOUTUBE",
+  url: "",
+  tituloRecurso: "",
+  // El banco primero: reutilizar lo ya revisado y publicado es lo que se quiere
+  // que pase por defecto. Escribir el cuestionario dentro del curso deja una
+  // copia que ningun otro curso hereda cuando se corrige.
+  origenEvaluacion: "BANCO",
+  versionBanco: "",
+  evaluacion: EVALUACION_VACIA,
+  duracion: "",
+  obligatoria: true,
+};
+
+const TIPOS_CONTENIDO = TIPOS_LECCION.filter((tipo) => tipo !== "EVALUACION");
+
+function formularioNuevo(tipo: "NATIVA" | "EVALUACION"): FormLeccion {
+  return {
+    ...FORM_VACIO,
+    tipo,
+    evaluacion: { ...EVALUACION_VACIA, preguntas: [] },
+  };
+}
+
+/** Este tipo se reproduce desde una URL, asi que exige material. */
+function usaRecurso(tipo: TipoLeccion) {
+  return TIPOS_LECCION_CON_RECURSO.includes(tipo);
+}
+
+export function LeccionesEditor({
+  cursoId,
+  lecciones,
+  editable,
+  alCambiar,
+}: {
+  cursoId: string;
+  lecciones: Leccion[];
+  /** Un curso archivado se consulta pero no se toca. */
+  editable: boolean;
+  alCambiar: () => Promise<void> | void;
+}) {
+  const { toast } = useToast();
+  const [abierto, setAbierto] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormLeccion>(FORM_VACIO);
+  const [guardando, setGuardando] = useState(false);
+  const [errorTitulo, setErrorTitulo] = useState<string | null>(null);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
+  const [errorEvaluacion, setErrorEvaluacion] = useState<string | null>(null);
+  const [errorServidor, setErrorServidor] = useState<string | null>(null);
+  const [aEliminar, setAEliminar] = useState<Leccion | null>(null);
+  const [moviendo, setMoviendo] = useState(false);
+  const [ordenOptimista, setOrdenOptimista] = useState<string[] | null>(null);
+  const [eliminando, setEliminando] = useState(false);
+
+  const obligatoriedadFijada = TIPOS_LECCION_NUNCA_OBLIGATORIOS.includes(form.tipo);
+
+  function confirmarApertura() {
+    // Radix abre desde el trigger. Firefox puede procesar el mismo gesto como
+    // interacción exterior cuando el contenido se monta en un portal; repetir
+    // el estado en el cuadro siguiente evita que ese gesto cierre el panel.
+    window.requestAnimationFrame(() => setAbierto(true));
+  }
+
+  function abrirNueva(tipo: "NATIVA" | "EVALUACION") {
+    setEditandoId(null);
+    setForm(formularioNuevo(tipo));
+    setErrorTitulo(null);
+    setErrorUrl(null);
+    setErrorEvaluacion(null);
+    setErrorServidor(null);
+    confirmarApertura();
+  }
+
+  function abrirEdicion(l: Leccion) {
+    setEditandoId(l.id);
+    setForm({
+      tipo: l.tipo,
+      titulo: l.titulo,
+      contenido: bloquesATexto(l.bloques),
+      proveedor: l.recurso?.proveedor ?? "YOUTUBE",
+      url: l.recurso?.url ?? "",
+      tituloRecurso: l.recurso?.titulo ?? "",
+      // La lección ya tiene una de las dos formas; se abre en la que tiene.
+      origenEvaluacion: l.cuestionario_version_id ? "BANCO" : l.evaluacion ? "PROPIA" : "BANCO",
+      versionBanco: l.cuestionario_version_id ?? "",
+      evaluacion: l.evaluacion ?? EVALUACION_VACIA,
+      duracion: l.duracion_estimada_min == null ? "" : String(l.duracion_estimada_min),
+      obligatoria: l.obligatoria,
+    });
+    setErrorTitulo(null);
+    setErrorUrl(null);
+    setErrorEvaluacion(null);
+    setErrorServidor(null);
+    confirmarApertura();
+  }
+
+  async function enviar(e: React.FormEvent) {
+    e.preventDefault();
+    const titulo = form.titulo.trim();
+    if (titulo === "") {
+      setErrorTitulo("La lección necesita un título.");
+      return;
+    }
+    setErrorTitulo(null);
+
+    const duracionNum = form.duracion.trim() === "" ? null : Number(form.duracion);
+    const duracion =
+      duracionNum !== null && Number.isFinite(duracionNum) && duracionNum > 0
+        ? Math.trunc(duracionNum)
+        : null;
+    const bloques = textoABloques(form.contenido);
+
+    // El material solo viaja si la leccion es de las que lo usan Y hay URL. Sin
+    // la segunda condicion, editar el titulo de una leccion de video volveria a
+    // registrar el mismo recurso en cada guardado.
+    const urlLimpia = form.url.trim();
+    if (usaRecurso(form.tipo) && urlLimpia === "" && !editandoId) {
+      setErrorUrl("Esta leccion se reproduce desde una direccion: hace falta.");
+      return;
+    }
+    setErrorUrl(null);
+
+    const recurso =
+      usaRecurso(form.tipo) && urlLimpia !== ""
+        ? {
+            proveedor: form.proveedor,
+            url: urlLimpia,
+            titulo: form.tituloRecurso.trim() || titulo,
+          }
+        : null;
+
+    // La evaluación viaja entera o no viaja. El servidor la valida y la
+    // normaliza; aquí solo se comprueba lo que se puede decir sin duplicar sus
+    // reglas —el detalle vive en `catalogo.validar_evaluacion`, y tenerlo en
+    // dos sitios es la forma segura de que acaben diciendo cosas distintas.
+    const esEvaluacion = form.tipo === "EVALUACION";
+    const delBanco = esEvaluacion && form.origenEvaluacion === "BANCO";
+    if (delBanco && form.versionBanco === "") {
+      setErrorEvaluacion("Elige una evaluación del banco.");
+      return;
+    }
+    if (esEvaluacion && !delBanco && form.evaluacion.preguntas.length === 0) {
+      setErrorEvaluacion("Agrega al menos una pregunta.");
+      return;
+    }
+    setErrorEvaluacion(null);
+    setErrorServidor(null);
+    // Una de las dos, nunca las dos ni ninguna: es la misma regla que aplica el
+    // servidor, y mandar ambas devuelve un 422 que la pantalla no sabría
+    // explicar mejor de lo que puede evitarlo aquí.
+    const evaluacion = esEvaluacion && !delBanco ? form.evaluacion : null;
+    const cuestionarioVersionId = delBanco ? form.versionBanco : null;
+
+    setGuardando(true);
+    try {
+      if (editandoId) {
+        await editarLeccion(cursoId, editandoId, {
+          titulo,
+          recurso,
+          evaluacion,
+          cuestionario_version_id: cuestionarioVersionId,
+          bloques: bloques.length > 0 ? bloques : null,
+          duracion_estimada_min: duracion,
+          obligatoria: obligatoriedadFijada ? false : form.obligatoria,
+        });
+        toast({ title: esEvaluacion ? "Evaluación guardada" : "Lección guardada" });
+      } else {
+        await agregarLeccion(cursoId, {
+          tipo: form.tipo,
+          titulo,
+          recurso,
+          evaluacion,
+          cuestionario_version_id: cuestionarioVersionId,
+          bloques: bloques.length > 0 ? bloques : null,
+          duracion_estimada_min: duracion,
+          obligatoria: obligatoriedadFijada ? false : form.obligatoria,
+        });
+        toast({
+          title: esEvaluacion ? "Evaluación agregada" : "Lección agregada",
+          description: "Se ubicó al final del curso.",
+        });
+      }
+      setAbierto(false);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      setErrorServidor(err.message);
+      toast({
+        variant: "destructive",
+        title: editandoId
+          ? `No pudimos guardar ${esEvaluacion ? "la evaluación" : "la lección"}`
+          : `No pudimos agregar ${esEvaluacion ? "la evaluación" : "la lección"}`,
+        description: err.message,
+      });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function reordenar(nuevos: string[]) {
+    // Se pinta el orden nuevo ANTES de que responda el servidor. Esperar a la
+    // respuesta para mover la fila hace que la lección salte de vuelta al sitio
+    // de origen durante un instante, y arrastrar se siente roto aunque
+    // funcione. Si falla, se recarga y vuelve al orden real.
+    setOrdenOptimista(nuevos);
+    setMoviendo(true);
+    try {
+      await reordenarLecciones(cursoId, nuevos);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos guardar el orden",
+        description: err.message,
+      });
+      await alCambiar();
+    } finally {
+      setOrdenOptimista(null);
+      setMoviendo(false);
+    }
+  }
+
+  async function confirmarEliminacion() {
+    if (!aEliminar) return;
+    setEliminando(true);
+    try {
+      await eliminarLeccion(cursoId, aEliminar.id);
+      toast({
+        title: "Lección eliminada",
+        description: "Las siguientes se renumeraron para no dejar huecos.",
+      });
+      setAEliminar(null);
+      await alCambiar();
+    } catch (e) {
+      const err = e as ErrorApi;
+      toast({
+        variant: "destructive",
+        title: "No pudimos eliminar la lección",
+        description: err.message,
+      });
+    } finally {
+      setEliminando(false);
+    }
+  }
+
+  // Mientras el servidor confirma, manda el orden local. `ordenOptimista`
+  // lleva ids y no lecciones: así no hay dos copias de los datos que puedan
+  // desincronizarse, solo dos opiniones sobre el orden.
+  const visibles = ordenOptimista
+    ? ordenOptimista
+        .map((id) => lecciones.find((l) => l.id === id))
+        .filter((l): l is Leccion => Boolean(l))
+    : lecciones;
+
+  const totalMinutos = lecciones.reduce((acc, l) => acc + (l.duracion_estimada_min ?? 0), 0);
+  const editandoEvaluacion = form.tipo === "EVALUACION";
+
+  return (
+    <Sheet open={abierto} onOpenChange={setAbierto}>
+    <SeccionPlegable
+      titulo="Lecciones"
+      claveMemoria="abril360.capacitaciones.curso.lecciones"
+      descripcion={
+        lecciones.length > 0
+          ? `${lecciones.length} ${lecciones.length === 1 ? "lección" : "lecciones"}${
+              totalMinutos > 0 ? ` · ${formatearIntensidad(totalMinutos)} estimados` : ""
+            }`
+          : "Un curso sin lecciones no se puede publicar."
+      }
+      estado={
+        lecciones.length === 0 ? <Badge variant="relWarning">Vacío</Badge> : null
+      }
+      accion={
+        editable && lecciones.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            <SheetTrigger asChild>
+              <Button variant="relOutline" size="sm" onClick={() => abrirNueva("NATIVA")}>
+                <Plus aria-hidden="true" />
+                Agregar lección
+              </Button>
+            </SheetTrigger>
+            <SheetTrigger asChild>
+              <Button variant="relOutline" size="sm" onClick={() => abrirNueva("EVALUACION")}>
+                <Plus aria-hidden="true" />
+                Agregar evaluación
+              </Button>
+            </SheetTrigger>
+          </div>
+        ) : null
+      }
+    >
+        {lecciones.length === 0 ? (
+          <SinDatos
+            escena="archivos-informacion"
+            titulo="El curso todavía no tiene lecciones"
+            descripcion="Un curso sin lecciones no se puede publicar: produciría una asignación que nadie puede completar."
+            accion={
+              editable ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                  <SheetTrigger asChild>
+                    <Button variant="rel" onClick={() => abrirNueva("NATIVA")}>
+                      <Plus aria-hidden="true" />
+                      Agregar lección
+                    </Button>
+                  </SheetTrigger>
+                  <SheetTrigger asChild>
+                    <Button variant="relOutline" onClick={() => abrirNueva("EVALUACION")}>
+                      <Plus aria-hidden="true" />
+                      Agregar evaluación
+                    </Button>
+                  </SheetTrigger>
+                </div>
+              ) : undefined
+            }
+          />
+        ) : (
+          <ListaOrdenable
+            ids={visibles.map((l) => l.id)}
+            alReordenar={(nuevos) => void reordenar(nuevos)}
+            deshabilitada={!editable || moviendo}
+          >
+            {visibles.map((l, i) => (
+              <FilaOrdenable
+                key={l.id}
+                id={l.id}
+                etiqueta={l.titulo}
+                deshabilitada={!editable || moviendo}
+                className="bg-rel-surface-subtle"
+              >
+                <div className="flex flex-wrap items-start gap-3 sm:flex-nowrap">
+                <span
+                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rel-canvas font-rel-heading text-sm font-bold tabular-nums text-rel-dark"
+                  aria-hidden="true"
+                >
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-rel-heading text-base font-semibold text-rel-dark">
+                      <span className="sr-only">Lección {l.orden}: </span>
+                      {l.titulo}
+                    </h3>
+                    <TipoLeccionBadge tipo={l.tipo} implementado={estaImplementado(l.tipo)} />
+                    {l.obligatoria ? null : (
+                      <span className="text-xs font-semibold text-rel-muted">
+                        No obligatoria
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 font-rel-body text-sm text-rel-muted">
+                    {l.tipo === "EVALUACION"
+                      ? l.cuestionario_version_id
+                        ? "Evaluación del banco"
+                        : `${l.evaluacion?.preguntas.length ?? 0} ${
+                            l.evaluacion?.preguntas.length === 1 ? "pregunta" : "preguntas"
+                          }`
+                      : l.recurso
+                      ? `${ETIQUETA_PROVEEDOR[l.recurso.proveedor]} · ${l.recurso.titulo}`
+                      : l.bloques?.length
+                      ? `${l.bloques.length} ${l.bloques.length === 1 ? "bloque" : "bloques"}`
+                      : "Sin contenido todavía"}
+                    {l.duracion_estimada_min
+                      ? ` · ${formatearIntensidad(l.duracion_estimada_min)}`
+                      : null}
+                  </p>
+                </div>
+                {editable ? (
+                  <div className="flex shrink-0 gap-1">
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="relGhost"
+                        size="sm"
+                        onClick={() => abrirEdicion(l)}
+                        aria-label={`Editar ${l.tipo === "EVALUACION" ? "la evaluación" : "la lección"} ${l.titulo}`}
+                      >
+                        <Pencil aria-hidden="true" />
+                        <span className="hidden sm:inline">Editar</span>
+                      </Button>
+                    </SheetTrigger>
+                    <Button
+                      variant="relGhost"
+                      size="sm"
+                      className="text-rel-danger hover:bg-rel-danger-subtle"
+                      onClick={() => setAEliminar(l)}
+                      aria-label={`Eliminar la lección ${l.titulo}`}
+                    >
+                      <Trash2 aria-hidden="true" />
+                      <span className="sr-only">Eliminar</span>
+                    </Button>
+                  </div>
+                ) : null}
+                </div>
+              </FilaOrdenable>
+            ))}
+          </ListaOrdenable>
+        )}
+
+
+      {/* --- alta y edición --- */}
+        <IllustratedFormSheet
+          eyebrow={editandoEvaluacion ? "Evaluación del curso" : "Contenido del curso"}
+          title={
+            editandoId
+              ? editandoEvaluacion
+                ? "Editar evaluación"
+                : "Editar lección"
+              : editandoEvaluacion
+              ? "Nueva evaluación"
+              : "Nueva lección"
+          }
+          description={
+            editandoId
+              ? "El tipo se conserva para proteger la regla de completitud de las versiones ya publicadas."
+              : editandoEvaluacion
+              ? "Define cómo comprobarás el aprendizaje. Quedará ubicada dentro de la secuencia del curso."
+              : "Agrega contenido, video o documento. La nueva lección quedará al final del curso."
+          }
+          illustration={editandoEvaluacion ? "evaluationBuilder" : "courseLessonBuilder"}
+          width={editandoEvaluacion ? "wide" : "half"}
+        >
+          <form
+            onSubmit={enviar}
+            onChangeCapture={() => errorServidor && setErrorServidor(null)}
+            className="space-y-5 py-6"
+            noValidate
+          >
+            {!editandoEvaluacion ? <div className="space-y-2">
+              <Label htmlFor="l-tipo" className="text-rel-dark">
+                Tipo de lección
+              </Label>
+              <Select
+                value={form.tipo}
+                onValueChange={(v) => setForm((f) => ({ ...f, tipo: v as TipoLeccion }))}
+                disabled={editandoId !== null}
+              >
+                <SelectTrigger id="l-tipo">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS_CONTENIDO.map((t) => (
+                    <SelectItem key={t} value={t} disabled={!estaImplementado(t)}>
+                      {ETIQUETA_TIPO_LECCION[t]}
+                      {estaImplementado(t) ? "" : " · sin reproductor todavía"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-rel-muted">
+                El contenido nativo se escribe aquí. El video y el documento se
+                reproducen desde una dirección externa. El recurso externo sigue
+                sin reproductor, y por eso no se puede publicar con él.
+              </p>
+            </div> : null}
+
+            <div className="space-y-2">
+              <Label htmlFor="l-titulo" className="text-rel-dark">
+                Título <span className="text-rel-danger">*</span>
+              </Label>
+              <Input
+                id="l-titulo"
+                value={form.titulo}
+                maxLength={250}
+                onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
+                aria-invalid={errorTitulo ? true : undefined}
+                aria-describedby={errorTitulo ? "l-titulo-error" : undefined}
+                autoFocus
+              />
+              {errorTitulo ? (
+                <p id="l-titulo-error" role="alert" className="text-sm text-rel-danger">
+                  {errorTitulo}
+                </p>
+              ) : null}
+            </div>
+
+            {usaRecurso(form.tipo) ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Material
+                </legend>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-proveedor" className="text-rel-dark">
+                    Dónde está
+                  </Label>
+                  <Select
+                    value={form.proveedor}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, proveedor: v as ProveedorRecurso }))
+                    }
+                  >
+                    <SelectTrigger id="l-proveedor">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROVEEDORES_RECURSO.map((prov) => (
+                        <SelectItem key={prov} value={prov}>
+                          {ETIQUETA_PROVEEDOR[prov]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-url" className="text-rel-dark">
+                    Dirección <span className="text-rel-danger">*</span>
+                  </Label>
+                  <Input
+                    id="l-url"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://…"
+                    value={form.url}
+                    maxLength={2000}
+                    onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                    aria-invalid={errorUrl ? true : undefined}
+                    aria-describedby={errorUrl ? "l-url-error" : "l-url-ayuda"}
+                  />
+                  {errorUrl ? (
+                    <p id="l-url-error" role="alert" className="text-sm text-rel-danger">
+                      {errorUrl}
+                    </p>
+                  ) : (
+                    <p id="l-url-ayuda" className="text-sm text-rel-muted">
+                      Tiene que empezar por https:// y el dominio debe
+                      corresponder al proveedor elegido; el servidor comprueba
+                      las dos cosas. El material tiene que quedar visible para
+                      cualquiera con el enlace: el participante entra sin cuenta.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="l-titulo-recurso" className="text-rel-dark">
+                    Nombre del material
+                  </Label>
+                  <Input
+                    id="l-titulo-recurso"
+                    value={form.tituloRecurso}
+                    maxLength={250}
+                    placeholder="Si lo dejas vacío, se usa el título de la lección"
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, tituloRecurso: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <p className="text-sm text-rel-muted">
+                  Se dará por vista cuando el participante lo confirme. De un
+                  video incrustado no se puede medir cuánto se reprodujo sin la
+                  API del proveedor, y mostrar un porcentaje calculado en el
+                  navegador sería inventarlo.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "EVALUACION" ? (
+              <fieldset className="space-y-4 rounded-rel-card border border-rel-border p-4">
+                <legend className="px-1 text-sm font-semibold text-rel-dark">
+                  Cuestionario
+                </legend>
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-rel-dark">
+                    ¿De dónde sale?
+                  </legend>
+                  {(
+                    [
+                      {
+                        valor: "BANCO" as const,
+                        titulo: "Del banco de evaluaciones",
+                        // Decía que corregir una errata «se corrige en todos», y
+                        // era falso: publicar una versión CONGELA el
+                        // cuestionario, así que ni los cursos ya publicados ni
+                        // esta misma lección cambian solos. Prometerlo enseñaba
+                        // justo el modelo mental contrario al que sostiene el
+                        // módulo, y se habría descubierto en una auditoría.
+                        ayuda:
+                          "Un cuestionario escrito una vez y reutilizable desde cualquier curso. Al corregirlo se publica una versión nueva, y cada lección elige cuándo pasar a ella: lo ya publicado queda congelado como estaba.",
+                      },
+                      {
+                        valor: "PROPIA" as const,
+                        titulo: "Escrito dentro de este curso",
+                        ayuda:
+                          "Las preguntas viven en esta lección y ningún otro curso las ve. Útil cuando no tienen sentido fuera de aquí.",
+                      },
+                    ]
+                  ).map((opcion) => (
+                    <label
+                      key={opcion.valor}
+                      className="flex cursor-pointer gap-3 rounded-rel-control border border-rel-border p-3 has-[:checked]:border-rel-primary has-[:checked]:bg-rel-accent-subtle"
+                    >
+                      <input
+                        type="radio"
+                        name="origen-evaluacion"
+                        className="mt-1 h-4 w-4 shrink-0 accent-rel-primary"
+                        checked={form.origenEvaluacion === opcion.valor}
+                        onChange={() => {
+                          setErrorEvaluacion(null);
+                          setForm((f) => ({ ...f, origenEvaluacion: opcion.valor }));
+                        }}
+                      />
+                      <span className="min-w-0">
+                        <span className="block font-rel-body text-sm font-semibold text-rel-dark">
+                          {opcion.titulo}
+                        </span>
+                        <span className="block font-rel-body text-sm text-rel-muted">
+                          {opcion.ayuda}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                {form.origenEvaluacion === "BANCO" ? (
+                  <SelectorCuestionarioBanco
+                    valor={form.versionBanco}
+                    alCambiar={(versionId) => {
+                      setErrorEvaluacion(null);
+                      setForm((f) => ({ ...f, versionBanco: versionId }));
+                    }}
+                  />
+                ) : (
+                  <ConstructorEvaluacion
+                    valor={form.evaluacion}
+                    alCambiar={(v) => setForm((f) => ({ ...f, evaluacion: v }))}
+                  />
+                )}
+                {errorEvaluacion ? (
+                  <p role="alert" className="text-sm text-rel-danger">
+                    {errorEvaluacion}
+                  </p>
+                ) : null}
+                <p className="text-sm text-rel-muted">
+                  Una evaluación tiene que ser obligatoria para publicarse: si se
+                  puede saltar, la constancia no prueba que se aprobara.
+                </p>
+              </fieldset>
+            ) : null}
+
+            {form.tipo === "NATIVA" ? (
+            <div className="space-y-2">
+              <Label htmlFor="l-contenido" className="text-rel-dark">
+                Contenido
+              </Label>
+              <Textarea
+                id="l-contenido"
+                rows={10}
+                value={form.contenido}
+                onChange={(e) => setForm((f) => ({ ...f, contenido: e.target.value }))}
+                aria-describedby="l-contenido-ayuda"
+              />
+              <p id="l-contenido-ayuda" className="text-sm text-rel-muted">
+                Separa los bloques con una línea en blanco. Cada bloque es una
+                pantalla para el participante.
+              </p>
+            </div>
+            ) : null}
+
+            <div className="space-y-2">
+              <Label htmlFor="l-duracion" className="text-rel-dark">
+                Duración estimada (minutos)
+              </Label>
+              <Input
+                id="l-duracion"
+                inputMode="numeric"
+                value={form.duracion}
+                onChange={(e) => setForm((f) => ({ ...f, duracion: e.target.value }))}
+              />
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="l-obligatoria"
+                checked={obligatoriedadFijada ? false : form.obligatoria}
+                disabled={obligatoriedadFijada}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, obligatoria: v === true }))}
+                className="mt-0.5"
+              />
+              <div>
+                <Label htmlFor="l-obligatoria" className="text-rel-dark">
+                  Obligatoria para completar el curso
+                </Label>
+                {obligatoriedadFijada ? (
+                  <p className="mt-1 text-sm text-rel-muted">
+                    Un recurso externo nunca cuenta para la finalización: no se
+                    puede comprobar que alguien lo consumió.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            {errorServidor ? (
+              <div
+                role="alert"
+                className="rounded-rel-control border border-rel-danger/25 bg-rel-danger-subtle p-3 text-sm text-rel-danger"
+              >
+                <p className="font-semibold">
+                  No pudimos {editandoId ? "guardar" : "agregar"} {editandoEvaluacion ? "la evaluación" : "la lección"}.
+                </p>
+                <p className="mt-1">{errorServidor}</p>
+              </div>
+            ) : null}
+
+            <SheetFooter className="sticky bottom-0 -mx-5 gap-2 border-t border-rel-border bg-rel-surface px-5 py-4 sm:-mx-7 sm:gap-2 sm:px-7">
+              <Button
+                type="button"
+                variant="relGhost"
+                onClick={() => setAbierto(false)}
+                disabled={guardando}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" variant="rel" disabled={guardando}>
+                {guardando
+                  ? "Guardando…"
+                  : editandoId
+                  ? editandoEvaluacion
+                    ? "Guardar evaluación"
+                    : "Guardar lección"
+                  : editandoEvaluacion
+                  ? "Agregar evaluación"
+                  : "Agregar lección"}
+              </Button>
+            </SheetFooter>
+          </form>
+        </IllustratedFormSheet>
+
+      {/* --- confirmación destructiva --- */}
+      <AlertDialog open={aEliminar !== null} onOpenChange={(v) => !v && setAEliminar(null)}>
+        <AlertDialogContent className="rel-scope font-rel-body">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-rel-heading text-rel-dark">
+              ¿Eliminar «{aEliminar?.titulo}»?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-rel-muted">
+              Se elimina del curso vivo y las lecciones siguientes se renumeran.
+              Las versiones ya publicadas conservan su copia congelada: quien esté
+              cursando una de ellas no se ve afectado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={eliminando}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rel-danger text-rel-danger-foreground hover:bg-rel-danger/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmarEliminacion();
+              }}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar lección"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SeccionPlegable>
+    </Sheet>
+  );
+}

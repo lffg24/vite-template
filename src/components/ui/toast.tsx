@@ -23,13 +23,28 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+  "group pointer-events-auto relative flex w-full items-start gap-4 overflow-hidden rounded-[26px] border p-5 pr-10 backdrop-blur transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
   {
     variants: {
+      // Los cuatro tonos que ya usaba Psicosocial en `ToastCard`, traidos aqui
+      // para que TODOS los modulos avisen igual. El aviso era una caja plana con
+      // borde gris y no se parecia en nada al resto de la casa.
+      //
+      // Fondo claro con sombra de color, no fondo de color: un panel rojo entero
+      // se lee como una alarma del sistema, y la mayoria de estos avisos son
+      // «se guardo».
       variant: {
-        default: "border bg-background text-foreground",
+        default:
+          "border-rel-border bg-rel-surface/95 text-rel-dark shadow-[0_18px_48px_rgba(16,28,40,0.14)]",
+        success:
+          "border-emerald-200/80 bg-white/95 text-emerald-950 shadow-[0_18px_48px_rgba(16,185,129,0.18)]",
+        warning:
+          "border-amber-200/80 bg-white/95 text-amber-950 shadow-[0_18px_48px_rgba(245,158,11,0.18)]",
+        // Se llama `destructive` y no `error` porque es el nombre que ya usan
+        // las llamadas repartidas por el producto. Cambiarlo obligaria a tocar
+        // cada una para ganar una palabra.
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+          "destructive group border-rose-200/80 bg-white/95 text-rose-950 shadow-[0_18px_48px_rgba(244,63,94,0.18)]",
       },
     },
     defaultVariants: {
@@ -75,7 +90,9 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+      // Visible SIEMPRE, no solo al pasar el raton: con `opacity-0` no habia
+      // forma de cerrarlo desde un telefono, donde no hay hover.
+      "absolute right-3 top-3 rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary",
       className
     )}
     toast-close=""
@@ -92,7 +109,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold [&+div]:text-xs", className)}
+    className={cn("font-rel-heading text-base font-black tracking-tight", className)}
     {...props}
   />
 ))
@@ -104,7 +121,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("mt-1 text-sm leading-6 text-slate-600", className)}
     {...props}
   />
 ))
