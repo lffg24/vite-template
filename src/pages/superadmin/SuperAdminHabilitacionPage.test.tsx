@@ -89,25 +89,24 @@ beforeEach(() => {
  * para esta empresa». Habilitarla era SQL a mano.
  */
 describe("Habilitar módulos", () => {
-  it("nombra las TRES condiciones, incluida la que no administra", async () => {
-    // Enseñar dos de tres deja a quien habilita creyendo que terminó, y el 403
-    // que llega después parece una avería del sistema.
+  it("separa acceso de empresa, plataforma y permisos personales", async () => {
     await elegirEmpresa();
 
     expect(await screen.findByText("Contrato vigente")).toBeInTheDocument();
+    expect(screen.getByText("Asignaciones encendidas")).toBeInTheDocument();
     expect(screen.getByText("Acceso público encendido")).toBeInTheDocument();
-    expect(screen.getByText("Permiso de quien opera")).toBeInTheDocument();
+    expect(screen.getByText("Permisos de las personas")).toBeInTheDocument();
+    expect(screen.getByText(/no registra ni acredita compras, pagos o facturas/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Roles y permisos" })
     ).toHaveAttribute("href", "/superadmin/roles-permisos");
   });
 
-  it("explica QUÉ se rompe sin el acceso público", async () => {
-    // Es exactamente el mensaje que recibió quien repartió el enlace.
+  it("explica cómo habilitar el acceso público", async () => {
     await elegirEmpresa();
 
     expect(
-      await screen.findByText(/responde que no está habilitado para esta empresa/i)
+      await screen.findByText(/El enlace público no estará disponible/i)
     ).toBeInTheDocument();
   });
 
@@ -115,7 +114,7 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
 
     fireEvent.click(
-      await screen.findByRole("button", { name: /activar desde hoy/i })
+      await screen.findByRole("button", { name: /registrar acceso desde hoy/i })
     );
 
     await vi.waitFor(() => expect(crearContrato).toHaveBeenCalled());
@@ -148,7 +147,7 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
 
     await screen.findByText("Contrato vigente");
-    expect(screen.queryByRole("button", { name: /activar desde hoy/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /registrar acceso desde hoy/i })).toBeNull();
   });
 
   it("enciende una funcionalidad para ESA empresa", async () => {
@@ -169,6 +168,7 @@ describe("Habilitar módulos", () => {
   it("administra el catálogo con el control GLOBAL", async () => {
     await elegirEmpresa();
 
+    fireEvent.click(screen.getByText("Configuración global del catálogo"));
     fireEvent.click(await screen.findByLabelText("Catálogo global"));
 
     await vi.waitFor(() => expect(cambiarBanderaGlobal).toHaveBeenCalledWith({
