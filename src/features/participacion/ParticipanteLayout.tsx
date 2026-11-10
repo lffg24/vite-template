@@ -22,11 +22,13 @@ import { CabeceraParticipante } from "@/shared/ui/CabeceraParticipante";
 export function ParticipanteLayout({
   children,
   progreso,
+  progresoEtiqueta = "Avance del curso",
   ancho = "amplio",
 }: {
   children: ReactNode;
   /** 0 a 1. Solo cuando hay un recorrido en marcha; en el aterrizaje no. */
   progreso?: number;
+  progresoEtiqueta?: string;
   ancho?: "compacto" | "amplio";
 }) {
   return (
@@ -38,7 +40,7 @@ export function ParticipanteLayout({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progreso * 100)}
-          aria-label="Avance del curso"
+          aria-label={progresoEtiqueta}
         >
           <div
             className="h-full bg-rel-primary transition-[width] duration-rel-panel"
