@@ -58,6 +58,7 @@ async function elegirEmpresa() {
     </MemoryRouter>
   );
   fireEvent.click(await screen.findByText("Constructora del Norte"));
+  await screen.findByText("Contrato vigente");
 }
 
 beforeEach(() => {
@@ -93,10 +94,10 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
 
     expect(await screen.findByText("Contrato vigente")).toBeInTheDocument();
-    expect(screen.getByText("Asignaciones encendidas")).toBeInTheDocument();
-    expect(screen.getByText("Acceso público encendido")).toBeInTheDocument();
+    expect(screen.getByText("Asignaciones disponibles")).toBeInTheDocument();
+    expect(screen.getByText("Acceso público disponible")).toBeInTheDocument();
     expect(screen.getByText("Permisos de las personas")).toBeInTheDocument();
-    expect(screen.getByText(/no registra ni acredita compras, pagos o facturas/i)).toBeInTheDocument();
+    expect(screen.getByText(/La facturación y los pagos se gestionan fuera de ABRIL360/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Roles y permisos" })
     ).toHaveAttribute("href", "/superadmin/roles-permisos");
@@ -110,20 +111,72 @@ describe("Habilitar módulos", () => {
     ).toBeInTheDocument();
   });
 
-  it("activa el contrato de hoy en adelante", async () => {
+  it("registra las fechas y la referencia del contrato acordado externamente", async () => {
     await elegirEmpresa();
-
+    fireEvent.change(screen.getByLabelText("Vigente desde"), { target: { value: "2026-11-12" } });
+    fireEvent.change(screen.getByLabelText("Vigente hasta (opcional)"), { target: { value: "2027-11-11" } });
+    fireEvent.change(screen.getByLabelText("Referencia del acuerdo (opcional)"), { target: { value: "Acuerdo 123" } });
     fireEvent.click(
-      await screen.findByRole("button", { name: /registrar acceso desde hoy/i })
+      await screen.findByRole("button", { name: /registrar contrato de capacitaciones/i })
     );
 
     await vi.waitFor(() => expect(crearContrato).toHaveBeenCalled());
     const [empresaId, datos] = vi.mocked(crearContrato).mock.calls[0];
     expect(empresaId).toBe("e1");
     expect(datos.modulo).toBe("CAPACITACIONES");
-    // Sin fecha de fin: es lo normal en un contrato vigente, y obligar a
-    // inventarse un año produce vencimientos que nadie decidió.
-    expect(datos.vigencia_hasta).toBeNull();
+    expect(datos).toEqual({
+      modulo: "CAPACITACIONES",
+      vigencia_desde: "2026-11-12",
+      vigencia_hasta: "2027-11-11",
+      notas: "Acuerdo 123",
+    });
+  });
+
+  it("rechaza una fecha de fin anterior al inicio", async () => {
+    await elegirEmpresa();
+    fireEvent.change(screen.getByLabelText("Vigente desde"), { target: { value: "2026-11-12" } });
+    fireEvent.change(screen.getByLabelText("Vigente hasta (opcional)"), { target: { value: "2026-11-11" } });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/fecha de fin debe ser igual o posterior/i);
+    expect(screen.getByRole("button", { name: /registrar contrato de capacitaciones/i })).toBeDisabled();
+    expect(crearContrato).not.toHaveBeenCalled();
+  });
+
+  it("muestra una función activada como pendiente si aún no existe contrato vigente", async () => {
+    vi.mocked(obtenerHabilitacion).mockResolvedValue(estado({
+      banderas: [
+        { clave: "capacitaciones.asignacion", nombre: "Asignaciones", para_que: "Asignar cursos", efectiva: true },
+        { clave: "capacitaciones.participacion", nombre: "Acceso público", para_que: "Entrar por enlace", efectiva: true },
+      ],
+    }));
+    await elegirEmpresa();
+    expect(await screen.findAllByText("La función está activada; falta un contrato vigente.")).toHaveLength(2);
+    expect(screen.getByText("Asignaciones disponibles").parentElement).toHaveTextContent("pendiente");
+  });
+
+  it("no muestra ni opera datos de otra empresa mientras carga la selección", async () => {
+    vi.mocked(superadminService.empresas).mockResolvedValue({
+      ok: true,
+      items: [
+        { id: "e1", nombre: "Constructora del Norte", nit: "900123456" },
+        { id: "e2", nombre: "Empresa del Sur", nit: "900999999" },
+      ],
+      total: 2,
+      page: 1,
+      page_size: 20,
+    });
+    let resolverSegunda: (valor: EstadoDeHabilitacion) => void = () => undefined;
+    vi.mocked(obtenerHabilitacion).mockImplementation((empresaId) => empresaId === "e1"
+      ? Promise.resolve(estado())
+      : new Promise((resolve) => { resolverSegunda = resolve; }));
+
+    await elegirEmpresa();
+    fireEvent.click(screen.getByText("Empresa del Sur"));
+    expect(screen.queryByText("3. Contrato y vigencia del módulo")).toBeNull();
+    expect(screen.queryByRole("button", { name: /registrar contrato de capacitaciones/i })).toBeNull();
+
+    resolverSegunda(estado());
+    expect(await screen.findByText("3. Contrato y vigencia del módulo")).toBeInTheDocument();
   });
 
   it("con contrato vigente NO ofrece crear otro", async () => {
@@ -147,7 +200,20 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
 
     await screen.findByText("Contrato vigente");
-    expect(screen.queryByRole("button", { name: /registrar acceso desde hoy/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /registrar contrato de capacitaciones/i })).toBeNull();
+  });
+
+  it("no ofrece duplicar un contrato activo aunque sus fechas ya no estén vigentes", async () => {
+    vi.mocked(obtenerHabilitacion).mockResolvedValue(estado({
+      contratado: false,
+      contratos: [{
+        id: "c1", estado: "ACTIVO", vigencia_desde: "2020-01-01",
+        vigencia_hasta: "2020-12-31", notas: null, vigente: false,
+      }],
+    }));
+    await elegirEmpresa();
+    expect(screen.queryByRole("button", { name: /registrar contrato de capacitaciones/i })).toBeNull();
+    expect(screen.getByText(/Existe un contrato activo fuera de vigencia/i)).toBeInTheDocument();
   });
 
   it("enciende una funcionalidad para ESA empresa", async () => {
