@@ -22,6 +22,8 @@ const ResponderEvaluacion = lazy(() => import("@/pages/ResponderEvaluacion"));
 const RecursosAbril360Page = lazy(() => import("@/pages/RecursosAbril360Page"));
 const WebDirectPublicPage = lazy(() => import("@/pages/psicosocial/WebDirectPublicPage"));
 const CalificacionPublicaPage = lazy(() => import("@/pages/cx/CalificacionPublicaPage"));
+const CxLayout = lazy(() => import("@/layout/CxLayout"));
+const ContextosCxPage = lazy(() => import("@/pages/cx/ContextosCxPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -170,6 +172,9 @@ function App() {
               layout muestra una pantalla que lo explica cuando la respuesta es
               que no. */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/cx/configuracion" element={<CxLayout />}>
+              <Route path="contextos" element={<ContextosCxPage />} />
+            </Route>
             <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
               {/* El indice lo decide el contexto de capacidades, no una ruta
                   fija: mandar siempre al catalogo aterrizaba en un 403 a quien
