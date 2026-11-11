@@ -190,6 +190,7 @@ export default function SuperAdminHabilitacionPage() {
               </div>
               <div className="flex shrink-0 items-center gap-2 text-sm">
                 <Switch
+                  className="data-[state=unchecked]:bg-rel-neutral"
                   checked={Boolean(bandera.habilitado_global)}
                   disabled={guardando !== null}
                   aria-label={`${bandera.nombre} global`}
@@ -393,7 +394,7 @@ export default function SuperAdminHabilitacionPage() {
                       <Label htmlFor="contrato-referencia">Referencia del acuerdo (opcional)</Label>
                       <Input id="contrato-referencia" maxLength={300} value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ej. número de contrato o nota interna" disabled={guardando !== null} />
                     </div>
-                    <Button type="submit" variant="rel" disabled={guardando !== null || fechaInvalida || !fechaInicio}>
+                    <Button type="submit" variant="rel" size="lg" className="w-full sm:w-auto" disabled={guardando !== null || fechaInvalida || !fechaInicio}>
                       {guardando === "contrato" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
                       Registrar contrato de Capacitaciones
                     </Button>
@@ -418,6 +419,7 @@ export default function SuperAdminHabilitacionPage() {
                       </div>
                        <div className="flex shrink-0 items-center gap-2 text-sm">
                          <Switch
+                           className="data-[state=unchecked]:bg-rel-neutral"
                            checked={Boolean(b.efectiva)}
                            disabled={guardando !== null}
                            aria-label={`${b.nombre} para ${empresa.nombre}`}
