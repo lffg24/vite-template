@@ -26,6 +26,7 @@ const CxLayout = lazy(() => import("@/layout/CxLayout"));
 const ContextosCxPage = lazy(() => import("@/pages/cx/ContextosCxPage"));
 const PuntosCxPage = lazy(() => import("@/pages/cx/PuntosCxPage"));
 const FactoresCxPage = lazy(() => import("@/pages/cx/FactoresCxPage"));
+const AreasCxPage = lazy(() => import("@/pages/cx/AreasCxPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -178,6 +179,7 @@ function App() {
               <Route path="contextos" element={<ContextosCxPage />} />
               <Route path="puntos" element={<PuntosCxPage />} />
               <Route path="factores" element={<FactoresCxPage />} />
+              <Route path="areas" element={<AreasCxPage />} />
             </Route>
             <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
               {/* El indice lo decide el contexto de capacidades, no una ruta

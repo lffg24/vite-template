@@ -16,6 +16,7 @@ import {
   editarSede, editarServicio, listarContextos, listarServiciosDeSede, vincularServicio,
 } from "@/services/cxContextosService";
 import type { SedeCx, ServicioCx, ServicioDeSede, TipoContexto } from "@/types/cxContextos";
+import ServicioAreasSheet from "./ServicioAreasSheet";
 
 type Fila = SedeCx | ServicioCx;
 type Formulario = { codigo: string; nombre: string; detalle: string };
@@ -40,6 +41,7 @@ export default function ContextosCxPage() {
   const [guardando, setGuardando] = useState(false);
   const [aCambiar, setACambiar] = useState<Fila | null>(null);
   const [sedeVinculos, setSedeVinculos] = useState<SedeCx | null>(null);
+  const [servicioAreas, setServicioAreas] = useState<ServicioCx | null>(null);
 
   const recargar = useCallback(() => setRevision((n) => n + 1), []);
   useEffect(() => {
@@ -115,6 +117,7 @@ export default function ContextosCxPage() {
       <nav aria-label="Configuración CX" className="mb-5 flex flex-wrap gap-2">
         <Button asChild variant="relOutline"><Link to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
         <Button asChild variant="relOutline"><Link to="/cx/configuracion/factores">Factores</Link></Button>
+        <Button asChild variant="relOutline"><Link to="/cx/configuracion/areas">Áreas</Link></Button>
       </nav>
       <div className="flex flex-wrap gap-2 border-b border-rel-border pb-4" role="group" aria-label="Tipo de catálogo">
         {(["sedes", "servicios"] as const).map((opcion) => <Button key={opcion} type="button"
@@ -144,13 +147,13 @@ export default function ContextosCxPage() {
           <div className="flex items-start justify-between gap-2"><div className="min-w-0"><strong className="block break-words text-rel-dark">{fila.nombre}</strong><span className="text-sm text-rel-muted">{fila.codigo}</span></div>
             <Badge variant={fila.activo ? "relSuccess" : "relNeutral"}>{fila.activo ? "Activa" : "Inactiva"}</Badge></div>
           <p className="mt-2 text-sm text-rel-muted">{tipo === "sedes" ? (fila as SedeCx).zona_horaria : (fila as ServicioCx).sector || "Sin sector"}</p>
-          <Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} />
+          <Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} areas={setServicioAreas} />
         </article>)}</div>
         <div className="mt-5 hidden md:block"><TablaPanel><table className="w-full min-w-[680px] text-left text-sm"><caption className="sr-only">Catálogo de {tipo}</caption>
           <TablaHead><tr><th scope="col" className="p-4">Código</th><th scope="col" className="p-4">Nombre</th><th scope="col" className="p-4">{tipo === "sedes" ? "Zona horaria" : "Sector"}</th><th scope="col" className="p-4">Estado</th><th scope="col" className="p-4">Acciones</th></tr></TablaHead>
           <TablaBody>{filas.map((fila) => <tr key={fila.id}><td className="p-4 font-medium">{fila.codigo}</td><td className="p-4">{fila.nombre}</td><td className="p-4">{tipo === "sedes" ? (fila as SedeCx).zona_horaria : (fila as ServicioCx).sector || "—"}</td>
             <td className="p-4"><Badge variant={fila.activo ? "relSuccess" : "relNeutral"}>{fila.activo ? "Activo" : "Inactivo"}</Badge></td>
-            <td className="p-4"><Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} /></td></tr>)}</TablaBody>
+            <td className="p-4"><Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} areas={setServicioAreas} /></td></tr>)}</TablaBody>
         </table></TablaPanel></div>
       </> : null}
       {!cargando && !error ? <div className="mt-4 flex items-center justify-between gap-3">
@@ -180,13 +183,15 @@ export default function ContextosCxPage() {
     </AlertDialogContent></AlertDialog>
 
     <VinculosSheet sede={sedeVinculos} cerrar={() => setSedeVinculos(null)} />
+    <ServicioAreasSheet servicio={servicioAreas} cerrar={() => setServicioAreas(null)} />
   </div>;
 }
 
-function Acciones({ fila, esSede, editar, estado, vinculos }: { fila: Fila; esSede: boolean; editar: (fila: Fila) => void; estado: (fila: Fila) => void; vinculos: (sede: SedeCx) => void }) {
+function Acciones({ fila, esSede, editar, estado, vinculos, areas }: { fila: Fila; esSede: boolean; editar: (fila: Fila) => void; estado: (fila: Fila) => void; vinculos: (sede: SedeCx) => void; areas: (servicio: ServicioCx) => void }) {
   return <div className="mt-3 flex flex-wrap gap-2 md:mt-0">
     <Button type="button" size="sm" variant="relOutline" onClick={() => editar(fila)}><Pencil aria-hidden="true" /> Editar</Button>
     {esSede && fila.activo ? <Button type="button" size="sm" variant="relOutline" onClick={() => vinculos(fila as SedeCx)}><Link2 aria-hidden="true" /> Servicios</Button> : null}
+    {!esSede && fila.activo ? <Button type="button" size="sm" variant="relOutline" onClick={() => areas(fila as ServicioCx)}>Áreas</Button> : null}
     <Button type="button" size="sm" variant="relGhost" onClick={() => estado(fila)}>{fila.activo ? "Desactivar" : "Activar"}</Button>
   </div>;
 }
