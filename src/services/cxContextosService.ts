@@ -81,6 +81,11 @@ export async function listarServiciosDeSede(sedeId: string): Promise<ServicioDeS
   }
 }
 
+export async function obtenerSede(id: string): Promise<SedeCx> {
+  try { return (await api.get<SedeCx>(`${BASE}/sedes/${id}`)).data; }
+  catch (e) { throw errorCx(e, "No pudimos cargar la sede."); }
+}
+
 export async function vincularServicio(sedeId: string, servicioId: string): Promise<ServicioDeSede> {
   try {
     return (await api.put<ServicioDeSede>(`${BASE}/sedes/${sedeId}/servicios/${servicioId}`)).data;

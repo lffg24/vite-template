@@ -24,6 +24,8 @@ const WebDirectPublicPage = lazy(() => import("@/pages/psicosocial/WebDirectPubl
 const CalificacionPublicaPage = lazy(() => import("@/pages/cx/CalificacionPublicaPage"));
 const CxLayout = lazy(() => import("@/layout/CxLayout"));
 const ContextosCxPage = lazy(() => import("@/pages/cx/ContextosCxPage"));
+const PuntosCxPage = lazy(() => import("@/pages/cx/PuntosCxPage"));
+const FactoresCxPage = lazy(() => import("@/pages/cx/FactoresCxPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -174,6 +176,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/cx/configuracion" element={<CxLayout />}>
               <Route path="contextos" element={<ContextosCxPage />} />
+              <Route path="puntos" element={<PuntosCxPage />} />
+              <Route path="factores" element={<FactoresCxPage />} />
             </Route>
             <Route path="/capacitaciones" element={<CapacitacionesLayout />}>
               {/* El indice lo decide el contexto de capacidades, no una ruta

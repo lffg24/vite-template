@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { Building2, Link2, Pencil, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,10 @@ export default function ContextosCxPage() {
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrirFormulario("nuevo")}><Plus aria-hidden="true" /> Nuevo {etiqueta}</Button>} />
 
     <Panel>
+      <nav aria-label="Configuración CX" className="mb-5 flex flex-wrap gap-2">
+        <Button asChild variant="relOutline"><Link to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
+        <Button asChild variant="relOutline"><Link to="/cx/configuracion/factores">Factores</Link></Button>
+      </nav>
       <div className="flex flex-wrap gap-2 border-b border-rel-border pb-4" role="group" aria-label="Tipo de catálogo">
         {(["sedes", "servicios"] as const).map((opcion) => <Button key={opcion} type="button"
           variant={tipo === opcion ? "rel" : "relOutline"} aria-pressed={tipo === opcion}
