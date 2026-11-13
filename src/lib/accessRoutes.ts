@@ -10,6 +10,10 @@ const CAPACITACIONES_PERMISOS = [
   "hseq.capacitacion.catalogo.publicar",
   "hseq.capacitacion.asignar",
 ];
+const LICITACIONES_PERMISOS = [
+  "licitaciones.opportunities.view",
+  "licitaciones.admin",
+];
 
 export const NO_ACCESS_ROUTE = "/sin-acceso";
 
@@ -64,6 +68,10 @@ export function routeByAccess(roles: string[] = [], permissions: string[] = []) 
     return "/capacitaciones/cursos";
   }
 
+  if (LICITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))) {
+    return "/licitaciones";
+  }
+
   return NO_ACCESS_ROUTE;
 }
 
@@ -114,6 +122,13 @@ export function safeRedirectPath(path: unknown, roles: string[] = [], permission
     !hasPermission(permissions, "psico.dashboard.view") &&
     !hasPermission(permissions, "psico.aplicaciones.view") &&
     !hasPermission(permissions, "psico.resultados.global.view")
+  ) {
+    return fallback;
+  }
+
+  if (
+    path.startsWith("/licitaciones") &&
+    !LICITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))
   ) {
     return fallback;
   }

@@ -84,6 +84,8 @@ const SuperAdminUsuariosPage = lazy(() => import("@/pages/superadmin/SuperAdminU
 const ActivarCuenta = lazy(() => import("@/pages/ActivarCuenta"));
 const SuperAdminAuditoriaPage = lazy(() => import("@/pages/superadmin/SuperAdminAuditoriaPage"));
 const SuperAdminPlaceholderPage = lazy(() => import("@/pages/superadmin/SuperAdminPlaceholderPage"));
+const LicitacionesLayout = lazy(() => import("@/layout/LicitacionesLayout"));
+const LicitacionesPage = lazy(() => import("@/pages/licitaciones/LicitacionesPage"));
 
 function RouteFallback() {
   return (
@@ -154,6 +156,24 @@ function App() {
               <Route path="auditoria" element={<SuperAdminAuditoriaPage />} />
               <Route path="planes" element={<SuperAdminPlaceholderPage title="Planes y suscripciones" />} />
               <Route path="configuracion" element={<SuperAdminPlaceholderPage title="Configuración global" />} />
+            </Route>
+          </Route>
+
+          {/* Integración aislada: la UI vive en Abril360, los datos y reglas de
+              licitaciones viven en su microservicio. La guarda requiere un
+              permiso explícito; SUPER_ADMIN por sí solo no abre la ruta. */}
+          <Route
+            element={
+              <ProtectedRoute
+                requirePermission={[
+                  "licitaciones.opportunities.view",
+                  "licitaciones.admin",
+                ]}
+              />
+            }
+          >
+            <Route path="/licitaciones" element={<LicitacionesLayout />}>
+              <Route index element={<LicitacionesPage />} />
             </Route>
           </Route>
 

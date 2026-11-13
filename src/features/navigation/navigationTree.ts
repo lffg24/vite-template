@@ -1,5 +1,5 @@
 import {
-  BarChart3, BookOpen, Building2, CircleHelp, ClipboardCheck, ClipboardList,
+  BarChart3, BookOpen, BriefcaseBusiness, Building2, CircleHelp, ClipboardCheck, ClipboardList,
   CreditCard, FileBadge, FileText, Gauge, Grid3x3, KeyRound, Layers3, Link2,
   Send, ShieldCheck, ToggleRight, Users, UsersRound, type LucideIcon,
 } from "lucide-react";
@@ -47,6 +47,9 @@ const groups: NavigationGroup[] = [
   ] },
   { label: "Evaluaciones", icon: ClipboardCheck, landing: "/evaluaciones", children: [
     { label: "Banco de evaluaciones", to: "/evaluaciones", icon: ClipboardCheck },
+  ] },
+  { label: "Licitaciones", icon: BriefcaseBusiness, landing: "/licitaciones", children: [
+    { label: "Oportunidades", to: "/licitaciones", icon: BriefcaseBusiness },
   ] },
 ];
 
