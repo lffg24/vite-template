@@ -22,6 +22,10 @@ const VIEW_REPORTS = "licitaciones.reports.view";
 const MANAGE_REVIEWS = "licitaciones.reviews.manage";
 const CLOSE_DECISION = "licitaciones.decision.close";
 const ADMIN = "licitaciones.admin";
+const REQUIRED_GO_REVIEWS = [
+  { field_key: "apertura", label: "Apertura oficial", data_type: "boolean" },
+  { field_key: "admision_empresarial", label: "Admisión empresarial", data_type: "boolean" },
+] as const;
 
 function errorMessage(cause: unknown) {
   const candidate = cause as { response?: { data?: { detail?: string } }; message?: string };
@@ -42,9 +46,35 @@ function date(value: string | null) {
 }
 
 function statusVariant(value: string | null) {
-  if (value === "GO" || value === "GO_CON_ALIADO" || value === "CERRADA") return "relSuccess" as const;
-  if (value === "NO_GO" || value === "DESCARTADA") return "relDanger" as const;
+  if (["GO", "GO_CON_ALIADO", "CERRADA", "VERIFICADO", "CORREGIDO"].includes(value || "")) return "relSuccess" as const;
+  if (["NO_GO", "DESCARTADA", "CONFLICTO"].includes(value || "")) return "relDanger" as const;
+  if (value === "NO_APLICA") return "relNeutral" as const;
   return "relWarning" as const;
+}
+
+function parseReviewValue(
+  raw: string,
+  field: OpportunityDetail["fields"][number] | undefined,
+  control: boolean,
+  status: string,
+) {
+  if (control) return ["VERIFICADO", "CORREGIDO"].includes(status) ? true : null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (typeof field?.value_json === "boolean") {
+    if (!/^(true|false)$/i.test(trimmed)) throw new Error("El valor debe ser true o false.");
+    return trimmed.toLowerCase() === "true";
+  }
+  if (typeof field?.value_json === "number") {
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) throw new Error("El valor debe ser numérico.");
+    return parsed;
+  }
+  if (field?.value_json && typeof field.value_json === "object") {
+    try { return JSON.parse(trimmed); }
+    catch { throw new Error("El valor debe ser JSON válido para conservar su estructura."); }
+  }
+  return raw;
 }
 
 export default function LicitacionesPage() {
@@ -63,6 +93,7 @@ export default function LicitacionesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formNotice, setFormNotice] = useState<string | null>(null);
   const [reviewField, setReviewField] = useState("");
   const [reviewStatus, setReviewStatus] = useState("PENDIENTE");
   const [reviewValue, setReviewValue] = useState("");
@@ -70,6 +101,7 @@ export default function LicitacionesPage() {
   const [decision, setDecision] = useState("NO_GO");
   const [reasonCode, setReasonCode] = useState("");
   const [decisionRationale, setDecisionRationale] = useState("");
+  const [decisionKey, setDecisionKey] = useState(() => crypto.randomUUID());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,10 +132,13 @@ export default function LicitacionesPage() {
   async function open(item: Opportunity) {
     setDetailLoading(true);
     setFormError(null);
+    setFormNotice(null);
     try {
       const detail = await getOpportunity(item.id);
       setSelected(detail);
-      setReviewField(detail.fields[0]?.field_key || "");
+      setReviewField("apertura");
+      setReviewValue("");
+      setDecisionKey(crypto.randomUUID());
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -119,18 +154,21 @@ export default function LicitacionesPage() {
   async function submitReview(event: FormEvent) {
     event.preventDefault();
     if (!selected || !reviewField) return;
-    setSaving(true); setFormError(null);
+    setSaving(true); setFormError(null); setFormNotice(null);
     try {
+      const extractedField = selected.fields.find((field) => field.field_key === reviewField);
+      const requiredControl = REQUIRED_GO_REVIEWS.some((field) => field.field_key === reviewField);
       await createReview(selected.opportunity.id, {
         revision: selected.opportunity.current_revision,
         field_key: reviewField,
         status: reviewStatus,
-        value: reviewValue || null,
+        value: parseReviewValue(reviewValue, extractedField, requiredControl, reviewStatus),
         rationale: reviewRationale || null,
       });
       await refreshSelected();
       setReviewRationale("");
       setReviewValue("");
+      setFormNotice("Revisión registrada correctamente.");
     } catch (cause) { setFormError(errorMessage(cause)); }
     finally { setSaving(false); }
   }
@@ -138,7 +176,7 @@ export default function LicitacionesPage() {
   async function submitDecision(event: FormEvent) {
     event.preventDefault();
     if (!selected) return;
-    setSaving(true); setFormError(null);
+    setSaving(true); setFormError(null); setFormNotice(null);
     try {
       await closeDecision(selected.opportunity.id, {
         revision: selected.opportunity.current_revision,
@@ -146,14 +184,17 @@ export default function LicitacionesPage() {
         reason_code: reasonCode.trim().toUpperCase(),
         rationale: decisionRationale,
         row_version: selected.opportunity.row_version,
-      });
+      }, decisionKey);
       await Promise.all([refreshSelected(), load()]);
-      setReasonCode(""); setDecisionRationale("");
+      setReasonCode(""); setDecisionRationale(""); setDecisionKey(crypto.randomUUID());
+      setFormNotice("Decisión comercial registrada correctamente.");
     } catch (cause) { setFormError(errorMessage(cause)); }
     finally { setSaving(false); }
   }
 
   const totals = summary?.totals;
+  const reviewControl = REQUIRED_GO_REVIEWS.find((field) => field.field_key === reviewField);
+  const reviewExtractedField = selected?.fields.find((field) => field.field_key === reviewField);
   return (
     <div className="mx-auto max-w-[1600px] space-y-5">
       <header className="rounded-2xl border border-rel-border bg-rel-surface p-5 shadow-sm sm:p-7">
@@ -197,8 +238,9 @@ export default function LicitacionesPage() {
           {selected && <div className="mt-5 space-y-5 text-sm text-rel-dark"><div><p className="font-semibold text-rel-info">{selected.opportunity.external_process_id}</p><p className="mt-2 text-rel-muted">{selected.opportunity.object_original}</p></div>
             <div className="grid gap-2 sm:grid-cols-2"><Fact label="Presupuesto" value={money(selected.opportunity.budget_amount, selected.opportunity.budget_currency)} /><Fact label="Próximo cierre" value={date(selected.opportunity.next_deadline)} /><Fact label="Categoría" value={selected.opportunity.service_category || "Sin clasificar"} /><Fact label="Completitud" value={`${Math.round(Number(selected.opportunity.completeness || 0) * 100)} %`} /></div>
             <section><h2 className="mb-2 font-bold">Campos y evidencia</h2><div className="space-y-2">{selected.fields.map((field) => <details key={field.field_key} className="rounded-xl border border-rel-border bg-rel-surface"><summary className="flex cursor-pointer items-center justify-between gap-3 p-3 font-semibold"><span>{field.field_key}</span><Badge variant={statusVariant(field.evidence_status)}>{field.evidence_status}</Badge></summary><div className="border-t border-rel-border p-3"><pre className="whitespace-pre-wrap break-words rounded-lg bg-rel-canvas p-3 text-xs">{JSON.stringify(field.value_json, null, 2)}</pre>{(field.evidence_json || []).map((evidence, index) => <blockquote key={`${evidence.document_id}-${index}`} className="mt-2 border-l-2 border-rel-info bg-rel-info-subtle p-3 text-xs"><p>“{evidence.quote || "Sin cita literal"}”</p><footer className="mt-1 text-rel-muted">{evidence.document_id || "Documento"}{evidence.page ? ` · página ${evidence.page}` : ""}</footer></blockquote>)}</div></details>)}</div></section>
-            {canReview && <form onSubmit={submitReview} className="space-y-3 rounded-xl border border-rel-border bg-rel-surface-subtle p-4"><h2 className="font-bold">Revisión humana</h2><Label htmlFor="review-field">Campo</Label><select id="review-field" value={reviewField} onChange={(event) => setReviewField(event.target.value)} className="h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:ring-2 focus-visible:ring-rel-primary">{selected.fields.map((field) => <option key={field.field_key} value={field.field_key}>{field.field_key}</option>)}</select><Label htmlFor="review-status">Resultado</Label><select id="review-status" value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)} className="h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:ring-2 focus-visible:ring-rel-primary"><option>PENDIENTE</option><option>VERIFICADO</option><option>CORREGIDO</option><option>NO_APLICA</option></select><Label htmlFor="review-value">Valor revisado</Label><Input id="review-value" value={reviewValue} onChange={(event) => setReviewValue(event.target.value)} placeholder="Obligatorio al verificar o corregir" /><Label htmlFor="review-rationale">Fundamento</Label><Textarea id="review-rationale" value={reviewRationale} onChange={(event) => setReviewRationale(event.target.value)} maxLength={2000} /><Button variant="rel" disabled={saving || !reviewField}>Guardar revisión</Button></form>}
+            {canReview && <form onSubmit={submitReview} className="space-y-3 rounded-xl border border-rel-border bg-rel-surface-subtle p-4"><div><h2 className="font-bold">Revisión humana</h2><p className="mt-1 text-xs text-rel-muted">Apertura y admisión empresarial deben quedar verificadas antes de cerrar una decisión GO.</p></div><Label htmlFor="review-field">Control o campo</Label><select id="review-field" value={reviewField} onChange={(event) => { setReviewField(event.target.value); setReviewValue(""); }} className="h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:ring-2 focus-visible:ring-rel-primary"><optgroup label="Controles para decisión GO">{REQUIRED_GO_REVIEWS.map((field) => <option key={field.field_key} value={field.field_key}>{field.label}</option>)}</optgroup>{selected.fields.length > 0 && <optgroup label="Campos extraídos">{selected.fields.map((field) => <option key={field.field_key} value={field.field_key}>{field.field_key}</option>)}</optgroup>}</select><Label htmlFor="review-status">Resultado</Label><select id="review-status" value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)} className="h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:ring-2 focus-visible:ring-rel-primary"><option>PENDIENTE</option><option>VERIFICADO</option><option>CORREGIDO</option><option>NO_APLICA</option></select>{!reviewControl && <><Label htmlFor="review-value">Valor revisado</Label><Input id="review-value" value={reviewValue} onChange={(event) => setReviewValue(event.target.value)} placeholder={reviewExtractedField?.value_json && typeof reviewExtractedField.value_json === "object" ? "JSON válido" : "Valor confirmado"} /></>}<Label htmlFor="review-rationale">Fundamento</Label><Textarea id="review-rationale" value={reviewRationale} onChange={(event) => setReviewRationale(event.target.value)} maxLength={2000} /><Button variant="rel" disabled={saving || !reviewField}>Guardar revisión</Button></form>}
             {canDecide && <form onSubmit={submitDecision} className="space-y-3 rounded-xl border border-rel-border bg-rel-surface-subtle p-4"><h2 className="font-bold">Decisión comercial</h2><Label htmlFor="decision">Decisión</Label><select id="decision" value={decision} onChange={(event) => setDecision(event.target.value)} className="h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:ring-2 focus-visible:ring-rel-primary"><option>GO</option><option>GO_CON_ALIADO</option><option>NO_GO</option><option>DESCARTADA</option></select><Label htmlFor="reason-code">Código de motivo</Label><Input id="reason-code" value={reasonCode} onChange={(event) => setReasonCode(event.target.value)} placeholder="CAPACIDAD_TECNICA" pattern="[A-Za-z0-9_]{3,80}" required /><Label htmlFor="decision-rationale">Justificación</Label><Textarea id="decision-rationale" value={decisionRationale} onChange={(event) => setDecisionRationale(event.target.value)} minLength={5} maxLength={3000} required /><Button variant="rel" disabled={saving}>Cerrar decisión</Button></form>}
+            {formNotice && <p role="status" className="rounded-lg bg-rel-success-subtle p-3 text-rel-success">{formNotice}</p>}
             {formError && <p role="alert" className="rounded-lg bg-rel-danger-subtle p-3 text-rel-danger">{formError}</p>}
           </div>}
         </SheetContent>

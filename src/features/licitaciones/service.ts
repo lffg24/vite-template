@@ -77,10 +77,14 @@ export async function createReview(id: string, payload: Record<string, unknown>)
   return (await api.post(`/licitaciones/opportunities/${encodeURIComponent(id)}/reviews`, payload)).data;
 }
 
-export async function closeDecision(id: string, payload: Record<string, unknown>) {
+export async function closeDecision(
+  id: string,
+  payload: Record<string, unknown>,
+  idempotencyKey: string,
+) {
   return (
     await api.post(`/licitaciones/opportunities/${encodeURIComponent(id)}/decision`, payload, {
-      headers: { "Idempotency-Key": crypto.randomUUID() },
+      headers: { "Idempotency-Key": idempotencyKey },
     })
   ).data;
 }
