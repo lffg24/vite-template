@@ -48,6 +48,14 @@ const groups: NavigationGroup[] = [
   { label: "Evaluaciones", icon: ClipboardCheck, landing: "/evaluaciones", children: [
     { label: "Banco de evaluaciones", to: "/evaluaciones", icon: ClipboardCheck },
   ] },
+  { label: "Satisfacción del cliente", icon: ClipboardList, landing: "/cx/encuestas", children: [
+    { label: "Encuestas", to: "/cx/encuestas", icon: ClipboardList },
+    { label: "Campañas y QR", to: "/cx/campanas", icon: Link2 },
+    { label: "Sedes y servicios", to: "/cx/configuracion/contextos", icon: Building2 },
+    { label: "Puntos de contacto", to: "/cx/configuracion/puntos", icon: Link2 },
+    { label: "Factores", to: "/cx/configuracion/factores", icon: BarChart3 },
+    { label: "Áreas", to: "/cx/configuracion/areas", icon: UsersRound },
+  ] },
 ];
 
 export function projectNavigation(destinations: string[]): NavigationEntry[] {

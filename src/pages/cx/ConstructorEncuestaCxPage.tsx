@@ -10,6 +10,8 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
 import { clonarVersionCx, editarEncuestaCx, obtenerEncuestaCx, publicarEncuestaCx } from "@/services/cxEncuestasService";
 import type { EncuestaCx, ItemCx, TipoItemCx } from "@/types/cxEncuestas";
+import { listarCatalogoCx } from "@/services/cxPuntosFactoresService";
+import type { FactorCx } from "@/types/cxPuntosFactores";
 
 const inicio: ItemCx = { tipo: "CSAT", enunciado: "¿Qué tan satisfecho estás con la experiencia?", obligatorio: true };
 const nombres: Record<TipoItemCx, string> = { NPS_RELACIONAL: "NPS relacional · 0 a 10", NPS_EXPERIENCIA: "NPS experiencia · 0 a 10", CSAT: "CSAT · 1 a 5", CES: "CES · 1 a 7", FACTOR: "Factor · 1 a 5" };
@@ -27,6 +29,21 @@ export default function ConstructorEncuestaCxPage() {
   const [sucio, setSucio] = useState(false);
   const [confirmar, setConfirmar] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [factores, setFactores] = useState<FactorCx[]>([]);
+  const [cursorFactores, setCursorFactores] = useState<string | null>(null);
+  const [errorFactores, setErrorFactores] = useState("");
+  const [cargandoFactores, setCargandoFactores] = useState(false);
+
+  const cargarFactores = useCallback(async (cursor?: string | null) => {
+    setCargandoFactores(true); setErrorFactores("");
+    try {
+      const pagina = await listarCatalogoCx<FactorCx>("factores", { activo: true, limite: 50, cursor });
+      setFactores((actuales) => cursor ? [...actuales, ...pagina.items] : pagina.items);
+      setCursorFactores(pagina.siguiente_cursor);
+    } catch (e) { setErrorFactores((e as Error).message); }
+    finally { setCargandoFactores(false); }
+  }, []);
+  useEffect(() => { void cargarFactores(); }, [cargarFactores]);
 
   const aplicar = useCallback((dato: EncuestaCx) => {
     setEncuesta(dato); setTitulo(dato.titulo); setItems(dato.borrador);
@@ -51,8 +68,8 @@ export default function ConstructorEncuestaCxPage() {
     e.preventDefault();
     if (!id) return;
     setErrorAccion(""); setMensaje("");
-    if (!titulo.trim() || items.some((i) => !i.enunciado.trim())) {
-      setErrorAccion("Completa el título y los enunciados antes de guardar."); return;
+    if (!titulo.trim() || items.some((i) => !i.enunciado.trim() || (i.tipo === "FACTOR" && !i.factor_id))) {
+      setErrorAccion("Completa el título, los enunciados y el factor de cada pregunta."); return;
     }
     setOcupado(true);
     try { aplicar(await editarEncuestaCx(id, { titulo: titulo.trim(), items })); setMensaje("Borrador guardado."); }
@@ -80,7 +97,7 @@ export default function ConstructorEncuestaCxPage() {
   if (error || !encuesta) return <div role="alert" className="p-6 text-rel-danger">{error || "Encuesta no disponible."}<Button variant="relOutline" className="ml-3" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div>;
 
   const principalValido = items.length > 0 && items[0].tipo !== "FACTOR" && items[0].obligatorio;
-  const publicable = !sucio && principalValido && items.every((i) => i.enunciado.trim()) && !ocupado;
+  const publicable = !sucio && principalValido && items.every((i) => i.enunciado.trim() && (i.tipo !== "FACTOR" || i.factor_id)) && !ocupado;
   const ultima = encuesta.versiones[0];
 
   return <div className="space-y-5">
@@ -93,7 +110,7 @@ export default function ConstructorEncuestaCxPage() {
         <Panel titulo="Borrador editable">
           <div><Label htmlFor="cx-titulo-editor">Título *</Label><Input id="cx-titulo-editor" value={titulo} maxLength={200} disabled={ocupado} onChange={(e) => { setTitulo(e.target.value); setSucio(true); }} /></div>
           {items.length === 0 ? <p className="mt-5 text-sm text-rel-muted">El borrador está vacío. Agrega el indicador principal para empezar.</p> : null}
-          <ol className="mt-5 space-y-4">{items.map((item, indice) => <li key={indice} className="rounded-rel-card border border-rel-border p-4"><div className="mb-3 flex items-center justify-between gap-2"><strong>{indice === 0 ? "Indicador principal" : `Factor ${indice}`}</strong>{indice > 0 ? <Button type="button" variant="relOutline" size="sm" disabled={ocupado} aria-label={`Quitar factor ${indice}`} onClick={() => { setItems((actuales) => actuales.filter((_, n) => n !== indice)); setSucio(true); }}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button> : null}</div><div className="grid gap-3"><div><Label htmlFor={`tipo-${indice}`}>Escala</Label><select id={`tipo-${indice}`} value={item.tipo} disabled={ocupado || indice > 0} onChange={(e) => actualizar(indice, { tipo: e.target.value as TipoItemCx })} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary">{indice === 0 ? Object.entries(nombres).filter(([tipo]) => tipo !== "FACTOR").map(([tipo, nombre]) => <option key={tipo} value={tipo}>{nombre}</option>) : <option value="FACTOR">{nombres.FACTOR}</option>}</select></div><div><Label htmlFor={`enunciado-${indice}`}>Pregunta *</Label><Input id={`enunciado-${indice}`} value={item.enunciado} maxLength={500} disabled={ocupado} onChange={(e) => actualizar(indice, { enunciado: e.target.value })} /></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.obligatorio} disabled={ocupado || indice === 0} onChange={(e) => actualizar(indice, { obligatorio: e.target.checked })} className="h-4 w-4 accent-rel-primary" />Respuesta obligatoria{indice === 0 ? " para el indicador" : ""}</label></div></li>)}</ol>
+          <ol className="mt-5 space-y-4">{items.map((item, indice) => <li key={indice} className="rounded-rel-card border border-rel-border p-4"><div className="mb-3 flex items-center justify-between gap-2"><strong>{indice === 0 ? "Indicador principal" : `Factor ${indice}`}</strong>{indice > 0 ? <Button type="button" variant="relOutline" size="sm" disabled={ocupado} aria-label={`Quitar factor ${indice}`} onClick={() => { setItems((actuales) => actuales.filter((_, n) => n !== indice)); setSucio(true); }}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button> : null}</div><div className="grid gap-3"><div><Label htmlFor={`tipo-${indice}`}>Escala</Label><select id={`tipo-${indice}`} value={item.tipo} disabled={ocupado || indice > 0} onChange={(e) => actualizar(indice, { tipo: e.target.value as TipoItemCx })} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary">{indice === 0 ? Object.entries(nombres).filter(([tipo]) => tipo !== "FACTOR").map(([tipo, nombre]) => <option key={tipo} value={tipo}>{nombre}</option>) : <option value="FACTOR">{nombres.FACTOR}</option>}</select></div>{indice > 0 ? <div><Label htmlFor={`factor-${indice}`}>Factor del catálogo *</Label><select id={`factor-${indice}`} value={item.factor_id || ""} disabled={ocupado || cargandoFactores} onChange={(e) => actualizar(indice, { factor_id: e.target.value || null })} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><option value="">Selecciona un factor</option>{item.factor_id && !factores.some((factor) => factor.id === item.factor_id) ? <option value={item.factor_id}>Factor de una versión anterior</option> : null}{factores.map((factor) => <option key={factor.id} value={factor.id}>{factor.nombre}</option>)}</select>{errorFactores ? <p role="alert" className="mt-1 text-sm text-rel-danger">{errorFactores}</p> : null}{cursorFactores ? <Button type="button" variant="relGhost" size="sm" disabled={cargandoFactores} onClick={() => void cargarFactores(cursorFactores)}>Cargar más factores</Button> : null}</div> : null}<div><Label htmlFor={`enunciado-${indice}`}>Pregunta *</Label><Input id={`enunciado-${indice}`} value={item.enunciado} maxLength={500} disabled={ocupado} onChange={(e) => actualizar(indice, { enunciado: e.target.value })} /></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.obligatorio} disabled={ocupado || indice === 0} onChange={(e) => actualizar(indice, { obligatorio: e.target.checked })} className="h-4 w-4 accent-rel-primary" />Respuesta obligatoria{indice === 0 ? " para el indicador" : ""}</label></div></li>)}</ol>
           <div className="mt-5 flex flex-wrap gap-2">{items.length === 0 ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={() => { setItems([inicio]); setSucio(true); }}>Agregar indicador principal</Button> : null}{items.length > 0 && items.length < 12 ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={() => { setItems((actuales) => [...actuales, { tipo: "FACTOR", enunciado: "", obligatorio: false }]); setSucio(true); }}><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Agregar factor</Button> : null}</div>
         </Panel>
         <Panel><div className="flex flex-col gap-3 sm:flex-row"><Button type="submit" variant="rel" disabled={ocupado || !sucio} className="w-full sm:w-auto">{ocupado ? "Guardando…" : "Guardar borrador"}</Button><Button type="button" variant="relOutline" disabled={!publicable} onClick={() => setConfirmar(true)} className="w-full sm:w-auto">Publicar versión</Button>{items.length === 0 && ultima ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={clonar} className="w-full sm:w-auto">Crear v{ultima.numero + 1} desde la última</Button> : null}</div><p className="mt-3 text-sm text-rel-muted">{sucio ? "Guarda los cambios antes de publicar." : !principalValido ? "Añade un indicador principal obligatorio para publicar." : "La publicación fija las preguntas y su escala. Una edición posterior crea otra versión."}</p></Panel>

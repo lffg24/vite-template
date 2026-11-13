@@ -29,6 +29,7 @@ const FactoresCxPage = lazy(() => import("@/pages/cx/FactoresCxPage"));
 const AreasCxPage = lazy(() => import("@/pages/cx/AreasCxPage"));
 const EncuestasCxPage = lazy(() => import("@/pages/cx/EncuestasCxPage"));
 const ConstructorEncuestaCxPage = lazy(() => import("@/pages/cx/ConstructorEncuestaCxPage"));
+const CampanasCxPage = lazy(() => import("@/pages/cx/CampanasCxPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -180,6 +181,9 @@ function App() {
             <Route path="/cx/encuestas" element={<CxLayout />}>
               <Route index element={<EncuestasCxPage />} />
               <Route path=":id/editar" element={<ConstructorEncuestaCxPage />} />
+            </Route>
+            <Route path="/cx/campanas" element={<CxLayout />}>
+              <Route index element={<CampanasCxPage />} />
             </Route>
             <Route path="/cx/configuracion" element={<CxLayout />}>
               <Route path="contextos" element={<ContextosCxPage />} />
