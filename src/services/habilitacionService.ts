@@ -50,6 +50,15 @@ export interface EstadoDeHabilitacion {
   banderas: BanderaDeModulo[];
 }
 
+export async function obtenerProteccionPublicaCx(): Promise<boolean> {
+  try {
+    const { data } = await api.get<{ configurada: boolean }>("/cx/admin/proteccion-publica");
+    return data.configurada;
+  } catch (e) {
+    throw errorApi(e, "No pudimos consultar la protección pública de CX.");
+  }
+}
+
 export async function obtenerHabilitacion(
   empresaId: string,
   modulo = "CAPACITACIONES"
@@ -103,6 +112,21 @@ export async function crearContrato(
     await api.post(`${BASE}/empresas/${empresaId}/contrato`, datos);
   } catch (e) {
     throw errorApi(e, "No pudimos dar de alta el contrato.");
+  }
+}
+
+export async function suspenderContrato(
+  empresaId: string,
+  contratoId: string,
+  modulo: string,
+): Promise<void> {
+  try {
+    await api.post(
+      `${BASE}/empresas/${empresaId}/contratos/${contratoId}/suspender`,
+      { modulo },
+    );
+  } catch (e) {
+    throw errorApi(e, "No pudimos suspender el contrato.");
   }
 }
 

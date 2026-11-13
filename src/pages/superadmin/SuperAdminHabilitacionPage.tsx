@@ -1,6 +1,6 @@
 // src/pages/superadmin/SuperAdminHabilitacionPage.tsx
 //
-// Abrir un módulo a una empresa.
+// Abrir Capacitaciones o CX a una empresa desde el control de plataforma.
 //
 // ## El hueco que cierra
 //
@@ -19,12 +19,16 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, CheckCircle2, Circle, Loader2, ShieldCheck } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, Loader2, MessageSquareHeart, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StandardPagination } from "@/components/common/StandardPagination";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 import { useToast } from "@/hooks/use-toast";
@@ -35,12 +39,30 @@ import {
   crearContrato,
   obtenerHabilitacion,
   obtenerHabilitacionPlataforma,
+  obtenerProteccionPublicaCx,
+  suspenderContrato,
   type EstadoDeHabilitacion,
 } from "@/services/habilitacionService";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import type { ErrorApi } from "@/types/capacitaciones";
 
-const MODULO = "CAPACITACIONES";
+const MODULOS = [
+  {
+    codigo: "CAPACITACIONES",
+    nombre: "Capacitaciones",
+    descripcion: "Cursos, asignaciones y participación por enlace.",
+    icono: BookOpen,
+    accesoPublico: "capacitaciones.participacion",
+  },
+  {
+    codigo: "CX",
+    nombre: "Satisfacción del cliente",
+    descripcion: "Encuestas de calificación mediante enlaces y QR.",
+    icono: MessageSquareHeart,
+    accesoPublico: "cx.calificaciones.publico",
+  },
+] as const;
+type Modulo = (typeof MODULOS)[number]["codigo"];
 
 /** Hoy LOCAL en formato ISO, que es lo que espera un `<input type="date">`. */
 function hoyISO(): string {
@@ -55,7 +77,7 @@ function Condicion({
   titulo,
   children,
 }: {
-  cumplida: boolean;
+  cumplida?: boolean;
   titulo: string;
   children: React.ReactNode;
 }) {
@@ -72,7 +94,7 @@ function Condicion({
       <div className="min-w-0">
         <p className="font-semibold text-rel-dark">
           {titulo}{" "}
-          <span className="sr-only">{cumplida ? "cumplida" : "pendiente"}</span>
+          <span className="sr-only">{cumplida === undefined ? "se verifica por usuario" : cumplida ? "cumplida" : "pendiente"}</span>
         </p>
         <p className="break-words text-sm text-rel-muted">{children}</p>
       </div>
@@ -82,12 +104,15 @@ function Condicion({
 
 export default function SuperAdminHabilitacionPage() {
   const { toast } = useToast();
+  const [modulo, setModulo] = useState<Modulo>("CAPACITACIONES");
   const [empresa, setEmpresa] = useState<SuperEmpresa | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [pagina, setPagina] = useState(1);
   const [tamanoPagina, setTamanoPagina] = useState(10);
   const [guardando, setGuardando] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
+  const [contratoPorSuspender, setContratoPorSuspender] = useState<string | null>(null);
+  const configuracion = MODULOS.find((item) => item.codigo === modulo)!;
 
   const empresas = useConsulta(
     () => superadminService.empresas({
@@ -99,20 +124,25 @@ export default function SuperAdminHabilitacionPage() {
   );
 
   const plataforma = useConsulta(
-    () => obtenerHabilitacionPlataforma(MODULO),
-    [revision]
+    () => obtenerHabilitacionPlataforma(modulo),
+    [modulo, revision]
   );
 
   const estado = useConsulta<EstadoDeHabilitacion | null>(
-    async () => (empresa ? await obtenerHabilitacion(empresa.id, MODULO) : null),
-    [empresa?.id, revision]
+    async () => (empresa ? await obtenerHabilitacion(empresa.id, modulo) : null),
+    [empresa?.id, modulo, revision]
+  );
+  const proteccionPublica = useConsulta<boolean | null>(
+    async () => modulo === "CX" ? await obtenerProteccionPublicaCx() : null,
+    [modulo, revision]
   );
 
-  async function conContexto(que: string, accion: () => Promise<void>) {
+  async function conContexto(que: string, accion: () => Promise<void>): Promise<boolean> {
     setGuardando(que);
     try {
       await accion();
       setRevision((r) => r + 1);
+      return true;
     } catch (e) {
       const err = e as ErrorApi;
       toast({
@@ -120,14 +150,21 @@ export default function SuperAdminHabilitacionPage() {
         title: "No se pudo guardar",
         description: err.message,
       });
+      return false;
     } finally {
       setGuardando(null);
     }
   }
 
-  const datos = estado.datos;
+  // useConsulta conserva el resultado anterior durante un cambio. No mostrar
+  // una bandera de Capacitaciones bajo la etiqueta de CX ni al revés.
+  const datos = estado.fase === "listo" && estado.datos?.modulo === modulo
+    ? estado.datos : null;
+  const globales = plataforma.fase === "listo" && plataforma.datos?.modulo === modulo
+    ? plataforma.datos.banderas : [];
   const banderas = datos?.banderas ?? [];
-  const participacion = banderas.find((b) => b.clave === "capacitaciones.participacion");
+  const participacion = banderas.find((b) => b.clave === configuracion.accesoPublico);
+  const contratoActivo = datos?.contratos.find((c) => c.estado === "ACTIVO");
 
   return (
     <div className="rel-scope font-rel-body text-rel-dark">
@@ -137,50 +174,87 @@ export default function SuperAdminHabilitacionPage() {
         icon={ShieldCheck}
       />
 
-      <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-accent-subtle text-rel-primary">
-            <BookOpen className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-rel-heading font-bold">Catálogo global de Capacitación</h2>
-            <p className="mt-1 text-sm text-rel-muted">
-              Pertenece a la plataforma y lo comparten todas las empresas. Este control no depende del contrato de una empresa.
-            </p>
-          </div>
-        </div>
-        {plataforma.fase === "cargando" ? (
-          <p role="status" className="mt-4 text-sm text-rel-muted">Consultando el estado global…</p>
-        ) : null}
-        <ul className="mt-4 space-y-3">
-          {(plataforma.datos?.banderas ?? []).map((bandera) => (
-            <li key={bandera.clave} className="flex min-w-0 items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="font-semibold">{bandera.nombre}</p>
-                <p className="text-sm text-rel-muted">{bandera.para_que}</p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2 text-sm">
-                <Switch
-                  checked={Boolean(bandera.habilitado_global)}
-                  disabled={guardando !== null}
-                  aria-label={`${bandera.nombre} global`}
-                  onCheckedChange={(checked) => conContexto(
-                    `global:${bandera.clave}`,
-                    () => cambiarBanderaGlobal({
-                      modulo: MODULO,
-                      clave: bandera.clave,
-                      habilitado: checked,
-                    }),
-                  )}
-                />
-                <span className="text-rel-muted">
-                  {bandera.habilitado_global ? "Encendido" : "Apagado"}
+      <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5" aria-labelledby="titulo-modulos">
+        <h2 id="titulo-modulos" className="font-rel-heading text-lg font-bold">Módulo que quieres habilitar</h2>
+        <p className="mt-1 text-sm text-rel-muted">El contrato y las funcionalidades se gestionan por módulo y por empresa.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {MODULOS.map((item) => {
+            const Icono = item.icono;
+            const elegido = item.codigo === modulo;
+            return (
+              <button
+                key={item.codigo}
+                type="button"
+                aria-pressed={elegido}
+                disabled={guardando !== null}
+                onClick={() => setModulo(item.codigo)}
+                className={`flex min-h-[5rem] min-w-0 items-start gap-3 rounded-rel-control border p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary disabled:opacity-60 ${
+                  elegido ? "border-rel-primary bg-rel-accent-subtle" : "border-rel-border bg-rel-surface hover:bg-rel-surface-subtle"
+                }`}
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-surface text-rel-primary">
+                  <Icono className="h-5 w-5" aria-hidden="true" />
                 </span>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <span className="min-w-0">
+                  <span className="block font-semibold text-rel-dark">{item.nombre}</span>
+                  <span className="mt-1 block text-sm text-rel-muted">{item.descripcion}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </section>
+
+      {modulo === "CAPACITACIONES" ? (
+        <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-accent-subtle text-rel-primary">
+              <BookOpen className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-rel-heading font-bold">Catálogo global de Capacitación</h2>
+              <p className="mt-1 text-sm text-rel-muted">
+                Pertenece a la plataforma y lo comparten todas las empresas. Este control no depende del contrato de una empresa.
+              </p>
+            </div>
+          </div>
+          {plataforma.fase === "cargando" ? (
+            <p role="status" className="mt-4 text-sm text-rel-muted">Consultando el estado global…</p>
+          ) : null}
+          {plataforma.fase === "error" ? (
+            <div role="alert" className="mt-4 text-sm text-destructive">
+              No pudimos consultar el estado global. <Button variant="link" onClick={() => void plataforma.refrescar()}>Reintentar</Button>
+            </div>
+          ) : null}
+          <ul className="mt-4 space-y-3">
+            {globales.map((bandera) => (
+              <li key={bandera.clave} className="flex min-w-0 items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-semibold">{bandera.nombre}</p>
+                  <p className="text-sm text-rel-muted">{bandera.para_que}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2 text-sm">
+                  <Switch
+                    className="data-[state=unchecked]:bg-rel-border-strong"
+                    checked={Boolean(bandera.habilitado_global)}
+                    disabled={guardando !== null}
+                    aria-label={`${bandera.nombre} global`}
+                    onCheckedChange={(checked) => conContexto(
+                      `global:${bandera.clave}`,
+                      () => cambiarBanderaGlobal({
+                        modulo,
+                        clave: bandera.clave,
+                        habilitado: checked,
+                      }),
+                    )}
+                  />
+                  <span className="text-rel-muted">{bandera.habilitado_global ? "Encendido" : "Apagado"}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[320px_1fr]">
         <aside className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface">
@@ -198,15 +272,26 @@ export default function SuperAdminHabilitacionPage() {
             }}
             placeholder="Buscar por nombre o NIT"
           />
+          {empresas.fase === "error" ? (
+            <div role="alert" className="text-sm text-destructive">
+              No pudimos consultar las empresas. <Button variant="link" onClick={() => void empresas.refrescar()}>Reintentar</Button>
+            </div>
+          ) : null}
           </div>
           <ul className="max-h-[27rem] space-y-1 overflow-y-auto border-t border-rel-border p-2">
-            {(empresas.datos?.items ?? []).map((e) => (
+            {empresas.fase === "cargando" ? (
+              <li role="status" className="p-3 text-sm text-rel-muted">Consultando empresas…</li>
+            ) : null}
+            {empresas.fase === "listo" && empresas.datos?.items.length === 0 ? (
+              <li className="p-3 text-sm text-rel-muted">No encontramos empresas con esa búsqueda.</li>
+            ) : null}
+            {(empresas.fase === "listo" ? empresas.datos?.items ?? [] : []).map((e) => (
               <li key={e.id}>
                 <button
                   type="button"
                   onClick={() => setEmpresa(e)}
                   aria-current={empresa?.id === e.id ? "true" : undefined}
-                  className={`w-full rounded-rel-control px-3 py-2 text-left text-sm transition-colors ${
+                  className={`w-full rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary ${
                     empresa?.id === e.id
                       ? "bg-rel-accent-subtle font-semibold text-rel-primary"
                       : "hover:bg-rel-surface-subtle"
@@ -241,7 +326,7 @@ export default function SuperAdminHabilitacionPage() {
               <ShieldCheck className="mx-auto mb-3 h-7 w-7 text-rel-muted" aria-hidden="true" />
               <h2 className="font-rel-heading font-bold">Elige una empresa</h2>
               <p className="mt-1 text-sm text-rel-muted">
-                Aquí se ve qué le falta para usar Capacitaciones, y se le abre.
+                Aquí verás qué le falta para usar {configuracion.nombre}.
               </p>
             </div>
           ) : null}
@@ -250,6 +335,11 @@ export default function SuperAdminHabilitacionPage() {
             <p role="status" className="text-sm text-rel-muted">
               Consultando la habilitación de {empresa.nombre}…
             </p>
+          ) : null}
+          {empresa && estado.fase === "error" ? (
+            <div role="alert" className="rounded-rel-card border border-destructive/30 bg-rel-surface p-5 text-sm text-destructive">
+              No pudimos consultar la habilitación de {empresa.nombre}. <Button variant="link" onClick={() => void estado.refrescar()}>Reintentar</Button>
+            </div>
           ) : null}
 
           {empresa && datos ? (
@@ -269,10 +359,28 @@ export default function SuperAdminHabilitacionPage() {
                     titulo="Acceso público encendido"
                   >
                     {participacion?.efectiva
-                      ? "Su gente puede entrar por el enlace sin tener cuenta."
-                      : "Sin esto el enlace se genera, pero al abrirlo responde que no está habilitado para esta empresa."}
+                      ? modulo === "CX"
+                        ? "El interruptor está encendido. Para recibir calificaciones también se exige un contrato vigente y protección del gateway."
+                        : "El interruptor está encendido. El acceso por enlace también exige un contrato vigente."
+                      : modulo === "CX"
+                        ? "Los enlaces y QR de calificación permanecen cerrados para esta empresa."
+                        : "Sin esto el enlace se genera, pero al abrirlo responde que no está habilitado para esta empresa."}
                   </Condicion>
-                  <Condicion cumplida={false} titulo="Permiso de quien opera">
+                  {modulo === "CX" ? (
+                    <Condicion
+                      cumplida={proteccionPublica.fase === "listo" && proteccionPublica.datos !== null
+                        ? proteccionPublica.datos : undefined}
+                      titulo="Protección pública configurada"
+                    >
+                      {proteccionPublica.fase === "error" ? (
+                        <>No pudimos verificar esta condición. <Button variant="link" onClick={() => void proteccionPublica.refrescar()}>Reintentar</Button></>
+                      ) : proteccionPublica.fase === "cargando" ? "Verificando la protección de CX…"
+                        : proteccionPublica.datos
+                          ? "El servidor confirma los límites de captura y la verificación operativa del gateway."
+                          : "Faltan credenciales, límites de captura o la verificación operativa del gateway. Los enlaces permanecen cerrados."}
+                    </Condicion>
+                  ) : null}
+                  <Condicion titulo="Permiso de quien opera">
                     No se administra aquí porque no depende de la empresa, sino de
                     quién pregunta. Se concede en{" "}
                     <Link
@@ -291,12 +399,12 @@ export default function SuperAdminHabilitacionPage() {
                 <h3 className="font-rel-heading font-bold">Contrato</h3>
                 {datos.contratos.length === 0 ? (
                   <p className="mt-1 text-sm text-rel-muted">
-                    Esta empresa nunca ha tenido Capacitaciones.
+                    Esta empresa nunca ha tenido {configuracion.nombre}.
                   </p>
                 ) : (
                   <ul className="mt-3 space-y-2 text-sm">
                     {datos.contratos.map((c) => (
-                      <li key={c.id} className="flex flex-wrap items-center gap-2">
+                      <li key={c.id} className="flex flex-wrap items-center gap-2 border-b border-rel-border py-2 last:border-0">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                             c.vigente
@@ -310,19 +418,31 @@ export default function SuperAdminHabilitacionPage() {
                           Desde {c.vigencia_desde}
                           {c.vigencia_hasta ? ` hasta ${c.vigencia_hasta}` : " · sin fecha de fin"}
                         </span>
+                        {c.id === contratoActivo?.id ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto"
+                            disabled={guardando !== null}
+                            onClick={() => setContratoPorSuspender(c.id)}
+                          >
+                            Suspender contrato
+                          </Button>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
                 )}
-                {!datos.contratado ? (
+                {!contratoActivo ? (
                   <Button
-                    className="mt-4"
+                    className="mt-4 min-h-[2.75rem] w-full sm:w-auto"
                     variant="rel"
                     disabled={guardando !== null}
                     onClick={() =>
                       conContexto("contrato", () =>
                         crearContrato(empresa.id, {
-                          modulo: MODULO,
+                          modulo,
                           vigencia_desde: hoyISO(),
                           vigencia_hasta: null,
                         })
@@ -341,8 +461,9 @@ export default function SuperAdminHabilitacionPage() {
               <div className="rounded-rel-card border border-rel-border bg-rel-surface p-5">
                 <h3 className="font-rel-heading font-bold">Funcionalidades</h3>
                 <p className="mt-1 text-sm text-rel-muted">
-                  Asignaciones y acceso público se encienden empresa por empresa.
-                  El catálogo global se administra en el control superior.
+                  {modulo === "CX"
+                    ? "La captura pública se enciende empresa por empresa. El contrato y la protección del gateway siguen siendo necesarios."
+                    : "Asignaciones y acceso público se encienden empresa por empresa. El catálogo global se administra en el control superior."}
                 </p>
                 <ul className="mt-4 space-y-4">
                   {banderas.map((b) => (
@@ -351,25 +472,26 @@ export default function SuperAdminHabilitacionPage() {
                         <p className="font-semibold text-rel-dark">{b.nombre}</p>
                         <p className="break-words text-sm text-rel-muted">{b.para_que}</p>
                       </div>
-                       <div className="flex shrink-0 items-center gap-2 text-sm">
-                         <Switch
-                           checked={Boolean(b.efectiva)}
-                           disabled={guardando !== null}
-                           aria-label={`${b.nombre} para ${empresa.nombre}`}
-                           onCheckedChange={(checked) =>
-                             conContexto(b.clave, () =>
-                               cambiarBandera(empresa.id, {
-                                 modulo: MODULO,
-                                 clave: b.clave,
-                                 habilitado: checked,
-                               })
-                             )
-                           }
+                      <div className="flex shrink-0 items-center gap-2 text-sm">
+                        <Switch
+                          className="data-[state=unchecked]:bg-rel-border-strong"
+                          checked={Boolean(b.efectiva)}
+                          disabled={guardando !== null}
+                          aria-label={`${b.nombre} para ${empresa.nombre}`}
+                          onCheckedChange={(checked) =>
+                            conContexto(b.clave, () =>
+                              cambiarBandera(empresa.id, {
+                                modulo,
+                                clave: b.clave,
+                                habilitado: checked,
+                              })
+                            )
+                          }
                         />
                         <span className="text-rel-muted">
                           {b.efectiva ? "Encendida" : "Apagada"}
                         </span>
-                       </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -378,6 +500,32 @@ export default function SuperAdminHabilitacionPage() {
           ) : null}
         </section>
       </div>
+      <AlertDialog open={contratoPorSuspender !== null} onOpenChange={(abierto) => !abierto && setContratoPorSuspender(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspender contrato de {configuracion.nombre}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {empresa?.nombre} perderá acceso a este módulo mientras el contrato esté suspendido. Sus datos históricos se conservan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={guardando !== null}>Cancelar</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={guardando !== null}
+              onClick={() => {
+                if (!empresa || !contratoPorSuspender) return;
+                void conContexto("suspender", () => suspenderContrato(empresa.id, contratoPorSuspender, modulo))
+                  .then((ok) => { if (ok) setContratoPorSuspender(null); });
+              }}
+            >
+              {guardando === "suspender" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              Suspender contrato
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
