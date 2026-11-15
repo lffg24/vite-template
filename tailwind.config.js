@@ -11,11 +11,12 @@ export default {
       },
     },
     extend: {
-      transitionDuration: {
-        'rel-micro': 'var(--rel-motion-micro)',
-        'rel-panel': 'var(--rel-motion-panel)',
-        'rel-context': 'var(--rel-motion-context)',
-      },
+      /* `transitionDuration` estaba declarado aqui Y mas abajo, en este mismo
+         objeto. En JavaScript la segunda clave gana, asi que las tres
+         duraciones `rel-*` nunca llegaron a generarse: las siete clases
+         `duration-rel-micro|panel|context` repartidas por CX y Capacitaciones
+         caian al valor por defecto sin que nada fallara. Estan unificadas mas
+         abajo, en una sola declaracion. */
       fontFamily: {
         'rel-heading': 'var(--rel-font-heading)',
         'rel-body': 'var(--rel-font-body)',
@@ -193,11 +194,27 @@ export default {
         soft: "var(--shadow-soft)",
         card: "var(--shadow-card)",
         floating: "var(--shadow-floating)",
+        "rel-card": "var(--rel-shadow-card)",
+        "rel-soft": "var(--rel-shadow-soft)",
+        "rel-floating": "var(--rel-shadow-floating)",
       },
+      /* Las seis duraciones en una sola clave. Ver la nota del principio de
+         `extend`: estaban en dos declaraciones y la segunda borraba a la
+         primera. */
       transitionDuration: {
         fast: "var(--motion-fast)",
         standard: "var(--motion-standard)",
         slow: "var(--motion-slow)",
+        "rel-micro": "var(--rel-motion-micro)",
+        "rel-panel": "var(--rel-motion-panel)",
+        "rel-context": "var(--rel-motion-context)",
+      },
+      /* Curvas de salida. Sin esto, toda transicion usa `ease` y se percibe
+         plana; ver la nota de `--rel-ease-*` en `index.css`. */
+      transitionTimingFunction: {
+        "rel-out": "var(--rel-ease-out)",
+        "rel-inout": "var(--rel-ease-inout)",
+        "rel-spring": "var(--rel-ease-spring)",
       },
       keyframes: {
         "accordion-down": {

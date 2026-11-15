@@ -9,7 +9,13 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-2xl border border-border/80 bg-card text-card-foreground shadow-card transition-shadow duration-fast",
+      /* `transition-shadow` ya estaba, pero ninguna regla cambiaba la sombra,
+         asi que la tarjeta era completamente estatica. Ahora la elevacion
+         responde al puntero, que es la senal de que una tarjeta se puede
+         tocar. Deliberadamente SIN `hover:-translate-y`: desplazarla mueve el
+         texto bajo el cursor y, en una rejilla densa, el recorrido produce un
+         temblor. */
+      "rounded-2xl border border-border/80 bg-card text-card-foreground shadow-card transition-[box-shadow,border-color] duration-rel-panel ease-rel-out hover:border-border-strong hover:shadow-soft motion-reduce:transition-none",
       className
     )}
     {...props}

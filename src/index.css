@@ -182,6 +182,20 @@
     --sidebar-accent-foreground: 180 17% 92%;
     --sidebar-border: 217 31% 20%;
     --sidebar-ring: 172 100% 36%;
+
+    /* --- capa REL en oscuro -------------------------------------------------
+       Casi toda la capa `rel-*` ya no necesita nada aqui: referencia los
+       tokens de arriba y cambia con ellos. Las excepciones son los tintes
+       `-subtle`, que son fondos de aviso muy claros sin equivalente en la
+       casa; dejarlos sin redefinir pintaba un panel de error casi blanco
+       dentro de una pantalla oscura. Se mantiene el tono de cada familia y se
+       baja la luminosidad, para que el texto solido de la misma familia
+       —`--rel-danger` y companeros, que en oscuro ya se aclaran— siga
+       leyendose encima. */
+    --rel-success-subtle: 158 42% 15%;
+    --rel-info-subtle: 172 42% 15%;
+    --rel-warning-subtle: 38 46% 17%;
+    --rel-danger-subtle: 0 42% 17%;
   }
 }
 
@@ -289,76 +303,113 @@
        siendo la pila del sistema: `@fontsource/open-sans` llega con esa
        sincronizacion y declararla antes seria otra vez una fuente que el codigo
        afirma y el navegador no tiene. */
-    --rel-primary: 172 100% 36%; /* = --primary de la casa */
-    /* El turquesa claro no alcanza AA con blanco para texto normal. */
-    --rel-primary-foreground: 215 42% 13%; /* = --brand-dark */
-    --rel-accent: 173 100% 23%; /* = --primary-active · estado activo */
-    --rel-accent-subtle: 168 56% 92%; /* = --accent */
-    --rel-turquoise: 172 100% 36%; /* = --brand-turquoise */
+    /* Cada token REFERENCIA el de la casa; ya no copia su valor.
+       La copia tuvo sentido mientras esta rama iba por detras de `preprod` y
+       los tokens de la casa no existian aqui. Ya existen —`--primary`,
+       `--surface`, `--radius` y `@fontsource/open-sans` se declaran arriba, en
+       este mismo archivo—, asi que el literal dejo de ser una precaucion y
+       paso a ser una segunda fuente de verdad: cambiar la marca obligaba a
+       editar dos sitios, y el segundo se olvida.
+
+       Referenciar arregla ademas el modo oscuro sin escribir una paleta nueva.
+       `.dark` redefine los tokens de la casa y estos resuelven en el momento de
+       uso, asi que las pantallas `rel-*` acompanan al resto. Antes no lo
+       hacian: `.dark` no redefinia ni un solo `--rel-*`, de modo que CX y
+       Capacitaciones se quedaban en superficies blancas mientras el texto de
+       la casa se aclaraba. No se habia notado porque todavia no hay
+       interruptor de tema. */
+    --rel-primary: var(--primary);
+    /* Texto oscuro, no blanco: el turquesa claro no alcanza AA con blanco en
+       texto normal. Es una decision de contraste, no de marca, y por eso NO
+       sigue a `--primary-foreground`, que en claro es blanco. */
+    --rel-primary-foreground: var(--brand-dark);
+    --rel-accent: var(--primary-active); /* estado activo */
+    --rel-accent-subtle: var(--accent);
+    --rel-turquoise: var(--brand-turquoise);
     --rel-turquoise-foreground: 0 0% 100%;
-    --rel-sky: 172 100% 41%; /* = --brand-sky */
-    --rel-sky-foreground: 215 42% 13%;
-    --rel-dark: 215 42% 13%; /* = --brand-dark */
-    --rel-canvas: 168 41% 96%; /* = --background */
-    --rel-surface: 0 0% 100%; /* = --surface */
-    --rel-surface-subtle: 168 25% 97%; /* = --surface-subtle */
-    --rel-border: 168 18% 85%; /* = --border */
-    --rel-border-strong: 171 24% 76%; /* = --border-strong */
-    --rel-muted-foreground: 216 18% 45%; /* = --muted-foreground */
+    --rel-sky: var(--brand-sky);
+    --rel-sky-foreground: var(--brand-dark);
+    /* `--foreground`, no `--brand-dark`: `text-rel-dark` es el color del TEXTO
+       principal. Anclarlo al azul de marca lo dejaba negro sobre negro en
+       cuanto el tema se invierte. */
+    --rel-dark: var(--foreground);
+    --rel-canvas: var(--background);
+    --rel-surface: var(--surface);
+    --rel-surface-subtle: var(--surface-subtle);
+    --rel-border: var(--border);
+    --rel-border-strong: var(--border-strong);
+    --rel-muted-foreground: var(--muted-foreground);
 
     /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
        El turquesa de marca NO significa "exito". Colapsarlos dejaria un boton
        primario indistinguible de una confirmacion. Los valores son los de la
        casa; los `-subtle` son el tinte claro de cada familia, que la casa no
        declara porque sus pantallas no usan fondos de aviso. */
-    --rel-success: 158 64% 40%; /* = --success */
+    --rel-success: var(--success);
     --rel-success-foreground: 0 0% 100%;
     --rel-success-subtle: 158 60% 94%;
-    --rel-info: 172 100% 36%; /* = --info */
+    --rel-info: var(--info);
     --rel-info-foreground: 0 0% 100%;
     --rel-info-subtle: 172 60% 94%;
-    --rel-warning: 38 92% 50%; /* = --warning */
+    --rel-warning: var(--warning);
     --rel-warning-foreground: 218 57% 11%;
     --rel-warning-subtle: 38 92% 95%;
-    --rel-danger: 0 72% 51%; /* = --danger */
+    --rel-danger: var(--danger);
     --rel-danger-foreground: 0 0% 100%;
     --rel-danger-subtle: 0 72% 96%;
-    --rel-neutral: 216 18% 45%; /* = --muted-foreground */
-    --rel-neutral-subtle: 168 22% 95%; /* = --muted */
+    --rel-neutral: var(--muted-foreground);
+    --rel-neutral-subtle: var(--muted);
 
-    --rel-focus-ring: 172 100% 36%; /* = --ring */
+    --rel-focus-ring: var(--ring);
 
     /* --- radios ------------------------------------------------------------
-       Los de la casa: `--radius` 0.875rem, `--radius-lg` 1rem, `--radius-xl`
-       1.25rem en `preprod`. Se declaran aqui con su valor y no como
-       `var(--radius-lg)` porque esos tokens llegan con la sincronizacion y
-       apuntar a una variable inexistente deja la esquina sin redondear sin que
-       nadie se entere. Al sincronizar, se reemplazan por la referencia. */
-    --rel-radius-control: 0.875rem;
-    --rel-radius-card: 1rem;
-    --rel-radius-panel: 1.25rem;
+       Antes eran literales, con una nota que decia que los de la casa
+       «llegan con la sincronizacion» y que apuntar a una variable inexistente
+       dejaria la esquina sin redondear. Ya llegaron: `--radius`, `--radius-lg`
+       y `--radius-xl` estan declarados al principio de este archivo, asi que
+       toca la referencia que esa misma nota pedia. */
+    --rel-radius-control: var(--radius);
+    --rel-radius-card: var(--radius-lg);
+    --rel-radius-panel: var(--radius-xl);
 
     /* --- tipografia -------------------------------------------------------
-       La misma pila que el resto de ABRIL-360, que es la de Tailwind por
-       defecto.
+       La nota anterior era correcta y ya caduco. Decia que declarar Open Sans
+       sin instalarla produciria un fallback silencioso, y por eso dejaba aqui
+       la pila del sistema. Pero `@fontsource/open-sans` SI esta instalada: se
+       importa en las cuatro primeras lineas de este archivo y la casa la usa
+       via `--font-heading`.
 
-       Aqui decia antes "Montserrat" y "Open Sans" con una nota explicando que
-       no se instalaban para no meter `@fontsource/*` en silencio. La nota era
-       honesta y el efecto no: como no estaban instaladas, el navegador caia al
-       siguiente elemento de la pila sin decir nada, asi que Capacitaciones se
-       renderizaba con la fuente del sistema mientras el codigo afirmaba usar la
-       de marca. Un fallback silencioso es peor que no declararlo. Cuando se
-       aprueben las fuentes de marca se instalan y se cambian estas dos lineas
-       — para eso siguen siendo variables. */
-    --rel-font-heading:
-      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --rel-font-body:
-      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+       El efecto de no haberlo actualizado era el sintoma contrario y visible:
+       Psicosocial y las pantallas antiguas se renderizaban en Open Sans y las
+       nuevas —CX y Capacitaciones, que son las que usan `font-rel-*`— en la
+       fuente del sistema. Dos tipografias en un mismo producto, en pantallas
+       contiguas. */
+    --rel-font-heading: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    --rel-font-body: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 
     /* --- movimiento (constitucion §15) --- */
     --rel-motion-micro: 150ms;
     --rel-motion-panel: 220ms;
     --rel-motion-context: 280ms;
+
+    /* Curvas. Faltaban, y su ausencia es la razon de que las transiciones se
+       sientan planas: sin `transition-timing-function` el navegador aplica
+       `ease`, que arranca y frena igual. Una interfaz se percibe rapida cuando
+       sale deprisa y aterriza despacio, que es lo que hace `ease-out`.
+       - `out`    entradas y cambios de estado corrientes.
+       - `inout`  algo que se mueve de un sitio a otro y debe leerse completo.
+       - `spring` solo para confirmar una accion del usuario; sobrepasa un poco
+                  y vuelve. Nunca en algo que se repita en bucle. */
+    --rel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --rel-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+    --rel-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Elevacion. Tres niveles y ningun valor suelto en las pantallas: una
+       sombra escrita a mano en un componente es como se desalinea un sistema.
+       Heredan de la casa para no abrir una segunda escala. */
+    --rel-shadow-card: var(--shadow-card);
+    --rel-shadow-soft: var(--shadow-soft);
+    --rel-shadow-floating: var(--shadow-floating);
 
     /* Illustration System · medidas compartidas, nunca por pantalla. */
     --illustration-size-xs: 5rem;
