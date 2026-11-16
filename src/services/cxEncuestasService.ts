@@ -1,5 +1,5 @@
 import { api } from "@/lib/apiClient";
-import type { EncuestaCx, ItemCx, PaginaEncuestasCx } from "@/types/cxEncuestas";
+import type { ContactoCx, EncuestaCx, ItemCx, PaginaEncuestasCx } from "@/types/cxEncuestas";
 
 const base = "/cx/encuestas";
 
@@ -18,12 +18,12 @@ export async function obtenerEncuestaCx(id: string): Promise<EncuestaCx> {
   catch (error) { throw mensaje(error, "No pudimos cargar la encuesta."); }
 }
 
-export async function crearEncuestaCx(datos: { codigo: string; titulo: string; items: ItemCx[] }): Promise<EncuestaCx> {
+export async function crearEncuestaCx(datos: { codigo: string; titulo: string; items: ItemCx[]; contacto?: ContactoCx | null }): Promise<EncuestaCx> {
   try { return (await api.post<EncuestaCx>(base, datos)).data; }
   catch (error) { throw mensaje(error, "No pudimos crear la encuesta."); }
 }
 
-export async function editarEncuestaCx(id: string, datos: { titulo: string; items: ItemCx[] }): Promise<EncuestaCx> {
+export async function editarEncuestaCx(id: string, datos: { titulo: string; items: ItemCx[]; contacto?: ContactoCx | null }): Promise<EncuestaCx> {
   try { return (await api.put<EncuestaCx>(`${base}/${id}`, datos)).data; }
   catch (error) { throw mensaje(error, "No pudimos guardar el borrador."); }
 }

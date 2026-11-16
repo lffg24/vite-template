@@ -12,11 +12,14 @@ import {
   abrirCalificacion,
   enviarCalificacion,
   errorCalificacion,
+  type ContactoCalificacion,
   type FormularioCalificacion,
   type PreguntaCalificacion,
 } from "@/services/cxPublicoService";
 
 type Fase = "cargando" | "lista" | "enviando" | "confirmada" | "no_disponible" | "error" | "caducada";
+
+const SIN_DATOS = { nombre: "", correo: "", telefono: "" };
 
 function escala(tipo: PreguntaCalificacion["tipo"]): number[] {
   if (tipo.startsWith("NPS_")) return Array.from({ length: 11 }, (_, indice) => indice);
@@ -39,6 +42,14 @@ export default function CalificacionPublicaPage() {
   const [respuestas, setRespuestas] = useState<Record<string, number>>({});
   const [errorPregunta, setErrorPregunta] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState(false);
+  // El paso de contacto va DESPUÉS de la última pregunta: la calificación es
+  // lo que se vino a dar, y los datos personales son un añadido voluntario.
+  const [enContacto, setEnContacto] = useState(false);
+  const [datos, setDatos] = useState(SIN_DATOS);
+  // Arranca en falso y sin premarcar: el consentimiento se otorga, no se
+  // hereda de un valor por defecto.
+  const [consiente, setConsiente] = useState(false);
+  const [errorContacto, setErrorContacto] = useState("");
   const intento = useRef<{ huella: string; clave: string } | null>(null);
 
   const cargar = useCallback(async (signal?: AbortSignal) => {
@@ -54,6 +65,10 @@ export default function CalificacionPublicaPage() {
       setFormulario(datos);
       setIndice(0);
       setRespuestas({});
+      setEnContacto(false);
+      setDatos(SIN_DATOS);
+      setConsiente(false);
+      setErrorContacto("");
       intento.current = null;
       setFase("lista");
     } catch (error) {
@@ -85,36 +100,88 @@ export default function CalificacionPublicaPage() {
       return;
     }
 
+    // Esta versión pide contacto: hay un paso más antes de enviar.
+    if (formulario.contacto) {
+      setEnContacto(true);
+      return;
+    }
+    await enviar(null);
+  }
+
+  /** Envía la calificación. `contacto` a `null` es el camino anónimo, y está
+   *  disponible siempre: negar los datos no puede costar la calificación. */
+  async function enviar(contacto: ContactoCalificacion | null) {
+    if (!formulario || fase === "enviando") return;
     const valores = formulario.preguntas
       .filter((item) => respuestas[item.id] !== undefined)
       .map((item) => ({ item_id: item.id, valor: respuestas[item.id] }));
     if (!valores.length) {
+      setEnContacto(false);
       setErrorPregunta(true);
       return;
     }
     // Un fallo de red conserva la clave del mismo contenido. Si la persona
     // cambia una respuesta después, ese nuevo intento recibe otra clave.
+    //
+    // El contacto NO entra en la huella: la clave identifica un intento de
+    // calificación, y meterlo aquí haría que reenviar con el correo corregido
+    // creara un envío nuevo, contando dos veces la misma opinión.
     const huella = JSON.stringify([formulario.presentacion, valores]);
     if (intento.current?.huella !== huella) intento.current = { huella, clave: crypto.randomUUID() };
+    setErrorEnvio(false);
+    setErrorContacto("");
     setFase("enviando");
     try {
       await enviarCalificacion(token, {
         presentacion: formulario.presentacion,
         idempotency_key: intento.current.clave,
         respuestas: valores,
+        contacto,
       });
       setFase("confirmada");
     } catch (error) {
       const fallo = errorCalificacion(error);
-      if (fallo.motivo === "presentacion_vencida") {
+      if (fallo.motivo === "presentacion_vencida" || fallo.motivo === "autorizacion_actualizada") {
+        // La autorización se republicó mientras la persona diligenciaba. No se
+        // registra ninguna de las dos redacciones: hay que presentarla de nuevo.
         setFase("caducada");
       } else if (fallo.status === 404) {
         setFase("no_disponible");
+      } else if (fallo.motivo === "contacto_invalido" || fallo.motivo === "respuesta_invalida") {
+        // Rechazos que la persona puede corregir: se queda donde está, con el
+        // mensaje del servidor y sus datos intactos.
+        setErrorContacto(fallo.mensaje || "Revisa los datos antes de enviar.");
+        setFase("lista");
       } else {
         setErrorEnvio(true);
         setFase("lista");
       }
     }
+  }
+
+  function enviarConContacto() {
+    const autorizacion = formulario?.contacto?.autorizacion;
+    if (!autorizacion) return;
+    if (!consiente) {
+      setErrorContacto("Marca la autorización de tratamiento de datos para dejar tus datos.");
+      return;
+    }
+    const nombre = datos.nombre.trim();
+    const correo = datos.correo.trim();
+    if (!nombre || !correo) {
+      setErrorContacto("El nombre y el correo son obligatorios para que podamos contactarte.");
+      return;
+    }
+    const telefono = datos.telefono.trim();
+    void enviar({
+      nombre,
+      correo,
+      // Solo viaja si esta versión lo pidió; el servidor rechaza un campo que
+      // la persona no vio que se le pedía.
+      telefono: formulario?.contacto?.pide_telefono && telefono ? telefono : null,
+      consentimiento: true,
+      texto_id_presentado: autorizacion.texto_id,
+    });
   }
 
   if (fase === "cargando") return <ParticipanteLayout ancho="compacto"><Cargando etiqueta="Preparando tu calificación…" /></ParticipanteLayout>;
@@ -149,6 +216,81 @@ export default function CalificacionPublicaPage() {
       </div>
     </ParticipanteLayout>
   );
+
+  // Paso de contacto. Va aparte y no dentro del recorrido de preguntas: no es
+  // una pregunta más, es una decisión distinta y con dos salidas válidas.
+  if (enContacto && formulario?.contacto) {
+    const { pide_telefono: pideTelefono, autorizacion } = formulario.contacto;
+    return (
+      <ParticipanteLayout ancho="compacto" progreso={1} progresoEtiqueta="Avance de la calificación">
+        <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col pb-5">
+          <div className="mb-6 sm:mb-8">
+            <p className="text-xs font-bold uppercase tracking-widest text-rel-primary">Último paso, opcional</p>
+            <h1 className="mt-2 font-rel-heading text-2xl font-black text-rel-dark sm:text-3xl">¿Quieres que te contactemos?</h1>
+            <p className="mt-2 text-sm leading-relaxed text-rel-muted">Tu calificación ya está lista para enviarse. Dejar tus datos es voluntario: puedes enviarla sin ellos y seguirá contando igual.</p>
+          </div>
+
+          <Panel className="p-5 sm:p-8">
+            <div className="grid gap-4">
+              <div>
+                <label htmlFor="cx-contacto-nombre" className="block text-sm font-bold text-rel-dark">Nombre <span className="text-rel-danger" aria-label="obligatorio">*</span></label>
+                <input id="cx-contacto-nombre" type="text" autoComplete="name" maxLength={160} value={datos.nombre}
+                  onChange={(e) => { setDatos((a) => ({ ...a, nombre: e.target.value })); setErrorContacto(""); }}
+                  disabled={fase === "enviando"}
+                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+              </div>
+              <div>
+                <label htmlFor="cx-contacto-correo" className="block text-sm font-bold text-rel-dark">Correo electrónico <span className="text-rel-danger" aria-label="obligatorio">*</span></label>
+                <input id="cx-contacto-correo" type="email" inputMode="email" autoComplete="email" maxLength={200} value={datos.correo}
+                  onChange={(e) => { setDatos((a) => ({ ...a, correo: e.target.value })); setErrorContacto(""); }}
+                  disabled={fase === "enviando"}
+                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+              </div>
+              {pideTelefono ? <div>
+                <label htmlFor="cx-contacto-telefono" className="block text-sm font-bold text-rel-dark">Teléfono <small className="font-normal text-rel-muted">(opcional)</small></label>
+                <input id="cx-contacto-telefono" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} value={datos.telefono}
+                  onChange={(e) => { setDatos((a) => ({ ...a, telefono: e.target.value })); setErrorContacto(""); }}
+                  disabled={fase === "enviando"}
+                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+              </div> : null}
+            </div>
+
+            <div className="mt-6 border-t border-rel-border pt-6">
+              {autorizacion.finalidad ? <p className="text-sm text-rel-dark"><strong className="font-bold">Para qué los usamos:</strong> {autorizacion.finalidad}</p> : null}
+              <label className="mt-4 flex items-start gap-3 text-sm">
+                <input type="checkbox" checked={consiente} disabled={fase === "enviando"}
+                  onChange={(e) => { setConsiente(e.target.checked); setErrorContacto(""); }}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-rel-primary" />
+                <span className="leading-relaxed text-rel-dark">Autorizo el tratamiento de mis datos personales según la política de tratamiento de datos. <span className="text-rel-danger" aria-label="obligatorio">*</span></span>
+              </label>
+              <details className="mt-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-rel-primary">Leer la política de tratamiento de datos</summary>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-rel-muted">{autorizacion.contenido}</p>
+              </details>
+            </div>
+
+            {errorContacto ? <p className="mt-5 text-sm font-semibold text-rel-danger" role="alert">{errorContacto}</p> : null}
+          </Panel>
+
+          {errorEnvio && <p className="mt-4 rounded-rel-card border border-rel-danger bg-rel-surface p-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</p>}
+
+          <BarraAccionesMovil className="mt-auto lg:mt-6">
+            <div className="flex flex-col gap-3">
+              <BotonPrincipal onClick={enviarConContacto} disabled={fase === "enviando"}>
+                {fase === "enviando" ? "Enviando…" : "Enviar con mis datos"}
+                {fase !== "enviando" && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
+              </BotonPrincipal>
+              <BotonSecundario onClick={() => void enviar(null)} disabled={fase === "enviando"}>Enviar sin dejar mis datos</BotonSecundario>
+              <button type="button" onClick={() => { setEnContacto(false); setErrorContacto(""); }} disabled={fase === "enviando"}
+                className="inline-flex items-center justify-center gap-2 self-center text-sm font-semibold text-rel-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary disabled:opacity-50">
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a mis respuestas
+              </button>
+            </div>
+          </BarraAccionesMovil>
+        </div>
+      </ParticipanteLayout>
+    );
+  }
 
   if (!formulario || !pregunta) return null;
   const valores = escala(pregunta.tipo);
@@ -205,12 +347,13 @@ export default function CalificacionPublicaPage() {
         </Panel>
 
         {errorEnvio && <Caja como="p" tono="peligro" className="mt-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</Caja>}
+        {errorContacto && <Caja como="p" tono="peligro" className="mt-4 text-sm text-rel-danger" role="alert">{errorContacto}</Caja>}
 
         <BarraAccionesMovil className="mt-auto lg:mt-6">
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
             {indice > 0 && <BotonSecundario className="sm:w-auto" onClick={() => { setIndice(indice - 1); setErrorPregunta(false); }} disabled={fase === "enviando"}><ArrowLeft className="h-5 w-5" aria-hidden="true" />Anterior</BotonSecundario>}
             <BotonPrincipal className="sm:flex-1" onClick={() => void continuar()} disabled={fase === "enviando"}>
-              {fase === "enviando" ? "Guardando…" : indice === total - 1 ? "Enviar calificación" : "Siguiente"}
+              {fase === "enviando" ? "Guardando…" : indice < total - 1 ? "Siguiente" : formulario.contacto ? "Continuar" : "Enviar calificación"}
               {fase !== "enviando" && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
             </BotonPrincipal>
           </div>
