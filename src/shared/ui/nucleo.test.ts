@@ -98,10 +98,17 @@ describe("el núcleo es uno solo", () => {
   const TABLAS_SIN_MIGRAR = ["pages/superadmin/SuperAdminPsicologosPage.tsx"];
 
   it("las tablas salen de TablaDatos, y la deuda no crece", () => {
+    // `TablaDatos` y `Panel` SON la tabla de la casa, no consumidores suyos:
+    // desde la homologacion no duplican los estilos de `components/ui/table`
+    // sino que los consumen, que es justo lo que esta prueba quiere que pase.
+    // Exentos por ser la implementacion, no por deber nada.
+    const IMPLEMENTACION = ["shared/ui/TablaDatos.tsx", "shared/ui/Panel.tsx"];
+
     const crudas = TODOS.filter(
       (ruta) =>
         contenido(ruta).includes('from "@/components/ui/table"') &&
-        !comoRuta(ruta).startsWith("components/ui/")
+        !comoRuta(ruta).startsWith("components/ui/") &&
+        !IMPLEMENTACION.includes(comoRuta(ruta))
     ).map(comoRuta);
 
     const nuevas = crudas.filter((r) => !TABLAS_SIN_MIGRAR.includes(r));
@@ -118,6 +125,69 @@ describe("el núcleo es uno solo", () => {
     expect(
       yaMigradas,
       "Ya no usan la tabla cruda: bórralas de TABLAS_SIN_MIGRAR."
+    ).toEqual([]);
+  });
+
+  /**
+   * Pantallas que arman la tabla con `<table>` a mano, sin pasar por ninguna de
+   * las dos piezas del sistema.
+   *
+   * El guardia de arriba no las veía: mira quién IMPORTA `@/components/ui/table`,
+   * y estas no importan nada — escriben el marcado. Por eso la deuda medida era
+   * de una pantalla cuando en realidad eran veinticuatro, y por eso en ellas
+   * llegaron a convivir DIEZ `<thead>` distintos y VEINTIUNA combinaciones de
+   * relleno para `<th>`.
+   *
+   * **Esta lista solo puede menguar**, igual que `TABLAS_SIN_MIGRAR`.
+   */
+  const TABLAS_A_MANO = [
+    "components/ui/reportes/TablaDominios.tsx",
+    "features/capacitaciones/components/SeleccionDeAsignacion.tsx",
+    "features/psicosocial/components/SociodemographicChartCard.tsx",
+    "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
+    "pages/ReportesPsico.tsx",
+    "pages/capacitaciones/CapacitacionesMatrizPage.tsx",
+    "pages/capacitaciones/CapacitacionesParticipantesPage.tsx",
+    "pages/cx/AreasCxPage.tsx",
+    "pages/cx/ContextosCxPage.tsx",
+    "pages/cx/FactoresCxPage.tsx",
+    "pages/cx/PuntosCxPage.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/AplicacionResultadosPage.tsx",
+    "pages/psicosocial/AplicacionesBTPage.tsx",
+    "pages/psicosocial/EmpresaAplicacionesPage.tsx",
+    "pages/psicosocial/EmpresaAreasCargosPage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
+    "pages/psicosocial/PsicologoDashboardPage.tsx",
+    "pages/superadmin/SuperAdminAuditoriaPage.tsx",
+    "pages/superadmin/SuperAdminCreditosPage.tsx",
+    "pages/superadmin/SuperAdminEmpresasPage.tsx",
+  ];
+
+  it("nadie escribe una tabla a mano, y esa deuda tampoco crece", () => {
+    // `shared/ui/TablaDatos.tsx` es el único sitio donde `<table>` es correcto:
+    // es la tabla. `components/ui/table.tsx` no aparece porque define `<table>`
+    // dentro del propio componente.
+    const IMPLEMENTACION = ["shared/ui/TablaDatos.tsx", "components/ui/table.tsx"];
+
+    const aMano = TODOS.filter((ruta) => contenido(ruta).includes("<table"))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r));
+
+    const nuevas = aMano.filter((r) => !TABLAS_A_MANO.includes(r));
+    expect(
+      nuevas,
+      "No escribas `<table>`: usa `TablaDatos` de `@/shared/ui`, o las " +
+        "primitivas de `@/components/ui/table` si la tabla no es un listado."
+    ).toEqual([]);
+
+    const yaMigradas = TABLAS_A_MANO.filter((r) => !aMano.includes(r));
+    expect(
+      yaMigradas,
+      "Ya no escriben la tabla a mano: bórralas de TABLAS_A_MANO."
     ).toEqual([]);
   });
 

@@ -25,21 +25,21 @@ import { cn } from "@/lib/utils";
 export type TonoPill = "exito" | "atencion" | "peligro" | "neutro" | "info" | "marca";
 
 const VARIANTE = {
-  exito: "relSuccess",
-  atencion: "relWarning",
-  peligro: "relDanger",
-  neutro: "relNeutral",
-  info: "relInfo",
-  marca: "relBrand",
+  exito: "success",
+  atencion: "warning",
+  peligro: "danger",
+  neutro: "neutral",
+  info: "info",
+  marca: "brand",
 } as const;
 
 const PUNTO: Record<TonoPill, string> = {
-  exito: "bg-rel-success",
-  atencion: "bg-rel-warning",
-  peligro: "bg-rel-danger",
-  neutro: "bg-rel-neutral",
-  info: "bg-rel-info",
-  marca: "bg-rel-primary",
+  exito: "bg-success",
+  atencion: "bg-warning",
+  peligro: "bg-danger",
+  neutro: "bg-muted-foreground",
+  info: "bg-info",
+  marca: "bg-primary",
 };
 
 export function Pill({
@@ -60,7 +60,7 @@ export function Pill({
     <Badge
       variant={VARIANTE[tono]}
       title={title}
-      className={cn("gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1", className)}
+      className={cn("px-2.5 py-1", className)}
     >
       {punto ? (
         <span aria-hidden="true" className={cn("h-2 w-2 shrink-0 rounded-full", PUNTO[tono])} />

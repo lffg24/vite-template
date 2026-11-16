@@ -31,6 +31,7 @@ import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { StandardPagination } from "@/components/common/StandardPagination";
+import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import { TablaBody, TablaHead, TablaPanel } from "./Panel";
 
 export type ColumnaTabla<T> = {
@@ -123,18 +124,35 @@ export function TablaDatos<T>({
   }
 
   return (
-    <TablaPanel>
-      <table className="min-w-full text-left text-sm" aria-label={etiquetaTabla}>
+    <TablaPanel
+      /* Se pinta siempre, tambien con una sola pagina: es donde se lee cuantos
+         registros hay en total, y esconderla obliga a contar filas a ojo. Va
+         como `pie` y no como hijo para que no se desplace de lado con las
+         columnas en una tabla ancha. */
+      pie={
+        <StandardPagination
+          page={paginaActual}
+          pageSize={tamano}
+          total={ordenadas.length}
+          itemLabel={etiquetaElemento}
+          onPageChange={setPagina}
+          onPageSizeChange={(n) => {
+            setTamano(n);
+            setPagina(1);
+          }}
+        />
+      }
+    >
+      <table className="w-full min-w-full caption-bottom text-left text-sm" aria-label={etiquetaTabla}>
         <TablaHead>
           <tr>
             {columnas.map((c) => {
               const activa = orden?.clave === c.clave;
               const derecha = c.alineacion === "derecha";
               return (
-                <th
+                <TableHead
                   key={c.clave}
-                  scope="col"
-                  className={cn("px-4 py-3", derecha && "text-right")}
+                  align={derecha ? "right" : "left"}
                   // `aria-sort` es lo que hace que un lector de pantalla diga
                   // «ordenado de forma ascendente» en vez de leer un icono.
                   aria-sort={activa ? (orden.direccion === "asc" ? "ascending" : "descending") : undefined}
@@ -146,8 +164,8 @@ export function TablaDatos<T>({
                       type="button"
                       onClick={() => alternar(c.clave)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-rel-control py-0.5 uppercase tracking-wide transition-colors hover:text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
-                        activa && "text-rel-dark",
+                        "inline-flex items-center gap-1.5 rounded-md py-0.5 transition-colors duration-rel-micro ease-rel-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
+                        activa && "text-foreground",
                         derecha && "flex-row-reverse"
                       )}
                     >
@@ -165,7 +183,7 @@ export function TablaDatos<T>({
                   ) : (
                     c.titulo
                   )}
-                </th>
+                </TableHead>
               );
             })}
           </tr>
@@ -173,33 +191,16 @@ export function TablaDatos<T>({
 
         <TablaBody>
           {visibles.map((fila) => (
-            <tr key={claveFila(fila)} className="hover:bg-rel-surface-subtle">
+            <TableRow key={claveFila(fila)}>
               {columnas.map((c) => (
-                <td
-                  key={c.clave}
-                  className={cn("px-4 py-4", c.alineacion === "derecha" && "text-right")}
-                >
+                <TableCell key={c.clave} align={c.alineacion === "derecha" ? "right" : "left"}>
                   {c.celda(fila)}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
         </TablaBody>
       </table>
-
-      {/* Se pinta siempre, también con una sola página: es donde se lee cuántos
-          registros hay en total, y esconderla obliga a contar filas a ojo. */}
-      <StandardPagination
-        page={paginaActual}
-        pageSize={tamano}
-        total={ordenadas.length}
-        itemLabel={etiquetaElemento}
-        onPageChange={setPagina}
-        onPageSizeChange={(n) => {
-          setTamano(n);
-          setPagina(1);
-        }}
-      />
     </TablaPanel>
   );
 }
@@ -223,7 +224,7 @@ type CeldaPrincipalProps = {
 } & ({ a: string; alAbrir?: never } | { a?: never; alAbrir: () => void });
 
 const CLASES_PRINCIPAL =
-  "text-left font-black text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2";
+  "rounded-md text-left font-bold text-foreground underline-offset-4 transition-colors duration-rel-micro ease-rel-out hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none";
 
 export function CeldaPrincipal({ a, alAbrir, titulo, apoyo }: CeldaPrincipalProps) {
   return (
@@ -237,7 +238,7 @@ export function CeldaPrincipal({ a, alAbrir, titulo, apoyo }: CeldaPrincipalProp
           {titulo}
         </button>
       )}
-      {apoyo ? <p className="mt-0.5 text-xs text-rel-muted">{apoyo}</p> : null}
+      {apoyo ? <p className="mt-0.5 text-xs text-muted-foreground">{apoyo}</p> : null}
     </>
   );
 }

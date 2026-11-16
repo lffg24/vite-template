@@ -17,14 +17,19 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-lg border border-input bg-surface px-3 py-2 font-body text-sm text-foreground shadow-sm ring-offset-background transition-[border-color,box-shadow,background-color] duration-fast data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-input-focus/20 focus:border-input-focus disabled:cursor-not-allowed disabled:bg-muted/60 disabled:opacity-50 [&>span]:line-clamp-1",
+      /* Mismo foco y mismo realce que `Input` y `Textarea`: los tres son
+         campos de un formulario y deben responder igual. Tenia anillo de 2 px
+         al 20 %, ninguna senal de puntero, y lo disparaba con `focus` en vez
+         de `focus-visible`, de modo que el anillo aparecia tambien al abrirlo
+         con el raton. */
+      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-lg border border-input bg-surface px-3 py-2 font-body text-sm text-foreground shadow-sm transition-[border-color,box-shadow,background-color] duration-rel-micro ease-rel-out data-[placeholder]:text-muted-foreground hover:border-border-strong focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 focus-visible:border-input-focus aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/25 disabled:cursor-not-allowed disabled:bg-muted/60 disabled:opacity-50 motion-reduce:transition-none [&>span]:line-clamp-1",
       className
     )}
     {...props}
   >
     {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="ml-2 mr-1 h-4 w-4 shrink-0 opacity-50" />
+        <ChevronDown className="ml-2 mr-1 h-4 w-4 shrink-0 text-muted-foreground" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))

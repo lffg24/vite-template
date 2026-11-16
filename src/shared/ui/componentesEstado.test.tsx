@@ -15,7 +15,7 @@ describe("Pill", () => {
     expect(screen.getByText("Vencido")).toBeInTheDocument();
     const punto = container.querySelector("[aria-hidden='true']");
     expect(punto).not.toBeNull();
-    expect(punto?.className).toContain("bg-rel-danger");
+    expect(punto?.className).toContain("bg-danger");
   });
 
   it("sin punto, no dibuja ninguno", () => {

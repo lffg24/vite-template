@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type StandardPaginationProps = {
@@ -41,7 +42,7 @@ export function StandardPagination({
           <div className="mr-2 flex items-center gap-2 text-xs font-bold text-muted-foreground">
             <span>Filas</span>
             <Select value={String(safePageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
-              <SelectTrigger aria-label="Filas por página" className="h-9 w-20 rounded-xl font-bold">
+              <SelectTrigger aria-label="Filas por página" className="h-9 w-20 font-bold">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -50,11 +51,34 @@ export function StandardPagination({
             </Select>
           </div>
         )}
-        <button type="button" onClick={() => go(1)} disabled={currentPage <= 1} className="rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40">Primera</button>
-        <button type="button" onClick={() => go(currentPage - 1)} disabled={currentPage <= 1} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft className="h-4 w-4" />Anterior</button>
-        <span className="rounded-xl bg-primary px-4 py-2 font-black text-primary-foreground shadow-card">{currentPage}</span>
-        <button type="button" onClick={() => go(currentPage + 1)} disabled={currentPage >= totalPages} className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40">Siguiente<ChevronRight className="h-4 w-4" /></button>
-        <button type="button" onClick={() => go(totalPages)} disabled={currentPage >= totalPages} className="rounded-xl border border-border px-3 py-2 font-bold text-foreground-soft transition hover:bg-surface-subtle disabled:cursor-not-allowed disabled:opacity-40">Última</button>
+        {/* `Button` de la casa, no un cuarto dialecto de boton escrito a mano.
+            Estos cinco controles eran `<button>` crudos con `rounded-xl`,
+            `font-bold` y `transition` sin curva: aparecian en todas las tablas
+            del producto y respondian al puntero distinto de cualquier otro
+            boton. El estado desactivado tambien era propio (`opacity-40`
+            frente al 50 % del sistema). */}
+        <Button variant="outline" size="sm" onClick={() => go(1)} disabled={currentPage <= 1}>
+          Primera
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => go(currentPage - 1)} disabled={currentPage <= 1}>
+          <ChevronLeft aria-hidden="true" />
+          Anterior
+        </Button>
+        {/* La pagina actual es un dato, no un control: no se puede pulsar y por
+            eso no es un boton. `aria-current` es lo que lo anuncia. */}
+        <span
+          aria-current="page"
+          className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg bg-primary px-3 font-heading text-sm font-bold tabular-nums text-primary-foreground shadow-card"
+        >
+          {currentPage}
+        </span>
+        <Button variant="outline" size="sm" onClick={() => go(currentPage + 1)} disabled={currentPage >= totalPages}>
+          Siguiente
+          <ChevronRight aria-hidden="true" />
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => go(totalPages)} disabled={currentPage >= totalPages}>
+          Última
+        </Button>
       </div>
     </div>
   );

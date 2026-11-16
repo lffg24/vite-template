@@ -23,7 +23,7 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-start gap-4 overflow-hidden rounded-[26px] border p-5 pr-10 backdrop-blur transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+  "group pointer-events-auto relative flex w-full items-start gap-4 overflow-hidden rounded-2xl border p-5 pr-10 backdrop-blur transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
   {
     variants: {
       // Los cuatro tonos que ya usaba Psicosocial en `ToastCard`, traidos aqui
@@ -35,16 +35,16 @@ const toastVariants = cva(
       // «se guardo».
       variant: {
         default:
-          "border-rel-border bg-rel-surface/95 text-rel-dark shadow-[0_18px_48px_rgba(16,28,40,0.14)]",
+          "border-border bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--foreground)/0.14)]",
         success:
-          "border-emerald-200/80 bg-white/95 text-emerald-950 shadow-[0_18px_48px_rgba(16,185,129,0.18)]",
+          "border-success/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--success)/0.18)]",
         warning:
-          "border-amber-200/80 bg-white/95 text-amber-950 shadow-[0_18px_48px_rgba(245,158,11,0.18)]",
+          "border-warning/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--warning)/0.18)]",
         // Se llama `destructive` y no `error` porque es el nombre que ya usan
         // las llamadas repartidas por el producto. Cambiarlo obligaria a tocar
         // cada una para ganar una palabra.
         destructive:
-          "destructive group border-rose-200/80 bg-white/95 text-rose-950 shadow-[0_18px_48px_rgba(244,63,94,0.18)]",
+          "destructive group border-danger/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--danger)/0.18)]",
       },
     },
     defaultVariants: {
@@ -75,7 +75,8 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+      // Mismo foco y misma curva que el resto de los controles pulsables.
+      "inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-border bg-transparent px-3 font-heading text-sm font-semibold transition-colors duration-rel-micro ease-rel-out hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none group-[.destructive]:hover:border-danger/40 group-[.destructive]:hover:bg-danger group-[.destructive]:hover:text-danger-foreground group-[.destructive]:focus-visible:ring-danger",
       className
     )}
     {...props}
@@ -92,7 +93,7 @@ const ToastClose = React.forwardRef<
     className={cn(
       // Visible SIEMPRE, no solo al pasar el raton: con `opacity-0` no habia
       // forma de cerrarlo desde un telefono, donde no hay hover.
-      "absolute right-3 top-3 rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary",
+      "absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground transition-colors duration-rel-micro ease-rel-out hover:bg-surface-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
       className
     )}
     toast-close=""

@@ -62,6 +62,17 @@
     --danger: 0 72% 51%;
     --danger-foreground: 0 0% 100%;
 
+    /* Tinte claro de cada familia semantica: el fondo de una pildora de
+       estado, de un panel de aviso o de una fila resaltada. Vivian SOLO en la
+       capa `rel-*`, asi que una pantalla de la casa que necesitara un fondo de
+       error tenia que inventarselo — de ahi los `bg-emerald-50`, `bg-amber-50`
+       y `bg-rose-50` repartidos por el producto, que son color crudo de
+       Tailwind y por tanto no cambian en modo oscuro. */
+    --success-subtle: 158 60% 94%;
+    --info-subtle: 172 60% 94%;
+    --warning-subtle: 38 92% 95%;
+    --danger-subtle: 0 72% 96%;
+
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
@@ -183,19 +194,17 @@
     --sidebar-border: 217 31% 20%;
     --sidebar-ring: 172 100% 36%;
 
-    /* --- capa REL en oscuro -------------------------------------------------
-       Casi toda la capa `rel-*` ya no necesita nada aqui: referencia los
-       tokens de arriba y cambia con ellos. Las excepciones son los tintes
-       `-subtle`, que son fondos de aviso muy claros sin equivalente en la
-       casa; dejarlos sin redefinir pintaba un panel de error casi blanco
-       dentro de una pantalla oscura. Se mantiene el tono de cada familia y se
+    /* Tintes semanticos en oscuro. Se mantiene el tono de cada familia y se
        baja la luminosidad, para que el texto solido de la misma familia
-       —`--rel-danger` y companeros, que en oscuro ya se aclaran— siga
-       leyendose encima. */
-    --rel-success-subtle: 158 42% 15%;
-    --rel-info-subtle: 172 42% 15%;
-    --rel-warning-subtle: 38 46% 17%;
-    --rel-danger-subtle: 0 42% 17%;
+       —`--danger` y companeros— siga leyendose encima. Sin esto, un panel de
+       error quedaba casi blanco dentro de una pantalla oscura.
+
+       La capa `rel-*` ya no necesita nada mas aqui: referencia estos tokens y
+       cambia con ellos. */
+    --success-subtle: 158 42% 15%;
+    --info-subtle: 172 42% 15%;
+    --warning-subtle: 38 46% 17%;
+    --danger-subtle: 0 42% 17%;
   }
 }
 
@@ -343,20 +352,20 @@
     /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
        El turquesa de marca NO significa "exito". Colapsarlos dejaria un boton
        primario indistinguible de una confirmacion. Los valores son los de la
-       casa; los `-subtle` son el tinte claro de cada familia, que la casa no
-       declara porque sus pantallas no usan fondos de aviso. */
+       casa, los `-subtle` incluidos: desde la homologacion son tokens de la
+       casa y no valores propios de esta capa. */
     --rel-success: var(--success);
-    --rel-success-foreground: 0 0% 100%;
-    --rel-success-subtle: 158 60% 94%;
+    --rel-success-foreground: var(--success-foreground);
+    --rel-success-subtle: var(--success-subtle);
     --rel-info: var(--info);
-    --rel-info-foreground: 0 0% 100%;
-    --rel-info-subtle: 172 60% 94%;
+    --rel-info-foreground: var(--info-foreground);
+    --rel-info-subtle: var(--info-subtle);
     --rel-warning: var(--warning);
-    --rel-warning-foreground: 218 57% 11%;
-    --rel-warning-subtle: 38 92% 95%;
+    --rel-warning-foreground: var(--warning-foreground);
+    --rel-warning-subtle: var(--warning-subtle);
     --rel-danger: var(--danger);
-    --rel-danger-foreground: 0 0% 100%;
-    --rel-danger-subtle: 0 72% 96%;
+    --rel-danger-foreground: var(--danger-foreground);
+    --rel-danger-subtle: var(--danger-subtle);
     --rel-neutral: var(--muted-foreground);
     --rel-neutral-subtle: var(--muted);
 
