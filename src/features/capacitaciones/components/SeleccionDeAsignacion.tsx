@@ -23,13 +23,13 @@ import {
   ModoIdentidadBadge,
 } from "@/features/capacitaciones/components/Insignias";
 import {
-  CargandoTabla,
   ErrorConsulta,
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
+import { Panel } from "@/shared/ui/Panel";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import type { NombreEscena } from "@/shared/ui/Escena";
 
 type Destino = "invitaciones" | "enlaces";
@@ -74,6 +74,64 @@ function urgencia(a: AsignacionResumen): number {
   return 2;
 }
 
+/**
+ * Columnas de la asignacion a elegir.
+ *
+ * La accion sigue siendo un boton y no un enlace en el nombre porque aqui la
+ * fila no se abre: se elige. El destino depende de por donde se entro
+ * —invitaciones o enlaces—, asi que el nombre de la fila no tiene una ruta
+ * unica que pudiera copiarse o compartirse.
+ */
+function columnasAsignacion(
+  accion: string,
+  elegir: (a: AsignacionResumen) => void,
+): ColumnaTabla<AsignacionResumen>[] {
+  return [
+    {
+      clave: "curso",
+      titulo: "Curso",
+      celda: (a) => (
+        <CeldaPrincipal titulo={a.curso_titulo} apoyo={`Versi\u00f3n ${a.numero_version}`} />
+      ),
+      valor: (a) => a.curso_titulo,
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (a) => (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <EstadoAsignacionBadge estado={a.estado} />
+          {/* Aqui es donde mas falta hace: elegir «enlaces» sobre una
+              asignacion con invitacion personal lleva a generar algo que no
+              sirve para inscribir a nadie. */}
+          <ModoIdentidadBadge modo={a.modo_identidad} />
+        </div>
+      ),
+      valor: (a) => a.estado,
+    },
+    {
+      clave: "fecha",
+      titulo: "Fecha objetivo",
+      celda: (a) => (
+        <span className="text-muted-foreground">{formatearFecha(a.fecha_objetivo)}</span>
+      ),
+      valor: (a) => a.fecha_objetivo || "",
+    },
+    {
+      clave: "accion",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (a) => (
+        <Button variant="relOutline" size="sm" onClick={() => elegir(a)}>
+          {accion}
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      ),
+    },
+  ];
+}
+
 export default function SeleccionDeAsignacion({ destino }: { destino: Destino }) {
   const navegar = useNavigate();
   const consulta = useConsulta<AsignacionResumen[]>(() => listarAsignaciones(), []);
@@ -87,77 +145,37 @@ export default function SeleccionDeAsignacion({ destino }: { destino: Destino })
     <div className="space-y-6">
       <PageHeader titulo={titulo} icono={Icono} descripcion={descripcion} />
 
-      <Panel titulo="Elige la asignación">
-        {consulta.fase === "cargando" ? <CargandoTabla /> : null}
+      {consulta.fase === "error" && consulta.error ? (
+        <ErrorConsulta error={consulta.error} reintentar={consulta.refrescar} />
+      ) : null}
 
-        {consulta.fase === "error" && consulta.error ? (
-          <ErrorConsulta error={consulta.error} reintentar={consulta.refrescar} />
-        ) : null}
-
-        {consulta.fase === "listo" && lista.length === 0 ? (
-          <SinDatos
-            escena={escena}
-            titulo="Todavía no hay ninguna asignación"
-            descripcion={vacio}
-            accion={
-              <Button variant="rel" onClick={() => navegar("/capacitaciones/asignaciones")}>
-                Ir a Asignaciones
-              </Button>
-            }
-          />
-        ) : null}
-
-        {consulta.fase === "listo" && lista.length > 0 ? (
-          <TablaPanel>
-            <table className="min-w-full text-left text-sm">
-              <TablaHead>
-                <tr>
-                  <th scope="col" className="px-4 py-3">Curso</th>
-                  <th scope="col" className="px-4 py-3">Estado</th>
-                  <th scope="col" className="px-4 py-3">Fecha objetivo</th>
-                  <th scope="col" className="px-4 py-3 text-right">
-                    <span className="sr-only">Acciones</span>
-                  </th>
-                </tr>
-              </TablaHead>
-              <TablaBody>
-                {lista.map((a) => (
-                  <tr key={a.id} className="hover:bg-rel-surface-subtle">
-                    <td className="px-4 py-4">
-                      <span className="font-black text-rel-dark">{a.curso_titulo}</span>
-                      <p className="text-xs text-rel-muted">Versión {a.numero_version}</p>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <EstadoAsignacionBadge estado={a.estado} />
-                        {/* Aquí es donde más falta hace: elegir «enlaces» sobre
-                            una asignación con invitación personal lleva a
-                            generar algo que no sirve para inscribir a nadie. */}
-                        <ModoIdentidadBadge modo={a.modo_identidad} />
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-rel-muted">
-                      {formatearFecha(a.fecha_objetivo)}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <Button
-                        variant="relOutline"
-                        size="sm"
-                        onClick={() =>
-                          navegar(`/capacitaciones/asignaciones/${a.id}/${destino}`)
-                        }
-                      >
-                        {accion}
-                        <ChevronRight aria-hidden="true" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </TablaBody>
-            </table>
-          </TablaPanel>
-        ) : null}
-      </Panel>
+      {consulta.fase !== "error" ? (
+        <TablaDatos
+          filas={lista}
+          columnas={columnasAsignacion(accion, (a) =>
+            navegar(`/capacitaciones/asignaciones/${a.id}/${destino}`)
+          )}
+          claveFila={(a) => String(a.id)}
+          etiquetaTabla="Asignaciones disponibles"
+          etiquetaElemento="asignaciones"
+          cargando={consulta.fase === "cargando"}
+          /* El vacio sigue siendo `SinDatos`, con su escena y su salida: aqui
+             no basta con decir que no hay nada, hay que llevar a crear la
+             primera asignacion. `vacio` acepta nodos justamente para esto. */
+          vacio={
+            <SinDatos
+              escena={escena}
+              titulo="Todavía no hay ninguna asignación"
+              descripcion={vacio}
+              accion={
+                <Button variant="rel" onClick={() => navegar("/capacitaciones/asignaciones")}>
+                  Ir a Asignaciones
+                </Button>
+              }
+            />
+          }
+        />
+      ) : null}
     </div>
   );
 }

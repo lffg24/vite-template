@@ -14,6 +14,67 @@ type StandardPaginationProps = {
   className?: string;
 };
 
+/**
+ * Paginación por CURSOR: la de los listados de CX.
+ *
+ * El backend de CX no devuelve `total` —devuelve «y después de esto, sigue
+ * esto»—, así que no hay número de páginas, no hay «última» y no se puede
+ * decir «mostrando 20 de 340». Por eso siete pantallas de CX se habían
+ * escrito su propia barra con «Anterior / Página N / Siguiente»: era un
+ * TERCER control de paginación en el producto.
+ *
+ * No es un componente aparte: es esta misma barra en el modo que admite no
+ * saber el total. Que la paginación sea una sola sigue siendo la regla.
+ */
+export function CursorPagination({
+  page,
+  mostrados,
+  hayAnterior,
+  haySiguiente,
+  onAnterior,
+  onSiguiente,
+  itemLabel = "registros",
+  className,
+}: {
+  page: number;
+  /** Cuántas filas hay a la vista. Lo único que se puede contar sin total. */
+  mostrados?: number;
+  hayAnterior: boolean;
+  haySiguiente: boolean;
+  onAnterior: () => void;
+  onSiguiente: () => void;
+  itemLabel?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn(BARRA, className)}>
+      <div className="text-muted-foreground">
+        {mostrados === undefined ? null : (
+          <>
+            Mostrando <strong>{mostrados}</strong> {itemLabel}
+            {" · "}
+          </>
+        )}
+        Página <strong className="tabular-nums">{page}</strong>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" onClick={onAnterior} disabled={!hayAnterior}>
+          <ChevronLeft aria-hidden="true" />
+          Anterior
+        </Button>
+        <Button variant="outline" size="sm" onClick={onSiguiente} disabled={!haySiguiente}>
+          Siguiente
+          <ChevronRight aria-hidden="true" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** La barra es la misma en los dos modos: una sola definición, no dos parecidas. */
+const BARRA =
+  "flex flex-col gap-3 border-t border-border/70 bg-surface px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between";
+
 export function StandardPagination({
   page,
   pageSize,
@@ -33,7 +94,7 @@ export function StandardPagination({
   const go = (next: number) => onPageChange(Math.min(Math.max(1, next), totalPages));
 
   return (
-    <div className={cn("flex flex-col gap-3 border-t border-border/70 bg-surface px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between", className)}>
+    <div className={cn(BARRA, className)}>
       <div className="text-muted-foreground">
         Mostrando <strong>{from}</strong> a <strong>{to}</strong> de <strong>{safeTotal}</strong> {itemLabel}
       </div>

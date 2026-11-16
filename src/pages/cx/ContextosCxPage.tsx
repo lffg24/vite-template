@@ -5,11 +5,12 @@ import { Building2, Link2, Pencil, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
+import { Aviso } from "@/shared/ui/Aviso";
+import { Pill } from "@/shared/ui/Pill";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import { useToast } from "@/hooks/use-toast";
 import {
   cambiarEstadoContexto, crearSede, crearServicio, desvincularServicio,
@@ -21,6 +22,64 @@ import ServicioAreasSheet from "./ServicioAreasSheet";
 type Fila = SedeCx | ServicioCx;
 type Formulario = { codigo: string; nombre: string; detalle: string };
 const VACIO: Formulario = { codigo: "", nombre: "", detalle: "" };
+
+/**
+ * Columnas del catalogo de sedes o servicios.
+ *
+ * Depende de `tipo` porque la tercera columna no es la misma: una sede tiene
+ * zona horaria y un servicio tiene sector. Lo demas si es identico, y por eso
+ * es UNA funcion con un parametro y no dos tablas parecidas.
+ *
+ * De paso arregla algo que estaba: el estado decia "Activa" en la tarjeta y
+ * "Activo" en la tabla para la misma fila.
+ */
+function columnasContexto(
+  esSede: boolean,
+  editar: (fila: SedeCx | ServicioCx) => void,
+  cambiarEstado: (fila: SedeCx | ServicioCx) => void,
+  verVinculos: (fila: SedeCx) => void,
+  verAreas: (fila: ServicioCx) => void,
+): ColumnaTabla<SedeCx | ServicioCx>[] {
+  return [
+    { clave: "codigo", titulo: "C\u00f3digo", celda: (f) => f.codigo, valor: (f) => f.codigo },
+    {
+      clave: "nombre",
+      titulo: "Nombre",
+      movil: "titular",
+      celda: (f) => <CeldaPrincipal titulo={f.nombre} alAbrir={() => editar(f)} />,
+      valor: (f) => f.nombre,
+    },
+    {
+      clave: "contexto",
+      titulo: esSede ? "Zona horaria" : "Sector",
+      celda: (f) =>
+        esSede ? (f as SedeCx).zona_horaria : (f as ServicioCx).sector || "\u2014",
+      valor: (f) => (esSede ? (f as SedeCx).zona_horaria : (f as ServicioCx).sector || ""),
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (f) => <Pill tono={f.activo ? "exito" : "neutro"}>{f.activo ? "Activo" : "Inactivo"}</Pill>,
+      valor: (f) => (f.activo ? "Activo" : "Inactivo"),
+    },
+    {
+      clave: "acciones",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (f) => (
+        <Acciones
+          fila={f}
+          esSede={esSede}
+          editar={editar}
+          estado={cambiarEstado}
+          vinculos={verVinculos}
+          areas={verAreas}
+        />
+      ),
+    },
+  ];
+}
 
 export default function ContextosCxPage() {
   const { toast } = useToast();
@@ -113,55 +172,51 @@ export default function ContextosCxPage() {
       descripcion="Organiza dónde se presta el servicio y qué experiencias se pueden calificar."
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrirFormulario("nuevo")}><Plus aria-hidden="true" /> Nuevo {etiqueta}</Button>} />
 
-    <Panel>
-      <nav aria-label="Configuración CX" className="mb-5 flex flex-wrap gap-2">
-        <Button asChild variant="relOutline"><Link to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
-        <Button asChild variant="relOutline"><Link to="/cx/configuracion/factores">Factores</Link></Button>
-        <Button asChild variant="relOutline"><Link to="/cx/configuracion/areas">Áreas</Link></Button>
-      </nav>
-      <div className="flex flex-wrap gap-2 border-b border-rel-border pb-4" role="group" aria-label="Tipo de catálogo">
-        {(["sedes", "servicios"] as const).map((opcion) => <Button key={opcion} type="button"
-          variant={tipo === opcion ? "rel" : "relOutline"} aria-pressed={tipo === opcion}
-          onClick={() => { setTipo(opcion); reiniciarPagina(); }}>
-          {opcion === "sedes" ? "Sedes" : "Servicios"}</Button>)}
-      </div>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <form onSubmit={(e) => { e.preventDefault(); setConsulta(busqueda.trim()); reiniciarPagina(); }} className="flex min-w-0 flex-1 gap-2">
-          <div className="min-w-0 flex-1"><Label htmlFor="buscar-contexto">Buscar por código o nombre</Label>
-            <Input id="buscar-contexto" type="search" value={busqueda} maxLength={80} onChange={(e) => setBusqueda(e.target.value)} /></div>
-          <Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
-        </form>
-        <div><Label htmlFor="estado-contexto">Estado</Label>
-          <select id="estado-contexto" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); reiniciarPagina(); }}
-            className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary sm:w-40">
-            <option value="activos">Activos</option><option value="inactivos">Inactivos</option><option value="todos">Todos</option>
-          </select></div>
-      </div>
-
-      {cargando ? <p role="status" className="py-8 text-rel-muted">Cargando {tipo}…</p> : null}
-      {error ? <div role="alert" className="mt-5 rounded-rel-card border border-rel-danger/30 p-4 text-rel-danger">
-        <p>{error}</p><Button type="button" variant="relOutline" className="mt-3" onClick={recargar}>Reintentar</Button></div> : null}
-      {!cargando && !error && filas.length === 0 ? <p className="py-8 text-rel-muted">No hay {tipo} para este filtro.</p> : null}
-      {!cargando && !error && filas.length > 0 ? <>
-        <div className="mt-5 space-y-3 md:hidden">{filas.map((fila) => <article key={fila.id} className="rounded-rel-card border border-rel-border p-4">
-          <div className="flex items-start justify-between gap-2"><div className="min-w-0"><strong className="block break-words text-rel-dark">{fila.nombre}</strong><span className="text-sm text-rel-muted">{fila.codigo}</span></div>
-            <Badge variant={fila.activo ? "relSuccess" : "relNeutral"}>{fila.activo ? "Activa" : "Inactiva"}</Badge></div>
-          <p className="mt-2 text-sm text-rel-muted">{tipo === "sedes" ? (fila as SedeCx).zona_horaria : (fila as ServicioCx).sector || "Sin sector"}</p>
-          <Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} areas={setServicioAreas} />
-        </article>)}</div>
-        <div className="mt-5 hidden md:block"><TablaPanel><table className="w-full min-w-[680px] text-left text-sm"><caption className="sr-only">Catálogo de {tipo}</caption>
-          <TablaHead><tr><th scope="col" className="p-4">Código</th><th scope="col" className="p-4">Nombre</th><th scope="col" className="p-4">{tipo === "sedes" ? "Zona horaria" : "Sector"}</th><th scope="col" className="p-4">Estado</th><th scope="col" className="p-4">Acciones</th></tr></TablaHead>
-          <TablaBody>{filas.map((fila) => <tr key={fila.id}><td className="p-4 font-medium">{fila.codigo}</td><td className="p-4">{fila.nombre}</td><td className="p-4">{tipo === "sedes" ? (fila as SedeCx).zona_horaria : (fila as ServicioCx).sector || "—"}</td>
-            <td className="p-4"><Badge variant={fila.activo ? "relSuccess" : "relNeutral"}>{fila.activo ? "Activo" : "Inactivo"}</Badge></td>
-            <td className="p-4"><Acciones fila={fila} esSede={tipo === "sedes"} editar={abrirFormulario} estado={setACambiar} vinculos={setSedeVinculos} areas={setServicioAreas} /></td></tr>)}</TablaBody>
-        </table></TablaPanel></div>
-      </> : null}
-      {!cargando && !error ? <div className="mt-4 flex items-center justify-between gap-3">
-        <Button type="button" variant="relOutline" disabled={historial.length === 0} onClick={() => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); }}>Anterior</Button>
-        <span className="text-sm text-rel-muted">Página {historial.length + 1}</span>
-        <Button type="button" variant="relOutline" disabled={!siguiente} onClick={() => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); }}>Siguiente</Button>
-      </div> : null}
-    </Panel>
+    <nav aria-label="Configuración CX" className="mb-5 flex flex-wrap gap-2">
+      <Button asChild variant="relOutline"><Link to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
+      <Button asChild variant="relOutline"><Link to="/cx/configuracion/factores">Factores</Link></Button>
+      <Button asChild variant="relOutline"><Link to="/cx/configuracion/areas">Áreas</Link></Button>
+    </nav>
+    {error ? <Aviso titulo={`No pudimos cargar ${tipo === "sedes" ? "las sedes" : "los servicios"}`} acciones={<Button type="button" variant="relOutline" size="sm" onClick={recargar}>Reintentar</Button>}>{error}</Aviso> : null}
+    <TablaDatos
+      filas={error ? [] : filas}
+      columnas={columnasContexto(tipo === "sedes", abrirFormulario, setACambiar, setSedeVinculos, setServicioAreas)}
+      claveFila={(f) => String(f.id)}
+      etiquetaTabla={`Cat\u00e1logo de ${tipo}`}
+      etiquetaElemento={tipo}
+      cargando={cargando}
+      vacio={`No hay ${tipo} para este filtro.`}
+      cabecera={
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Tipo de catálogo">
+            {(["sedes", "servicios"] as const).map((opcion) => <Button key={opcion} type="button"
+              variant={tipo === opcion ? "rel" : "relOutline"} aria-pressed={tipo === opcion}
+              onClick={() => { setTipo(opcion); reiniciarPagina(); }}>
+              {opcion === "sedes" ? "Sedes" : "Servicios"}</Button>)}
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <form onSubmit={(e) => { e.preventDefault(); setConsulta(busqueda.trim()); reiniciarPagina(); }} className="flex min-w-0 flex-1 gap-2">
+              <div className="min-w-0 flex-1"><Label htmlFor="buscar-contexto">Buscar por código o nombre</Label>
+                <Input id="buscar-contexto" type="search" value={busqueda} maxLength={80} onChange={(e) => setBusqueda(e.target.value)} /></div>
+              <Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
+            </form>
+            <div><Label htmlFor="estado-contexto">Estado</Label>
+              <select id="estado-contexto" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); reiniciarPagina(); }}
+                className="flex h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40">
+                <option value="activos">Activos</option><option value="inactivos">Inactivos</option><option value="todos">Todos</option>
+              </select></div>
+          </div>
+        </div>
+      }
+      control={{
+        modo: "cursor",
+        pagina: historial.length + 1,
+        hayAnterior: historial.length > 0,
+        haySiguiente: Boolean(siguiente),
+        onAnterior: () => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); },
+        onSiguiente: () => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); },
+      }}
+    />
 
     <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}>
       <SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader>

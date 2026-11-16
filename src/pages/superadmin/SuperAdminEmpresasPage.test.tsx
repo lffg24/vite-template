@@ -88,7 +88,12 @@ describe("SuperAdminEmpresasPage", () => {
   it("edita la empresa por id en vez de crear un duplicado", async () => {
     render(<SuperAdminEmpresasPage />);
     expect((await screen.findAllByText("Cliente Abril")).length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+    // El botón se llama «Editar Cliente Abril» y no «Editar»: en una tabla con
+    // veinte filas, veinte botones llamados «Editar» no le dicen a un lector de
+    // pantalla cuál es cuál. Y son DOS —el de la tabla y el de la tarjeta de
+    // móvil, que se pintan los dos en el DOM y se ocultan por CSS—, de ahí
+    // `getAllByRole`: pulsar cualquiera de los dos hace lo mismo.
+    fireEvent.click(screen.getAllByRole("button", { name: "Editar Cliente Abril" })[0]);
 
     const nombre = screen.getByLabelText("Nombre visible *");
     expect(nombre).toHaveValue("Cliente Abril");

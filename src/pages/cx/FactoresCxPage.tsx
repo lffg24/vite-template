@@ -4,16 +4,48 @@ import { Layers3, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
+import { Aviso } from "@/shared/ui/Aviso";
+import { Pill } from "@/shared/ui/Pill";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import { useToast } from "@/hooks/use-toast";
 import { listarContextos } from "@/services/cxContextosService";
 import { cambiarEstadoCatalogoCx, crearCatalogoCx, editarCatalogoCx, guardarAplicabilidad, listarCatalogoCx, obtenerAplicabilidad } from "@/services/cxPuntosFactoresService";
 import type { SedeCx, ServicioCx } from "@/types/cxContextos";
 import type { AplicabilidadCx, FactorCx, SubfactorCx } from "@/types/cxPuntosFactores";
+
+/** Columnas de factores: una declaracion para la tabla y la tarjeta. */
+function columnasFactor(
+  editar: (f: FactorCx) => void,
+  verDetalle: (f: FactorCx) => void,
+  cambiarEstado: (f: FactorCx) => void,
+): ColumnaTabla<FactorCx>[] {
+  return [
+    { clave: "codigo", titulo: "C\u00f3digo", celda: (f) => f.codigo, valor: (f) => f.codigo },
+    {
+      clave: "nombre",
+      titulo: "Factor",
+      movil: "titular",
+      celda: (f) => <CeldaPrincipal titulo={f.nombre} alAbrir={() => editar(f)} />,
+      valor: (f) => f.nombre,
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (f) => <Pill tono={f.activo ? "exito" : "neutro"}>{f.activo ? "Activo" : "Inactivo"}</Pill>,
+      valor: (f) => (f.activo ? "Activo" : "Inactivo"),
+    },
+    {
+      clave: "acciones",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (f) => <Acciones factor={f} editar={editar} detalle={verDetalle} estado={cambiarEstado} />,
+    },
+  ];
+}
 
 export default function FactoresCxPage() {
   const { toast } = useToast();
@@ -69,16 +101,37 @@ export default function FactoresCxPage() {
   return <div className="space-y-6"><PageHeader antetitulo="Configuración CX" titulo="Factores de experiencia" icono={Layers3}
     descripcion="Define qué aspectos del servicio se califican y en qué sedes o servicios aplican."
     accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nuevo factor</Button>} />
-    <Panel><Link to="/cx/configuracion/contextos" className="text-sm font-semibold text-rel-primary underline-offset-2 hover:underline">← Sedes y servicios</Link>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"><form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}><div className="min-w-0 flex-1"><Label htmlFor="buscar-factor">Buscar factor</Label><Input id="buscar-factor" type="search" maxLength={80} value={buscar} onChange={(e) => setBuscar(e.target.value)} /></div><Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button></form>
-        <div><Label htmlFor="estado-factor">Estado</Label><select id="estado-factor" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select></div></div>
-      {cargando ? <p role="status" className="py-8 text-rel-muted">Cargando factores…</p> : null}
-      {error ? <div role="alert" className="mt-5 text-rel-danger">{error}<Button variant="relOutline" className="ml-2" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div> : null}
-      {!cargando && !error && filas.length === 0 ? <p className="py-8 text-rel-muted">No hay factores para este filtro.</p> : null}
-      {!cargando && !error && filas.length > 0 ? <><div className="mt-5 space-y-3 md:hidden">{filas.map((f) => <article key={f.id} className="rounded-rel-card border border-rel-border p-4"><div className="flex justify-between gap-2"><strong className="break-words">{f.nombre}</strong><Badge variant={f.activo ? "relSuccess" : "relNeutral"}>{f.activo ? "Activo" : "Inactivo"}</Badge></div><p className="mt-1 text-sm text-rel-muted">{f.codigo}</p><Acciones factor={f} editar={abrir} detalle={setDetalle} estado={setACambiar} /></article>)}</div>
-        <div className="mt-5 hidden md:block"><TablaPanel><table className="w-full min-w-[580px] text-left text-sm"><caption className="sr-only">Factores de experiencia</caption><TablaHead><tr><th scope="col" className="p-4">Código</th><th scope="col" className="p-4">Factor</th><th scope="col" className="p-4">Estado</th><th scope="col" className="p-4">Acciones</th></tr></TablaHead><TablaBody>{filas.map((f) => <tr key={f.id}><td className="p-4">{f.codigo}</td><td className="p-4 font-semibold">{f.nombre}</td><td className="p-4"><Badge variant={f.activo ? "relSuccess" : "relNeutral"}>{f.activo ? "Activo" : "Inactivo"}</Badge></td><td className="p-4"><Acciones factor={f} editar={abrir} detalle={setDetalle} estado={setACambiar} /></td></tr>)}</TablaBody></table></TablaPanel></div></> : null}
-      {!cargando && !error ? <div className="mt-4 flex items-center justify-between gap-2"><Button variant="relOutline" disabled={historial.length === 0} onClick={() => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); }}>Anterior</Button><span className="text-sm text-rel-muted">Página {historial.length + 1}</span><Button variant="relOutline" disabled={!siguiente} onClick={() => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); }}>Siguiente</Button></div> : null}
-    </Panel>
+    <Link to="/cx/configuracion/contextos" className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline">← Sedes y servicios</Link>
+    {error ? <Aviso titulo="No pudimos cargar los factores" acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button>}>{error}</Aviso> : null}
+    <TablaDatos
+      filas={error ? [] : filas}
+      columnas={columnasFactor(abrir, setDetalle, setACambiar)}
+      claveFila={(f) => String(f.id)}
+      etiquetaTabla="Factores de experiencia"
+      etiquetaElemento="factores"
+      cargando={cargando}
+      vacio="No hay factores para este filtro."
+      cabecera={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}>
+            <div className="min-w-0 flex-1"><Label htmlFor="buscar-factor">Buscar factor</Label><Input id="buscar-factor" type="search" maxLength={80} value={buscar} onChange={(e) => setBuscar(e.target.value)} /></div>
+            <Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
+          </form>
+          <div>
+            <Label htmlFor="estado-factor">Estado</Label>
+            <select id="estado-factor" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
+          </div>
+        </div>
+      }
+      control={{
+        modo: "cursor",
+        pagina: historial.length + 1,
+        hayAnterior: historial.length > 0,
+        haySiguiente: Boolean(siguiente),
+        onAnterior: () => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); },
+        onSiguiente: () => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); },
+      }}
+    />
     <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>{edicion === "nuevo" ? "Nuevo" : "Editar"} factor</SheetTitle><SheetDescription>El código es estable. Los subfactores y su aplicabilidad se configuran después.</SheetDescription></SheetHeader><form onSubmit={guardar} className="mt-6 space-y-5" noValidate><div><Label htmlFor="factor-codigo">Código *</Label><Input id="factor-codigo" value={codigo} disabled={edicion !== "nuevo" || guardando} maxLength={32} onChange={(e) => setCodigo(e.target.value)} /></div><div><Label htmlFor="factor-nombre">Nombre *</Label><Input id="factor-nombre" value={nombre} disabled={guardando} maxLength={160} onChange={(e) => setNombre(e.target.value)} /></div>{errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}<div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div></form></SheetContent></Sheet>
     <AlertDialog open={aCambiar !== null} onOpenChange={(v) => { if (!v && !guardando) setACambiar(null); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>{aCambiar?.activo ? "Desactivar" : "Activar"} factor</AlertDialogTitle><AlertDialogDescription>{aCambiar?.activo ? "Sus vínculos vigentes se cerrarán. El historial y las calificaciones existentes permanecen." : "Podrás volver a configurar dónde aplica."}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={guardando}>Cancelar</AlertDialogCancel><Button variant={aCambiar?.activo ? "relDanger" : "rel"} disabled={guardando} onClick={cambiar}>Confirmar</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <FactorDetalleSheet factor={detalle} cerrar={() => setDetalle(null)} />
@@ -168,7 +221,7 @@ function FactorDetalleSheet({ factor, cerrar }: { factor: FactorCx | null; cerra
       {editarSub ? <form onSubmit={guardarSub} className="space-y-3 rounded-rel-card border border-rel-border p-4" noValidate><div><Label htmlFor="sub-codigo">Código *</Label><Input id="sub-codigo" value={subCodigo} disabled={editarSub !== "nuevo" || guardando} maxLength={32} onChange={(e) => setSubCodigo(e.target.value)} /></div><div><Label htmlFor="sub-nombre">Nombre *</Label><Input id="sub-nombre" value={subNombre} disabled={guardando} maxLength={160} onChange={(e) => setSubNombre(e.target.value)} /></div><div className="flex flex-wrap gap-2"><Button type="submit" variant="rel" disabled={guardando}>Guardar</Button><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEditarSub(null)}>Cancelar</Button></div></form> : null}
       {cargando ? <p role="status" className="text-rel-muted">Cargando subfactores…</p> : null}
       {!cargando && subfactores.length === 0 ? <p className="text-rel-muted">Este factor aún no tiene subfactores.</p> : null}
-      <ul className="space-y-2">{subfactores.map((sub) => <li key={sub.id} className="rounded-rel-card border border-rel-border p-3"><div className="flex justify-between gap-2"><div><strong className="block break-words">{sub.nombre}</strong><span className="text-sm text-rel-muted">{sub.codigo}</span></div><Badge variant={sub.activo ? "relSuccess" : "relNeutral"}>{sub.activo ? "Activo" : "Inactivo"}</Badge></div><div className="mt-2 flex flex-wrap gap-2"><Button size="sm" variant="relOutline" onClick={() => abrirSub(sub)}>Editar</Button><Button size="sm" variant="relGhost" disabled={guardando || (!factor?.activo && !sub.activo)} onClick={() => estadoSub(sub)}>{sub.activo ? "Desactivar" : "Activar"}</Button></div></li>)}</ul>
+      <ul className="space-y-2">{subfactores.map((sub) => <li key={sub.id} className="rounded-rel-card border border-rel-border p-3"><div className="flex justify-between gap-2"><div><strong className="block break-words">{sub.nombre}</strong><span className="text-sm text-rel-muted">{sub.codigo}</span></div><Pill tono={sub.activo ? "exito" : "neutro"}>{sub.activo ? "Activo" : "Inactivo"}</Pill></div><div className="mt-2 flex flex-wrap gap-2"><Button size="sm" variant="relOutline" onClick={() => abrirSub(sub)}>Editar</Button><Button size="sm" variant="relGhost" disabled={guardando || (!factor?.activo && !sub.activo)} onClick={() => estadoSub(sub)}>{sub.activo ? "Desactivar" : "Activar"}</Button></div></li>)}</ul>
       <div className="flex justify-between gap-2"><Button variant="relOutline" disabled={subHistorial.length === 0} onClick={() => { setSubCursor(subHistorial[subHistorial.length - 1]); setSubHistorial((h) => h.slice(0, -1)); }}>Anterior</Button><Button variant="relOutline" disabled={!subSiguiente} onClick={() => { setSubHistorial((h) => [...h, subCursor]); setSubCursor(subSiguiente); }}>Siguiente</Button></div>
     </div> : <div className="mt-5 space-y-5"><p className="text-sm text-rel-muted">Elige los contextos donde este factor puede usarse. Los cambios conservan la vigencia anterior.</p>
       <ReferenciaLista titulo="Sedes" id="buscar-sede-factor" buscar={buscarSede} setBuscar={setBuscarSede} seleccion={sedeIds} cambiar={(id) => alternar(id, sedeIds, setSedeIds)} seleccionadas={aplica?.sedes || []} candidatas={sedes} />

@@ -23,7 +23,7 @@ import {
   type GuardarEmpresaPayload,
   type SuperEmpresa,
 } from "@/features/superadmin/api/superadminService";
-import { StandardPagination } from "@/components/common/StandardPagination";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const VACIA: GuardarEmpresaPayload = {
@@ -64,6 +64,68 @@ function Campo({
       {children}
     </label>
   );
+}
+
+/**
+ * Las columnas, declaradas UNA vez y pintadas de dos formas: tabla en pantalla
+ * ancha y tarjeta en movil. Antes eran dos marcados distintos con los mismos
+ * datos, y por eso en movil faltaban empleados y aplicaciones: nadie se acordo
+ * de anadirlos al segundo sitio.
+ *
+ * No se ordena por cabecera porque el endpoint todavia no admite `order_by`; en
+ * cuanto lo admita, cada columna gana `ordenable` y el `control` gana `onOrden`.
+ */
+function columnasEmpresa(
+  abrir: (empresa: SuperEmpresa) => void,
+): ColumnaTabla<SuperEmpresa>[] {
+  return [
+    {
+      clave: "empresa",
+      titulo: "Empresa",
+      celda: (e) => (
+        <CeldaPrincipal
+          titulo={e.nombre}
+          apoyo={e.razon_social || e.correo_contacto || "Sin contacto registrado"}
+          alAbrir={() => abrir(e)}
+        />
+      ),
+    },
+    { clave: "nit", titulo: "NIT", celda: (e) => e.nit || "\u2014" },
+    {
+      clave: "ubicacion",
+      titulo: "Ubicacion",
+      celda: (e) => [e.ciudad, e.pais].filter(Boolean).join(", ") || "\u2014",
+    },
+    {
+      clave: "empleados",
+      titulo: "Empleados",
+      alineacion: "derecha",
+      celda: (e) => e.empleados ?? 0,
+    },
+    {
+      clave: "aplicaciones",
+      titulo: "Aplicaciones",
+      alineacion: "derecha",
+      celda: (e) => e.aplicaciones ?? 0,
+    },
+    {
+      clave: "acciones",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (e) => (
+        <Button
+          aria-label={`Editar ${e.nombre}`}
+          variant="outline"
+          size="sm"
+          onClick={() => abrir(e)}
+        >
+          <Pencil className="mr-2 h-4 w-4" aria-hidden="true" />
+          Editar
+        </Button>
+      ),
+    },
+  ];
 }
 
 export default function SuperAdminEmpresasPage() {
@@ -161,133 +223,46 @@ export default function SuperAdminEmpresasPage() {
         </div>
       ) : null}
 
-      <section className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-sm">
-        <div className="p-5">
-          <label className="sr-only" htmlFor="buscar-empresa">
-            Buscar empresa
-          </label>
-          <Input
-            id="buscar-empresa"
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Buscar por nombre o NIT"
-          />
-        </div>
-        {cargando ? (
-          <div
-            aria-live="polite"
-            className="flex items-center justify-center gap-3 border-t border-rel-border px-5 py-14 text-sm text-rel-muted"
-          >
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Cargando empresas…
-          </div>
-        ) : items.length === 0 ? (
-          <div className="grid place-items-center border-t border-rel-border px-5 py-14 text-center">
-            <Building2 className="h-9 w-9 text-rel-muted" />
-            <p className="mt-3 font-semibold">
-              {q ? "No encontramos coincidencias" : "Todavía no hay empresas"}
-            </p>
-            <p className="mt-1 text-sm text-rel-muted">
-              {q
-                ? "Prueba otra búsqueda."
-                : "Crea la primera para empezar a asignar usuarios y módulos."}
-            </p>
-          </div>
-        ) : (
+      <TablaDatos
+        filas={items}
+        columnas={columnasEmpresa(abrir)}
+        claveFila={(e) => String(e.id)}
+        etiquetaTabla="Empresas"
+        etiquetaElemento="empresas"
+        opcionesTamano={[10, 20, 50, 100]}
+        cargando={cargando}
+        vacio={
+          q
+            ? "No encontramos coincidencias. Prueba otra busqueda."
+            : "Todavia no hay empresas. Crea la primera para empezar a asignar usuarios y modulos."
+        }
+        cabecera={
           <>
-            <div className="hidden overflow-x-auto border-t border-rel-border md:block">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-rel-surface-subtle text-xs uppercase tracking-wide text-rel-muted">
-                  <tr>
-                    <th className="px-5 py-4">Empresa</th>
-                    <th>NIT</th>
-                    <th>Ubicación</th>
-                    <th>Empleados</th>
-                    <th>Aplicaciones</th>
-                    <th>
-                      <span className="sr-only">Acciones</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((e) => (
-                    <tr key={e.id} className="border-t border-rel-border">
-                      <td className="px-5 py-4">
-                        <div className="font-bold text-rel-dark">
-                          {e.nombre}
-                        </div>
-                        <div className="text-xs text-rel-muted">
-                          {e.razon_social ||
-                            e.correo_contacto ||
-                            "Sin contacto registrado"}
-                        </div>
-                      </td>
-                      <td>{e.nit || "—"}</td>
-                      <td>
-                        {[e.ciudad, e.pais].filter(Boolean).join(", ") || "—"}
-                      </td>
-                      <td>{e.empleados ?? 0}</td>
-                      <td>{e.aplicaciones ?? 0}</td>
-                      <td className="pr-5 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => abrir(e)}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Editar
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="grid gap-3 border-t border-rel-border p-4 md:hidden">
-              {items.map((e) => (
-                <article
-                  key={e.id}
-                  className="rounded-rel-control border border-rel-border p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="font-bold text-rel-dark">{e.nombre}</h2>
-                      <p className="mt-1 text-xs text-rel-muted">
-                        NIT {e.nit || "sin registrar"}
-                      </p>
-                    </div>
-                    <Button
-                      aria-label={`Editar ${e.nombre}`}
-                      variant="outline"
-                      size="icon"
-                      onClick={() => abrir(e)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <p className="mt-3 text-sm text-rel-muted">
-                    {[e.ciudad, e.pais].filter(Boolean).join(", ") ||
-                      "Ubicación sin registrar"}
-                  </p>
-                </article>
-              ))}
-            </div>
+            <label className="sr-only" htmlFor="buscar-empresa">
+              Buscar empresa
+            </label>
+            <Input
+              id="buscar-empresa"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Buscar por nombre o NIT"
+            />
           </>
-        )}
-        <StandardPagination pageSizeOptions={[10, 20, 50, 100]}
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={setPage}
-          onPageSizeChange={(s) => {
-            setPageSize(s);
+        }
+        control={{
+          pagina: page,
+          tamano: pageSize,
+          total,
+          onPagina: setPage,
+          onTamano: (n) => {
+            setPageSize(n);
             setPage(1);
-          }}
-        />
-      </section>
+          },
+        }}
+      />
 
       <Sheet
         open={editando !== undefined}

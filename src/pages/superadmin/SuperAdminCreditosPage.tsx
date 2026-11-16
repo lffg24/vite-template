@@ -3,7 +3,11 @@ import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "re
 import { Check, Loader2, MinusCircle, Plus, Search, UserRound, WalletCards, X } from "lucide-react";
 
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
-import { StandardPagination } from "@/components/common/StandardPagination";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Aviso } from "@/shared/ui/Aviso";
+import { Pill } from "@/shared/ui/Pill";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import {
   superadminService,
   type CreditAccount,
@@ -24,6 +28,108 @@ export function validateCreditDeductionAmount(rawAmount: string, saldoActual: nu
   if (!Number.isInteger(cantidad) || cantidad <= 0) return "Ingresa una cantidad entera mayor a cero.";
   if (cantidad > saldoActual) return "No puedes descontar más créditos que el saldo disponible.";
   return null;
+}
+
+const SIN_DATO = "\u2014";
+
+/** Un entero en formato colombiano, siempre igual en toda la pantalla. */
+function entero(valor?: number | null): string {
+  return Number(valor || 0).toLocaleString("es-CO");
+}
+
+function cuando(valor?: string | null): string {
+  if (!valor) return SIN_DATO;
+  const d = new Date(valor);
+  return Number.isNaN(d.getTime())
+    ? SIN_DATO
+    : d.toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
+}
+
+/**
+ * Las columnas de cuentas de credito.
+ *
+ * Tres cosas que cambiaron al migrar y conviene no revertir:
+ *
+ *   - El estado es `Pill`, no una etiqueta verde fija. Antes TODO estado se
+ *     pintaba en verde esmeralda, incluido uno suspendido.
+ *   - Los numeros van a la derecha y con `tabular-nums` —lo pone la tabla al
+ *     declarar `alineacion`—, no centrados: una columna de cifras centrada no
+ *     se puede comparar de un vistazo porque las unidades no se alinean.
+ *   - Descontar es un `Button` de la casa. Era un boton ambar escrito a mano
+ *     que no existia en ninguna otra pantalla.
+ */
+function columnasCuenta(
+  descontar: (cuenta: CreditAccount) => void,
+): ColumnaTabla<CreditAccount>[] {
+  return [
+    {
+      clave: "cuenta",
+      titulo: "Cuenta",
+      celda: (c) => (
+        <CeldaPrincipal
+          titulo={c.psicologo_nombre || `Usuario ${c.psicologo_usuario_id}`}
+          apoyo={c.psicologo_email || "Sin correo"}
+        />
+      ),
+      valor: (c) => c.psicologo_nombre || "",
+    },
+    {
+      clave: "empresa",
+      titulo: "Empresa",
+      celda: (c) => c.empresa_nombre || "Cuenta global",
+      valor: (c) => c.empresa_nombre || "",
+    },
+    {
+      clave: "asignados",
+      titulo: "Asignados",
+      alineacion: "derecha",
+      celda: (c) => entero(c.creditos_asignados),
+      valor: (c) => Number(c.creditos_asignados || 0),
+    },
+    {
+      clave: "saldo",
+      titulo: "Saldo",
+      alineacion: "derecha",
+      celda: (c) => (
+        <span className="font-bold text-primary">{entero(c.saldo_actual)}</span>
+      ),
+      valor: (c) => Number(c.saldo_actual || 0),
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (c) => (
+        <Pill tono={c.estado === "activa" ? "exito" : "neutro"}>{c.estado}</Pill>
+      ),
+      valor: (c) => c.estado,
+    },
+    {
+      clave: "actualizado",
+      titulo: "Actualizado",
+      movil: "oculta",
+      celda: (c) => (
+        <span className="text-xs text-muted-foreground">{cuando(c.actualizado_en)}</span>
+      ),
+      valor: (c) => c.actualizado_en || "",
+    },
+    {
+      clave: "accion",
+      titulo: "Accion",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (c) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => descontar(c)}
+          disabled={Number(c.saldo_actual || 0) <= 0}
+        >
+          <MinusCircle className="mr-2 h-4 w-4" aria-hidden="true" />
+          Descontar
+        </Button>
+      ),
+    },
+  ];
 }
 
 export default function SuperAdminCreditosPage() {
@@ -241,7 +347,7 @@ export default function SuperAdminCreditosPage() {
         }
       />
 
-      {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}
+      {error ? <Aviso>{error}</Aviso> : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         <Metric label="Cuentas visibles" value={total.toLocaleString("es-CO")} />
@@ -249,93 +355,48 @@ export default function SuperAdminCreditosPage() {
         <Metric label="Saldo disponible" value={totals.disponibles.toLocaleString("es-CO")} tone="text-brand-primary" />
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 p-5">
-          <div className="relative min-w-[260px] flex-1">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={q}
-              onChange={(event) => setQ(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-slate-200 pl-11 pr-4 text-sm outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-              placeholder="Buscar por psicólogo, correo o empresa..."
-            />
+      <TablaDatos
+        filas={items}
+        columnas={columnasCuenta(openDeduct)}
+        claveFila={(c) => String(c.id)}
+        etiquetaTabla="Cuentas de creditos"
+        etiquetaElemento="cuentas"
+        cargando={loading}
+        vacio="No hay cuentas de creditos para los filtros actuales."
+        cabecera={
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative min-w-[260px] flex-1">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <label className="sr-only" htmlFor="buscar-cuenta">
+                Buscar cuenta de creditos
+              </label>
+              <Input
+                id="buscar-cuenta"
+                value={q}
+                onChange={(event) => setQ(event.target.value)}
+                className="pl-9"
+                placeholder="Buscar por psicologo, correo o empresa..."
+              />
+            </div>
+            <Button variant="outline" onClick={load}>
+              Actualizar
+            </Button>
           </div>
-          <button type="button" onClick={load} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50">
-            Actualizar
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-5 py-4">Cuenta</th>
-                <th className="px-4 py-4">Empresa</th>
-                <th className="px-4 py-4 text-center">Asignados</th>
-                <th className="px-4 py-4 text-center">Saldo</th>
-                <th className="px-4 py-4">Estado</th>
-                <th className="px-4 py-4">Actualizado</th>
-                <th className="px-4 py-4 text-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
-                    Cargando créditos...
-                  </td>
-                </tr>
-              )}
-              {!loading && items.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
-                    No hay cuentas de créditos para los filtros actuales.
-                  </td>
-                </tr>
-              )}
-              {!loading &&
-                items.map((account) => (
-                  <tr key={account.id} className="border-t border-slate-100">
-                    <td className="px-5 py-4">
-                      <div className="font-black text-slate-950">{account.psicologo_nombre || `Usuario ${account.psicologo_usuario_id}`}</div>
-                      <div className="text-xs text-slate-500">{account.psicologo_email || "Sin correo"}</div>
-                    </td>
-                    <td className="px-4 py-4">{account.empresa_nombre || "Cuenta global"}</td>
-                    <td className="px-4 py-4 text-center font-semibold text-slate-900">{Number(account.creditos_asignados || 0).toLocaleString("es-CO")}</td>
-                    <td className="px-4 py-4 text-center font-black text-brand-primary">{Number(account.saldo_actual || 0).toLocaleString("es-CO")}</td>
-                    <td className="px-4 py-4">
-                      <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{account.estado}</span>
-                    </td>
-                    <td className="px-4 py-4 text-xs text-slate-500">{account.actualizado_en ? new Date(account.actualizado_en).toLocaleString("es-CO") : "-"}</td>
-                    <td className="px-4 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => openDeduct(account)}
-                        disabled={Number(account.saldo_actual || 0) <= 0}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-black text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <MinusCircle className="h-4 w-4" />
-                        Descontar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-
-        <StandardPagination
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          itemLabel="cuentas"
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
+        }
+        control={{
+          pagina: page,
+          tamano: pageSize,
+          total,
+          onPagina: setPage,
+          onTamano: (size) => {
             setPageSize(size);
             setPage(1);
-          }}
-        />
-      </section>
+          },
+        }}
+      />
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -442,9 +503,9 @@ export default function SuperAdminCreditosPage() {
                 />
               </Field>
 
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <Aviso tono="atencion">
                 Esta acción suma créditos reales al saldo global del psicólogo y queda auditada.
-              </div>
+              </Aviso>
 
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button type="button" onClick={closeAssign} className="rounded-2xl border px-5 py-3 font-bold">
@@ -465,7 +526,7 @@ export default function SuperAdminCreditosPage() {
           <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-amber-700">Ajuste de saldo</p>
+                <p className="font-heading text-xs font-bold uppercase tracking-widest text-warning">Ajuste de saldo</p>
                 <h2 className="text-2xl font-black text-slate-950">Descontar créditos</h2>
                 <p className="mt-1 text-sm text-slate-500">El movimiento quedará registrado y auditado en el ledger.</p>
               </div>
@@ -475,11 +536,11 @@ export default function SuperAdminCreditosPage() {
             </div>
 
             <form onSubmit={submitDeduct} className="space-y-5">
-              <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                <p className="text-xs font-black uppercase text-amber-700">Cuenta seleccionada</p>
+              <div className="rounded-xl border border-warning/30 bg-warning-subtle p-4">
+                <p className="font-heading text-xs font-bold uppercase text-warning">Cuenta seleccionada</p>
                 <p className="mt-1 font-black text-slate-950">{deductTarget.psicologo_nombre || `Usuario ${deductTarget.psicologo_usuario_id}`}</p>
                 <p className="text-sm text-slate-600">{deductTarget.psicologo_email || "Sin correo"}</p>
-                <p className="mt-2 text-sm font-bold text-amber-800">
+                <p className="mt-2 text-sm font-bold text-warning">
                   Saldo disponible: {Number(deductTarget.saldo_actual || 0).toLocaleString("es-CO")}
                 </p>
               </div>
@@ -506,18 +567,18 @@ export default function SuperAdminCreditosPage() {
                 />
               </Field>
 
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <Aviso>
                 Esta acción no elimina movimientos anteriores ni borra historial. Solo reduce el saldo disponible de la cuenta seleccionada.
-              </div>
+              </Aviso>
 
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
                 <button type="button" onClick={closeDeduct} className="rounded-2xl border px-5 py-3 font-bold">
                   Cancelar
                 </button>
-                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-amber-600 px-6 py-3 font-bold text-white disabled:opacity-60">
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Button type="submit" disabled={saving}>
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
                   Descontar créditos
-                </button>
+                </Button>
               </div>
             </form>
           </aside>

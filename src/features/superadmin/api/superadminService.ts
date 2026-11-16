@@ -113,6 +113,19 @@ export type CreditMovement = {
   descripcion?: string;
   creado_en: string;
 };
+/**
+ * Un evento del registro de auditoría. Estaba declarado como `any`, de modo que
+ * la pantalla leía `a.evento` y `a.ip` sin que nada comprobara que existen: si
+ * el backend renombra un campo, la columna se queda en blanco en silencio.
+ */
+export type EventoAuditoria = {
+  id: number;
+  evento: string;
+  usuario_id?: string | null;
+  empresa_id?: string | null;
+  ip?: string | null;
+  creado_en?: string | null;
+};
 
 function qs(params: Record<string, string | number | undefined | null>) {
   const sp = new URLSearchParams();
@@ -196,5 +209,5 @@ export const superadminService = {
     }),
   rolesPermisos: () => request<any>("/superadmin/roles-permisos"),
   auditoria: (p: { page?: number; page_size?: number }) =>
-    request<Paginated<any>>(`/superadmin/auditoria${qs(p)}`),
+    request<Paginated<EventoAuditoria>>(`/superadmin/auditoria${qs(p)}`),
 };

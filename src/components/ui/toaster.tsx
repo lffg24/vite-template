@@ -18,10 +18,10 @@ import {
  * una caja gris que no se parecía a nada de la casa — que es justo la queja.
  */
 const TONO = {
-  default: { clases: "bg-rel-accent-subtle text-rel-primary ring-1 ring-rel-border", Icono: Info },
-  success: { clases: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100", Icono: CheckCircle2 },
-  warning: { clases: "bg-amber-50 text-amber-700 ring-1 ring-amber-100", Icono: AlertTriangle },
-  destructive: { clases: "bg-rose-50 text-rose-700 ring-1 ring-rose-100", Icono: XCircle },
+  default: { clases: "bg-accent text-primary ring-1 ring-border", Icono: Info },
+  success: { clases: "bg-success-subtle text-success ring-1 ring-success/20", Icono: CheckCircle2 },
+  warning: { clases: "bg-warning-subtle text-warning ring-1 ring-warning/20", Icono: AlertTriangle },
+  destructive: { clases: "bg-danger-subtle text-danger ring-1 ring-danger/20", Icono: XCircle },
 } as const
 
 export function Toaster() {

@@ -140,18 +140,20 @@ describe("el núcleo es uno solo", () => {
    *
    * **Esta lista solo puede menguar**, igual que `TABLAS_SIN_MIGRAR`.
    */
-  const TABLAS_A_MANO = [
+  /**
+   * Psicosocial escribe sus tablas a mano y **así se queda**.
+   *
+   * No es deuda: es el monolito inicial, funciona, está certificado, y la
+   * dirección del proyecto es no tocarlo. Está separado de la deuda de verdad
+   * para que el número no engañe. De las veinticuatro pantallas que escribían
+   * `<table>` a mano, CATORCE son estas: contarlas como pendientes hacía
+   * parecer que faltaba el triple de lo que falta.
+   */
+  const PSICOSOCIAL_NO_SE_MIGRA = [
     "components/ui/reportes/TablaDominios.tsx",
-    "features/capacitaciones/components/SeleccionDeAsignacion.tsx",
     "features/psicosocial/components/SociodemographicChartCard.tsx",
     "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
     "pages/ReportesPsico.tsx",
-    "pages/capacitaciones/CapacitacionesMatrizPage.tsx",
-    "pages/capacitaciones/CapacitacionesParticipantesPage.tsx",
-    "pages/cx/AreasCxPage.tsx",
-    "pages/cx/ContextosCxPage.tsx",
-    "pages/cx/FactoresCxPage.tsx",
-    "pages/cx/PuntosCxPage.tsx",
     "pages/psicosocial/AplicacionDetallePage.tsx",
     "pages/psicosocial/AplicacionResultadosPage.tsx",
     "pages/psicosocial/AplicacionesBTPage.tsx",
@@ -162,10 +164,45 @@ describe("el núcleo es uno solo", () => {
     "pages/psicosocial/EmpresasPsicoPage.tsx",
     "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
     "pages/psicosocial/PsicologoDashboardPage.tsx",
-    "pages/superadmin/SuperAdminAuditoriaPage.tsx",
-    "pages/superadmin/SuperAdminCreditosPage.tsx",
-    "pages/superadmin/SuperAdminEmpresasPage.tsx",
   ];
+
+  /**
+   * Tablas que NO son listados, y por eso no pasan por `TablaDatos`.
+   *
+   * `TablaDatos` resuelve un listado: filas homogéneas que se ordenan, se
+   * paginan y se abren. Estas dos no lo son y forzarlas sería peor que
+   * dejarlas:
+   *
+   *   - **La matriz de capacitaciones** es una tabla cruzada —una columna por
+   *     curso, primera columna fija— donde las columnas las decide el dato, no
+   *     el código.
+   *   - **La previsualización de importación** muestra lo que va a pasar con
+   *     cada fila de un archivo antes de confirmar. No se ordena ni se pagina:
+   *     el orden ES el del archivo.
+   *
+   * Lo que sí se les exige está comprobado abajo: usar las piezas de tabla de
+   * la casa. La excepción es «no es un listado», nunca «tengo mi propia
+   * tabla».
+   */
+  const NO_SON_LISTADOS = [
+    "pages/capacitaciones/CapacitacionesMatrizPage.tsx",
+    "pages/capacitaciones/CapacitacionesParticipantesPage.tsx",
+  ];
+
+  /**
+   * Quién puede escribir `<table>`. Esta lista solo puede menguar.
+   *
+   * El 2026-11-16 salieron ocho pantallas: las cuatro de CX, las tres de
+   * superadministración y la selección de asignación. Para que pudieran salir
+   * hubo que ampliar `TablaDatos` con lo que les faltaba —paginación del
+   * servidor, paginación por cursor, tarjetas en móvil, estado de carga y
+   * estado vacío—, que es exactamente la razón por la que no se habían
+   * migrado antes.
+   *
+   * Lo que queda no es deuda pendiente: es Psicosocial, que no se migra, y dos
+   * tablas que no son listados.
+   */
+  const TABLAS_A_MANO = [...PSICOSOCIAL_NO_SE_MIGRA, ...NO_SON_LISTADOS];
 
   it("nadie escribe una tabla a mano, y esa deuda tampoco crece", () => {
     // `shared/ui/TablaDatos.tsx` es el único sitio donde `<table>` es correcto:
@@ -188,6 +225,96 @@ describe("el núcleo es uno solo", () => {
     expect(
       yaMigradas,
       "Ya no escriben la tabla a mano: bórralas de TABLAS_A_MANO."
+    ).toEqual([]);
+  });
+
+  it("lo que no es listado usa igualmente las piezas de tabla de la casa", () => {
+    // Que una tabla no sea un listado la exime de `TablaDatos`, no de verse
+    // como el resto del producto. Sin esto, «no es un listado» se convierte en
+    // la puerta por la que vuelve a entrar un `<thead>` propio.
+    const sinPiezas = NO_SON_LISTADOS.filter((ruta) => {
+      const texto = contenido(join(RAIZ, ...ruta.split("/")));
+      return !/TablaHead|TableHeader|@\/components\/ui\/table/.test(texto);
+    });
+    expect(
+      sinPiezas,
+      "Usa `TablaHead` / `TablaBody` de `@/shared/ui/Panel` o las primitivas " +
+        "de `@/components/ui/table`: el encabezado y las filas son los mismos."
+    ).toEqual([]);
+  });
+
+  /**
+   * El significado no se dice con color crudo.
+   *
+   * `bg-red-50` es un color; `bg-danger-subtle` es un significado. La
+   * diferencia no es de estilo: el token cambia en modo oscuro y el color
+   * crudo no. Un aviso de error escrito con `bg-red-50 text-red-700` se queda
+   * en rosa claro con texto rojo oscuro sobre una página oscura, y deja de
+   * leerse justo cuando más falta hace.
+   *
+   * Solo entran aquí las familias SEMÁNTICAS —rojo, ámbar, verde…—, que son
+   * las que dicen «esto va bien» o «esto va mal» y para las que existe un
+   * token. El gris (`slate-*`) es una deuda aparte y mucho mayor, con su
+   * propia lista pendiente.
+   */
+  const COLOR_CRUDO = /(?:bg|text|border|ring|divide)-(?:red|rose|emerald|amber|green|yellow|orange)-\d{2,3}/;
+
+  /** Solo puede menguar. */
+  const COLOR_CRUDO_PENDIENTE = [
+    "components/feedback/ToastCard.tsx",
+    "components/ui/cargos/ListaCargos.tsx",
+    "components/ui/evaluaciones/BienvenidaUsuario.tsx",
+    "components/ui/evaluaciones/EvaluacionesPendientes.tsx",
+    "components/ui/evaluaciones/ListaEvaluaciones.tsx",
+    "components/ui/preguntas/ListaPreguntas.tsx",
+    "components/ui/preguntas/PreguntaSemaforo.tsx",
+    "components/ui/reportes/TablaDominios.tsx",
+    "components/ui/usuarios/FormularioUsuario.tsx",
+    "components/ui/usuarios/ListaUsuarios.tsx",
+    "features/psicosocial/components/SociodemographicDashboardSection.tsx",
+    "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
+    "features/psicosocial/components/empleado/EmployeeProfileHeader.tsx",
+    "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
+    "features/superadmin/components/SuperAdminCard.tsx",
+    "pages/Login.tsx",
+    "pages/RecursosAbril360Page.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/ReportesPsico.tsx",
+    "pages/ResponderEvaluacion.tsx",
+    "pages/RestablecerClave.tsx",
+    "pages/SolicitarRecuperacionClave.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/AplicacionResultadosPage.tsx",
+    "pages/psicosocial/AplicacionesBTPage.tsx",
+    "pages/psicosocial/EmpresaAplicacionesPage.tsx",
+    "pages/psicosocial/EmpresaAreasCargosPage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoInformesPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoPerfilPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoRespuestasPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
+    "pages/psicosocial/PsicologoDashboardPage.tsx",
+    "pages/psicosocial/PsicologoPerfilPage.tsx",
+    "pages/superadmin/SuperAdminDashboardPage.tsx",
+    "pages/superadmin/SuperAdminPsicologosPage.tsx",
+  ];
+
+  it("el estado no se dice con color crudo, y esa deuda tampoco crece", () => {
+    const crudos = TODOS.filter((ruta) => COLOR_CRUDO.test(contenido(ruta))).map(comoRuta);
+
+    const nuevos = crudos.filter((r) => !COLOR_CRUDO_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa los tokens semánticos (`success`, `warning`, `danger`, `info`) o " +
+        "`Pill` / `Aviso`: el color crudo de Tailwind no tiene modo oscuro."
+    ).toEqual([]);
+
+    const yaLimpios = COLOR_CRUDO_PENDIENTE.filter((r) => !crudos.includes(r));
+    expect(
+      yaLimpios,
+      "Ya no usan color crudo: bórralos de COLOR_CRUDO_PENDIENTE."
     ).toEqual([]);
   });
 

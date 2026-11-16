@@ -13,3 +13,25 @@ import RO from "resize-observer-polyfill";
 // tapa nada: una espera que de verdad no se resuelve sigue fallando, solo que
 // cinco segundos más tarde.
 configure({ asyncUtilTimeout: 5_000 });
+
+// jsdom no trae `matchMedia`, y sin él cualquier componente que pregunte por el
+// ancho de la ventana revienta dentro de su efecto —y React, al reventar un
+// efecto, desmonta el árbol entero, así que la prueba no encuentra NADA y el
+// fallo no se parece en nada a su causa.
+//
+// Responde siempre «no coincide»: pantalla ancha. Una prueba que quiera
+// comprobar la versión estrecha lo sustituye solo en ese bloque —ver
+// `shared/ui/TablaDatos.test.tsx`—, que es mejor que un mundo donde media
+// suite se pinta en móvil sin que nadie lo haya pedido.
+if (!window.matchMedia) {
+  window.matchMedia = ((consulta: string) => ({
+    matches: false,
+    media: consulta,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}

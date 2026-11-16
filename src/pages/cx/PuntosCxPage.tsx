@@ -4,11 +4,12 @@ import { MapPin, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { Panel, TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
+import { Aviso } from "@/shared/ui/Aviso";
+import { Pill } from "@/shared/ui/Pill";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import { useToast } from "@/hooks/use-toast";
 import { listarContextos, listarServiciosDeSede, obtenerSede } from "@/services/cxContextosService";
 import { cambiarEstadoCatalogoCx, crearCatalogoCx, editarCatalogoCx, listarCatalogoCx } from "@/services/cxPuntosFactoresService";
@@ -16,6 +17,54 @@ import type { SedeCx, ServicioDeSede } from "@/types/cxContextos";
 import type { PuntoCx } from "@/types/cxPuntosFactores";
 
 const VACIO = { codigo: "", nombre: "", sede_id: "", servicio_id: "" };
+
+/**
+ * Columnas de puntos de contacto: una declaracion para la tabla y la tarjeta.
+ *
+ * `movil: "titular"` en el nombre porque en una tarjeta el nombre es lo que se
+ * lee primero; el codigo pasa a ser un par etiqueta/valor, que es mas claro
+ * que la linea gris suelta que habia antes.
+ */
+function columnasPunto(
+  editar: (p: PuntoCx) => void,
+  cambiarEstado: (p: PuntoCx) => void,
+): ColumnaTabla<PuntoCx>[] {
+  return [
+    { clave: "codigo", titulo: "C\u00f3digo", celda: (p) => p.codigo, valor: (p) => p.codigo },
+    {
+      clave: "nombre",
+      titulo: "Nombre",
+      movil: "titular",
+      celda: (p) => <CeldaPrincipal titulo={p.nombre} alAbrir={() => editar(p)} />,
+      valor: (p) => p.nombre,
+    },
+    {
+      clave: "sede",
+      titulo: "Sede",
+      celda: (p) => p.sede_nombre || "Sede no disponible",
+      valor: (p) => p.sede_nombre || "",
+    },
+    {
+      clave: "servicio",
+      titulo: "Servicio",
+      celda: (p) => p.servicio_nombre || "\u2014",
+      valor: (p) => p.servicio_nombre || "",
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (p) => <Pill tono={p.activo ? "exito" : "neutro"}>{p.activo ? "Activo" : "Inactivo"}</Pill>,
+      valor: (p) => (p.activo ? "Activo" : "Inactivo"),
+    },
+    {
+      clave: "acciones",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (p) => <Acciones punto={p} editar={editar} estado={cambiarEstado} />,
+    },
+  ];
+}
 
 export default function PuntosCxPage() {
   const { toast } = useToast();
@@ -102,20 +151,37 @@ export default function PuntosCxPage() {
     <PageHeader antetitulo="Configuración CX" titulo="Puntos de contacto" icono={MapPin}
       descripcion="Ubica la experiencia que el cliente calificará dentro de una sede y, si corresponde, un servicio."
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nuevo punto</Button>} />
-    <Panel><Link className="text-sm font-semibold text-rel-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"><form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}>
-        <div className="min-w-0 flex-1"><Label htmlFor="buscar-punto">Buscar punto</Label><Input id="buscar-punto" type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div>
-        <Button variant="relOutline" type="submit" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button></form>
-        <div><Label htmlFor="estado-puntos">Estado</Label><select id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select></div></div>
-      {cargando ? <p role="status" className="py-8 text-rel-muted">Cargando puntos…</p> : null}
-      {error ? <p role="alert" className="mt-5 text-rel-danger">{error} <Button type="button" variant="relOutline" onClick={recargar}>Reintentar</Button></p> : null}
-      {!cargando && !error && filas.length === 0 ? <p className="py-8 text-rel-muted">No hay puntos de contacto para este filtro.</p> : null}
-      {!cargando && !error && filas.length > 0 ? <>
-        <div className="mt-5 space-y-3 md:hidden">{filas.map((p) => <article key={p.id} className="rounded-rel-card border border-rel-border p-4"><div className="flex justify-between gap-2"><strong className="break-words">{p.nombre}</strong><Badge variant={p.activo ? "relSuccess" : "relNeutral"}>{p.activo ? "Activo" : "Inactivo"}</Badge></div><p className="mt-1 text-sm text-rel-muted">{p.codigo}</p><Acciones punto={p} editar={abrir} estado={setACambiar} /></article>)}</div>
-        <div className="mt-5 hidden md:block"><TablaPanel><table className="w-full min-w-[650px] text-left text-sm"><caption className="sr-only">Puntos de contacto</caption><TablaHead><tr><th scope="col" className="p-4">Código</th><th scope="col" className="p-4">Nombre</th><th scope="col" className="p-4">Sede</th><th scope="col" className="p-4">Servicio</th><th scope="col" className="p-4">Estado</th><th scope="col" className="p-4">Acciones</th></tr></TablaHead><TablaBody>{filas.map((p) => <tr key={p.id}><td className="p-4">{p.codigo}</td><td className="p-4 font-semibold">{p.nombre}</td><td className="p-4">{p.sede_nombre || "Sede no disponible"}</td><td className="p-4">{p.servicio_nombre || "—"}</td><td className="p-4"><Badge variant={p.activo ? "relSuccess" : "relNeutral"}>{p.activo ? "Activo" : "Inactivo"}</Badge></td><td className="p-4"><Acciones punto={p} editar={abrir} estado={setACambiar} /></td></tr>)}</TablaBody></table></TablaPanel></div>
-      </> : null}
-      {!cargando && !error ? <div className="mt-4 flex items-center justify-between gap-2"><Button variant="relOutline" disabled={historial.length === 0} onClick={() => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); }}>Anterior</Button><span className="text-sm text-rel-muted">Página {historial.length + 1}</span><Button variant="relOutline" disabled={!siguiente} onClick={() => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); }}>Siguiente</Button></div> : null}
-    </Panel>
+    <Link className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
+    {error ? <Aviso titulo="No pudimos cargar los puntos de contacto" acciones={<Button type="button" variant="relOutline" size="sm" onClick={recargar}>Reintentar</Button>}>{error}</Aviso> : null}
+    <TablaDatos
+      filas={error ? [] : filas}
+      columnas={columnasPunto(abrir, setACambiar)}
+      claveFila={(p) => String(p.id)}
+      etiquetaTabla="Puntos de contacto"
+      etiquetaElemento="puntos"
+      cargando={cargando}
+      vacio="No hay puntos de contacto para este filtro."
+      cabecera={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}>
+            <div className="min-w-0 flex-1"><Label htmlFor="buscar-punto">Buscar punto</Label><Input id="buscar-punto" type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div>
+            <Button variant="relOutline" type="submit" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
+          </form>
+          <div>
+            <Label htmlFor="estado-puntos">Estado</Label>
+            <select id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
+          </div>
+        </div>
+      }
+      control={{
+        modo: "cursor",
+        pagina: historial.length + 1,
+        hayAnterior: historial.length > 0,
+        haySiguiente: Boolean(siguiente),
+        onAnterior: () => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); },
+        onSiguiente: () => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); },
+      }}
+    />
     <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>{edicion === "nuevo" ? "Nuevo" : "Editar"} punto de contacto</SheetTitle><SheetDescription>La sede es obligatoria. El servicio debe estar vinculado a ella.</SheetDescription></SheetHeader><form onSubmit={guardar} className="mt-6 space-y-5" noValidate>
       <div><Label htmlFor="punto-codigo">Código *</Label><Input id="punto-codigo" value={formulario.codigo} disabled={edicion !== "nuevo" || guardando} maxLength={32} onChange={(e) => setFormulario({ ...formulario, codigo: e.target.value })} /></div>
       <div><Label htmlFor="punto-nombre">Nombre *</Label><Input id="punto-nombre" value={formulario.nombre} disabled={guardando} maxLength={160} onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} /></div>
