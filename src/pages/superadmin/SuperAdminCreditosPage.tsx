@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Aviso } from "@/shared/ui/Aviso";
+import { Campo } from "@/shared/ui/Campo";
 import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
 import { Panel } from "@/shared/ui/Panel";
 import { PanelLateral } from "@/shared/ui/PanelLateral";
@@ -628,29 +629,3 @@ const ID_CANTIDAD = "creditos-cantidad";
 const ID_MOTIVO = "creditos-motivo";
 const ID_DESCUENTO = "creditos-descuento";
 const ID_MOTIVO_DESCUENTO = "creditos-motivo-descuento";
-
-/**
- * Etiqueta y campo.
- *
- * Con `htmlFor`, no envolviendo al hijo: el envoltorio funciona con un `input`
- * suelto, pero cuando dentro hay una lista de opciones —como la de psicólogos—
- * convierte toda la lista en el área de clic de la etiqueta.
- */
-function Campo({
-  etiqueta,
-  id,
-  children,
-}: {
-  etiqueta: string;
-  id: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-bold text-foreground">
-        {etiqueta}
-      </label>
-      {children}
-    </div>
-  );
-}

@@ -23,6 +23,7 @@ import {
   type GuardarEmpresaPayload,
   type SuperEmpresa,
 } from "@/features/superadmin/api/superadminService";
+import { Campo } from "@/shared/ui/Campo";
 import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
@@ -49,21 +50,6 @@ function payloadDe(empresa?: SuperEmpresa): GuardarEmpresaPayload {
     ...datos
   } = empresa;
   return { ...VACIA, ...datos };
-}
-
-function Campo({
-  etiqueta,
-  children,
-}: {
-  etiqueta: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-rel-dark">
-      {etiqueta}
-      {children}
-    </label>
-  );
 }
 
 /**
@@ -291,7 +277,7 @@ export default function SuperAdminEmpresasPage() {
               </div>
             ) : null}
             <div className="grid gap-4 md:grid-cols-2">
-              <Campo etiqueta="Nombre visible *">
+              <Campo id="empresa-nombre-visible" etiqueta="Nombre visible" obligatorio>
                 <Input
                   autoFocus
                   required
@@ -301,35 +287,35 @@ export default function SuperAdminEmpresasPage() {
                   onChange={(e) => cambiar("nombre", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Razón social">
+              <Campo id="empresa-razon-social" etiqueta="Razón social">
                 <Input
                   maxLength={255}
                   value={form.razon_social ?? ""}
                   onChange={(e) => cambiar("razon_social", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="NIT">
+              <Campo id="empresa-nit" etiqueta="NIT">
                 <Input
                   maxLength={64}
                   value={form.nit ?? ""}
                   onChange={(e) => cambiar("nit", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Correo de contacto">
+              <Campo id="empresa-correo-de-contacto" etiqueta="Correo de contacto">
                 <Input
                   type="email"
                   value={form.correo_contacto ?? ""}
                   onChange={(e) => cambiar("correo_contacto", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Teléfono">
+              <Campo id="empresa-telefono" etiqueta="Teléfono">
                 <Input
                   maxLength={64}
                   value={form.telefono ?? ""}
                   onChange={(e) => cambiar("telefono", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Representante legal">
+              <Campo id="empresa-representante-legal" etiqueta="Representante legal">
                 <Input
                   maxLength={255}
                   value={form.representante_legal ?? ""}
@@ -338,28 +324,28 @@ export default function SuperAdminEmpresasPage() {
                   }
                 />
               </Campo>
-              <Campo etiqueta="Ciudad">
+              <Campo id="empresa-ciudad" etiqueta="Ciudad">
                 <Input
                   maxLength={160}
                   value={form.ciudad ?? ""}
                   onChange={(e) => cambiar("ciudad", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="País">
+              <Campo id="empresa-pais" etiqueta="País">
                 <Input
                   maxLength={120}
                   value={form.pais ?? ""}
                   onChange={(e) => cambiar("pais", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Dirección">
+              <Campo id="empresa-direccion" etiqueta="Dirección">
                 <Input
                   maxLength={255}
                   value={form.direccion ?? ""}
                   onChange={(e) => cambiar("direccion", e.target.value)}
                 />
               </Campo>
-              <Campo etiqueta="Sitio web">
+              <Campo id="empresa-sitio-web" etiqueta="Sitio web">
                 <Input
                   type="url"
                   maxLength={255}
@@ -368,7 +354,7 @@ export default function SuperAdminEmpresasPage() {
                 />
               </Campo>
             </div>
-            <Campo etiqueta="Actividad económica">
+            <Campo id="empresa-actividad-economica" etiqueta="Actividad económica">
               <textarea
                 className="min-h-24 rounded-rel-control border border-rel-border bg-rel-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
                 maxLength={2000}

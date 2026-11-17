@@ -87,15 +87,16 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
-   * Pantallas que todavía arman su tabla con las piezas crudas de shadcn en vez
-   * de `TablaDatos`.
+   * Pantallas que arman su tabla con las piezas crudas de shadcn en vez de
+   * `TablaDatos`.
    *
-   * **Esta lista solo puede menguar.** No es una excepción permanente: es la
-   * deuda que quedaba el día que se puso el freno, escrita para que se vea. Al
-   * migrar una pantalla se borra su línea; si alguien añade una, la prueba falla
-   * y la conversación ocurre antes y no seis meses después.
+   * **La lista está vacía, y eso es el final de esta deuda.** Empezó con
+   * veinticuatro pantallas; la última —Psicólogos— salió el 2026-11-17. Se deja
+   * aquí, vacía, porque la lista vacía es lo que convierte el guardia en una
+   * regla: cualquier nombre que vuelva a aparecer aquí es una pantalla nueva
+   * incumpliendo, no deuda heredada.
    */
-  const TABLAS_SIN_MIGRAR = ["pages/superadmin/SuperAdminPsicologosPage.tsx"];
+  const TABLAS_SIN_MIGRAR: string[] = [];
 
   it("las tablas salen de TablaDatos, y la deuda no crece", () => {
     // `TablaDatos` y `Panel` SON la tabla de la casa, no consumidores suyos:
@@ -276,11 +277,9 @@ describe("el núcleo es uno solo", () => {
     "features/psicosocial/components/empleado/EmployeeProfileHeader.tsx",
     "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
     "features/superadmin/components/SuperAdminCard.tsx",
-    "pages/Login.tsx",
     "pages/ReportesOficialesPsicoPage.tsx",
     "pages/ReportesPsico.tsx",
     "pages/ResponderEvaluacion.tsx",
-    "pages/RestablecerClave.tsx",
     "pages/SolicitarRecuperacionClave.tsx",
     "pages/psicosocial/AplicacionDetallePage.tsx",
     "pages/psicosocial/AplicacionResultadosPage.tsx",
@@ -296,8 +295,6 @@ describe("el núcleo es uno solo", () => {
     "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
     "pages/psicosocial/PsicologoDashboardPage.tsx",
     "pages/psicosocial/PsicologoPerfilPage.tsx",
-    "pages/superadmin/SuperAdminDashboardPage.tsx",
-    "pages/superadmin/SuperAdminPsicologosPage.tsx",
   ];
 
   it("el estado no se dice con color crudo, y esa deuda tampoco crece", () => {
@@ -337,9 +334,11 @@ describe("el núcleo es uno solo", () => {
   /**
    * Solo puede menguar.
    *
-   * Hoy la lista ES el perímetro de Psicosocial, y eso es deliberado: ahí no
-   * se migra nada. Cualquier archivo nuevo en esta lista sería una pantalla
-   * del resto del producto escribiendo su propio gris otra vez.
+   * Desde el 2026-11-17 la lista ES exactamente el perímetro de Psicosocial,
+   * sin una sola excepción fuera: la última que quedaba —Psicólogos— salió con
+   * la homologación de esa pantalla. Ahí no se migra nada, así que cualquier
+   * archivo NUEVO en esta lista es una pantalla del resto del producto
+   * escribiendo su propio gris otra vez.
    */
   const GRIS_CRUDO_PENDIENTE = [
     "features/psicosocial/components/SociodemographicChartCard.tsx",
@@ -367,7 +366,6 @@ describe("el núcleo es uno solo", () => {
     "pages/psicosocial/PsicoEmpleadoRespuestasPage.tsx",
     "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
     "pages/psicosocial/PsicologoPerfilPage.tsx",
-    "pages/superadmin/SuperAdminPsicologosPage.tsx",
   ];
 
   it("el gris sale de los tokens, y esa deuda tampoco crece", () => {
@@ -385,6 +383,84 @@ describe("el núcleo es uno solo", () => {
     expect(
       yaLimpios,
       "Ya no usan gris crudo: bórralos de GRIS_CRUDO_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * Etiqueta, campo y error: UNA pieza.
+   *
+   * Había OCHO componentes locales llamados `Field` o `Campo`, uno por
+   * pantalla. No se parecían: uno envolvía al hijo en el `<label>` —lo que
+   * convierte una lista de opciones entera en el área de clic de la etiqueta—,
+   * otros usaban `htmlFor`, unos marcaban lo obligatorio y otros no, y **casi
+   * todos pintaban el error como un párrafo rojo suelto**, sin relación con el
+   * campo: quien usa lector de pantalla no recibía el motivo del rechazo.
+   *
+   * Es el mismo patrón que trajo los dos `ToastCard` y los dos
+   * `ConfirmDialog`, con una diferencia: un campo de formulario se escribe
+   * decenas de veces por pantalla, así que la divergencia se multiplica más
+   * rápido que en cualquier otra pieza.
+   *
+   * Los cuatro que quedan son de Psicosocial y **ahí se quedan**, por lo mismo
+   * que todo lo demás de Psicosocial. Solo puede menguar.
+   */
+  const CAMPO_LOCAL_PENDIENTE = [
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/EmpresaAreasCargosPage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+  ];
+
+  it("el campo de formulario tiene UNA definición, y esa deuda tampoco crece", () => {
+    const IMPLEMENTACION = ["shared/ui/Campo.tsx"];
+
+    const locales = TODOS.filter((ruta) => /\bfunction (Field|Campo)\s*\(/.test(contenido(ruta)))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r));
+
+    const nuevos = locales.filter((r) => !CAMPO_LOCAL_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `Campo` de `@/shared/ui/Campo`: enlaza la etiqueta con `htmlFor` y " +
+        "—esto es lo que no se puede dejar a cada pantalla— asocia el error al " +
+        "campo con `aria-invalid` y `aria-describedby`."
+    ).toEqual([]);
+
+    const yaMigrados = CAMPO_LOCAL_PENDIENTE.filter((r) => !locales.includes(r));
+    expect(
+      yaMigrados,
+      "Ya no definen su propio campo: bórralos de CAMPO_LOCAL_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * El campo de contraseña tiene su propio interruptor, y también es uno.
+   *
+   * Estaba escrito a mano en cuatro pantallas y ninguna declaraba
+   * `aria-pressed`, así que el ojo de mostrar/ocultar no era un interruptor
+   * para un lector de pantalla: era un botón que cambiaba de nombre. Tres de
+   * las cuatro ya usan `EntradaClave`; la que falta es de Psicosocial.
+   */
+  const CLAVE_LOCAL_PENDIENTE = ["pages/psicosocial/PsicologoPerfilPage.tsx"];
+
+  it("el campo de contraseña tiene UNA definición", () => {
+    const IMPLEMENTACION = ["shared/ui/EntradaClave.tsx"];
+
+    const locales = TODOS.filter((ruta) => contenido(ruta).includes("EyeOff"))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r));
+
+    const nuevos = locales.filter((r) => !CLAVE_LOCAL_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `EntradaClave` de `@/shared/ui/EntradaClave`: el interruptor se " +
+        "anuncia con `aria-pressed` y el icono y el relleno van juntos."
+    ).toEqual([]);
+
+    const yaMigrados = CLAVE_LOCAL_PENDIENTE.filter((r) => !locales.includes(r));
+    expect(
+      yaMigrados,
+      "Ya no dibujan su propio ojo: bórralos de CLAVE_LOCAL_PENDIENTE."
     ).toEqual([]);
   });
 
@@ -437,12 +513,12 @@ describe("el núcleo es uno solo", () => {
     // `min-h-[3rem]`.
     //
     // Psicosocial queda fuera: es el monolito inicial y no se toca. Las
-    // pantallas de superadmin que son suyas (créditos, empresas, psicólogos)
-    // quedan congeladas aquí: la lista solo puede menguar.
+    // pantallas de superadmin que son suyas (créditos, empresas) quedan
+    // congeladas aquí: la lista solo puede menguar. Psicólogos salió el
+    // 2026-11-17 al homologarse.
     const DEL_MONOLITO = [
       "pages/superadmin/SuperAdminCreditosPage.tsx",
       "pages/superadmin/SuperAdminEmpresasPage.tsx",
-      "pages/superadmin/SuperAdminPsicologosPage.tsx",
     ];
     const usaMinHNumerico = (ruta: string) =>
       /\bmin-h-\d+\b/.test(contenido(ruta).replace(/\bmin-h-0\b/g, ""));

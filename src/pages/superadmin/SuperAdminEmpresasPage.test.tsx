@@ -66,7 +66,7 @@ describe("SuperAdminEmpresasPage", () => {
     expect(
       screen.getByRole("dialog", { name: "Nueva empresa" }),
     ).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Nombre visible *"), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Nombre visible" }), {
       target: { value: "Nueva compañía" },
     });
     fireEvent.change(screen.getByLabelText("NIT"), {
@@ -95,7 +95,7 @@ describe("SuperAdminEmpresasPage", () => {
     // `getAllByRole`: pulsar cualquiera de los dos hace lo mismo.
     fireEvent.click(screen.getAllByRole("button", { name: "Editar Cliente Abril" })[0]);
 
-    const nombre = screen.getByLabelText("Nombre visible *");
+    const nombre = screen.getByRole("textbox", { name: "Nombre visible" });
     expect(nombre).toHaveValue("Cliente Abril");
     fireEvent.change(nombre, {
       target: { value: "Cliente Abril actualizado" },

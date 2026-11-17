@@ -5,8 +5,6 @@ import {
   BarChart3,
   BrainCircuit,
   CheckCircle2,
-  Eye,
-  EyeOff,
   HeartPulse,
   LockKeyhole,
   Mail,
@@ -19,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { EntradaClave } from "@/shared/ui/EntradaClave";
+import { Pill } from "@/shared/ui/Pill";
 import { Label } from "@/components/ui/label";
 import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 import { useAuth } from "@/context/AuthContext";
@@ -53,7 +53,6 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -201,6 +200,8 @@ export default function Login() {
                       autoCapitalize="none"
                       spellCheck={false}
                       required
+                      aria-invalid={errors.email ? true : undefined}
+                      aria-describedby={errors.email ? "email-error" : undefined}
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
@@ -209,7 +210,7 @@ export default function Login() {
                       className="h-14 rounded-2xl border-border pl-12 text-base"
                     />
                   </div>
-                  {errors.email ? <p className="text-sm text-rose-600">{errors.email}</p> : null}
+                  {errors.email ? <p id="email-error" className="text-sm font-semibold text-danger">{errors.email}</p> : null}
                 </div>
 
                 <div className="space-y-2">
@@ -219,31 +220,22 @@ export default function Login() {
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>
-                  <div className="relative">
-                    <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Ingresa tu contraseña"
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
-                      }}
-                      className="h-14 rounded-2xl border-border pl-12 pr-12 text-base"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-brand-primary"
-                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password ? <p className="text-sm text-rose-600">{errors.password}</p> : null}
+                  <EntradaClave
+                    id="password"
+                    icono={LockKeyhole}
+                    placeholder="Ingresa tu contraseña"
+                    autoComplete="current-password"
+                    required
+                    aria-invalid={errors.password ? true : undefined}
+                    aria-describedby={errors.password ? "password-error" : undefined}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                    className="h-14 rounded-2xl border-border text-base"
+                  />
+                  {errors.password ? <p id="password-error" className="text-sm font-semibold text-danger">{errors.password}</p> : null}
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-1">
@@ -251,9 +243,7 @@ export default function Login() {
                     <Checkbox checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} />
                     Recordarme en este dispositivo
                   </label>
-                  <div className="hidden items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 sm:flex">
-                    <CheckCircle2 className="h-4 w-4" /> Acceso seguro
-                  </div>
+                  <Pill tono="exito" className="hidden sm:inline-flex">Acceso seguro</Pill>
                 </div>
 
                 <Button

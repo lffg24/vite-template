@@ -11,6 +11,8 @@
 
 import { useRef, useState } from "react";
 
+import { Campo } from "@/shared/ui/Campo";
+import { Input } from "@/components/ui/input";
 import { BotonPrincipal } from "./ParticipanteLayout";
 import type {
   AceptacionEnviada,
@@ -175,49 +177,77 @@ export function FormularioIdentidad({
         id="nombres"
         etiqueta="Nombres"
         obligatorio
-        valor={nombres}
-        alCambiar={setNombres}
-        autoComplete="given-name"
         error={errores.nombres}
-      />
+      >
+        <Input
+          required
+          value={nombres}
+          onChange={(e) => setNombres(e.target.value)}
+          autoComplete="given-name"
+          enterKeyHint="next"
+          className={claseCampo}
+        />
+      </Campo>
       <Campo
         id="apellidos"
         etiqueta="Apellidos"
         obligatorio
-        valor={apellidos}
-        alCambiar={setApellidos}
-        autoComplete="family-name"
         error={errores.apellidos}
-      />
+      >
+        <Input
+          required
+          value={apellidos}
+          onChange={(e) => setApellidos(e.target.value)}
+          autoComplete="family-name"
+          enterKeyHint="next"
+          className={claseCampo}
+        />
+      </Campo>
       <Campo
         id="cargo"
         etiqueta="Cargo"
         ayuda="Opcional"
-        valor={cargo}
-        alCambiar={setCargo}
-        autoComplete="organization-title"
-      />
+      >
+        <Input
+          value={cargo}
+          onChange={(e) => setCargo(e.target.value)}
+          autoComplete="organization-title"
+          enterKeyHint="next"
+          className={claseCampo}
+        />
+      </Campo>
+      {/* La ayuda NO dice «para enviarte la constancia»: no hay envío por
+          correo. Pedir un dato personal invocando un uso que no existe es
+          pedirlo bajo un motivo falso, y además es lo que la autorización de
+          datos declara. */}
       <Campo
         id="correo"
         etiqueta="Correo"
-        // No dice «para enviarte la constancia»: no hay envío por correo.
-        // Pedir un dato personal invocando un uso que no existe es pedirlo bajo
-        // un motivo falso, y además es lo que la autorización de datos declara.
         ayuda="Opcional. Solo para que tu empresa pueda contactarte."
-        valor={correo}
-        alCambiar={setCorreo}
-        tipo="email"
-        autoComplete="email"
-      />
+      >
+        <Input
+          type="email"
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
+          autoComplete="email"
+          enterKeyHint="next"
+          className={claseCampo}
+        />
+      </Campo>
       <Campo
         id="telefono"
         etiqueta="Teléfono"
         ayuda="Opcional"
-        valor={telefono}
-        alCambiar={setTelefono}
-        tipo="tel"
-        autoComplete="tel"
-      />
+      >
+        <Input
+          type="tel"
+          value={telefono}
+          onChange={(e) => setTelefono(e.target.value)}
+          autoComplete="tel"
+          enterKeyHint="next"
+          className={claseCampo}
+        />
+      </Campo>
 
       {/* El error del grupo se asocia al `fieldset`, no a una casilla suelta:
           falta marcar LAS DOS, así que el problema es del conjunto. Al recibir
@@ -300,56 +330,5 @@ export function FormularioIdentidad({
         </BotonPrincipal>
       </div>
     </form>
-  );
-}
-
-function Campo({
-  id,
-  etiqueta,
-  valor,
-  alCambiar,
-  obligatorio,
-  ayuda,
-  error,
-  tipo = "text",
-  autoComplete,
-}: {
-  id: string;
-  etiqueta: string;
-  valor: string;
-  alCambiar: (v: string) => void;
-  obligatorio?: boolean;
-  ayuda?: string;
-  error?: string;
-  tipo?: string;
-  autoComplete?: string;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-semibold">
-        {etiqueta}
-        {obligatorio ? <span className="text-rel-danger"> *</span> : null}
-      </label>
-      <input
-        id={id}
-        type={tipo}
-        value={valor}
-        onChange={(e) => alCambiar(e.target.value)}
-        autoComplete={autoComplete}
-        enterKeyHint="next"
-        className={claseCampo}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `err-${id}` : ayuda ? `ayuda-${id}` : undefined}
-      />
-      {error ? (
-        <p id={`err-${id}`} role="alert" className="mt-1 text-sm text-rel-danger">
-          {error}
-        </p>
-      ) : ayuda ? (
-        <p id={`ayuda-${id}`} className="mt-1 text-sm text-rel-muted">
-          {ayuda}
-        </p>
-      ) : null}
-    </div>
   );
 }
