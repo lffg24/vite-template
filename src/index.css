@@ -332,7 +332,27 @@
        texto normal. Es una decision de contraste, no de marca, y por eso NO
        sigue a `--primary-foreground`, que en claro es blanco. */
     --rel-primary-foreground: var(--brand-dark);
-    --rel-accent: var(--primary-active); /* estado activo */
+    /* ===== UNA marca, DOS papeles =====================================
+       Decision del 2026-11-17: el turquesa de ABRIL es el de la casa,
+       `--primary`. No hay un segundo primario.
+
+       Lo que si hay es el mismo turquesa en dos lugares distintos, y no
+       pueden ser el mismo valor porque el contraste no lo permite:
+
+         - RELLENO (`--rel-accent`): el turquesa de la casa, y encima va
+           texto OSCURO. Blanco sobre este turquesa da 2,5:1, por debajo de
+           cualquier minimo; el azul de marca encima da 6,6:1.
+         - TINTA (`--rel-accent-ink`): el mismo tono, mas oscuro, para TEXTO
+           sobre superficie clara. El turquesa de relleno como texto sobre
+           blanco da 2,5:1; este da 5,6:1.
+
+       No son dos marcas: son el mismo tono a dos luminosidades, que es lo
+       que cualquier paleta necesita para poder escribirse encima. Lo que
+       habia antes era un solo token haciendo los dos trabajos, y por eso
+       media pantalla lo usaba como fondo con texto blanco y la otra mitad
+       como color de letra. */
+    --rel-accent: var(--primary);
+    --rel-accent-ink: var(--primary-active);
     --rel-accent-subtle: var(--accent);
     --rel-turquoise: var(--brand-turquoise);
     --rel-turquoise-foreground: 0 0% 100%;

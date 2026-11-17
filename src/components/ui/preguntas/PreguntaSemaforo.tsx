@@ -61,7 +61,7 @@ export default function PreguntaSemaforo({
                   : "bg-muted hover:bg-accent"
               }`}
             >
-              <Circle className={`mr-2 h-5 w-5 ${colorClase(color)}`} />
+              <Circle className={`mr-2 h-5 w-5 ${colorClase(color)}`} aria-hidden="true" />
               {color}
             </button>
           );

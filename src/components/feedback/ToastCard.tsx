@@ -59,7 +59,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
               className="rounded-xl p-1.5 text-muted-foreground transition hover:bg-surface-subtle hover:text-foreground"
               aria-label="Cerrar notificación"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
           {!!toast.details?.length && (

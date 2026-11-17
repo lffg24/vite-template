@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react"
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import evaLogoColor from "@/assets/eva-logo-color.png";
+import { Marca } from "@/components/brand/Marca";
 
 type PasswordRecoveryShellProps = {
   title: string;
@@ -25,8 +25,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
           <>
             <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-5">
               <div className="flex items-center gap-3">
-                <img src={evaLogoColor} alt="" className="h-9 w-9 object-contain" />
-                <span className="font-heading text-sm font-bold tracking-wide text-brand-dark">ABRIL360</span>
+                <Marca className="h-7" />
               </div>
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-success">
                 <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Acceso seguro
@@ -47,7 +46,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
         ) : (
           <div className="mb-7 text-center">
             <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-accent">
-              <img src={evaLogoColor} alt="EVA 360" className="h-12 w-12 object-contain" />
+              <Marca variante="isotipo" decorativa className="h-10" />
             </div>
             <h1 className="text-3xl font-black tracking-tight"><span className="marker-highlight">{title.split(" ").slice(0, 1).join(" ")}</span>{title.includes(" ") ? ` ${title.split(" ").slice(1).join(" ")}` : ""}</h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>

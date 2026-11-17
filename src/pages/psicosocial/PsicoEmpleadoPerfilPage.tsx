@@ -144,7 +144,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
 
       <div className="mt-5 flex flex-wrap justify-end gap-3">
         <button type="button" onClick={onResults} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm hover:bg-slate-50">
-          <Eye className="h-4 w-4" /> Ver resultados
+          <Eye className="h-4 w-4" aria-hidden="true" /> Ver resultados
         </button>
         <button
           type="button"
@@ -152,7 +152,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
           disabled={!app.puede_registrar}
           className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-sm hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
         >
-          <ClipboardList className="h-4 w-4" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
+          <ClipboardList className="h-4 w-4" aria-hidden="true" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
         </button>
       </div>
     </article>
@@ -170,14 +170,14 @@ function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: 
             <p className="mt-1 text-sm text-slate-500">No se permite registrar de nuevo una batería que ya está completa/calculada para este colaborador.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 p-2 hover:bg-slate-50">
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
         <div className="max-h-[64vh] overflow-y-auto p-6">
           {apps.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <ShieldAlert className="mx-auto h-10 w-10 text-slate-400" />
+              <ShieldAlert className="mx-auto h-10 w-10 text-slate-400" aria-hidden="true" />
               <h3 className="mt-3 text-lg font-black text-slate-900">No hay aplicaciones disponibles</h3>
               <p className="mt-1 text-sm text-slate-500">El colaborador no tiene una aplicación pendiente para registrar. Crea/asigna una batería o revisa las aplicaciones ya completadas.</p>
             </div>
@@ -353,7 +353,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
             <p className="mt-1 text-sm text-slate-500">Estos datos aplican a ABRIL360. La ficha sociodemográfica se mantiene por aplicación.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 p-2 hover:bg-slate-50">
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -404,7 +404,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-700 hover:bg-slate-50">Cancelar</button>
             <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
               Guardar cambios
             </button>
           </div>
@@ -461,7 +461,7 @@ export default function PsicoEmpleadoPerfilPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
-        <div className="flex items-center gap-3 text-slate-500"><Loader2 className="h-5 w-5 animate-spin" /> Cargando perfil...</div>
+        <div className="flex items-center gap-3 text-slate-500"><Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> Cargando perfil...</div>
         <div className="h-36 animate-pulse rounded-3xl bg-slate-100" />
         <div className="grid gap-5 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /></div>
       </div>
@@ -474,17 +474,17 @@ export default function PsicoEmpleadoPerfilPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50">
-              <ArrowLeft className="h-4 w-4" /> Volver
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver
             </button>
             <h1 className="text-3xl font-black tracking-tight md:text-4xl">Perfil del empleado</h1>
             <p className="mt-1 text-slate-500">Consulta la base transversal del colaborador y sus aplicaciones psicosociales.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
-              <FileText className="h-4 w-4" /> Editar colaborador
+              <FileText className="h-4 w-4" aria-hidden="true" /> Editar colaborador
             </button>
             <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover">
-              <ClipboardList className="h-4 w-4" /> Registrar respuestas
+              <ClipboardList className="h-4 w-4" aria-hidden="true" /> Registrar respuestas
             </button>
           </div>
         </div>
@@ -500,9 +500,9 @@ export default function PsicoEmpleadoPerfilPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="text-2xl font-black text-slate-950">{nombre}</h2>
                 <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
-                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
+                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
                 </div>
               </div>
             </div>
@@ -518,7 +518,7 @@ export default function PsicoEmpleadoPerfilPage() {
               <div>
                 <p className="text-sm text-slate-500">Estado de batería</p>
                 <div className={`mt-2 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black ${latestApp?.bateria_completa ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                  <CheckCircle2 className="h-4 w-4" /> {latestApp?.estado_bateria || "Sin dato"}
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> {latestApp?.estado_bateria || "Sin dato"}
                 </div>
               </div>
             </div>
@@ -556,7 +556,7 @@ export default function PsicoEmpleadoPerfilPage() {
         )}
 
         <section className="rounded-3xl border border-accent bg-accent/70 p-5 text-sm text-slate-700">
-          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-brand-primary" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
+          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
         </section>
       </main>
 

@@ -20,10 +20,9 @@ import { Input } from "@/components/ui/input";
 import { EntradaClave } from "@/shared/ui/EntradaClave";
 import { Pill } from "@/shared/ui/Pill";
 import { Label } from "@/components/ui/label";
-import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import evaLogoColor from "@/assets/eva-logo-color.png";
+import { Marca } from "@/components/brand/Marca";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
@@ -125,12 +124,7 @@ export default function Login() {
           <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-brand-primary/10 bg-brand-turquoise/12 blur-sm" />
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
-              <AbrilBrandLockup
-                className="mb-10"
-                accentClassName="text-brand-turquoise"
-                wordmarkClassName="text-3xl font-black tracking-tight text-sidebar-foreground"
-                subtitleClassName="text-xs uppercase tracking-[0.32em] text-sidebar-muted"
-              />
+              <Marca sobre="oscuro" className="mb-10 h-14" />
 
               <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight xl:text-5xl">
                 <span className="block text-sidebar-foreground drop-shadow-[0_8px_24px_rgba(2,6,23,0.32)]">Evaluamos.</span>
@@ -157,7 +151,7 @@ export default function Login() {
             </div>
 
             <div className="flex items-center gap-2 text-sm text-sidebar-muted">
-              <LockKeyhole className="h-4 w-4" /> Seguridad y confidencialidad de tus datos garantizada
+              <LockKeyhole className="h-4 w-4" aria-hidden="true" /> Seguridad y confidencialidad de tus datos garantizada
             </div>
           </div>
         </section>
@@ -168,18 +162,12 @@ export default function Login() {
           </div>
 
           <div className="w-full max-w-[620px]">
-            <AbrilBrandLockup
-              className="mb-4 justify-center lg:hidden"
-              iconWrapperClassName="grid h-12 w-12 place-items-center rounded-2xl bg-sidebar p-2 shadow-card"
-              wordmarkClassName="text-2xl font-black text-foreground"
-              accentClassName="text-brand-primary"
-              subtitleClassName="text-[11px] uppercase tracking-[0.28em] text-muted-foreground"
-            />
+            <Marca className="mb-4 h-11 lg:hidden" />
 
             <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-accent text-brand-primary">
-                  <img src={evaLogoColor} alt="EVA 360" className="h-11 w-11 object-contain" />
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-accent">
+                  <Marca variante="isotipo" decorativa className="h-9" />
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
                 <p className="mt-1 text-muted-foreground">
@@ -191,7 +179,7 @@ export default function Login() {
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-bold">Correo electrónico</Label>
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                     <Input
                       id="email"
                       type="email"
@@ -258,7 +246,7 @@ export default function Login() {
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-2">
-                      Iniciar sesión <ArrowRight className="h-5 w-5" />
+                      Iniciar sesión <ArrowRight className="h-5 w-5" aria-hidden="true" />
                     </span>
                   )}
                 </Button>

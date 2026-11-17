@@ -736,7 +736,7 @@ function MultiCheckboxFilter<T extends string>({
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" className="h-10 w-full justify-between rounded-xl bg-white px-3 font-normal text-slate-700" aria-label={ariaLabel}>
           <span className="truncate">{multiSelectLabel(value, options, labels, allLabel)}</span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 rounded-2xl p-2">
@@ -912,7 +912,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
             Limpiar selección
           </Button>
           <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={openBulkModal} disabled={!selectedIds.size || !aplicacionId}>
-            <FileArchive className="mr-2 h-4 w-4" /> Descargar masivamente
+            <FileArchive className="mr-2 h-4 w-4" aria-hidden="true" /> Descargar masivamente
           </Button>
         </div>
       </div>
@@ -987,7 +987,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                       onClick={() => navigate(`/psicosocial/empleados/${it.empleado_id}/aplicaciones/${aplicacionId}/informes`)}
                       disabled={!aplicacionId || !reportsForParticipant(it, ALL_INSTRUMENT_FILTERS).length}
                     >
-                      <Eye className="mr-2 h-4 w-4" /> Ver informe
+                      <Eye className="mr-2 h-4 w-4" aria-hidden="true" /> Ver informe
                     </Button>
                   </td>
                 </tr>
@@ -1009,7 +1009,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
         <DialogContent className="max-w-4xl rounded-[28px] border-slate-200 p-0 shadow-2xl">
           <DialogHeader className="border-b bg-gradient-to-r from-accent to-brand-canvas px-6 py-5">
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-primary p-3 text-primary-foreground shadow-card"><FileArchive className="h-6 w-6" /></div>
+              <div className="rounded-2xl bg-primary p-3 text-primary-foreground shadow-card"><FileArchive className="h-6 w-6" aria-hidden="true" /></div>
               <div>
                 <DialogTitle className="text-2xl font-black tracking-tight text-slate-950">Descarga masiva de informes individuales</DialogTitle>
                 <DialogDescription className="mt-1 text-slate-600">
@@ -1102,7 +1102,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
           <DialogFooter className="border-t bg-white px-6 py-4">
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => setBulkOpen(false)} disabled={bulkDownloading}>Cancelar</Button>
             <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={downloadBulk} disabled={!bulkCanDownload}>
-              {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Download className="mr-2 h-4 w-4" aria-hidden="true" />}
               Descargar ZIP
             </Button>
           </DialogFooter>
@@ -1140,7 +1140,7 @@ function DomainDetailPanel({
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dominio.dominio_label}>{dominio.dominio_label}</h2>
               <p className="mt-1 text-sm text-slate-500">{dominio.instrument_label} · dominio agregado</p>
             </div>
-            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" aria-hidden="true" /></Button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
@@ -1229,7 +1229,7 @@ function DimensionDetailPanel({
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
               {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
             </div>
-            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" aria-hidden="true" /></Button>
           </div>
         </div>
 
@@ -1237,7 +1237,7 @@ function DimensionDetailPanel({
           {loading ? (
             <div className="space-y-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-72 w-full" /></div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{error}</div>
+            <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" aria-hidden="true" />{error}</div>
           ) : !detail || !dim ? (
             <EmptyState />
           ) : (
@@ -1782,7 +1782,7 @@ export default function ReportesPsico() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="rounded-2xl bg-accent p-3 text-brand-primary">
-                <LineChart className="h-8 w-8" />
+                <LineChart className="h-8 w-8" aria-hidden="true" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -1815,7 +1815,7 @@ export default function ReportesPsico() {
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={() => aplicacionId && loadDashboard(aplicacionId)} disabled={!aplicacionId || loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCcw className="mr-2 h-4 w-4" aria-hidden="true" />}
                 Actualizar
               </Button>
               <Button
@@ -1823,7 +1823,7 @@ export default function ReportesPsico() {
                 disabled={!aplicacionId}
                 onClick={() => aplicacionId && navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
               >
-                <FileText className="mr-2 h-4 w-4" /> Informe global
+                <FileText className="mr-2 h-4 w-4" aria-hidden="true" /> Informe global
               </Button>
             </div>
           </div>
@@ -1910,9 +1910,9 @@ export default function ReportesPsico() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {!data.alertas.length ? (
-                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" />Sin alertas críticas con los datos actuales.</div>
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" aria-hidden="true" />Sin alertas críticas con los datos actuales.</div>
                     ) : data.alertas.map((a, i) => (
-                      <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
+                      <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" aria-hidden="true" />{a.mensaje}</div>
                     ))}
                   </CardContent>
                 </Card>

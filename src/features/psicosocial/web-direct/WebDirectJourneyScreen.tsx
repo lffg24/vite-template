@@ -97,7 +97,7 @@ export function WebDirectJourneyScreen({
                 )}
                 aria-hidden="true"
               >
-                {isComplete ? <Check className="h-5 w-5" /> : index + 1}
+                {isComplete ? <Check className="h-5 w-5" aria-hidden="true" /> : index + 1}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-heading text-sm font-bold text-foreground sm:text-base">{stage.title}</span>
@@ -110,7 +110,7 @@ export function WebDirectJourneyScreen({
                 isComplete && "bg-success/10 text-success",
                 isCurrent && "bg-accent text-accent-foreground",
               )}>
-                {isComplete ? <Check className="h-3.5 w-3.5" /> : isCurrent ? <ClipboardList className="h-3.5 w-3.5" /> : <Circle className="h-3 w-3" />}
+                {isComplete ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : isCurrent ? <ClipboardList className="h-3.5 w-3.5" aria-hidden="true" /> : <Circle className="h-3 w-3" aria-hidden="true" />}
                 {statusLabel[stage.status]}
               </span>
             </li>

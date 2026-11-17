@@ -107,7 +107,7 @@ export default function ListaEvaluaciones() {
                         size="icon"
                         onClick={() => handleEditar(evaluacion)}
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" aria-hidden="true" />
                       </Button>
 
                       <AlertDialog>
@@ -117,7 +117,7 @@ export default function ListaEvaluaciones() {
                             size="icon"
                             onClick={() => setEvaluacionAEliminar(evaluacion)}
                           >
-                            <Trash className="w-4 h-4 text-red-500" />
+                            <Trash className="w-4 h-4 text-red-500" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -151,7 +151,7 @@ export default function ListaEvaluaciones() {
                           navigate(`/evaluaciones/${evaluacion.id}/preguntas`)
                         }
                       >
-                        <List className="w-4 h-4 text-brand-primary" />
+                        <List className="w-4 h-4 text-brand-primary" aria-hidden="true" />
                       </Button>
 
                       <Button
@@ -159,7 +159,7 @@ export default function ListaEvaluaciones() {
                         size="icon"
                         onClick={() => handleAbrirDrawer(evaluacion.id)}
                       >
-                        <Users className="w-4 h-4 text-green-600" />
+                        <Users className="w-4 h-4 text-green-600" aria-hidden="true" />
                       </Button>
                     </div>
                   </TableCell>

@@ -99,7 +99,7 @@ export function SocioSelectField({ label, value, options, onChange, disabled = f
         className={`${fieldBase(disabled)} flex min-h-[50px] items-center justify-between gap-3 text-left ${value ? "text-slate-900" : "text-slate-400"}`}
       >
         <span className="truncate">{display}</span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && !disabled && (
         <div className="absolute z-[80] mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">

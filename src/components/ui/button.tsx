@@ -43,7 +43,7 @@ const buttonVariants = cva(
         // y `--ring` son hoy el mismo token, asi que la base lo resuelve para
         // todas. Repetirlo aqui solo garantizaba que las dos familias se
         // separasen en cuanto una de las dos cambiara.
-        rel: "bg-rel-accent text-white shadow-rel-card hover:bg-rel-accent/90",
+        rel: "bg-rel-accent text-rel-dark shadow-rel-card hover:bg-rel-accent/90",
         relOutline:
           "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:border-rel-primary/40 hover:bg-rel-surface-subtle",
         relGhost: "text-rel-dark hover:bg-rel-surface-subtle",

@@ -41,7 +41,7 @@ export function IllustratedFormSheet({
       <div className="shrink-0 border-b border-rel-border bg-rel-surface px-5 pb-5 pt-6 sm:px-7 sm:pb-6">
         <div className="grid grid-cols-[1fr_5.5rem] items-center gap-4 sm:grid-cols-[1fr_8rem]">
           <SheetHeader className="min-w-0 text-left">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-rel-accent">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-rel-accent-ink">
               {eyebrow}
             </p>
             <SheetTitle className="font-rel-heading text-xl font-black text-rel-dark sm:text-2xl">

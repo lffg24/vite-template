@@ -112,7 +112,7 @@ export default function ListaCargos() {
                       size="icon"
                       onClick={() => handleEditar(cargo)}
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-4 h-4" aria-hidden="true" />
                     </Button>
 
                     <AlertDialog>
@@ -122,7 +122,7 @@ export default function ListaCargos() {
                           size="icon"
                           onClick={() => setCargoAEliminar(cargo)}
                         >
-                          <Trash className="w-4 h-4 text-red-500" />
+                          <Trash className="w-4 h-4 text-red-500" aria-hidden="true" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>

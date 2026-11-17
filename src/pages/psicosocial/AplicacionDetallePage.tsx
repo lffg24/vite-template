@@ -1304,7 +1304,7 @@ export default function AplicacionDetallePage() {
     return (
       <main className="min-h-screen bg-background p-8">
         <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border bg-white p-8 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" /> Cargando
+          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" aria-hidden="true" /> Cargando
           aplicación...
         </div>
       </main>
@@ -1358,7 +1358,7 @@ export default function AplicacionDetallePage() {
           <div className="w-full max-w-xl rounded-3xl border border-accent bg-white p-6 shadow-floating">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-brand-primary">
-                <Loader2 className="h-6 w-6 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
@@ -1418,7 +1418,7 @@ export default function AplicacionDetallePage() {
           }
           className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver a aplicaciones
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a aplicaciones
         </button>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -1457,7 +1457,7 @@ export default function AplicacionDetallePage() {
                   disabled={closing}
                   className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-bold text-amber-800 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <RotateCcw className="h-4 w-4" /> Reabrir aplicación
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" /> Reabrir aplicación
                 </button>
               ) : (
                 <button
@@ -1465,7 +1465,7 @@ export default function AplicacionDetallePage() {
                   disabled={closing}
                   className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <ShieldCheck className="h-4 w-4" />{" "}
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />{" "}
                   {closing ? "Calculando..." : "Cerrar y calcular"}
                 </button>
               )}
@@ -1483,7 +1483,7 @@ export default function AplicacionDetallePage() {
                 }
                 className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold ${finalizada ? "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
               >
-                <BarChart3 className="h-4 w-4" /> Dashboard de resultados
+                <BarChart3 className="h-4 w-4" aria-hidden="true" /> Dashboard de resultados
               </button>
               {webDirectAvailable && (
                 <PsicoFeatureFlagGate feature="web_direct">
@@ -1501,7 +1501,7 @@ export default function AplicacionDetallePage() {
                   }
                   className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-5 py-3 text-sm font-bold text-brand-primary hover:bg-accent-hover"
                 >
-                  <FileArchive className="h-4 w-4" /> Descarga masiva
+                  <FileArchive className="h-4 w-4" aria-hidden="true" /> Descarga masiva
                 </button>
               )}
               {finalizada && (
@@ -1513,7 +1513,7 @@ export default function AplicacionDetallePage() {
                   }
                   className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
                 >
-                  <FileText className="h-4 w-4" /> Informes oficiales
+                  <FileText className="h-4 w-4" aria-hidden="true" /> Informes oficiales
                 </button>
               )}
             </div>
@@ -1522,7 +1522,7 @@ export default function AplicacionDetallePage() {
             <div className="mt-5 rounded-3xl border border-accent bg-gradient-to-r from-accent via-white to-brand-canvas p-4 shadow-card">
               <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
-                  <ShieldCheck className="h-5 w-5" />
+                  <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
@@ -1545,7 +1545,7 @@ export default function AplicacionDetallePage() {
                   aria-label="Ocultar guía rápida de cierre"
                   title="No volver a mostrar"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -1554,23 +1554,23 @@ export default function AplicacionDetallePage() {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card
-            icon={<Users />}
+            icon={<Users aria-hidden="true" />}
             label="Participantes asignados"
             value={resumen.empleados_total}
           />
           <Card
-            icon={<ClipboardCheck />}
+            icon={<ClipboardCheck aria-hidden="true" />}
             label="Completados"
             value={participantesCompletos}
           />
           <Card
-            icon={<XCircle />}
+            icon={<XCircle aria-hidden="true" />}
             label="Pendientes por completar"
             value={pendientesCompletar}
           />
           <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-accent bg-accent/50 p-5 shadow-card">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
-              <Coins className="h-6 w-6" />
+              <Coins className="h-6 w-6" aria-hidden="true" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-brand-primary">
@@ -1601,13 +1601,13 @@ export default function AplicacionDetallePage() {
                     onClick={() => setOpenBulkUpload(true)}
                     className="inline-flex items-center gap-2 rounded-xl border border-accent bg-accent px-4 py-2 text-sm font-bold text-brand-primary hover:bg-accent-hover"
                   >
-                    <Upload className="h-4 w-4" /> Carga masiva
+                    <Upload className="h-4 w-4" aria-hidden="true" /> Carga masiva
                   </button>
                   <button
                     onClick={() => void openAddEmployee()}
                     className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
                   >
-                    <Plus className="h-4 w-4" /> Agregar colaborador
+                    <Plus className="h-4 w-4" aria-hidden="true" /> Agregar colaborador
                   </button>
                 </>
               )}
@@ -1621,7 +1621,7 @@ export default function AplicacionDetallePage() {
           </div>
 
           <div className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
-            <Search className="h-4 w-4 text-slate-400" />
+            <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -1733,7 +1733,7 @@ export default function AplicacionDetallePage() {
                     <td className="px-3 py-4">
                       {participantStatusLabel(emp) === "Completo" ? (
                         <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
-                          <CheckCircle2 className="h-3 w-3" /> Completo
+                          <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> Completo
                         </span>
                       ) : participantStatusLabel(emp) === "En captura" ? (
                         <span className="inline-flex whitespace-nowrap rounded-full bg-accent px-3 py-1 text-xs font-black text-brand-primary">
@@ -1768,9 +1768,9 @@ export default function AplicacionDetallePage() {
                               className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl px-2.5 py-2 text-xs font-bold 2xl:px-3 2xl:text-sm ${enabled ? "bg-primary text-primary-foreground hover:bg-primary-hover" : "cursor-not-allowed bg-slate-100 text-slate-400"}`}
                             >
                               {finalizada ? (
-                                <Lock className="h-4 w-4" />
+                                <Lock className="h-4 w-4" aria-hidden="true" />
                               ) : (
-                                <FilePenLine className="h-4 w-4" />
+                                <FilePenLine className="h-4 w-4" aria-hidden="true" />
                               )}
                               {label}
                             </button>
@@ -1795,7 +1795,7 @@ export default function AplicacionDetallePage() {
                                     : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
                                 }`}
                               >
-                                <FileText className="h-4 w-4" /> Informe
+                                <FileText className="h-4 w-4" aria-hidden="true" /> Informe
                               </button>
                             )}
                             {(emp.registrado ||
@@ -1813,7 +1813,7 @@ export default function AplicacionDetallePage() {
                                 }
                                 className="inline-flex max-w-full items-center justify-center gap-1.5 whitespace-normal rounded-xl border border-red-100 bg-red-50 px-2.5 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40 2xl:px-3 2xl:text-sm"
                               >
-                                <Trash2 className="h-4 w-4" /> Limpiar
+                                <Trash2 className="h-4 w-4" aria-hidden="true" /> Limpiar
                               </button>
                             )}
                           </div>
@@ -1916,7 +1916,7 @@ export default function AplicacionDetallePage() {
                 }}
                 className="rounded-2xl border p-2 hover:bg-slate-50"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -1930,7 +1930,7 @@ export default function AplicacionDetallePage() {
             </div>
             {cleanupLoading && (
               <div className="mt-4 rounded-2xl border border-accent bg-accent p-4 text-sm font-semibold text-brand-primary">
-                <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" />
                 Preparando operación...
               </div>
             )}
@@ -1984,9 +1984,9 @@ export default function AplicacionDetallePage() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-5 py-3 font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {cleanupLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 ) : (
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                 )}
                 Sí, eliminar respuestas
               </button>
@@ -2024,7 +2024,7 @@ export default function AplicacionDetallePage() {
                 className="shrink-0 rounded-2xl border border-slate-200 p-2 hover:bg-slate-50"
                 aria-label="Cerrar datos del colaborador"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -2056,7 +2056,7 @@ export default function AplicacionDetallePage() {
                               aria-label="Información sobre el formulario asignado"
                               className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
                             >
-                              <Info className="h-4 w-4" />
+                              <Info className="h-4 w-4" aria-hidden="true" />
                             </button>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs bg-foreground text-surface">
@@ -2133,9 +2133,9 @@ export default function AplicacionDetallePage() {
                       className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {savingDetailAssignment ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                       ) : (
-                        <ShieldCheck className="h-4 w-4" />
+                        <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                       )}
                       Guardar asignación
                     </button>
@@ -2166,7 +2166,7 @@ export default function AplicacionDetallePage() {
                 onClick={() => setOpenEmployeeDrawer(false)}
                 className="rounded-2xl border p-2 hover:bg-slate-50"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -2301,7 +2301,7 @@ export default function AplicacionDetallePage() {
                                 aria-label="Información sobre la asignación web"
                                 className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
                               >
-                                <Info className="h-4 w-4" />
+                                <Info className="h-4 w-4" aria-hidden="true" />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs bg-foreground text-surface">
@@ -2366,7 +2366,7 @@ export default function AplicacionDetallePage() {
                   </div>
                   {employeeSocioLoading && (
                     <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-brand-primary">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Cargando catálogos
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> Cargando catálogos
                     </span>
                   )}
                 </div>
@@ -2515,7 +2515,7 @@ export default function AplicacionDetallePage() {
                   className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60"
                 >
                   {savingEmployee && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                   )}{" "}
                   Guardar empleado
                 </button>
@@ -2562,7 +2562,7 @@ export default function AplicacionDetallePage() {
                 onClick={() => setCatalogModal(null)}
                 className="rounded-2xl border p-2"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             {catalogModal === "cargo" && !employeeForm.area_id && (
@@ -2743,8 +2743,7 @@ function Combo({
           )}
         </div>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180 text-brand-primary" : ""}`}
-        />
+          className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180 text-brand-primary" : ""}`} aria-hidden="true" />
       </button>
       {open && !disabled && (
         <div className="absolute z-[70] mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
@@ -2787,7 +2786,7 @@ function Combo({
                         </span>
                       )}
                     </div>
-                    {value === opt.value && <Check className="h-4 w-4" />}
+                    {value === opt.value && <Check className="h-4 w-4" aria-hidden="true" />}
                   </button>
                 ))}
               </>

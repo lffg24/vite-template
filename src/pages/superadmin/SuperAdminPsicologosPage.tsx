@@ -707,7 +707,7 @@ export default function SuperAdminPsicologosPage() {
                           aria-hidden="true"
                           className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-primary bg-primary text-primary-foreground" : "border-border-strong"}`}
                         >
-                          {checked && <Check className="h-3.5 w-3.5" />}
+                          {checked && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
                         </span>
                       </button>
                     );

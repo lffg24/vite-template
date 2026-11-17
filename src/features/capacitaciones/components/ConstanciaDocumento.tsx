@@ -27,8 +27,7 @@
 
 import { Award } from "lucide-react";
 
-import evaLogoColor from "@/assets/eva-logo-color.png";
-import AbrilWordmark from "@/components/brand/AbrilWordmark";
+import { Marca } from "@/components/brand/Marca";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { CodigoQr } from "@/shared/ui/CodigoQr";
 import { Pill } from "@/shared/ui/Pill";
@@ -91,13 +90,7 @@ export function ConstanciaDocumento({
         <div className="min-w-0">
           <header className="flex flex-wrap items-center justify-between gap-4">
             {/* El mismo sello de marca que la cabecera del participante. */}
-            <div className="flex items-center gap-3">
-              <img src={evaLogoColor} alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
-              <AbrilWordmark
-                className="font-rel-heading text-2xl font-black tracking-tight text-rel-dark"
-                accentClassName="text-rel-primary"
-              />
-            </div>
+            <Marca className="h-9" />
             <Pill tono="marca" punto={false}>
               <Award className="h-3.5 w-3.5" aria-hidden="true" />
               {enFrase(tipo)}
@@ -173,7 +166,7 @@ export function ConstanciaDocumento({
           </div>
           <div>
             <p className="text-xs text-rel-muted">Código de verificación</p>
-            <p className="font-mono text-sm font-bold tracking-wider text-rel-accent">
+            <p className="font-mono text-sm font-bold tracking-wider text-rel-accent-ink">
               {constancia.codigo_verificacion}
             </p>
           </div>

@@ -56,7 +56,7 @@ export default function SolicitarRecuperacionClave() {
           <div className="space-y-2">
             <Label htmlFor="recovery-email" className="font-bold">Correo electrónico</Label>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input id="recovery-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className="h-14 rounded-2xl pl-12 text-base" />
             </div>
             {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}

@@ -688,7 +688,7 @@ export default function PsicoEmpleadoRespuestasPage() {
           </div>
           <div className="grid min-h-[360px] place-items-center rounded-3xl border border-slate-200 bg-white text-slate-600 shadow-sm">
             <div className="text-center">
-              <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" />
+              <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" aria-hidden="true" />
               <p className="mt-3 text-sm font-black">Cargando registro de respuestas…</p>
             </div>
           </div>
@@ -718,7 +718,7 @@ export default function PsicoEmpleadoRespuestasPage() {
       <div className="mx-auto max-w-[1540px] space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold shadow-sm transition hover:bg-slate-50">
-            <ArrowLeft className="h-4 w-4" /> Volver
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver
           </button>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -726,7 +726,7 @@ export default function PsicoEmpleadoRespuestasPage() {
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
               className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-4 py-2.5 text-sm font-black text-brand-primary shadow-sm transition hover:bg-accent-hover"
             >
-              <FileText className="h-4 w-4" /> Informe individual
+              <FileText className="h-4 w-4" aria-hidden="true" /> Informe individual
             </button>
             {selectedEval && <span className={`inline-flex whitespace-nowrap rounded-full border px-3 py-1 text-xs font-black ${statusTone(selectedEval.estado_respuestas)}`}>{String(selectedEval.estado_respuestas || "sin iniciar").replace(/_/g, " ")}</span>}
             {selectedLocked && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">Modo solo lectura</span>}
@@ -743,7 +743,7 @@ export default function PsicoEmpleadoRespuestasPage() {
               </p>
             </div>
             <div className="grid h-14 w-14 place-items-center rounded-3xl bg-accent text-brand-primary">
-              <ClipboardList className="h-7 w-7" />
+              <ClipboardList className="h-7 w-7" aria-hidden="true" />
             </div>
           </div>
         </section>
@@ -778,23 +778,23 @@ export default function PsicoEmpleadoRespuestasPage() {
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   {metricPending > 0 ? (
                     <p className="flex gap-2">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-600" />
+                      <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-600" aria-hidden="true" />
                       {showFicha ? `Hay ${metricPending} campos obligatorios pendientes.` : `Hay ${metricPending} preguntas pendientes.`}
                     </p>
                   ) : (
                     <p className="flex gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" aria-hidden="true" />
                       {showFicha ? "Los datos generales requeridos están completos." : "Todas las preguntas están respondidas."}
                     </p>
                   )}
                   {selectedEval?.estado_respuestas === "calculada" && (
                     <p className="flex gap-2">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 text-red-600" /> Este instrumento ya tiene cálculo y no admite cambios.
+                      <AlertTriangle className="mt-0.5 h-4 w-4 text-red-600" aria-hidden="true" /> Este instrumento ya tiene cálculo y no admite cambios.
                     </p>
                   )}
                   {siblingStarted && ["PSICO_INTRA_A", "PSICO_INTRA_B"].includes(selectedCode) && (
                     <p className="flex gap-2">
-                      <FileLock2 className="mt-0.5 h-4 w-4 text-brand-primary" /> La forma intralaboral alternativa quedó bloqueada por consistencia de la batería.
+                      <FileLock2 className="mt-0.5 h-4 w-4 text-brand-primary" aria-hidden="true" /> La forma intralaboral alternativa quedó bloqueada por consistencia de la batería.
                     </p>
                   )}
                 </div>
@@ -819,7 +819,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                             : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
-                      <FileText className="h-4 w-4" /> {instrumentLabel(ev.instrument_code)}
+                      <FileText className="h-4 w-4" aria-hidden="true" /> {instrumentLabel(ev.instrument_code)}
                       {meta.blockedBySibling && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-black text-slate-500">Bloqueada</span>}
                     </button>
                   );
@@ -829,7 +829,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                   onClick={() => setShowFicha(true)}
                   className={`flex shrink-0 items-center gap-2 px-5 py-4 text-sm font-black transition ${showFicha ? "border-b-4 border-brand-primary bg-accent/60 text-brand-primary" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}
                 >
-                  <FileText className="h-4 w-4" /> Datos generales
+                  <FileText className="h-4 w-4" aria-hidden="true" /> Datos generales
                   {fichaCompleta ? <span className="inline-flex whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">Completa</span> : <span className="inline-flex whitespace-nowrap rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-black text-amber-700">Pendiente</span>}
                 </button>
               </div>
@@ -862,7 +862,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                       <h2 className="text-lg font-black text-slate-950">{selectedEval ? instrumentLabel(selectedEval.instrument_code) : "Instrumento"}</h2>
                       <p className="mt-1 text-sm text-slate-500">Completa la batería antes de finalizar el instrumento.</p>
                     </div>
-                    {loadingQuestions && <span className="text-sm text-slate-500"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" />Cargando</span>}
+                    {loadingQuestions && <span className="text-sm text-slate-500"><Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden="true" />Cargando</span>}
                   </div>
                   {selectedLocked && (
                     <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -931,7 +931,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                         disabled={saving || !selectedEval || selectedLocked}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                       >
-                        <Save className="h-4 w-4" /> Guardar borrador
+                        <Save className="h-4 w-4" aria-hidden="true" /> Guardar borrador
                       </button>
                       <button
                         type="button"
@@ -939,7 +939,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                         disabled={saving || !selectedEval || selectedLocked}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-black text-primary-foreground shadow-floating transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
                       >
-                        <ShieldCheck className="h-4 w-4" /> Finalizar instrumento
+                        <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Finalizar instrumento
                       </button>
                     </div>
                     <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -995,7 +995,7 @@ function ConditionalQuestionBlock({
       <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(260px,360px)] min-[1500px]:items-center">
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-brand-primary">
-            <UsersRound className="h-5 w-5" />
+            <UsersRound className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
             <p className="text-[15px] font-black leading-snug text-slate-900 sm:text-base">{rule.label || "Pregunta condicional"}</p>
@@ -1044,7 +1044,7 @@ function ConditionalQuestionBlock({
             className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-brand-primary shadow-sm"
           >
             <span>Se habilitan preguntas condicionales</span>
-            <ChevronDown className={`h-4 w-4 shrink-0 transition ${open ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-4 w-4 shrink-0 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {open && (
             <div className="mt-3 space-y-3">
@@ -1206,10 +1206,10 @@ function FichaSociodemograficaPanel({ ficha, setFicha, saving, completa, onSave,
         <p className="text-sm text-slate-500">{completa ? "Ficha finalizada. Para modificarla deberá reabrirse la aplicación o habilitarse un flujo de corrección." : "Guardar permite borrador parcial. Finalizar exige todos los campos obligatorios."}</p>
         <div className="flex flex-wrap gap-3">
           <button disabled={saving || completa} type="button" onClick={onSave} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {completa ? "Datos guardados" : "Guardar datos"}
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} {completa ? "Datos guardados" : "Guardar datos"}
           </button>
           <button disabled={saving || completa} type="button" onClick={onFinalize} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-black text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-100">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />} {completa ? "Ficha finalizada" : "Finalizar datos generales"}
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-4 w-4" aria-hidden="true" />} {completa ? "Ficha finalizada" : "Finalizar datos generales"}
           </button>
         </div>
       </div>

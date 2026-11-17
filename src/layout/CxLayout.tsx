@@ -11,7 +11,7 @@ export default function CxLayout() {
 
   return (
     <div className="rel-scope flex min-h-screen flex-col bg-rel-canvas font-rel-body text-rel-dark sm:flex-row">
-      <a href="#contenido-cx" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-accent focus:px-4 focus:py-2 focus:font-semibold">
+      <a href="#contenido-cx" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-rel-control focus:bg-rel-accent focus:px-4 focus:py-2 focus:font-semibold focus:text-rel-dark">
         Saltar al contenido
       </a>
       <RoleSidebar

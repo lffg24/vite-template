@@ -120,7 +120,7 @@ export function DatePicker({
         <PopoverContent align="start" className="rel-scope w-[min(22rem,calc(100vw-2rem))] rounded-rel-panel border-rel-border bg-rel-surface p-4 font-rel-body shadow-floating">
           <div className="mb-4 grid grid-cols-[auto_1fr_auto] items-center gap-2">
             <Button type="button" variant="relGhost" size="icon" onClick={() => moveMonth(-1)} aria-label="Mes anterior">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
             <div className="grid grid-cols-[1fr_6rem] gap-2">
               <Select value={String(view.getMonth())} onValueChange={(month) => setView(new Date(view.getFullYear(), Number(month), 1))}>
@@ -137,7 +137,7 @@ export function DatePicker({
               </Select>
             </div>
             <Button type="button" variant="relGhost" size="icon" onClick={() => moveMonth(1)} aria-label="Mes siguiente">
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 

@@ -38,6 +38,7 @@ export default {
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--rel-accent))',
+					ink: 'hsl(var(--rel-accent-ink))',
 					subtle: 'hsl(var(--rel-accent-subtle))'
 				},
 				turquoise: {

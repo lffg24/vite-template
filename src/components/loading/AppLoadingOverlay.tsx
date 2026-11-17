@@ -6,7 +6,7 @@ export function AppLoadingOverlay({ show, title = "Cargando información…", me
     <div className="fixed inset-0 z-50 grid place-items-center bg-[hsl(var(--overlay))] p-4 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-[28px] border border-white/60 bg-white/95 p-6 text-center shadow-floating">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-accent text-brand-primary ring-8 ring-accent/70">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
         </div>
         <h2 className="mt-5 text-lg font-black text-foreground">{title}</h2>
         {message && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message}</p>}
@@ -18,7 +18,7 @@ export function AppLoadingOverlay({ show, title = "Cargando información…", me
 export function ButtonSpinner({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-2">
-      <Loader2 className="h-4 w-4 animate-spin" /> {label}
+      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> {label}
     </span>
   );
 }
@@ -35,7 +35,7 @@ export function PageSkeleton({ title = "Preparando vista…" }: { title?: string
         </div>
         <div className="grid min-h-[360px] place-items-center rounded-3xl border border-border/70 bg-surface text-muted-foreground shadow-card">
           <div className="text-center">
-            <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" />
+            <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" aria-hidden="true" />
             <p className="mt-3 text-sm font-black">{title}</p>
           </div>
         </div>

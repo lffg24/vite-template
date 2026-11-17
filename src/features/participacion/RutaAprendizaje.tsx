@@ -122,7 +122,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                       : "bg-rel-neutral-subtle text-rel-muted"
                 )}
               >
-                {l.completada ? <Check className="h-4 w-4" /> : i + 1}
+                {l.completada ? <Check className="h-4 w-4" aria-hidden="true" /> : i + 1}
               </span>
               {!ultima ? (
                 <span

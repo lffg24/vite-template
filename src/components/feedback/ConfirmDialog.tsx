@@ -37,8 +37,8 @@ export function ConfirmDialog({
                 <h3 className="text-xl font-black tracking-tight text-foreground">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
               </div>
-              <button type="button" onClick={onCancel} className="rounded-xl p-1.5 text-muted-foreground transition hover:bg-surface-subtle hover:text-foreground">
-                <X className="h-4 w-4" />
+              <button type="button" onClick={onCancel} aria-label="Cerrar" className="rounded-xl p-1.5 text-muted-foreground transition hover:bg-surface-subtle hover:text-foreground">
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-3">

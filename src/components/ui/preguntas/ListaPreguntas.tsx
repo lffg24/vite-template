@@ -128,7 +128,7 @@ export default function ListaPreguntas({
                       variant="ghost"
                       onClick={() => setPreguntaEdicion(pregunta)}
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-4 h-4" aria-hidden="true" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -137,7 +137,7 @@ export default function ListaPreguntas({
                           variant="ghost"
                           onClick={() => setPreguntaAEliminar(pregunta)}
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
+                          <Trash2 className="w-4 h-4 text-red-500" aria-hidden="true" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>

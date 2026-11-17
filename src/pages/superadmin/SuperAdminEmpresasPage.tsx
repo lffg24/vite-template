@@ -194,7 +194,7 @@ export default function SuperAdminEmpresasPage() {
         variant="dark-illustrated"
         action={
           <Button variant="rel" onClick={() => abrir(null)} className="w-full md:w-auto">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
             Nueva empresa
           </Button>
         }
@@ -372,7 +372,7 @@ export default function SuperAdminEmpresasPage() {
               </Button>
               <Button variant="rel" disabled={guardando}>
                 {guardando ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 ) : null}
                 {editando ? "Guardar cambios" : "Crear empresa"}
               </Button>

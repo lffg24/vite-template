@@ -105,7 +105,7 @@ function ItemDraggable({ id, texto }: { id: string; texto: string }) {
       {...listeners}
       className="p-3 bg-white rounded-md shadow-sm border text-sm cursor-grab hover:bg-muted flex items-center gap-2"
     >
-      <GripVertical className="w-4 h-4 text-muted-foreground" />
+      <GripVertical className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
       <span>{texto}</span>
     </div>
   );

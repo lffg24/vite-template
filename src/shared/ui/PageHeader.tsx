@@ -134,7 +134,7 @@ export function PageHeader({
           {Icono ? <AzulejoIcono icono={Icono} tamano="lg" /> : null}
           <div className="min-w-0">
             {antetitulo ? (
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent-ink">
                 {antetitulo}
               </p>
             ) : null}

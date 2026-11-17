@@ -546,7 +546,7 @@ export default function PsicoEmpleadoResultadosPage() {
             onClick={() => navigate(`/psicosocial/empleados/${empleadoId}`)}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Volver al perfil
           </button>
           <div className="flex flex-wrap gap-2">
@@ -555,7 +555,7 @@ export default function PsicoEmpleadoResultadosPage() {
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/respuestas`)}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
             >
-              <ClipboardList className="h-4 w-4" />
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
               Ver respuestas
             </button>
             <button
@@ -563,7 +563,7 @@ export default function PsicoEmpleadoResultadosPage() {
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover"
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4" aria-hidden="true" />
               Informes individuales
             </button>
           </div>
@@ -572,7 +572,7 @@ export default function PsicoEmpleadoResultadosPage() {
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
             <div className="flex items-center gap-2 font-bold">
-              <AlertTriangle className="h-5 w-5" />
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
               No fue posible cargar el resultado individual
             </div>
             <p className="mt-1 text-sm">{error}. Si el colaborador no tiene resultados calculados, finaliza y calcula la aplicación antes de consultar esta vista.</p>
@@ -591,8 +591,8 @@ export default function PsicoEmpleadoResultadosPage() {
                   {data?.empleado?.nombre_completo || `Colaborador ${empleadoId}`}
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-brand-primary" />CC {data?.empleado?.cedula || "Sin dato"}</span>
-                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-brand-primary" />{data?.empleado?.cargo || "Sin cargo"}</span>
+                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-brand-primary" aria-hidden="true" />CC {data?.empleado?.cedula || "Sin dato"}</span>
+                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-brand-primary" aria-hidden="true" />{data?.empleado?.cargo || "Sin cargo"}</span>
                   <span>{data?.empleado?.area || "Sin área"}</span>
                 </div>
               </div>
@@ -617,7 +617,7 @@ export default function PsicoEmpleadoResultadosPage() {
 
         <section className="rounded-3xl border border-accent bg-accent/50 p-5">
           <div className="flex gap-3">
-            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden="true" />
             <div>
               <p className="font-black text-foreground">Lectura normativa</p>
               <p className="mt-1 text-sm leading-6 text-foreground-soft">

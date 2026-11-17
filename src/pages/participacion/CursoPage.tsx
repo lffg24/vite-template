@@ -125,7 +125,7 @@ export default function CursoPage() {
       {/* --- el curso y cuánto falta --- */}
       <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-stretch">
         <div className="flex flex-col justify-center py-2">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent-ink">
             Curso · Versión {curso.numero_version}
           </p>
           <h1 className="mt-2 break-words font-rel-heading text-3xl font-black leading-tight sm:text-4xl">

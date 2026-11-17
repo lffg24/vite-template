@@ -103,7 +103,7 @@ export default function EvaluacionesCompletadas({ evaluaciones }: Props) {
                     className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                     title="Ver detalle"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-4 w-4" aria-hidden="true" />
                     Ver
                   </button>
                 </TableCell>

@@ -514,6 +514,111 @@ describe("el núcleo es uno solo", () => {
     ).toBeLessThanOrEqual(TOPE_BOTONES_A_MANO);
   });
 
+  /**
+   * Nada escribe en blanco sobre el turquesa de la marca.
+   *
+   * No es una preferencia: el turquesa de ABRIL es un color CLARO. Blanco
+   * encima da 2,5:1 cuando el mínimo para texto es 4,5:1 — no es «se lee
+   * peor», es que no se lee. El azul de marca encima da 6,6:1.
+   *
+   * Hacía falta un guardia y no un comentario porque el error es invisible al
+   * escribirlo: `bg-rel-accent text-white` compila, se ve bonito en la pantalla
+   * del que lo escribe y solo falla para quien tiene poca visión o está al sol.
+   * Antes del 2026-11-17 el relleno era un turquesa oscuro donde el blanco sí
+   * valía, así que el patrón quedó escrito en cinco sitios; al unificar la
+   * marca en el turquesa de la casa, esos cinco habrían pasado a 2,5:1 de
+   * golpe y sin aviso.
+   */
+  /**
+   * Las cuatro que ya lo hacían, y dónde están.
+   *
+   * **Las cuatro son de Psicosocial**, y no es casualidad: usan
+   * `bg-primary text-white`, que es el boton primario de la casa tal como
+   * esta declarado hoy —`--primary-foreground` vale blanco en tema claro—.
+   * O sea que el defecto no es de estas cuatro pantallas: es del token, y
+   * estas son donde se ve.
+   *
+   * Arreglarlo es UNA linea (`--primary-foreground: var(--brand-dark)`), pero
+   * cambia el color del texto de todos los botones primarios del producto,
+   * Psicosocial incluido, y eso es una decision del dueño del producto, no de
+   * quien homologa. Hasta que se tome, quedan congeladas: la lista solo puede
+   * menguar y ninguna pantalla nueva puede entrar.
+   */
+  const BLANCO_SOBRE_MARCA_PENDIENTE = [
+    "components/ui/preguntas/PreguntaLikert.tsx",
+    "components/ui/preguntas/PreguntaSemaforo.tsx",
+    "components/ui/usuarios/FormularioUsuario.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+  ];
+
+  it("nadie escribe en blanco sobre el turquesa de marca", () => {
+    const enBlancoSobreMarca =
+      /(?:bg-rel-accent|bg-primary)(?:\/\d+)?\b[^"'`]*\btext-white\b|\btext-white\b[^"'`]*\b(?:bg-rel-accent|bg-primary)(?:\/\d+)?\b/;
+
+    const culpables = TODOS.filter((ruta) => enBlancoSobreMarca.test(contenido(ruta))).map(comoRuta);
+
+    const nuevos = culpables.filter((r) => !BLANCO_SOBRE_MARCA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Sobre el turquesa de marca el texto va oscuro (`text-rel-dark`). " +
+        "Blanco encima da 2,5:1 y el mínimo es 4,5:1. Para TEXTO turquesa " +
+        "sobre superficie clara existe `text-rel-accent-ink`."
+    ).toEqual([]);
+
+    const yaArregladas = BLANCO_SOBRE_MARCA_PENDIENTE.filter((r) => !culpables.includes(r));
+    expect(
+      yaArregladas,
+      "Ya no escriben en blanco sobre la marca: bórralas de " +
+        "BLANCO_SOBRE_MARCA_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * Los iconos dicen si pintan o si hablan.
+   *
+   * Hay UNA librería de iconos —Lucide, 638 iconos en 144 archivos— y eso ya
+   * estaba bien. Lo que no estaba era el papel de cada uno: **313 de 581 no
+   * declaraban nada**, y un icono que no declara nada es un icono que el
+   * lector de pantalla puede leer en voz alta. En un botón que ya dice
+   * «Guardar», el icono de disquete al lado se anuncia otra vez, y la persona
+   * oye el control duplicado.
+   *
+   * La regla es binaria y por eso se puede comprobar: o el icono es decorativo
+   * y lleva `aria-hidden`, o ES el contenido del control y lleva `aria-label`.
+   * No hay tercer caso.
+   *
+   * `@radix-ui/react-icons` estaba instalado y no se importaba en ningún
+   * archivo: se retiró el 2026-11-17. Que no se note en pantalla no quiere
+   * decir que no cueste — una segunda librería de iconos en el `package.json`
+   * es una invitación permanente a que alguien la use.
+   */
+  it("todo icono declara si es decorativo o si es el control", () => {
+    const ICONO = /<([A-Z][A-Za-z0-9]*)\b([^<>]*?)\/>/g;
+    const culpables: string[] = [];
+
+    for (const ruta of TODOS) {
+      const texto = contenido(ruta);
+      const imports = texto.match(/import\s*\{([^}]*)\}\s*from\s*"lucide-react"/);
+      if (!imports) continue;
+      const nombres = new Set(
+        imports[1].split(",").map((n) => n.trim().split(" as ").pop()!.trim()).filter(Boolean)
+      );
+      for (const [, tag, props] of texto.matchAll(ICONO)) {
+        if (!nombres.has(tag)) continue;
+        if (/aria-hidden|aria-label|role=/.test(props)) continue;
+        culpables.push(`${comoRuta(ruta)} → <${tag}>`);
+        break;
+      }
+    }
+
+    expect(
+      culpables,
+      "Un icono decorativo lleva `aria-hidden=\"true\"`; uno que ES el control " +
+        "lleva `aria-label`. Sin ninguno de los dos, el lector de pantalla " +
+        "repite lo que el botón ya dice."
+    ).toEqual([]);
+  });
+
   it("hay UNA familia de ilustración: el registro", () => {
     // Llegó a haber tres a la vez: una vectorial sobre tokens, `Escena` y el
     // registro. Ahora el registro es la única fuente de rutas y `Escena` es solo

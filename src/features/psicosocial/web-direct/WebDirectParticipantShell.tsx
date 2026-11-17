@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
 
-import evaIsotype from "@/assets/eva-isotipo-white.png";
-import AbrilWordmark from "@/components/brand/AbrilWordmark";
+import { Marca } from "@/components/brand/Marca";
 import { cn } from "@/lib/utils";
 
 import { WebDirectHelpCenter } from "./WebDirectHelpCenter";
@@ -32,18 +31,10 @@ export function WebDirectParticipantShell({
       <header className="bg-sidebar text-sidebar-foreground">
         <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-8 lg:px-12">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-sidebar-border bg-sidebar-hover p-1.5" aria-hidden="true">
-              <img src={evaIsotype} alt="" className="h-full w-full object-contain" />
-            </div>
-            <div className="min-w-0">
-              <AbrilWordmark
-                className="block truncate font-heading text-xl font-black tracking-tight sm:text-2xl"
-                accentClassName="text-sidebar-active"
-              />
-              <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-sidebar-muted sm:text-xs">
-                Gestión psicosocial
-              </p>
-            </div>
+            <Marca sobre="oscuro" className="h-9 shrink-0 sm:h-10" />
+            <p className="min-w-0 truncate border-l border-sidebar-border pl-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-sidebar-muted sm:text-xs">
+              Gestión psicosocial
+            </p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">

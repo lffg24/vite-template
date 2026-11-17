@@ -99,14 +99,14 @@ export default function EmpresaPerfilPage() {
           onClick={() => navigate("/psicosocial/empresas")}
           className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm hover:bg-slate-50"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver a empresas
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a empresas
         </button>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-accent text-brand-primary">
-                <Building2 className="h-10 w-10" />
+                <Building2 className="h-10 w-10" aria-hidden="true" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Perfil de empresa</p>
@@ -122,7 +122,7 @@ export default function EmpresaPerfilPage() {
                     onClick={() => setEditOpen(true)}
                     className="inline-flex items-center gap-2 rounded-xl border border-accent bg-accent px-4 py-2 text-sm font-black text-brand-primary hover:bg-accent-hover"
                   >
-                    <Edit3 className="h-4 w-4" /> Editar información
+                    <Edit3 className="h-4 w-4" aria-hidden="true" /> Editar información
                   </button>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function EmpresaPerfilPage() {
                 <p className="mt-1 text-sm text-slate-500">Datos base para identificación, contacto y contexto de operación.</p>
               </div>
               <button onClick={() => setEditOpen(true)} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold hover:bg-slate-50">
-                <Edit3 className="h-4 w-4" /> Completar
+                <Edit3 className="h-4 w-4" aria-hidden="true" /> Completar
               </button>
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -161,10 +161,10 @@ export default function EmpresaPerfilPage() {
           </div>
 
           <aside className="space-y-4">
-            <Action icon={<Plus />} title="Nueva batería" desc="Crear aplicación A/B + Extra + Estrés" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} />
-            <Action icon={<BriefcaseBusiness />} title="Áreas y cargos" desc="Gestionar estructura de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/areas-cargos`)} />
-            <Action icon={<Users />} title="Ver empleados" desc="Listado y perfiles de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/empleados`)} />
-            <Action icon={<BarChart3 />} title="Resultados" desc="Dashboard por aplicación" onClick={() => navigate("/psicosocial/resultados")} />
+            <Action icon={<Plus aria-hidden="true" />} title="Nueva batería" desc="Crear aplicación A/B + Extra + Estrés" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)} />
+            <Action icon={<BriefcaseBusiness aria-hidden="true" />} title="Áreas y cargos" desc="Gestionar estructura de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/areas-cargos`)} />
+            <Action icon={<Users aria-hidden="true" />} title="Ver empleados" desc="Listado y perfiles de colaboradores" onClick={() => navigate(`/psicosocial/empresas/${empresaId}/empleados`)} />
+            <Action icon={<BarChart3 aria-hidden="true" />} title="Resultados" desc="Dashboard por aplicación" onClick={() => navigate("/psicosocial/resultados")} />
           </aside>
         </section>
 
@@ -204,20 +204,20 @@ export default function EmpresaPerfilPage() {
                     <td className="px-4 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}/aplicaciones/${a.id}`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50">
-                          <Eye className="inline h-4 w-4" /> Detalle
+                          <Eye className="inline h-4 w-4" aria-hidden="true" /> Detalle
                         </button>
                         {isFinalizada(a.estado) ? (
                           <>
                             <button onClick={() => navigate(`/psicosocial/resultados?aplicacionId=${a.id}`)} className={resultsButtonClass(true)}>
-                              <BarChart3 className="inline h-4 w-4" /> Resultados
+                              <BarChart3 className="inline h-4 w-4" aria-hidden="true" /> Resultados
                             </button>
                             <button onClick={() => navigate(`/psicosocial/reportes-oficiales?aplicacionId=${a.id}&tipo=resultados`)} className="rounded-xl border px-3 py-2 font-bold hover:bg-slate-50">
-                              <FileText className="inline h-4 w-4" /> Informes
+                              <FileText className="inline h-4 w-4" aria-hidden="true" /> Informes
                             </button>
                           </>
                         ) : (
                           <button disabled title="Disponible al finalizar y calcular la aplicación" className={resultsButtonClass(false)}>
-                            <BarChart3 className="inline h-4 w-4" /> Resultados
+                            <BarChart3 className="inline h-4 w-4" aria-hidden="true" /> Resultados
                           </button>
                         )}
                       </div>
@@ -305,7 +305,7 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved, onError }: { empresa: Em
             <h2 className="mt-1 text-2xl font-black text-slate-950">Completar información base</h2>
             <p className="mt-2 text-sm text-slate-500">Estos datos identifican a la empresa en ABRIL360. No modifican aplicaciones, resultados ni reportes calculados.</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" /></button>
+          <button type="button" onClick={onClose} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" aria-hidden="true" /></button>
         </div>
 
         <form onSubmit={submit} className="space-y-5">
@@ -333,7 +333,7 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved, onError }: { empresa: Em
           <div className="flex justify-end gap-3 border-t pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border px-5 py-3 font-bold hover:bg-slate-50">Cancelar</button>
             <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-brand-primary hover:bg-primary-hover px-6 py-3 font-bold text-white disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar cambios
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Guardar cambios
             </button>
           </div>
         </form>

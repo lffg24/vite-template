@@ -43,7 +43,7 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
+import { Marca } from "@/components/brand/Marca";
 
 type ResourcePageKey = "manual-uso" | "ficha-tecnica" | "seguridad-cumplimiento" | "certificacion";
 
@@ -313,7 +313,7 @@ function ResourceLink({
           <span className="block">{label}</span>
           {note ? <span className="mt-1 block text-xs font-medium text-muted-foreground">{note}</span> : null}
         </span>
-        <ExternalLink className="h-4 w-4 shrink-0" />
+        <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
       </a>
     );
   }
@@ -324,7 +324,7 @@ function ResourceLink({
         <span className="block">{label}</span>
         {note ? <span className="mt-1 block text-xs font-medium text-muted-foreground">{note}</span> : null}
       </span>
-      <ArrowRight className="h-4 w-4 shrink-0" />
+      <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
     </Link>
   );
 }
@@ -361,7 +361,7 @@ function SectionList({ items }: { items: string[] }) {
     <ul className="grid gap-3 text-sm text-foreground-soft">
       {items.map((item) => (
         <li key={item} className="flex gap-3 rounded-2xl bg-surface-subtle px-4 py-3">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
           <span>{item}</span>
         </li>
       ))}
@@ -375,7 +375,7 @@ function ManualPage() {
       <Surface
         title="Ruta operativa recomendada"
         subtitle="ABRIL360 está diseñado para trabajar por empresa y por aplicación. La mejor práctica es cerrar cada ciclo con revisión profesional, no solo con captura terminada."
-        icon={<Network className="h-5 w-5" />}
+        icon={<Network className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {workflowSteps.map((step) => {
@@ -398,7 +398,7 @@ function ManualPage() {
       <Surface
         title="Mapa de navegación real del módulo"
         subtitle="Estas rutas existen hoy en el producto y sirven para orientar inducción, soporte y acompañamiento comercial sin prometer pantallas ficticias."
-        icon={<LayoutDashboard className="h-5 w-5" />}
+        icon={<LayoutDashboard className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {navigationMap.map((item) => (
@@ -415,7 +415,7 @@ function ManualPage() {
         <Surface
           title="Ciclo recomendado para psicólogo y empresa"
           subtitle="La confianza comercial no viene solo del cálculo: también depende de una operación ordenada, con cierres claros, evidencias de captura y revisión final responsable."
-          icon={<Stethoscope className="h-5 w-5" />}
+          icon={<Stethoscope className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -430,7 +430,7 @@ function ManualPage() {
         <Surface
           title="Entregables que suele esperar el comprador"
           subtitle="ABRIL360 acompaña el ciclo documental de captura y reporte, pero la firma, interpretación final y plan de intervención siguen bajo responsabilidad profesional."
-          icon={<FileText className="h-5 w-5" />}
+          icon={<FileText className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -446,7 +446,7 @@ function ManualPage() {
       <Surface
         title="Controles previos al cierre"
         subtitle="Antes de usar resultados con fines profesionales o comerciales, conviene completar esta verificación mínima de calidad."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2">
           <SectionList
@@ -475,7 +475,7 @@ function TechnicalPage() {
       <Surface
         title="Cobertura instrumental de ABRIL360"
         subtitle="La plataforma soporta la batería de riesgo psicosocial con diferencias reales entre formularios, reglas de segmentación y persistencia de resultados."
-        icon={<ClipboardCheck className="h-5 w-5" />}
+        icon={<ClipboardCheck className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -507,7 +507,7 @@ function TechnicalPage() {
       <Surface
         title="Cadena de cálculo y trazabilidad"
         subtitle="ABRIL360 no presenta niveles improvisados. La lectura oficial depende de una secuencia de transformación y clasificación que puede auditarse."
-        icon={<Network className="h-5 w-5" />}
+        icon={<Network className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {[
@@ -532,7 +532,7 @@ function TechnicalPage() {
         <Surface
           title="Reglas de negocio que impactan el resultado"
           subtitle="Estas reglas son críticas para entender por qué un resultado puede variar entre forma A, forma B, extralaboral y estrés."
-          icon={<Scale className="h-5 w-5" />}
+          icon={<Scale className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -547,7 +547,7 @@ function TechnicalPage() {
         <Surface
           title="Totales, forma y segmentación"
           subtitle="La plataforma separa captura, scoring y presentación para mantener fidelidad normativa sin duplicar preguntas."
-          icon={<LineChart className="h-5 w-5" />}
+          icon={<LineChart className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -563,7 +563,7 @@ function TechnicalPage() {
       <Surface
         title="Trazabilidad persistida y límites de interpretación"
         subtitle="La plataforma conserva resultados calculados para poder consultar, auditar y reportar sin recalcular cada vez; aun así, el significado profesional no se automatiza por completo."
-        icon={<Fingerprint className="h-5 w-5" />}
+        icon={<Fingerprint className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-3">
           <article className="rounded-3xl border border-border p-5">
@@ -599,7 +599,7 @@ function SecurityPage() {
       <Surface
         title="Capas de protección de la información"
         subtitle="La confianza en ABRIL360 se apoya en controles técnicos, operativos y de gobierno del dato, especialmente por tratar información sensible de salud ocupacional."
-        icon={<LockKeyhole className="h-5 w-5" />}
+        icon={<LockKeyhole className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[
@@ -640,7 +640,7 @@ function SecurityPage() {
         <Surface
           title="Tratamiento de datos sensibles"
           subtitle="Los resultados psicosociales, datos de salud ocupacional y variables personales requieren un uso restringido, finalidades claras y soporte documental de autorización."
-          icon={<ShieldCheck className="h-5 w-5" />}
+          icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -655,7 +655,7 @@ function SecurityPage() {
         <Surface
           title="Operación en nube y responsabilidades compartidas"
           subtitle="ABRIL360 opera sobre servicios administrados. La confianza depende tanto del software como de la disciplina operativa del equipo que lo administra."
-          icon={<Network className="h-5 w-5" />}
+          icon={<Network className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -671,7 +671,7 @@ function SecurityPage() {
       <Surface
         title="Alineación con marcos reconocidos"
         subtitle="ABRIL360 puede comunicarse como alineado con buenas prácticas de seguridad y privacidad; eso no equivale a afirmar una certificación formal si esta no existe."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -713,7 +713,7 @@ function CertificationPage() {
         <Surface
           title="Lo que ABRIL360 sí es"
           subtitle="El alcance comercial gana fuerza cuando se explica de forma concreta, verificable y útil para el comprador."
-          icon={<CheckCircle2 className="h-5 w-5" />}
+          icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -727,7 +727,7 @@ function CertificationPage() {
         <Surface
           title="Lo que ABRIL360 no debe prometer"
           subtitle="La confianza profesional también depende de límites honestos y visibles."
-          icon={<ShieldCheck className="h-5 w-5" />}
+          icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -742,7 +742,7 @@ function CertificationPage() {
       <Surface
         title="Marco normativo colombiano de referencia"
         subtitle="ABRIL360 se comunica mejor cuando ubica con claridad el marco legal aplicable y evita ambigüedades sobre alcance técnico o sanitario."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {[
@@ -780,7 +780,7 @@ function CertificationPage() {
         <Surface
           title="Cadena de responsabilidad profesional"
           subtitle="La plataforma apoya el proceso, pero la validez final descansa en la actuación del profesional responsable y del marco organizacional del cliente."
-          icon={<Stethoscope className="h-5 w-5" />}
+          icon={<Stethoscope className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -795,7 +795,7 @@ function CertificationPage() {
         <Surface
           title="Psicología de confianza aplicada a la presentación"
           subtitle="Para compradores y psicólogos, la confianza aumenta cuando la información reduce incertidumbre sin maquillar límites."
-          icon={<FileCheck2 className="h-5 w-5" />}
+          icon={<FileCheck2 className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -811,7 +811,7 @@ function CertificationPage() {
       <Surface
         title="Usos apropiados y límites de uso"
         subtitle="Este marco ayuda a equipos comerciales y profesionales a sostener una conversación seria con compradores, sin sobreventa ni vacíos."
-        icon={<BriefcaseBusiness className="h-5 w-5" />}
+        icon={<BriefcaseBusiness className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-success/30 bg-success-subtle p-5">
@@ -856,13 +856,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <div>
             <Link to="/login" className="inline-flex hover:opacity-90">
-              <AbrilBrandLockup
-                className="items-center"
-                iconWrapperClassName="grid h-11 w-11 place-items-center rounded-xl bg-brand-dark p-2 shadow-md"
-                wordmarkClassName="text-2xl font-black tracking-tight text-foreground"
-                accentClassName="text-primary"
-                subtitleClassName="text-[11px] uppercase tracking-[0.3em] text-muted-foreground"
-              />
+              <Marca className="h-9" />
             </Link>
             <div className="mt-3 rounded-2xl border border-border/80 bg-card/95 p-5 shadow-sm">
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)]">
@@ -897,7 +891,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                   {current.highlights.map((highlight) => (
                     <article key={highlight} className="rounded-3xl border border-border bg-surface-subtle p-4">
                       <div className="flex gap-3">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         <p className="text-sm leading-7 text-foreground-soft">{highlight}</p>
                       </div>
                     </article>
@@ -929,7 +923,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
               <ul className="mt-3 grid gap-2 text-sm leading-7 text-white/85">
                 {current.highlights.map((highlight) => (
                   <li key={highlight} className="flex gap-3">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-rel-turquoise" />
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-rel-turquoise" aria-hidden="true" />
                     <span>{highlight}</span>
                   </li>
                 ))}
@@ -977,7 +971,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
           <Surface
             title="Referencias y recursos relacionados"
             subtitle="Se priorizan fuentes oficiales o de amplia aceptación técnica para que esta información pueda sostener conversaciones profesionales y comerciales con más confianza."
-            icon={<FileText className="h-5 w-5" />}
+            icon={<FileText className="h-5 w-5" aria-hidden="true" />}
           >
             <div className="grid gap-3 md:grid-cols-2">
               {current.references.map((reference) => (

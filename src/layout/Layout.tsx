@@ -94,7 +94,7 @@ export default function Layout() {
               <div className="flex items-center justify-between p-4 border-b">
                 <span className="font-bold text-lg">EvalPro 360</span>
                 <button onClick={() => setMobileMenuOpen(false)}>
-                  <X className="h-6 w-6" />
+                  <X className="h-6 w-6" aria-hidden="true" />
                 </button>
               </div>
               <nav className="flex-1 overflow-y-auto">
@@ -139,12 +139,12 @@ export default function Layout() {
       >
         {isDesktop ? (
           collapsed ? (
-            <PanelRightOpen className="h-5 w-5" />
+            <PanelRightOpen className="h-5 w-5" aria-hidden="true" />
           ) : (
-            <PanelLeftOpen className="h-5 w-5" />
+            <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
           )
         ) : (
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5" aria-hidden="true" />
         )}
       </button>
     </div>

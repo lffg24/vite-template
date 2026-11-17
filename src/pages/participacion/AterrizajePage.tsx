@@ -121,7 +121,7 @@ export default function AterrizajePage() {
         <div className="grid flex-1 overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
           <aside className="hidden bg-rel-accent-subtle p-8 lg:flex lg:flex-col lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent">
+              <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent-ink">
                 Antes de comenzar
               </p>
               <h1 className="mt-3 font-rel-heading text-3xl font-bold">
@@ -190,7 +190,7 @@ export default function AterrizajePage() {
           <div>
             {/* La empresa, grande y con su icono: es lo que hace creíble un
                 enlace que llegó por un chat. */}
-            <p className="inline-flex items-center gap-2 rounded-full bg-rel-accent-subtle px-3 py-1 text-sm font-semibold text-rel-accent">
+            <p className="inline-flex items-center gap-2 rounded-full bg-rel-accent-subtle px-3 py-1 text-sm font-semibold text-rel-accent-ink">
               <Building2 className="h-4 w-4" aria-hidden="true" />
               {datos.empresa}
             </p>

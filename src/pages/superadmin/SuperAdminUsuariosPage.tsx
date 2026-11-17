@@ -272,14 +272,14 @@ export default function SuperAdminUsuariosPage() {
         icon={Users}
         action={
           <Button variant="rel" onClick={abrirInvitacion} className="w-full sm:w-auto">
-            <MailPlus className="mr-2 h-4 w-4" />
+            <MailPlus className="mr-2 h-4 w-4" aria-hidden="true" />
             Invitar usuario
           </Button>
         }
       />
 
       <div className={`${panel} flex flex-wrap items-center gap-3 text-sm`}>
-        <Users className="h-6 w-6 text-rel-primary" />
+        <Users className="h-6 w-6 text-rel-primary" aria-hidden="true" />
         <p className="flex-1">En una sola invitación puedes elegir la empresa y los roles delegables de esa persona.</p>
       </div>
 
@@ -302,7 +302,7 @@ export default function SuperAdminUsuariosPage() {
       >
         <label className="relative flex-1">
           <span className="sr-only">Buscar usuarios</span>
-          <Search className="absolute left-3 top-3 h-4 w-4 text-rel-muted" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-rel-muted" aria-hidden="true" />
           <Input value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Nombre o correo" className="bg-rel-surface pl-9" />
         </label>
         <Button type="submit" variant="outline">Buscar</Button>
@@ -317,7 +317,7 @@ export default function SuperAdminUsuariosPage() {
           personas.map((persona) => (
             <article key={persona.id} className="grid gap-4 border-b border-rel-border px-5 py-4 last:border-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rel-accent-subtle font-rel-heading text-sm font-black text-rel-accent" aria-hidden="true">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-rel-accent-subtle font-rel-heading text-sm font-black text-rel-accent-ink" aria-hidden="true">
                   {persona.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase()}
                 </span>
                 <div className="min-w-0">
@@ -345,7 +345,7 @@ export default function SuperAdminUsuariosPage() {
                   </Button>
                 ) : null}
                 <Button variant="outline" size="sm" onClick={() => abrirMembresia(persona)} className="w-full sm:w-auto">
-                  <Building2 className="mr-2 h-4 w-4" />
+                  <Building2 className="mr-2 h-4 w-4" aria-hidden="true" />
                   Vincular empresa
                 </Button>
               </div>
@@ -447,7 +447,7 @@ export default function SuperAdminUsuariosPage() {
           </form>
           <DialogFooter>
             <Button form="form-usuario" type="submit" variant="rel" disabled={ocupado || !empresa}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               {ocupado ? "Guardando…" : modal === "invitar" ? "Crear invitación" : "Vincular empresa"}
             </Button>
           </DialogFooter>
@@ -470,9 +470,9 @@ export default function SuperAdminUsuariosPage() {
           resultado?.enlace_activacion_local ? (
             <>
               <Button type="button" variant="outline" onClick={() => setResultado(null)}>Cerrar</Button>
-              <Button type="button" variant="rel" onClick={copiarEnlace}><Copy className="mr-2 h-4 w-4" />Copiar enlace</Button>
+              <Button type="button" variant="rel" onClick={copiarEnlace}><Copy className="mr-2 h-4 w-4" aria-hidden="true" />Copiar enlace</Button>
               <Button type="button" variant="rel" asChild>
-                <a href={resultado.enlace_activacion_local} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" />Abrir activación</a>
+                <a href={resultado.enlace_activacion_local} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />Abrir activación</a>
               </Button>
             </>
           ) : (

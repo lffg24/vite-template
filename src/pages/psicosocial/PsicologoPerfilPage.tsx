@@ -145,23 +145,23 @@ export default function PsicologoPerfilPage() {
               disabled={passwordChangeRequired}
               className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover"
             >
-              <KeyRound className="h-4 w-4" />
+              <KeyRound className="h-4 w-4" aria-hidden="true" />
               Cambiar contraseña
             </button>
           </div>
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <InfoCard icon={<UserRound className="h-5 w-5" />} label="Nombre registrado" value={nombre} />
-          <InfoCard icon={<Mail className="h-5 w-5" />} label="Correo" value={email} />
-          <InfoCard icon={<ShieldCheck className="h-5 w-5" />} label="Rol principal" value={roleLabel} />
+          <InfoCard icon={<UserRound className="h-5 w-5" aria-hidden="true" />} label="Nombre registrado" value={nombre} />
+          <InfoCard icon={<Mail className="h-5 w-5" aria-hidden="true" />} label="Correo" value={email} />
+          <InfoCard icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />} label="Rol principal" value={roleLabel} />
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-primary">
-                <FileBadge className="h-4 w-4" />
+                <FileBadge className="h-4 w-4" aria-hidden="true" />
                 Información profesional
               </p>
               <h2 className="mt-2 text-lg font-black text-slate-950">Datos registrados para informes y validaciones</h2>
@@ -173,22 +173,22 @@ export default function PsicologoPerfilPage() {
 
           {profileLoading ? (
             <div className="mt-5 flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Cargando información profesional...
             </div>
           ) : profileError ? (
             <div className="mt-5 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <span>{profileError}</span>
             </div>
           ) : (
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <Detail icon={<FileBadge className="h-4 w-4" />} label="Número de identificación profesional" value={professionalProfile?.identificacionProfesional || "No registrado"} />
-              <Detail icon={<BriefcaseBusiness className="h-4 w-4" />} label="Profesión" value={professionalProfile?.profesion || "No registrado"} />
-              <Detail icon={<GraduationCap className="h-4 w-4" />} label="Postgrado" value={professionalProfile?.postgrado || "No registrado"} />
-              <Detail icon={<FileBadge className="h-4 w-4" />} label="Tarjeta profesional" value={professionalProfile?.tarjetaProfesional || "No registrado"} />
-              <Detail icon={<ShieldCheck className="h-4 w-4" />} label="Nro. licencia SST" value={professionalProfile?.licenciaSst || "No registrado"} />
-              <Detail icon={<CalendarDays className="h-4 w-4" />} label="Fecha expedición licencia" value={formatDate(professionalProfile?.fechaExpedicionLicencia) || "No registrada"} />
+              <Detail icon={<FileBadge className="h-4 w-4" aria-hidden="true" />} label="Número de identificación profesional" value={professionalProfile?.identificacionProfesional || "No registrado"} />
+              <Detail icon={<BriefcaseBusiness className="h-4 w-4" aria-hidden="true" />} label="Profesión" value={professionalProfile?.profesion || "No registrado"} />
+              <Detail icon={<GraduationCap className="h-4 w-4" aria-hidden="true" />} label="Postgrado" value={professionalProfile?.postgrado || "No registrado"} />
+              <Detail icon={<FileBadge className="h-4 w-4" aria-hidden="true" />} label="Tarjeta profesional" value={professionalProfile?.tarjetaProfesional || "No registrado"} />
+              <Detail icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Nro. licencia SST" value={professionalProfile?.licenciaSst || "No registrado"} />
+              <Detail icon={<CalendarDays className="h-4 w-4" aria-hidden="true" />} label="Fecha expedición licencia" value={formatDate(professionalProfile?.fechaExpedicionLicencia) || "No registrada"} />
             </div>
           )}
         </section>
@@ -207,7 +207,7 @@ export default function PsicologoPerfilPage() {
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
             <div className="flex items-start gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
-                <LockKeyhole className="h-5 w-5" />
+                <LockKeyhole className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-black text-emerald-950">Seguridad de la cuenta</h2>
@@ -238,7 +238,7 @@ export default function PsicologoPerfilPage() {
                 </div>
                 {!passwordChangeRequired ? (
                   <button type="button" onClick={() => closePasswordModal()} className="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-white">
-                    <X className="h-5 w-5" />
+                    <X className="h-5 w-5" aria-hidden="true" />
                   </button>
                 ) : null}
               </div>
@@ -247,7 +247,7 @@ export default function PsicologoPerfilPage() {
             <div className="space-y-4 px-6 py-5">
               {formError ? (
                 <div className="flex gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>{formError}</span>
                 </div>
               ) : null}
@@ -299,7 +299,7 @@ export default function PsicologoPerfilPage() {
                 disabled={!canSubmit}
                 className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-4 w-4" aria-hidden="true" />}
                 Guardar contraseña
               </button>
             </div>
@@ -437,7 +437,7 @@ function PasswordField({
           className="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
         />
         <button type="button" onClick={onToggle} className="grid w-12 place-items-center text-slate-500 hover:bg-slate-50" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}>
-          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
         </button>
       </span>
     </label>
@@ -448,7 +448,7 @@ function CheckItem({ valid, label }: { valid: boolean; label: string }) {
   return (
     <div className={`flex items-center gap-2 text-sm ${valid ? "text-emerald-700" : "text-slate-500"}`}>
       <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full ${valid ? "bg-emerald-100" : "bg-slate-200"}`}>
-        <Check className="h-3.5 w-3.5" />
+        <Check className="h-3.5 w-3.5" aria-hidden="true" />
       </span>
       <span>{label}</span>
     </div>
