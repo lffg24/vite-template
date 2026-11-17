@@ -22,6 +22,7 @@ import { Link } from "react-router-dom";
 import { BookOpen, CheckCircle2, Circle, Loader2, MessageSquareHeart, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EsqueletoTexto, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -219,7 +220,9 @@ export default function SuperAdminHabilitacionPage() {
             </div>
           </div>
           {plataforma.fase === "cargando" ? (
-            <p role="status" className="mt-4 text-sm text-rel-muted">Consultando el estado global…</p>
+            <ZonaCargando cargando etiqueta="Consultando el estado global" esqueleto={<EsqueletoTexto lineas={2} className="mt-4" />}>
+              <span />
+            </ZonaCargando>
           ) : null}
           {plataforma.fase === "error" ? (
             <div role="alert" className="mt-4 text-sm text-destructive">
@@ -280,7 +283,11 @@ export default function SuperAdminHabilitacionPage() {
           </div>
           <ul className="max-h-[27rem] space-y-1 overflow-y-auto border-t border-rel-border p-2">
             {empresas.fase === "cargando" ? (
-              <li role="status" className="p-3 text-sm text-rel-muted">Consultando empresas…</li>
+              <li>
+                <ZonaCargando cargando etiqueta="Consultando empresas" esqueleto={<EsqueletoTexto lineas={4} className="p-3" />}>
+                  <span />
+                </ZonaCargando>
+              </li>
             ) : null}
             {empresas.fase === "listo" && empresas.datos?.items.length === 0 ? (
               <li className="p-3 text-sm text-rel-muted">No encontramos empresas con esa búsqueda.</li>
@@ -332,9 +339,13 @@ export default function SuperAdminHabilitacionPage() {
           ) : null}
 
           {empresa && estado.fase === "cargando" ? (
-            <p role="status" className="text-sm text-rel-muted">
-              Consultando la habilitación de {empresa.nombre}…
-            </p>
+            <ZonaCargando
+              cargando
+              etiqueta={`Consultando la habilitación de ${empresa.nombre}`}
+              esqueleto={<EsqueletoTexto lineas={3} />}
+            >
+              <span />
+            </ZonaCargando>
           ) : null}
           {empresa && estado.fase === "error" ? (
             <div role="alert" className="rounded-rel-card border border-destructive/30 bg-rel-surface p-5 text-sm text-destructive">
