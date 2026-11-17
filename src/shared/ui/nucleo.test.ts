@@ -464,6 +464,56 @@ describe("el núcleo es uno solo", () => {
     ).toEqual([]);
   });
 
+  /**
+   * Cuántos botones quedan escritos a mano, con el perímetro escrito.
+   *
+   * Esta prueba existe porque la CIFRA se dio mal dos veces seguidas, y las dos
+   * por el mismo motivo: no por contar mal, sino por mover sin querer lo que
+   * entraba en la cuenta. Una medida dijo 1.273 grises donde había 97 porque
+   * `-translate-y-1/2` contiene «slate-»; otra dijo 34 botones donde había 52
+   * porque esa vez el perímetro dejó fuera pantallas que sí contaban.
+   *
+   * Un número que depende de quién lo mide no sirve para decidir nada. Así que
+   * el perímetro deja de ser un criterio y pasa a ser código:
+   *
+   *   - **Las piezas base no cuentan.** `shared/ui`, `components/ui` y
+   *     `components/common` SON el botón, el cajón, la tabla: dibujar un
+   *     `<button>` es su trabajo.
+   *   - **Psicosocial no cuenta.** No se migra.
+   *   - **Todo lo demás cuenta**, incluidas las pantallas de superadmin que
+   *     gestionan psicólogos: administran la plataforma, no son el instrumento.
+   *
+   * El tope solo puede bajar. No obliga a migrar nada; obliga a que la cuenta
+   * sea la misma cada vez que se mire.
+   */
+  const TOPE_BOTONES_A_MANO = 33;
+
+  it("los botones a mano no aumentan, y la cuenta no depende de quién mire", () => {
+    const esPiezaBase = (r: string) =>
+      r.startsWith("shared/ui/") || r.startsWith("components/ui/") || r.startsWith("components/common/");
+    const esPsicosocial = (r: string) =>
+      r.includes("/psicosocial/") ||
+      r.startsWith("features/psicosocial/") ||
+      [
+        "pages/ReportesPsico.tsx",
+        "pages/ReportesOficialesPsicoPage.tsx",
+        "pages/ResponderEvaluacion.tsx",
+        "layout/PsicologoLayout.tsx",
+      ].includes(r);
+
+    const cuenta = TODOS.filter((ruta) => {
+      const r = comoRuta(ruta);
+      return r.endsWith(".tsx") && !esPiezaBase(r) && !esPsicosocial(r);
+    }).reduce((suma, ruta) => suma + (contenido(ruta).match(/<button/g) ?? []).length, 0);
+
+    expect(
+      cuenta,
+      `Hay ${cuenta} botones escritos a mano y el tope es ${TOPE_BOTONES_A_MANO}. ` +
+        "Usa `Button` de `@/components/ui/button`: trae el anillo de foco, la " +
+        "curva de movimiento, el estado presionado y el desactivado, una vez."
+    ).toBeLessThanOrEqual(TOPE_BOTONES_A_MANO);
+  });
+
   it("hay UNA familia de ilustración: el registro", () => {
     // Llegó a haber tres a la vez: una vectorial sobre tokens, `Escena` y el
     // registro. Ahora el registro es la única fuente de rutas y `Escena` es solo
