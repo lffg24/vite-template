@@ -465,6 +465,43 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
+   * Una pestaña a mano siempre sale a medias.
+   *
+   * Las tres que había —todas en `SuperAdminRolesPermisosPage`— fallaban en lo
+   * mismo: dos declaraban `role="tab"` sin que existiera un solo
+   * `role="tabpanel"` en la pantalla, y la tercera se hacía pasar por
+   * navegación con `aria-current="page"` sobre algo que no es una página. Las
+   * tres se movían solo con el ratón.
+   *
+   * No es descuido de quien las escribió: `role="tab"` parece una etiqueta y
+   * en realidad es un contrato de cuatro cláusulas —panel que existe, foco
+   * itinerante, flechas y `aria-controls`—. La única forma de que se cumplan
+   * las cuatro es que las escriba una pieza, una vez.
+   */
+  const PESTANAS_A_MANO_PENDIENTE = ["pages/psicosocial/EmpresaAreasCargosPage.tsx"];
+
+  it("nadie dibuja sus propias pestañas", () => {
+    const IMPLEMENTACION = ["shared/ui/Pestanas.tsx"];
+
+    const locales = TODOS.filter((ruta) => /role="tab(?:list)?"/.test(contenido(ruta)))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r));
+
+    const nuevos = locales.filter((r) => !PESTANAS_A_MANO_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `Pestanas` de `@/shared/ui/Pestanas`. `role=\"tab\"` promete un " +
+        "panel, flechas y foco itinerante; escrito a mano nunca llegan los tres."
+    ).toEqual([]);
+
+    const yaMigrados = PESTANAS_A_MANO_PENDIENTE.filter((r) => !locales.includes(r));
+    expect(
+      yaMigrados,
+      "Ya usan la pieza: bórralos de PESTANAS_A_MANO_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
    * Cuántos botones quedan escritos a mano, con el perímetro escrito.
    *
    * Esta prueba existe porque la CIFRA se dio mal dos veces seguidas, y las dos
