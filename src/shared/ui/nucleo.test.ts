@@ -277,7 +277,6 @@ describe("el núcleo es uno solo", () => {
     "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
     "features/superadmin/components/SuperAdminCard.tsx",
     "pages/Login.tsx",
-    "pages/RecursosAbril360Page.tsx",
     "pages/ReportesOficialesPsicoPage.tsx",
     "pages/ReportesPsico.tsx",
     "pages/ResponderEvaluacion.tsx",
@@ -315,6 +314,77 @@ describe("el núcleo es uno solo", () => {
     expect(
       yaLimpios,
       "Ya no usan color crudo: bórralos de COLOR_CRUDO_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * El gris crudo, que es la otra mitad de la misma deuda.
+   *
+   * Va aparte de `COLOR_CRUDO` porque el gris no dice nada: no hay un «gris
+   * semántico». Es el color del texto, del borde y de la superficie, o sea
+   * justo lo que los tokens de la casa resuelven —`foreground`,
+   * `foreground-soft`, `muted-foreground`, `border`, `surface-subtle`—. Una
+   * pantalla que escribe `text-slate-600` a mano no es que use otro gris: es
+   * que no participa del sistema.
+   *
+   * El prefijo `(?:^|[^a-z-])` no es cosmético: sin él, `-translate-y-1/2`
+   * contiene «slate-» y cualquier medida de esta deuda sale inflada. La
+   * primera cuenta de este proyecto dio 1.238 por ese motivo.
+   */
+  const GRIS_CRUDO =
+    /(?:^|[^a-z-])(?:bg|text|border|ring|divide|from|to|via|shadow|placeholder|outline|accent|caret|fill|stroke)-slate-\d{2,3}/;
+
+  /**
+   * Solo puede menguar.
+   *
+   * Hoy la lista ES el perímetro de Psicosocial, y eso es deliberado: ahí no
+   * se migra nada. Cualquier archivo nuevo en esta lista sería una pantalla
+   * del resto del producto escribiendo su propio gris otra vez.
+   */
+  const GRIS_CRUDO_PENDIENTE = [
+    "features/psicosocial/components/SociodemographicChartCard.tsx",
+    "features/psicosocial/components/SociodemographicDashboardSection.tsx",
+    "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
+    "features/psicosocial/components/empleado/EmployeeInfoCards.tsx",
+    "features/psicosocial/components/empleado/EmployeeProfileHeader.tsx",
+    "features/psicosocial/components/empleado/InfoField.tsx",
+    "features/psicosocial/components/participantes/ParticipantNameLink.README.tsx",
+    "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
+    "features/psicosocial/components/sociodemografia/SociodemografiaFields.tsx",
+    "layout/PsicologoLayout.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/ReportesPsico.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/AplicacionResultadosPage.tsx",
+    "pages/psicosocial/AplicacionesBTPage.tsx",
+    "pages/psicosocial/EmpresaAplicacionesPage.tsx",
+    "pages/psicosocial/EmpresaAreasCargosPage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoInformesPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoPerfilPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoRespuestasPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
+    "pages/psicosocial/PsicologoPerfilPage.tsx",
+    "pages/superadmin/SuperAdminPsicologosPage.tsx",
+  ];
+
+  it("el gris sale de los tokens, y esa deuda tampoco crece", () => {
+    const grises = TODOS.filter((ruta) => GRIS_CRUDO.test(contenido(ruta))).map(comoRuta);
+
+    const nuevos = grises.filter((r) => !GRIS_CRUDO_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa los tokens de la casa (`foreground`, `foreground-soft`, " +
+        "`muted-foreground`, `border`, `surface-subtle`). Sobre fondo oscuro, " +
+        "blanco con opacidad."
+    ).toEqual([]);
+
+    const yaLimpios = GRIS_CRUDO_PENDIENTE.filter((r) => !grises.includes(r));
+    expect(
+      yaLimpios,
+      "Ya no usan gris crudo: bórralos de GRIS_CRUDO_PENDIENTE."
     ).toEqual([]);
   });
 

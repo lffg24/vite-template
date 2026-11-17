@@ -25,7 +25,7 @@ export function ConfirmDialog({
   const Icon = tone === "amber" ? AlertTriangle : ShieldCheck;
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[hsl(var(--overlay))] p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-border/80 bg-surface shadow-floating">
         <div className="flex items-start gap-4 p-6">
           <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ring-1 ${badgeTone}`}>

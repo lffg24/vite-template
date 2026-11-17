@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 export function AppLoadingOverlay({ show, title = "Cargando información…", message }: { show: boolean; title?: string; message?: string }) {
   if (!show) return null;
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/25 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[hsl(var(--overlay))] p-4 backdrop-blur-sm">
       <div className="w-full max-w-sm rounded-[28px] border border-white/60 bg-white/95 p-6 text-center shadow-floating">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-accent text-brand-primary ring-8 ring-accent/70">
           <Loader2 className="h-8 w-8 animate-spin" />

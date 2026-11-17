@@ -1,10 +1,26 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type Variante = "principal" | "secundaria";
 
-/** Acción táctil del núcleo para recorridos de participante. */
+/**
+ * Acción táctil del núcleo para los recorridos de participante.
+ *
+ * Define el TAMAÑO, no el color ni el comportamiento. Lo demás —el acento, el
+ * anillo de foco, la curva de movimiento, el hundido al pulsar, el estado
+ * desactivado— sale de las variantes `rel` y `relOutline` del botón de la casa.
+ *
+ * Antes este archivo repetía esos colores por su cuenta, así que el botón del
+ * participante era el único del producto que no se hundía al pulsarse y el
+ * único que apagaba su foco de otra manera: dos botones del mismo tono que
+ * respondían distinto al mismo gesto.
+ *
+ * Lo que sí es suyo, y por eso sigue aquí: 56 px de alto y todo el ancho. Se
+ * pulsa con el pulgar, de pie, quizá con guantes; los objetivos táctiles
+ * pequeños son la primera causa de que un formulario móvil se sienta roto.
+ */
 export function BotonAccion({
   children,
   variante = "principal",
@@ -15,21 +31,16 @@ export function BotonAccion({
   variante?: Variante;
 }) {
   return (
-    <button
+    <Button
       {...props}
+      variant={variante === "principal" ? "rel" : "relOutline"}
       className={cn(
-        "inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 rounded-rel-control px-6 py-3",
-        "font-rel-heading text-base font-bold transition-colors duration-rel-micro",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:bg-rel-neutral disabled:text-white",
-        variante === "principal"
-          ? "bg-rel-accent text-white shadow-sm hover:bg-rel-accent/90"
-          : "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:bg-rel-surface-subtle",
+        "min-h-[3.5rem] w-full px-6 py-3 font-rel-heading text-base font-bold",
         className
       )}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

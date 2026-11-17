@@ -1,11 +1,16 @@
 // src/pages/superadmin/SuperAdminCreditosPage.tsx
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
-import { Check, Loader2, MinusCircle, Plus, Search, UserRound, WalletCards, X } from "lucide-react";
+import { Check, Coins, Loader2, MinusCircle, Plus, Search, UserRound, WalletCards } from "lucide-react";
 
 import { ToastCard, type ToastPayload } from "@/components/feedback/ToastCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { Aviso } from "@/shared/ui/Aviso";
+import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
+import { Panel } from "@/shared/ui/Panel";
+import { PanelLateral } from "@/shared/ui/PanelLateral";
 import { Pill } from "@/shared/ui/Pill";
 import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import {
@@ -336,23 +341,19 @@ export default function SuperAdminCreditosPage() {
         title="Créditos"
         subtitle="Ledger formal: asignación, consumo y auditoría por psicólogo/empresa."
         action={
-          <button
-            type="button"
-            onClick={() => openAssign()}
-            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 font-black text-primary-foreground shadow-sm transition hover:bg-primary-hover"
-          >
-            <Plus className="h-5 w-5" />
+          <Button onClick={() => openAssign()}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
             Asignar créditos
-          </button>
+          </Button>
         }
       />
 
       {error ? <Aviso>{error}</Aviso> : null}
 
       <section className="grid gap-4 md:grid-cols-3">
-        <Metric label="Cuentas visibles" value={total.toLocaleString("es-CO")} />
-        <Metric label="Créditos asignados" value={totals.asignados.toLocaleString("es-CO")} />
-        <Metric label="Saldo disponible" value={totals.disponibles.toLocaleString("es-CO")} tone="text-brand-primary" />
+        <IndicadorKpi etiqueta="Cuentas visibles" valor={entero(total)} icono={UserRound} tono="neutro" />
+        <IndicadorKpi etiqueta="Créditos asignados" valor={entero(totals.asignados)} icono={WalletCards} tono="marca" />
+        <IndicadorKpi etiqueta="Saldo disponible" valor={entero(totals.disponibles)} icono={Coins} tono="exito" />
       </section>
 
       <TablaDatos
@@ -398,210 +399,258 @@ export default function SuperAdminCreditosPage() {
         }}
       />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-black text-slate-950">Últimos movimientos</h2>
-            <p className="text-sm text-slate-500">Asignaciones y consumos recientes del ledger.</p>
+      <Panel
+        titulo="Últimos movimientos"
+        descripcion="Asignaciones y consumos recientes del ledger."
+        icono={WalletCards}
+      >
+        {movements.length === 0 ? (
+          <p className="py-4 text-sm text-muted-foreground">
+            No hay movimientos recientes para mostrar.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border/70">
+            {movements.map((movement) => (
+              <li
+                key={movement.id}
+                className="grid gap-2 py-3 text-sm md:grid-cols-[140px_1fr_120px_120px]"
+              >
+                <span className="font-bold text-foreground">{movement.tipo}</span>
+                <span className="text-foreground-soft">
+                  {movement.descripcion || "Movimiento de créditos"}
+                </span>
+                <span className="font-semibold tabular-nums text-foreground md:text-right">
+                  {entero(movement.cantidad)}
+                </span>
+                <span className="text-xs text-muted-foreground md:text-right">
+                  {movement.creado_en
+                    ? new Date(movement.creado_en).toLocaleDateString("es-CO")
+                    : SIN_DATO}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+
+      <PanelLateral
+        abierto={assignOpen}
+        alCerrar={closeAssign}
+        alEnviar={submitAssign}
+        antetitulo="SuperAdmin"
+        titulo="Asignar créditos"
+        descripcion="La asignación se registra en el ledger global del psicólogo."
+        ancho="lg"
+        acciones={
+          <>
+            <Button type="button" variant="outline" onClick={closeAssign}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              Asignar créditos
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <Campo etiqueta="Psicólogo" id={ID_PSICOLOGO}>
+            <div className="overflow-hidden rounded-xl border border-border">
+              <div className="border-b border-border/70 bg-surface-subtle p-3">
+                <Input
+                  id={ID_PSICOLOGO}
+                  value={psicologoQ}
+                  onChange={(event) => setPsicologoQ(event.target.value)}
+                  placeholder="Buscar por nombre o correo..."
+                />
+              </div>
+              <div className="max-h-72 divide-y divide-border/70 overflow-auto">
+                {filteredPsicologos.length === 0 && (
+                  <p className="p-4 text-sm text-muted-foreground">
+                    No hay psicólogos disponibles.
+                  </p>
+                )}
+                {filteredPsicologos.map((psicologo) => {
+                  const elegido = selected?.id === psicologo.id;
+                  return (
+                    <button
+                      key={psicologo.id}
+                      type="button"
+                      // Es una opción de una lista, no un botón suelto: lo que
+                      // importa al lector de pantalla es cuál está elegida.
+                      aria-pressed={elegido}
+                      onClick={() => setSelected(psicologo)}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-rel-micro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                        elegido ? "bg-accent text-accent-foreground" : "hover:bg-surface-subtle"
+                      )}
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
+                          <UserRound className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0">
+                          <strong className="block truncate">{psicologo.nombre}</strong>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {psicologo.email || "Sin correo"}
+                          </span>
+                        </span>
+                      </span>
+                      <span
+                        className={cn(
+                          "grid h-5 w-5 shrink-0 place-items-center rounded-full border",
+                          elegido
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border"
+                        )}
+                      >
+                        {elegido && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </Campo>
+
+          {selected && (
+            <div className="rounded-xl border border-primary/20 bg-accent p-4">
+              <p className="font-heading text-xs font-bold uppercase tracking-wide text-primary">
+                Cuenta seleccionada
+              </p>
+              <p className="mt-1 font-bold text-foreground">{selected.nombre}</p>
+              <p className="text-sm text-muted-foreground">
+                Disponibles actuales: {entero(selected.creditos_disponibles)}
+              </p>
+            </div>
+          )}
+
+          <Campo etiqueta="Cantidad de créditos" id={ID_CANTIDAD}>
+            <Input
+              id={ID_CANTIDAD}
+              type="number"
+              min="1"
+              step="1"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="Ej. 100"
+            />
+          </Campo>
+
+          <Campo etiqueta="Motivo" id={ID_MOTIVO}>
+            <Textarea
+              id={ID_MOTIVO}
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              className="min-h-28"
+              placeholder="Ej. Compra inicial de paquete de créditos."
+            />
+          </Campo>
+
+          <Aviso tono="atencion">
+            Esta acción suma créditos reales al saldo global del psicólogo y queda auditada.
+          </Aviso>
+        </div>
+      </PanelLateral>
+
+      <PanelLateral
+        abierto={deductOpen && Boolean(deductTarget)}
+        alCerrar={closeDeduct}
+        alEnviar={submitDeduct}
+        antetitulo="Ajuste de saldo"
+        titulo="Descontar créditos"
+        descripcion="El movimiento quedará registrado y auditado en el ledger."
+        acciones={
+          <>
+            <Button type="button" variant="outline" onClick={closeDeduct}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              Descontar créditos
+            </Button>
+          </>
+        }
+      >
+        {deductTarget ? (
+          <div className="space-y-5">
+            <div className="rounded-xl border border-warning/30 bg-warning-subtle p-4">
+              <p className="font-heading text-xs font-bold uppercase text-warning">
+                Cuenta seleccionada
+              </p>
+              <p className="mt-1 font-bold text-foreground">
+                {deductTarget.psicologo_nombre || `Usuario ${deductTarget.psicologo_usuario_id}`}
+              </p>
+              <p className="text-sm text-foreground-soft">
+                {deductTarget.psicologo_email || "Sin correo"}
+              </p>
+              <p className="mt-2 text-sm font-bold text-warning">
+                Saldo disponible: {entero(deductTarget.saldo_actual)}
+              </p>
+            </div>
+
+            <Campo etiqueta="Cantidad a descontar" id={ID_DESCUENTO}>
+              <Input
+                id={ID_DESCUENTO}
+                type="number"
+                min="1"
+                max={Number(deductTarget.saldo_actual || 0)}
+                step="1"
+                value={deductAmount}
+                onChange={(event) => setDeductAmount(event.target.value)}
+                placeholder="Ej. 10"
+              />
+            </Campo>
+
+            <Campo etiqueta="Motivo obligatorio" id={ID_MOTIVO_DESCUENTO}>
+              <Textarea
+                id={ID_MOTIVO_DESCUENTO}
+                value={deductReason}
+                onChange={(event) => setDeductReason(event.target.value)}
+                className="min-h-28"
+                placeholder="Ej. Corrección administrativa por compra anulada."
+              />
+            </Campo>
+
+            <Aviso>
+              Esta acción no elimina movimientos anteriores ni borra historial. Solo reduce el
+              saldo disponible de la cuenta seleccionada.
+            </Aviso>
           </div>
-          <WalletCards className="h-6 w-6 text-brand-primary" />
-        </div>
-        <div className="divide-y divide-slate-100">
-          {movements.length === 0 && <p className="py-4 text-sm text-slate-500">No hay movimientos recientes para mostrar.</p>}
-          {movements.map((movement) => (
-            <div key={movement.id} className="grid gap-2 py-3 text-sm md:grid-cols-[140px_1fr_120px_120px]">
-              <span className="font-black text-slate-900">{movement.tipo}</span>
-              <span className="text-slate-600">{movement.descripcion || "Movimiento de créditos"}</span>
-              <span className="font-semibold text-slate-900">{Number(movement.cantidad || 0).toLocaleString("es-CO")}</span>
-              <span className="text-xs text-slate-500">{movement.creado_en ? new Date(movement.creado_en).toLocaleDateString("es-CO") : "-"}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {assignOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
-          <aside className="h-full w-full max-w-2xl overflow-y-auto bg-white p-6 shadow-2xl">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-brand-primary">SuperAdmin</p>
-                <h2 className="text-2xl font-black text-slate-950">Asignar créditos</h2>
-                <p className="mt-1 text-sm text-slate-500">La asignación se registra en el ledger global del psicólogo.</p>
-              </div>
-              <button type="button" onClick={closeAssign} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={submitAssign} className="space-y-5">
-              <Field label="Psicólogo">
-                <div className="overflow-hidden rounded-2xl border border-slate-200">
-                  <div className="border-b border-slate-100 bg-slate-50 p-3">
-                    <input
-                      value={psicologoQ}
-                      onChange={(event) => setPsicologoQ(event.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-                      placeholder="Buscar por nombre o correo..."
-                    />
-                  </div>
-                  <div className="max-h-72 divide-y divide-slate-100 overflow-auto">
-                    {filteredPsicologos.length === 0 && <p className="p-4 text-sm text-slate-500">No hay psicólogos disponibles.</p>}
-                    {filteredPsicologos.map((psicologo) => {
-                      const checked = selected?.id === psicologo.id;
-                      return (
-                        <button
-                          key={psicologo.id}
-                          type="button"
-                          onClick={() => setSelected(psicologo)}
-                          className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition ${checked ? "bg-accent text-brand-primary" : "hover:bg-slate-50"}`}
-                        >
-                          <span className="flex min-w-0 items-center gap-3">
-                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">
-                              <UserRound className="h-5 w-5" />
-                            </span>
-                            <span className="min-w-0">
-                              <strong className="block truncate">{psicologo.nombre}</strong>
-                              <span className="block truncate text-xs text-slate-500">{psicologo.email || "Sin correo"}</span>
-                            </span>
-                          </span>
-                          <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${checked ? "border-primary bg-primary text-primary-foreground" : "border-slate-300"}`}>
-                            {checked && <Check className="h-3.5 w-3.5" />}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </Field>
-
-              {selected && (
-                <div className="rounded-2xl border border-accent bg-accent p-4">
-                  <p className="text-xs font-black uppercase text-brand-primary">Cuenta seleccionada</p>
-                  <p className="mt-1 font-black text-slate-950">{selected.nombre}</p>
-                  <p className="text-sm text-slate-500">Disponibles actuales: {Number(selected.creditos_disponibles || 0).toLocaleString("es-CO")}</p>
-                </div>
-              )}
-
-              <Field label="Cantidad de créditos">
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={amount}
-                  onChange={(event) => setAmount(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-                  placeholder="Ej. 100"
-                />
-              </Field>
-
-              <Field label="Motivo">
-                <textarea
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-                  placeholder="Ej. Compra inicial de paquete de créditos."
-                />
-              </Field>
-
-              <Aviso tono="atencion">
-                Esta acción suma créditos reales al saldo global del psicólogo y queda auditada.
-              </Aviso>
-
-              <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-                <button type="button" onClick={closeAssign} className="rounded-2xl border px-5 py-3 font-bold">
-                  Cancelar
-                </button>
-                <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Asignar créditos
-                </button>
-              </div>
-            </form>
-          </aside>
-        </div>
-      )}
-
-      {deductOpen && deductTarget && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
-          <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="font-heading text-xs font-bold uppercase tracking-widest text-warning">Ajuste de saldo</p>
-                <h2 className="text-2xl font-black text-slate-950">Descontar créditos</h2>
-                <p className="mt-1 text-sm text-slate-500">El movimiento quedará registrado y auditado en el ledger.</p>
-              </div>
-              <button type="button" onClick={closeDeduct} className="rounded-2xl border p-2 hover:bg-slate-50" aria-label="Cerrar">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <form onSubmit={submitDeduct} className="space-y-5">
-              <div className="rounded-xl border border-warning/30 bg-warning-subtle p-4">
-                <p className="font-heading text-xs font-bold uppercase text-warning">Cuenta seleccionada</p>
-                <p className="mt-1 font-black text-slate-950">{deductTarget.psicologo_nombre || `Usuario ${deductTarget.psicologo_usuario_id}`}</p>
-                <p className="text-sm text-slate-600">{deductTarget.psicologo_email || "Sin correo"}</p>
-                <p className="mt-2 text-sm font-bold text-warning">
-                  Saldo disponible: {Number(deductTarget.saldo_actual || 0).toLocaleString("es-CO")}
-                </p>
-              </div>
-
-              <Field label="Cantidad a descontar">
-                <input
-                  type="number"
-                  min="1"
-                  max={Number(deductTarget.saldo_actual || 0)}
-                  step="1"
-                  value={deductAmount}
-                  onChange={(event) => setDeductAmount(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-                  placeholder="Ej. 10"
-                />
-              </Field>
-
-              <Field label="Motivo obligatorio">
-                <textarea
-                  value={deductReason}
-                  onChange={(event) => setDeductReason(event.target.value)}
-                  className="min-h-28 w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
-                  placeholder="Ej. Corrección administrativa por compra anulada."
-                />
-              </Field>
-
-              <Aviso>
-                Esta acción no elimina movimientos anteriores ni borra historial. Solo reduce el saldo disponible de la cuenta seleccionada.
-              </Aviso>
-
-              <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
-                <button type="button" onClick={closeDeduct} className="rounded-2xl border px-5 py-3 font-bold">
-                  Cancelar
-                </button>
-                <Button type="submit" disabled={saving}>
-                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-                  Descontar créditos
-                </Button>
-              </div>
-            </form>
-          </aside>
-        </div>
-      )}
+        ) : null}
+      </PanelLateral>
     </div>
   );
 }
 
-function Metric({ label, value, tone = "text-slate-950" }: { label: string; value: string; tone?: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-black uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-2 text-3xl font-black ${tone}`}>{value}</p>
-    </div>
-  );
-}
+const ID_PSICOLOGO = "creditos-psicologo";
+const ID_CANTIDAD = "creditos-cantidad";
+const ID_MOTIVO = "creditos-motivo";
+const ID_DESCUENTO = "creditos-descuento";
+const ID_MOTIVO_DESCUENTO = "creditos-motivo-descuento";
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+/**
+ * Etiqueta y campo.
+ *
+ * Con `htmlFor`, no envolviendo al hijo: el envoltorio funciona con un `input`
+ * suelto, pero cuando dentro hay una lista de opciones —como la de psicólogos—
+ * convierte toda la lista en el área de clic de la etiqueta.
+ */
+function Campo({
+  etiqueta,
+  id,
+  children,
+}: {
+  etiqueta: string;
+  id: string;
+  children: ReactNode;
+}) {
   return (
-    <label className="block space-y-2 text-sm font-bold text-slate-700">
-      <span>{label}</span>
+    <div className="space-y-2">
+      <label htmlFor={id} className="block text-sm font-bold text-foreground">
+        {etiqueta}
+      </label>
       {children}
-    </label>
+    </div>
   );
 }

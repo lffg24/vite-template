@@ -70,13 +70,13 @@ export default function RestablecerClave() {
             <div key={field.id} className="space-y-2">
               <Label htmlFor={field.id} className="font-bold">{field.label}</Label>
               <div className="relative">
-                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input id={field.id} type={visible ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.setter(event.target.value)} className="h-14 rounded-2xl pl-12 pr-12 text-base" />
-                <button type="button" onClick={() => setVisible((current) => !current)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" aria-label={visible ? "Ocultar contraseñas" : "Mostrar contraseñas"}>{visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
+                <button type="button" onClick={() => setVisible((current) => !current)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label={visible ? "Ocultar contraseñas" : "Mostrar contraseñas"}>{visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
               </div>
             </div>
           ))}
-          <p className="text-xs leading-5 text-slate-500">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
+          <p className="text-xs leading-5 text-muted-foreground">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
           {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
           <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary to-brand-dark text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>

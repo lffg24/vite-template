@@ -21,6 +21,7 @@
 // `TablaDatos` la tabla comparte borde con la paginación, así que la caja tiene
 // que envolver a las dos. De ahí `pie`.
 
+import type { LucideIcon } from "lucide-react";
 import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -41,11 +42,24 @@ export function Panel({
   children,
   className,
   titulo,
+  descripcion,
+  icono: Icono,
+  accion,
 }: {
   children: ReactNode;
   className?: string;
   titulo?: string;
+  /**
+   * La frase que explica de qué va la sección. Va bajo el título, nunca dentro
+   * del cuerpo: metida en el cuerpo se lee como el primer dato de la lista.
+   */
+  descripcion?: ReactNode;
+  /** Decorativo, a la derecha del encabezado. */
+  icono?: LucideIcon;
+  /** Un botón o un filtro, a la derecha. Desplaza al icono si van los dos. */
+  accion?: ReactNode;
 }) {
+  const conEncabezado = Boolean(titulo || descripcion || accion || Icono);
   return (
     <section
       className={cn(
@@ -53,8 +67,21 @@ export function Panel({
         className
       )}
     >
-      {titulo ? (
-        <h2 className="mb-4 font-heading text-base font-bold text-foreground">{titulo}</h2>
+      {conEncabezado ? (
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            {titulo ? (
+              <h2 className="font-heading text-base font-bold text-foreground">{titulo}</h2>
+            ) : null}
+            {descripcion ? (
+              <p className="mt-0.5 text-sm text-muted-foreground">{descripcion}</p>
+            ) : null}
+          </div>
+          {accion ??
+            (Icono ? (
+              <Icono className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+            ) : null)}
+        </div>
       ) : null}
       {children}
     </section>

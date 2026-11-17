@@ -51,20 +51,20 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-base font-black tracking-tight">{toast.title}</p>
-              {toast.message && <p className="mt-1 text-sm leading-6 text-slate-600">{toast.message}</p>}
+              {toast.message && <p className="mt-1 text-sm leading-6 text-foreground-soft">{toast.message}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="rounded-xl p-1.5 text-muted-foreground transition hover:bg-surface-subtle hover:text-foreground"
               aria-label="Cerrar notificación"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           {!!toast.details?.length && (
-            <div className="mt-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3">
-              <ul className="space-y-1.5 text-sm text-slate-700">
+            <div className="mt-3 rounded-2xl border border-border/80 bg-surface-subtle/80 px-4 py-3">
+              <ul className="space-y-1.5 text-sm text-foreground-soft">
                 {toast.details.map((detail) => (
                   <li key={detail} className="flex gap-2 leading-5">
                     <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-primary" />
@@ -73,7 +73,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 ))}
               </ul>
               {!!toast.moreCount && (
-                <p className="mt-2 text-xs font-semibold text-slate-500">y {toast.moreCount} más…</p>
+                <p className="mt-2 text-xs font-semibold text-muted-foreground">y {toast.moreCount} más…</p>
               )}
             </div>
           )}

@@ -3,7 +3,7 @@
 // El registro de auditoría de la plataforma.
 //
 // Estaba escrito en UNA línea de 1.400 caracteres: la tabla a mano con
-// `bg-slate-50` y `text-slate-500` —color crudo, invisible en modo oscuro—,
+// `bg-surface-subtle` y `text-muted-foreground` —color crudo, invisible en modo oscuro—,
 // los eventos tipados como `any`, sin estado de carga y sin estado vacío, de
 // modo que mientras cargaba y cuando no había nada se veía exactamente lo
 // mismo: una tabla con encabezado y ni una fila.

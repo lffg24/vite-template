@@ -19,7 +19,7 @@ export default function ProtectedRoute({ requireRole, requirePermission }: Props
 
   if (!initialized) {
     return (
-      <div className="min-h-screen grid place-items-center bg-slate-50 text-sm text-slate-500">
+      <div className="min-h-screen grid place-items-center bg-surface-subtle text-sm text-muted-foreground">
         Validando sesión...
       </div>
     );

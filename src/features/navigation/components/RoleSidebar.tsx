@@ -33,23 +33,23 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
     <div className="mb-5 flex items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/10 p-2"><img src={evaIsotipoWhite} alt="" aria-hidden="true" className="h-full w-full object-contain" /></span>
-        {!compact && <span className="min-w-0"><AbrilWordmark className="block truncate text-2xl font-black" accentClassName={rel ? "text-rel-sky" : "text-violet-300"} /><span className="block truncate text-xs text-slate-300">{brandSubtitle}</span></span>}
+        {!compact && <span className="min-w-0"><AbrilWordmark className="block truncate text-2xl font-black" accentClassName={rel ? "text-rel-sky" : "text-violet-300"} /><span className="block truncate text-xs text-white/70">{brandSubtitle}</span></span>}
       </div>
-      {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}</button>}
+      {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/85 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}</button>}
     </div>
     <div className={`mb-4 flex items-center rounded-2xl border border-white/10 bg-white/5 ${compact ? "justify-center p-2" : "gap-3 p-3"}`}>
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold ${rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600"}`}>{avatarText}</span>
-      {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-slate-300">{userSubtitle}</span></span>}
+      {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-white/70">{userSubtitle}</span></span>}
     </div>
-    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(100_116_139_/_0.45)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-500/45 [&::-webkit-scrollbar-track]:bg-transparent">
-      {loading && <p role="status" className="px-3 py-4 text-sm text-slate-300">Cargando menú…</p>}
+    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(255_255_255_/_0.25)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent">
+      {loading && <p role="status" className="px-3 py-4 text-sm text-white/70">Cargando menú…</p>}
       {error && <div role="alert" className="rounded-xl border border-white/20 p-3 text-sm"><p>{error}</p><button type="button" onClick={onRetry} className="mt-2 underline focus-visible:ring-2 focus-visible:ring-rel-sky">Reintentar</button></div>}
-      {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-slate-300">No hay opciones habilitadas para esta cuenta.</p>}
+      {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-white/70">No hay opciones habilitadas para esta cuenta.</p>}
       {items.map(entry => {
         if ("to" in entry) {
           const Icon = entry.icon;
           const active = activeRoute(location.pathname, entry.to);
-          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? (rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600 text-white") : "text-slate-200 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
+          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? (rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600 text-white") : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
         }
         const Icon = entry.icon;
         const active = entry.children.some(child => activeRoute(location.pathname, child.to));
@@ -58,16 +58,16 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
           <button type="button" aria-expanded={!compact && expanded} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
             if (compact) { setCollapsed(false); setOpenGroups(v => [...v, entry.label]); return; }
             setOpenGroups(v => expanded ? [...v.filter(x => x !== entry.label), `closed:${entry.label}`] : [...v.filter(x => x !== `closed:${entry.label}`), entry.label]);
-          }} className={`flex w-full items-center rounded-xl text-left text-sm font-semibold text-slate-100 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center p-3" : "gap-3 px-3 py-2.5"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <><span className="min-w-0 flex-1">{entry.label}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} /></>}</button>
+          }} className={`flex w-full items-center rounded-xl text-left text-sm font-semibold text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center p-3" : "gap-3 px-3 py-2.5"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <><span className="min-w-0 flex-1">{entry.label}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} /></>}</button>
           {!compact && expanded && <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
             const ChildIcon = child.icon;
-            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
+            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
           })}</div>}
         </div>;
       })}
     </nav>
-    {!compact && <div className="mt-3 border-t border-white/10 pt-3 text-xs leading-5 text-slate-300"><div>{footerTitle}</div>{footerLink && <a href={footerLink} target="_blank" rel="noreferrer" className="underline hover:text-white">{footerLinkLabel}</a>}</div>}
-    <NavLink to="/logout" title={compact ? "Cerrar sesión" : undefined} className={`mt-3 flex items-center rounded-xl py-2.5 text-sm font-semibold text-slate-200 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center" : "gap-3 px-3"}`}><LogOut className="h-5 w-5" />{!compact && "Cerrar sesión"}</NavLink>
+    {!compact && <div className="mt-3 border-t border-white/10 pt-3 text-xs leading-5 text-white/70"><div>{footerTitle}</div>{footerLink && <a href={footerLink} target="_blank" rel="noreferrer" className="underline hover:text-white">{footerLinkLabel}</a>}</div>}
+    <NavLink to="/logout" title={compact ? "Cerrar sesión" : undefined} className={`mt-3 flex items-center rounded-xl py-2.5 text-sm font-semibold text-white/85 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center" : "gap-3 px-3"}`}><LogOut className="h-5 w-5" />{!compact && "Cerrar sesión"}</NavLink>
   </div>;
 
   return <>

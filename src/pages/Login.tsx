@@ -192,7 +192,7 @@ export default function Login() {
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-bold">Correo electrónico</Label>
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"
@@ -206,7 +206,7 @@ export default function Login() {
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      className="h-14 rounded-2xl border-slate-200 pl-12 text-base"
+                      className="h-14 rounded-2xl border-border pl-12 text-base"
                     />
                   </div>
                   {errors.email ? <p className="text-sm text-rose-600">{errors.email}</p> : null}
@@ -220,7 +220,7 @@ export default function Login() {
                     </Link>
                   </div>
                   <div className="relative">
-                    <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -232,12 +232,12 @@ export default function Login() {
                         setPassword(e.target.value);
                         if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                       }}
-                      className="h-14 rounded-2xl border-slate-200 pl-12 pr-12 text-base"
+                      className="h-14 rounded-2xl border-border pl-12 pr-12 text-base"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-brand-primary"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-brand-primary"
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -247,7 +247,7 @@ export default function Login() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-1">
-                  <label className="flex items-center gap-3 text-sm text-slate-600">
+                  <label className="flex items-center gap-3 text-sm text-foreground-soft">
                     <Checkbox checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} />
                     Recordarme en este dispositivo
                   </label>
@@ -290,7 +290,7 @@ export default function Login() {
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="text-sm font-bold text-slate-700">REL Consilium SAS</div>
+                      <div className="text-sm font-bold text-foreground-soft">REL Consilium SAS</div>
                     )}
                   </div>
                 </div>

@@ -96,7 +96,7 @@ const SuperAdminPlaceholderPage = lazy(() => import("@/pages/superadmin/SuperAdm
 
 function RouteFallback() {
   return (
-    <div className="grid min-h-screen place-items-center bg-slate-50 px-4 text-sm font-semibold text-slate-500">
+    <div className="grid min-h-screen place-items-center bg-surface-subtle px-4 text-sm font-semibold text-muted-foreground">
       Cargando módulo...
     </div>
   );
