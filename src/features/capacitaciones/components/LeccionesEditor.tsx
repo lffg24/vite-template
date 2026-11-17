@@ -20,6 +20,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
+import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
 import { FilaOrdenable, ListaOrdenable } from "@/shared/ui/ListaOrdenable";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -696,57 +697,35 @@ export function LeccionesEditor({
                 <legend className="px-1 text-sm font-semibold text-rel-dark">
                   Cuestionario
                 </legend>
-                <fieldset className="space-y-2">
-                  <legend className="text-sm font-semibold text-rel-dark">
-                    ¿De dónde sale?
-                  </legend>
-                  {(
-                    [
-                      {
-                        valor: "BANCO" as const,
-                        titulo: "Del banco de evaluaciones",
-                        // Decía que corregir una errata «se corrige en todos», y
-                        // era falso: publicar una versión CONGELA el
-                        // cuestionario, así que ni los cursos ya publicados ni
-                        // esta misma lección cambian solos. Prometerlo enseñaba
-                        // justo el modelo mental contrario al que sostiene el
-                        // módulo, y se habría descubierto en una auditoría.
-                        ayuda:
-                          "Un cuestionario escrito una vez y reutilizable desde cualquier curso. Al corregirlo se publica una versión nueva, y cada lección elige cuándo pasar a ella: lo ya publicado queda congelado como estaba.",
-                      },
-                      {
-                        valor: "PROPIA" as const,
-                        titulo: "Escrito dentro de este curso",
-                        ayuda:
-                          "Las preguntas viven en esta lección y ningún otro curso las ve. Útil cuando no tienen sentido fuera de aquí.",
-                      },
-                    ]
-                  ).map((opcion) => (
-                    <label
-                      key={opcion.valor}
-                      className="flex cursor-pointer gap-3 rounded-rel-control border border-rel-border p-3 has-[:checked]:border-rel-primary has-[:checked]:bg-rel-accent-subtle"
-                    >
-                      <input
-                        type="radio"
-                        name="origen-evaluacion"
-                        className="mt-1 h-4 w-4 shrink-0 accent-rel-primary"
-                        checked={form.origenEvaluacion === opcion.valor}
-                        onChange={() => {
-                          setErrorEvaluacion(null);
-                          setForm((f) => ({ ...f, origenEvaluacion: opcion.valor }));
-                        }}
-                      />
-                      <span className="min-w-0">
-                        <span className="block font-rel-body text-sm font-semibold text-rel-dark">
-                          {opcion.titulo}
-                        </span>
-                        <span className="block font-rel-body text-sm text-rel-muted">
-                          {opcion.ayuda}
-                        </span>
-                      </span>
-                    </label>
-                  ))}
-                </fieldset>
+                <OpcionesExcluyentes<"BANCO" | "PROPIA">
+                  nombre="origen-evaluacion"
+                  leyenda="¿De dónde sale?"
+                  valor={form.origenEvaluacion}
+                  alCambiar={(origenEvaluacion) => {
+                    setErrorEvaluacion(null);
+                    setForm((f) => ({ ...f, origenEvaluacion }));
+                  }}
+                  opciones={[
+                    {
+                      valor: "BANCO",
+                      titulo: "Del banco de evaluaciones",
+                      // Decía que corregir una errata «se corrige en todos», y
+                      // era falso: publicar una versión CONGELA el
+                      // cuestionario, así que ni los cursos ya publicados ni
+                      // esta misma lección cambian solos. Prometerlo enseñaba
+                      // justo el modelo mental contrario al que sostiene el
+                      // módulo, y se habría descubierto en una auditoría.
+                      descripcion:
+                        "Un cuestionario escrito una vez y reutilizable desde cualquier curso. Al corregirlo se publica una versión nueva, y cada lección elige cuándo pasar a ella: lo ya publicado queda congelado como estaba.",
+                    },
+                    {
+                      valor: "PROPIA",
+                      titulo: "Escrito dentro de este curso",
+                      descripcion:
+                        "Las preguntas viven en esta lección y ningún otro curso las ve. Útil cuando no tienen sentido fuera de aquí.",
+                    },
+                  ]}
+                />
 
                 {form.origenEvaluacion === "BANCO" ? (
                   <SelectorCuestionarioBanco

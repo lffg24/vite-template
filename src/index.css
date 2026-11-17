@@ -126,6 +126,7 @@
     --ring: 172 100% 36%;
     --overlay: 215 42% 13% / 0.58;
 
+    --radius-xs: 0.3125rem;
     --radius: 0.875rem;
     --radius-lg: 1rem;
     --radius-xl: 1.25rem;

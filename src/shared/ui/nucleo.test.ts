@@ -276,7 +276,6 @@ describe("el núcleo es uno solo", () => {
     "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
     "features/psicosocial/components/empleado/EmployeeProfileHeader.tsx",
     "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
-    "features/superadmin/components/SuperAdminCard.tsx",
     "pages/ReportesOficialesPsicoPage.tsx",
     "pages/ReportesPsico.tsx",
     "pages/ResponderEvaluacion.tsx",
@@ -461,6 +460,218 @@ describe("el núcleo es uno solo", () => {
     expect(
       yaMigrados,
       "Ya no dibujan su propio ojo: bórralos de CLAVE_LOCAL_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * Las esquinas tienen SIETE radios, y no un octavo.
+   *
+   * Esta es la medida que mejor explica la queja de fondo —«muchos
+   * comportamientos distintos, tablas distintas, secciones, listas»—: el
+   * producto usaba **veinticuatro** radios de esquina diferentes. No
+   * veinticuatro estilos: veinticuatro numeros, varios de ellos a 2 px uno de
+   * otro. `rounded-2xl` (20 px) y `rounded-3xl` (24 px) convivian 370 y 104
+   * veces, y entre medias habia `[22px]`, `[24px]`, `[26px]`, `[28px]`,
+   * `[30px]` y `[2rem]`.
+   *
+   * Dos esquinas a 2 px una de otra no se distinguen de una en una. Lado a
+   * lado si, y es exactamente lo que se percibe como «esto no esta terminado»
+   * sin poder senalar por que.
+   *
+   * La escala, por papel y de mayor a menor:
+   *
+   *   - **2xl** (20 px) la caja de contenido: tarjeta, panel, dialogo.
+   *   - **xl** (16 px) una caja dentro de otra caja.
+   *   - **lg** (14 px) el control: campo, boton, azulejo. Es `--radius`.
+   *   - **md** (12 px) y **sm** (10 px) lo pequeno: etiqueta, chip.
+   *   - **xs** (5 px) la casilla de verificacion. Se creo el 2026-11-17 por el
+   *     unico radio a mano que quedaba en una pieza base: con `sm`, una caja
+   *     de 16 px se ve casi redonda.
+   *   - **full** pildora y avatar.
+   *
+   * `rel-control`, `rel-card` y `rel-panel` son los mismos tres valores con
+   * nombre por papel; `[var(--...)]` es un token y tambien vale. Lo que no
+   * vale es un numero.
+   *
+   * El 2026-11-17 se plegaron 31 esquinas en 10 archivos. Lo que queda en la
+   * lista es Psicosocial, que no se migra.
+   */
+  const RADIO_FUERA_DE_ESCALA_PENDIENTE = [
+    "features/psicosocial/components/WebDirectBulkUploadModal.tsx",
+    "features/psicosocial/components/WebDirectSetupCard.tsx",
+    "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
+    "features/psicosocial/components/empleado/EmployeeInfoCards.tsx",
+    "features/psicosocial/components/empleado/EmployeeProfileHeader.tsx",
+    "features/psicosocial/components/resultados/IndividualRiskTable.tsx",
+    "features/psicosocial/web-direct/WebDirectConditionalQuestionScreen.tsx",
+    "features/psicosocial/web-direct/WebDirectContentFrame.tsx",
+    "features/psicosocial/web-direct/WebDirectIdentificationScreen.tsx",
+    "features/psicosocial/web-direct/WebDirectQuestionScreen.tsx",
+    "features/psicosocial/web-direct/WebDirectWelcomeScreen.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/ReportesPsico.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/AplicacionResultadosPage.tsx",
+    "pages/psicosocial/AplicacionesBTPage.tsx",
+    "pages/psicosocial/EmpresaAplicacionesPage.tsx",
+    "pages/psicosocial/EmpresaAreasCargosPage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresaPerfilPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoPerfilPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoRespuestasPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoResultadosPage.tsx",
+    "pages/psicosocial/PsicologoDashboardPage.tsx",
+    "pages/psicosocial/WebDirectPublicPage.tsx",
+  ];
+
+  it("las esquinas salen de la escala, y no aparece un radio nuevo", () => {
+    const ESCALA = new Set([
+      "none", "xs", "sm", "md", "lg", "xl", "2xl", "full",
+      "rel-control", "rel-card", "rel-panel",
+    ]);
+    // `rounded-r-`, `rounded-tl-` y demas llevan lado: son la misma escala
+    // aplicada a una esquina, y el valor va detras del lado.
+    const RADIO = /\brounded-(?!r-|l-|t-|b-|tl-|tr-|bl-|br-)([a-z0-9[\].rem%px()-]+)/g;
+    const culpables: string[] = [];
+
+    for (const ruta of TODOS) {
+      const malos = [...contenido(ruta).matchAll(RADIO)]
+        .map((m) => m[1])
+        // Un token con nombre es una decision del sistema, no un numero.
+        .filter((v) => !ESCALA.has(v) && !v.startsWith("[var("));
+      if (malos.length) culpables.push(comoRuta(ruta));
+    }
+
+    const nuevos = culpables.filter((r) => !RADIO_FUERA_DE_ESCALA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "La escala es 2xl · xl · lg · md · sm · xs · full. Un radio nuevo no se " +
+        "distingue del de al lado de uno en uno, pero lado a lado es justo lo " +
+        "que se ve como «sin terminar»."
+    ).toEqual([]);
+
+    const yaEnEscala = RADIO_FUERA_DE_ESCALA_PENDIENTE.filter((r) => !culpables.includes(r));
+    expect(
+      yaEnEscala,
+      "Ya estan en la escala: borralos de RADIO_FUERA_DE_ESCALA_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * Un control nunca lleva la esquina de una caja de contenido.
+   *
+   * La escala cerrada no basta por si sola: dos pantallas pueden estar las dos
+   * dentro de la escala y aun asi dibujar el MISMO campo distinto. Es lo que
+   * pasaba en las tres pantallas de acceso —entrar, pedir clave nueva,
+   * cambiarla—: el campo y el boton iban a 20 px, el radio de una tarjeta,
+   * mientras los mismos componentes en el resto del producto van a 14 px. El
+   * alto (`h-14`) si es una decision de enfasis legitima en una pantalla de
+   * entrada, y se queda; la esquina no, porque no enfatiza nada: solo hace que
+   * el campo no se reconozca como el mismo campo.
+   *
+   * `2xl`, `xl` y `rel-panel`/`rel-card` son radios de CAJA. Un control usa
+   * `lg` —es `--radius`, el token que lleva ese nombre justamente por esto—,
+   * o `md`/`sm`/`xs` si es mas pequeno, o `full` si es una pildora.
+   */
+  const CONTROL_CON_RADIO_DE_CAJA_PENDIENTE = [
+    "features/psicosocial/components/WebDirectSetupCard.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoInformesPage.tsx",
+  ];
+
+  it("ningun control lleva el radio de una caja de contenido", () => {
+    // Solo las piezas de la casa —`Input`, `Button`, `Textarea`,
+    // `SelectTrigger`—, y no un `<button>` a mano. La diferencia no es de
+    // forma, es de que cosa es: un `<button>` escrito a mano suele ser una
+    // TARJETA entera que se puede pulsar —una opcion de una lista de roles,
+    // por ejemplo—, y una tarjeta pulsable sigue siendo una tarjeta, con su
+    // esquina de tarjeta. Los `<button>` a mano ya los cuenta y los tapa
+    // `TOPE_BOTONES_A_MANO`.
+    //
+    // `[^<]` y no `[^<>]`: un `onClick={() => ...}` antes de `className`
+    // lleva un `>` dentro, y con `[^<>]` la prueba se saltaba en silencio
+    // todo control que tuviera uno. `[^<]` no puede cruzar a otra etiqueta,
+    // porque toda etiqueta empieza por `<`.
+    //
+    // Sin bandera `g`, y a proposito: un `RegExp` global guarda `lastIndex`
+    // entre llamadas a `test`, asi que reutilizado en un filtro se salta
+    // archivos alternos. Esta prueba nacio con ese fallo y daba once culpables
+    // donde hay trece.
+    const CONTROL =
+      /<(?:Input|Button|Textarea|SelectTrigger)\b[^<]{0,600}?\brounded-(?:2xl|3xl|rel-panel|rel-card)\b/;
+    const culpables = TODOS.filter((ruta) => CONTROL.test(contenido(ruta))).map(comoRuta);
+
+    const nuevos = culpables.filter((r) => !CONTROL_CON_RADIO_DE_CAJA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "El campo y el boton usan `rounded-lg`. Si hace falta mas presencia, " +
+        "sube el alto, no la esquina: la esquina es lo que hace que se " +
+        "reconozca como el mismo control que en el resto del producto."
+    ).toEqual([]);
+
+    const yaLimpios = CONTROL_CON_RADIO_DE_CAJA_PENDIENTE.filter(
+      (r) => !culpables.includes(r)
+    );
+    expect(
+      yaLimpios,
+      "Ya usan radio de control: borralos de CONTROL_CON_RADIO_DE_CAJA_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * Elegir UNA opcion tiene pieza desde hace tiempo. Faltaba la guardia.
+   *
+   * Aqui hay que corregir una cifra que se dio mal: se dijo que «radio» era,
+   * como las pestanas, una pieza que no existia y habia que crear. No es
+   * cierto. `OpcionesExcluyentes` ya existia y ya la usaban dos pantallas; lo
+   * que pasaba es que otras dos dibujaban la suya a mano con el mismo marcado
+   * casi calcado. Lo que faltaba no era la pieza: era esta prueba.
+   *
+   * Para absorberlas la pieza gano dos cosas, las dos con criterio y no por
+   * complacer a quien llamaba: `leyendaOculta`, porque a veces el `<fieldset>`
+   * de fuera ya nombra al grupo y verlo dos veces estorba —pero sin leyenda el
+   * lector se queda con unos radios sin nombre, asi que seguir declarandola es
+   * obligatorio—; y `disposicion`, porque apilar o repartir en columnas
+   * depende del largo de la descripcion, no del gusto.
+   *
+   * ## La excepcion, que no es deuda
+   *
+   * `CalificacionPublicaPage` dibuja una ESCALA: los numeros del 0 al 10 de un
+   * NPS. Eso no es «elegir una de varias opciones que hay que leer», es marcar
+   * un punto en una recta, y forzarlo dentro de esta pieza daria once tarjetas
+   * con descripcion donde debe haber once casillas en fila. La otra escala del
+   * producto esta en Psicosocial y no se migra, asi que una pieza para esto
+   * tendria exactamente un usuario, y eso no es una pieza.
+   */
+  const RADIO_A_MANO_PENDIENTE = [
+    "features/psicosocial/web-direct/WebDirectConditionalQuestionScreen.tsx",
+    "features/psicosocial/web-direct/WebDirectQuestionScreen.tsx",
+  ];
+
+  it("elegir una opcion sale de OpcionesExcluyentes, y esa deuda tampoco crece", () => {
+    const IMPLEMENTACION = ["shared/ui/OpcionesExcluyentes.tsx"];
+    const ESCALA = ["pages/cx/CalificacionPublicaPage.tsx"];
+
+    const locales = TODOS.filter((ruta) => contenido(ruta).includes('type="radio"'))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r) && !ESCALA.includes(r));
+
+    const nuevos = locales.filter((r) => !RADIO_A_MANO_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `OpcionesExcluyentes` de `@/shared/ui/OpcionesExcluyentes`: trae el " +
+        "`<fieldset>` con nombre, el estado elegido y el foco visible. Si lo " +
+        "que dibujas es una ESCALA y no una lista de opciones, dilo en ESCALA."
+    ).toEqual([]);
+
+    const yaMigrados = RADIO_A_MANO_PENDIENTE.filter((r) => !locales.includes(r));
+    expect(
+      yaMigrados,
+      "Ya usan la pieza: borralos de RADIO_A_MANO_PENDIENTE."
     ).toEqual([]);
   });
 

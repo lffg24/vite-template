@@ -140,7 +140,7 @@ export default function Login() {
                 {productCards.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-3xl border border-sidebar-border bg-white/[0.055] p-4 shadow-card backdrop-blur">
+                    <div key={item.title} className="rounded-2xl border border-sidebar-border bg-white/[0.055] p-4 shadow-card backdrop-blur">
                       <Icon className="mb-3 h-6 w-6 text-brand-turquoise" />
                       <div className="text-sm font-black">{item.title}</div>
                       <div className="mt-1 text-xs text-sidebar-muted">{item.text}</div>
@@ -164,7 +164,7 @@ export default function Login() {
           <div className="w-full max-w-[620px]">
             <Marca className="mb-4 h-11 lg:hidden" />
 
-            <Card className="rounded-[2rem] border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
+            <Card className="rounded-2xl border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-accent">
                   <Marca variante="isotipo" decorativa className="h-9" />
@@ -195,7 +195,7 @@ export default function Login() {
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      className="h-14 rounded-2xl border-border pl-12 text-base"
+                      className="h-14 rounded-lg border-border pl-12 text-base"
                     />
                   </div>
                   {errors.email ? <p id="email-error" className="text-sm font-semibold text-danger">{errors.email}</p> : null}
@@ -221,7 +221,7 @@ export default function Login() {
                       setPassword(e.target.value);
                       if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
-                    className="h-14 rounded-2xl border-border text-base"
+                    className="h-14 rounded-lg border-border text-base"
                   />
                   {errors.password ? <p id="password-error" className="text-sm font-semibold text-danger">{errors.password}</p> : null}
                 </div>
@@ -237,7 +237,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-14 w-full rounded-2xl bg-marca text-base font-bold shadow-floating transition hover:brightness-[0.96]"
+                  className="h-14 w-full rounded-lg bg-marca text-base font-bold shadow-floating transition hover:brightness-[0.96]"
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
@@ -252,7 +252,7 @@ export default function Login() {
                 </Button>
               </form>
 
-              <div className="mt-5 rounded-[1.6rem] border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
+              <div className="mt-5 rounded-2xl border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-black text-foreground">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>

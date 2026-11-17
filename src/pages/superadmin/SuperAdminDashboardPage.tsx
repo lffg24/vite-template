@@ -2,7 +2,7 @@
 //
 // Estaba escrita en UNA línea de 2.000 caracteres, y eso tenía consecuencias
 // visibles: dentro de ella convivían tres radios distintos (`rounded-2xl`,
-// `rounded-3xl`, el de los `SuperAdminCard`), el error en rojo crudo, el aviso
+// `rounded-2xl`, el de los `SuperAdminCard`), el error en rojo crudo, el aviso
 // en ámbar crudo, `bg-white` en vez de la superficie de la casa y un botón
 // dibujado a mano. Es la primera pantalla que ve un superadministrador.
 
@@ -11,9 +11,9 @@ import { Building2, ClipboardList, CreditCard, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Aviso } from "@/shared/ui/Aviso";
+import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
 import { Panel } from "@/shared/ui/Panel";
 import { superadminService, type SuperAdminDashboard } from "@/features/superadmin/api/superadminService";
-import SuperAdminCard from "@/features/superadmin/components/SuperAdminCard";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 export default function SuperAdminDashboardPage() {
@@ -48,14 +48,36 @@ export default function SuperAdminDashboardPage() {
       )}
 
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <SuperAdminCard title="Empresas registradas" value={k.empresas ?? "—"} hint="Total plataforma" icon={Building2} />
-        <SuperAdminCard title="Usuarios registrados" value={k.usuarios ?? "—"} hint="Incluye psicólogos y admins" icon={UsersRound} />
-        <SuperAdminCard title="Aplicaciones totales" value={k.aplicaciones ?? "—"} hint="Baterías psicosociales" icon={ClipboardList} />
-        <SuperAdminCard
-          title="Créditos disponibles"
-          value={k.saldo_total ?? "—"}
-          hint={`Asignados: ${k.asignados_total ?? 0}`}
-          icon={CreditCard}
+        {/* Era `SuperAdminCard`, una copia de `IndicadorKpi` con tres
+            desviaciones: otro radio de esquina, `bg-white` escrito a mano —que
+            deja de ser el fondo en cuanto la superficie cambie— y el pie en
+            verde esmeralda. El verde era el peor de los tres: «Total
+            plataforma» no es una buena noticia, es contexto, y pintarlo del
+            color del acierto gasta una señal que debe quedar para cuando algo
+            de verdad va bien. */}
+        <IndicadorKpi
+          etiqueta="Empresas registradas"
+          valor={k.empresas ?? "—"}
+          contexto="Total plataforma"
+          icono={Building2}
+        />
+        <IndicadorKpi
+          etiqueta="Usuarios registrados"
+          valor={k.usuarios ?? "—"}
+          contexto="Incluye psicólogos y admins"
+          icono={UsersRound}
+        />
+        <IndicadorKpi
+          etiqueta="Aplicaciones totales"
+          valor={k.aplicaciones ?? "—"}
+          contexto="Baterías psicosociales"
+          icono={ClipboardList}
+        />
+        <IndicadorKpi
+          etiqueta="Créditos disponibles"
+          valor={k.saldo_total ?? "—"}
+          contexto={`Asignados: ${k.asignados_total ?? 0}`}
+          icono={CreditCard}
         />
       </section>
 

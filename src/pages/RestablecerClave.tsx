@@ -88,13 +88,13 @@ export default function RestablecerClave() {
                 visible={visible}
                 alAlternar={() => setVisible((current) => !current)}
                 onChange={(event) => field.setter(event.target.value)}
-                className="h-14 rounded-2xl text-base"
+                className="h-14 rounded-lg text-base"
               />
             </div>
           ))}
           <p className="text-xs leading-5 text-muted-foreground">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
           {error ? <p role="alert" className="text-sm font-semibold text-danger">{error}</p> : null}
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-marca text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
+          <Button type="submit" disabled={loading} className="h-14 w-full rounded-lg bg-marca text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>
       )}
     </PasswordRecoveryShell>

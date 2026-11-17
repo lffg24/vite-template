@@ -28,8 +28,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EtiquetaConAyuda } from "@/shared/ui/Ayuda";
+import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import {
   AYUDA_TIPO_PREGUNTA,
   ETIQUETA_TIPO_PREGUNTA,
@@ -218,36 +218,24 @@ export function ConstructorEvaluacion({
 
               {/* Tipo: los tres a la vista, no dentro de un desplegable. Son
                   tres y la elección cambia la forma del resto del formulario;
-                  esconderlos obligaría a abrir para recordar qué hay. */}
-              <div className="grid gap-2 sm:grid-cols-3">
-                {TIPOS_PREGUNTA.map((tipo) => (
-                  <label
-                    key={tipo}
-                    className={cn(
-                      "flex cursor-pointer items-start gap-2 rounded-rel-control border p-3 text-left",
-                      pregunta.tipo === tipo
-                        ? "border-rel-primary bg-rel-accent-subtle"
-                        : "border-rel-border bg-rel-surface"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name={`tipo-${i}`}
-                      checked={pregunta.tipo === tipo}
-                      onChange={() => cambiarPregunta(i, alCambiarTipo(pregunta, tipo))}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-rel-primary"
-                    />
-                    <span>
-                      <span className="block text-sm font-semibold text-rel-dark">
-                        {ETIQUETA_TIPO_PREGUNTA[tipo]}
-                      </span>
-                      <span className="block text-xs text-rel-muted">
-                        {AYUDA_TIPO_PREGUNTA[tipo]}
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
+                  esconderlos obligaría a abrir para recordar qué hay.
+
+                  La leyenda va oculta porque el `<fieldset>` de fuera ya dice
+                  «Pregunta 3»: verlo dos veces estorba, no tenerlo deja al
+                  lector con tres radios sin nombre de grupo. */}
+              <OpcionesExcluyentes<TipoPregunta>
+                nombre={`tipo-${i}`}
+                leyenda={`Tipo de la pregunta ${i + 1}`}
+                leyendaOculta
+                disposicion="rejilla"
+                valor={pregunta.tipo}
+                alCambiar={(tipo) => cambiarPregunta(i, alCambiarTipo(pregunta, tipo))}
+                opciones={TIPOS_PREGUNTA.map((tipo) => ({
+                  valor: tipo,
+                  titulo: ETIQUETA_TIPO_PREGUNTA[tipo],
+                  descripcion: AYUDA_TIPO_PREGUNTA[tipo],
+                }))}
+              />
 
               <Textarea
                 rows={2}

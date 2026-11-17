@@ -192,6 +192,11 @@ export default {
         'rel-control': 'var(--rel-radius-control)',
         'rel-card': 'var(--rel-radius-card)',
         'rel-panel': 'var(--rel-radius-panel)',
+        /* El escalon mas pequeno de la escala. Existe por la casilla de
+           verificacion: una caja de 16 px con el radio `sm` (10 px) se ve
+           casi redonda. Antes esto era `rounded-[5px]`, el unico radio
+           escrito a mano que quedaba en una pieza base. */
+        xs: "var(--radius-xs)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",

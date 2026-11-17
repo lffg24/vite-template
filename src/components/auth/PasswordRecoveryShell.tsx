@@ -20,7 +20,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-background px-4 py-8 text-foreground sm:py-12">
       <div className="pointer-events-none absolute -right-24 -top-36 h-[360px] w-[360px] rounded-full bg-brand-primary/10 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-brand-turquoise/15 blur-3xl" aria-hidden="true" />
-      <Card className={`relative w-full border-border/70 bg-card p-6 shadow-card sm:p-9 ${illustrated ? "max-w-3xl rounded-2xl" : "max-w-lg rounded-[2rem]"}`}>
+      <Card className={`relative w-full border-border/70 bg-card p-6 shadow-card sm:p-9 ${illustrated ? "max-w-3xl rounded-2xl" : "max-w-lg rounded-2xl"}`}>
         {illustrated ? (
           <>
             <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-5">

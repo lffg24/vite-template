@@ -41,10 +41,10 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
   const theme = TOAST_THEME[toast.type];
   const Icon = theme.Icon;
   return (
-    <div className={`fixed right-5 top-5 z-[120] w-full max-w-[420px] overflow-hidden rounded-[26px] border backdrop-blur ${theme.wrapper}`}>
+    <div className={`fixed right-5 top-5 z-[120] w-full max-w-[420px] overflow-hidden rounded-2xl border backdrop-blur ${theme.wrapper}`}>
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90" />
       <div className="flex gap-4 p-5">
-        <div className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${theme.accent}`}>
+        <div className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl ${theme.accent}`}>
           {toast.icon || <Icon className="h-5 w-5" />}
         </div>
         <div className="min-w-0 flex-1">
@@ -63,7 +63,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
             </button>
           </div>
           {!!toast.details?.length && (
-            <div className="mt-3 rounded-2xl border border-border/80 bg-surface-subtle/80 px-4 py-3">
+            <div className="mt-3 rounded-xl border border-border/80 bg-surface-subtle/80 px-4 py-3">
               <ul className="space-y-1.5 text-sm text-foreground-soft">
                 {toast.details.map((detail) => (
                   <li key={detail} className="flex gap-2 leading-5">
@@ -84,7 +84,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 target="_blank"
                 rel="noreferrer"
                 style={toast.action.style}
-                className="mt-4 inline-flex items-center justify-center rounded-2xl bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+                className="mt-4 inline-flex items-center justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
               >
                 {toast.action.label}
               </a>
@@ -93,7 +93,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 type="button"
                 onClick={toast.action.onClick}
                 style={toast.action.style}
-                className="mt-4 inline-flex items-center justify-center rounded-2xl bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+                className="mt-4 inline-flex items-center justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
               >
                 {toast.action.label}
               </button>

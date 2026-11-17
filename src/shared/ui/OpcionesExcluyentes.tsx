@@ -34,6 +34,8 @@ export type OpcionExcluyente<T extends string> = {
 export function OpcionesExcluyentes<T extends string>({
   nombre,
   leyenda,
+  leyendaOculta,
+  disposicion = "lista",
   ayuda,
   valor,
   alCambiar,
@@ -43,6 +45,23 @@ export function OpcionesExcluyentes<T extends string>({
   /** `name` del grupo de radios. Único en el formulario. */
   nombre: string;
   leyenda: string;
+  /**
+   * Oculta la leyenda a la vista, nunca al lector de pantalla.
+   *
+   * Para cuando lo que envuelve al grupo ya lo nombra —un `<fieldset>`
+   * «Pregunta 3» con un único grupo dentro—. Verla dos veces estorba; no
+   * tenerla deja al lector con un grupo de radios sin nombre.
+   */
+  leyendaOculta?: boolean;
+  /**
+   * `lista` apila las opciones; `rejilla` las reparte en columnas que se
+   * adaptan solas al ancho.
+   *
+   * No es decoración: depende del largo de la descripción. Dos frases por
+   * opción se leen apiladas; media línea por opción, apilada, deja una columna
+   * de huecos.
+   */
+  disposicion?: "lista" | "rejilla";
   ayuda?: string;
   valor: T;
   alCambiar: (v: T) => void;
@@ -53,14 +72,28 @@ export function OpcionesExcluyentes<T extends string>({
 
   return (
     <fieldset className={cn("space-y-2", className)} aria-describedby={idAyuda}>
-      <legend className="font-rel-body text-sm font-medium text-rel-dark">{leyenda}</legend>
+      <legend
+        className={cn(
+          "font-rel-body text-sm font-medium text-rel-dark",
+          leyendaOculta && "sr-only"
+        )}
+      >
+        {leyenda}
+      </legend>
       {ayuda ? (
         <p id={idAyuda} className="font-rel-body text-sm text-rel-muted">
           {ayuda}
         </p>
       ) : null}
 
-      <div className="space-y-2 pt-1">
+      <div
+        className={cn(
+          "pt-1",
+          disposicion === "rejilla"
+            ? "grid gap-2 sm:grid-cols-[repeat(auto-fit,minmax(14rem,1fr))]"
+            : "space-y-2"
+        )}
+      >
         {opciones.map((o) => {
           const elegida = o.valor === valor;
           const id = `${nombre}-${o.valor}`;
@@ -71,6 +104,7 @@ export function OpcionesExcluyentes<T extends string>({
               htmlFor={id}
               className={cn(
                 "flex cursor-pointer items-start gap-3 rounded-rel-card border p-4 transition-colors",
+                disposicion === "rejilla" && "h-full",
                 elegida
                   ? "border-rel-primary bg-rel-accent-subtle"
                   : "border-rel-border bg-rel-surface hover:border-rel-border-strong",

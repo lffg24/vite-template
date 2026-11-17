@@ -7,7 +7,7 @@
 // Esta pagina tenia un sistema visual entero propio, no unas clases sueltas:
 // cian como acento (el de la casa es el primario turquesa), ambar y verde por
 // su cuenta para avisar, grises escritos a mano y cinco radios inventados
-// —`rounded-[18px]`, `[20px]`, `[28px]`, `[30px]`— que no existen en la escala
+// —`rounded-xl`, `[20px]`, `[28px]`, `[30px]`— que no existen en la escala
 // del producto. Sumaba 105 clases de color crudo: era el archivo mas desviado
 // de todo el frontend fuera de Psicosocial.
 //
@@ -381,7 +381,7 @@ function ManualPage() {
           {workflowSteps.map((step) => {
             const Icon = step.icon;
             return (
-              <article key={step.title} className="rounded-3xl border border-border bg-surface-subtle p-5">
+              <article key={step.title} className="rounded-2xl border border-border bg-surface-subtle p-5">
                 <div className="flex items-center gap-3">
                   <span className="grid h-11 w-11 place-items-center rounded-2xl bg-card text-primary shadow-sm">
                     <Icon className="h-5 w-5" />
@@ -402,7 +402,7 @@ function ManualPage() {
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {navigationMap.map((item) => (
-            <article key={item.route} className="rounded-3xl border border-border p-5">
+            <article key={item.route} className="rounded-2xl border border-border p-5">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">{item.title}</p>
               <p className="mt-3 rounded-2xl bg-surface-subtle px-3 py-2 font-mono text-xs text-foreground-soft">{item.route}</p>
               <p className="mt-4 text-sm leading-7 text-foreground-soft">{item.body}</p>
@@ -496,7 +496,7 @@ function TechnicalPage() {
               body: "Usa 31 ítems y una fórmula ponderada por bloques antes de clasificar el total con baremo oficial.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-border bg-surface-subtle p-5">
+            <article key={item.title} className="rounded-2xl border border-border bg-surface-subtle p-5">
               <h3 className="text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
             </article>
@@ -520,7 +520,7 @@ function TechnicalPage() {
             "Revisión final por profesional competente antes de emitir lectura e intervención.",
             "Trazabilidad conservada para recálculo, auditoría y soporte técnico.",
           ].map((item, index) => (
-            <article key={item} className="rounded-3xl border border-border p-5">
+            <article key={item} className="rounded-2xl border border-border p-5">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">Paso {index + 1}</p>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item}</p>
             </article>
@@ -566,26 +566,26 @@ function TechnicalPage() {
         icon={<Fingerprint className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-3xl border border-border p-5">
+          <article className="rounded-2xl border border-border p-5">
             <p className="text-sm font-black text-foreground">`psico_score_dimension`</p>
             <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Conserva puntaje transformado, nivel y validez por dimensión. Es la base de lectura detallada y reportes analíticos.
             </p>
           </article>
-          <article className="rounded-3xl border border-border p-5">
+          <article className="rounded-2xl border border-border p-5">
             <p className="text-sm font-black text-foreground">`psico_score_dominio`</p>
             <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Resume resultados normativos por dominio intralaboral, útil para informes ejecutivos y priorización de intervención.
             </p>
           </article>
-          <article className="rounded-3xl border border-border p-5">
+          <article className="rounded-2xl border border-border p-5">
             <p className="text-sm font-black text-foreground">`psico_score_total`</p>
             <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Guarda totales instrumentales y Total General. Sirve como base de dashboards, reportes oficiales y verificaciones de completitud.
             </p>
           </article>
         </div>
-        <div className="mt-5 rounded-3xl border border-warning/30 bg-warning-subtle p-5 text-sm leading-7 text-warning">
+        <div className="mt-5 rounded-2xl border border-warning/30 bg-warning-subtle p-5 text-sm leading-7 text-warning">
           ABRIL360 automatiza captura, tabulación, transformación, clasificación y reporte. No reemplaza la validación clínica, ocupacional o legal del profesional competente, ni convierte por sí mismo un resultado en diagnóstico.
         </div>
       </Surface>
@@ -628,7 +628,7 @@ function SecurityPage() {
               body: "Las credenciales e integraciones deben administrarse por variables de entorno y canales seguros, nunca embebidas en código o documentos.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-border bg-surface-subtle p-5">
+            <article key={item.title} className="rounded-2xl border border-border bg-surface-subtle p-5">
               <h3 className="text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
             </article>
@@ -692,13 +692,13 @@ function SecurityPage() {
               body: "Entrega referencias prácticas para verificación de seguridad web, autenticación, control de acceso, validación y reducción de exposición de aplicaciones.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-border p-5">
+            <article key={item.title} className="rounded-2xl border border-border p-5">
               <h3 className="text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
             </article>
           ))}
         </div>
-        <div className="mt-5 rounded-3xl border border-primary/20 bg-accent p-5 text-sm leading-7 text-foreground-soft">
+        <div className="mt-5 rounded-2xl border border-primary/20 bg-accent p-5 text-sm leading-7 text-foreground-soft">
           Mensaje prudente recomendado: “ABRIL360 se diseña y opera con referencia a buenas prácticas de seguridad de la información, privacidad y desarrollo seguro. Esta declaración no debe interpretarse como certificación ISO, SOC o sanitaria salvo que exista soporte formal y vigente”.
         </div>
       </Surface>
@@ -767,7 +767,7 @@ function CertificationPage() {
               body: "Actualiza la adopción de la batería y la guía técnica en el marco del Ministerio del Trabajo.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-border bg-surface-subtle p-5">
+            <article key={item.title} className="rounded-2xl border border-border bg-surface-subtle p-5">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">{item.year}</p>
               <h3 className="mt-3 text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
@@ -814,13 +814,13 @@ function CertificationPage() {
         icon={<BriefcaseBusiness className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-3xl border border-success/30 bg-success-subtle p-5">
+          <article className="rounded-2xl border border-success/30 bg-success-subtle p-5">
             <h3 className="text-base font-black text-success">Uso apropiado</h3>
             <p className="mt-3 text-sm leading-7 text-success">
               Aplicaciones formales de batería psicosocial, consolidación de resultados, soporte de informes, control documental y priorización de intervención con revisión profesional.
             </p>
           </article>
-          <article className="rounded-3xl border border-warning/30 bg-warning-subtle p-5">
+          <article className="rounded-2xl border border-warning/30 bg-warning-subtle p-5">
             <h3 className="text-base font-black text-warning">Límite de uso</h3>
             <p className="mt-3 text-sm leading-7 text-warning">
               No debe usarse como criterio único para diagnóstico, sanción, exclusión laboral o sustitución del juicio clínico y ocupacional del profesional habilitado.
@@ -882,14 +882,14 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
 
                   <p className="mt-4 max-w-4xl text-base leading-8 text-foreground-soft">{current.description}</p>
 
-                  <div className="mt-4 rounded-3xl bg-surface-subtle px-4 py-3 text-sm font-bold leading-7 text-foreground-soft ring-1 ring-border/80">
+                  <div className="mt-4 rounded-2xl bg-surface-subtle px-4 py-3 text-sm font-bold leading-7 text-foreground-soft ring-1 ring-border/80">
                     {current.promise}
                   </div>
                 </div>
 
                 <div className="grid gap-3 content-start">
                   {current.highlights.map((highlight) => (
-                    <article key={highlight} className="rounded-3xl border border-border bg-surface-subtle p-4">
+                    <article key={highlight} className="rounded-2xl border border-border bg-surface-subtle p-4">
                       <div className="flex gap-3">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         <p className="text-sm leading-7 text-foreground-soft">{highlight}</p>
@@ -911,14 +911,14 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
             <p className="text-xs font-black uppercase tracking-[0.22em] text-white/70">Señales de confianza</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               {current.stats.map((stat) => (
-                <article key={stat.label} className="rounded-3xl border border-white/10 bg-card/5 p-3.5">
+                <article key={stat.label} className="rounded-2xl border border-white/10 bg-card/5 p-3.5">
                   <p className="text-3xl font-black leading-none text-white">{stat.value}</p>
                   <p className="mt-1.5 text-sm font-bold leading-6 text-white">{stat.label}</p>
                   <p className="mt-1 text-xs leading-5 text-white/70">{stat.hint}</p>
                 </article>
               ))}
             </div>
-            <div className="mt-3 rounded-3xl border border-rel-turquoise/30 bg-rel-turquoise/15 p-4">
+            <div className="mt-3 rounded-2xl border border-rel-turquoise/30 bg-rel-turquoise/15 p-4">
               <p className="text-sm font-black text-white">Qué encontrarás en esta página</p>
               <ul className="mt-3 grid gap-2 text-sm leading-7 text-white/85">
                 {current.highlights.map((highlight) => (

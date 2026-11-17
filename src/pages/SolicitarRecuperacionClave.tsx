@@ -57,11 +57,11 @@ export default function SolicitarRecuperacionClave() {
             <Label htmlFor="recovery-email" className="font-bold">Correo electrónico</Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input id="recovery-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className="h-14 rounded-2xl pl-12 text-base" />
+              <Input id="recovery-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className="h-14 rounded-lg pl-12 text-base" />
             </div>
             {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
           </div>
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-marca text-base font-bold text-primary-foreground">
+          <Button type="submit" disabled={loading} className="h-14 w-full rounded-lg bg-marca text-base font-bold text-primary-foreground">
             {loading ? "Procesando..." : "Enviar enlace seguro"}
           </Button>
         </form>

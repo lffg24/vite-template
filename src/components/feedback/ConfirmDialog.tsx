@@ -26,7 +26,7 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[hsl(var(--overlay))] p-4 backdrop-blur-sm">
-      <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-border/80 bg-surface shadow-floating">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-floating">
         <div className="flex items-start gap-4 p-6">
           <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ring-1 ${badgeTone}`}>
             <Icon className="h-5 w-5" />
@@ -42,10 +42,10 @@ export function ConfirmDialog({
               </button>
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button type="button" onClick={onCancel} className="rounded-2xl border border-border px-5 py-3 text-sm font-bold text-foreground-soft transition hover:bg-surface-subtle">
+              <button type="button" onClick={onCancel} className="rounded-lg border border-border px-5 py-3 text-sm font-bold text-foreground-soft transition hover:bg-surface-subtle">
                 {cancelLabel}
               </button>
-              <button type="button" onClick={onConfirm} className={`rounded-2xl px-5 py-3 text-sm font-bold shadow-card transition ${buttonTone}`}>
+              <button type="button" onClick={onConfirm} className={`rounded-lg px-5 py-3 text-sm font-bold shadow-card transition ${buttonTone}`}>
                 {confirmLabel}
               </button>
             </div>
