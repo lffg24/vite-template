@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { StandardPagination } from "@/components/common/StandardPagination";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -310,7 +311,9 @@ export default function SuperAdminUsuariosPage() {
 
       <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-sm">
         {cargando ? (
-          <p role="status" className="p-6 text-sm">Cargando usuarios…</p>
+          <ZonaCargando cargando etiqueta="Cargando usuarios" esqueleto={<EsqueletoLista fichas={5} className="p-4" />}>
+            <span />
+          </ZonaCargando>
         ) : personas.length === 0 ? (
           <p className="p-6 text-sm text-rel-muted">No hay usuarios para esta búsqueda.</p>
         ) : (

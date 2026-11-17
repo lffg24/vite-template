@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { EsqueletoTexto, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,7 +82,7 @@ export default function ServicioAreasSheet({ servicio, cerrar }: { servicio: Ser
 
   return <Sheet open={servicio !== null} onOpenChange={(v) => { if (!v && !guardando) cerrar(); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>Áreas de {servicio?.nombre}</SheetTitle><SheetDescription>Asigna un área principal y hasta 49 colaboradoras. Los cambios conservan el historial.</SheetDescription></SheetHeader>
     <div className="mt-6 space-y-5">
-      {cargando ? <p role="status" className="text-rel-muted">Cargando responsabilidad…</p> : null}
+      {cargando ? <ZonaCargando cargando etiqueta="Cargando responsabilidad" esqueleto={<EsqueletoTexto lineas={3} />}><span /></ZonaCargando> : null}
       {error ? <div role="alert" className="text-sm text-rel-danger">{error}<Button type="button" variant="relOutline" size="sm" className="ml-2" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div> : null}
       {!cargando && actual ? <>
         <div><Label htmlFor="area-principal">Área principal</Label><select id="area-principal" value={principal ?? ""} disabled={guardando} onChange={(e) => { const id = Number(e.target.value) || null; setPrincipal(id); if (id) setColaboradoras((a) => a.filter((v) => v !== id)); }} className="mt-1 flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><option value="">Sin asignar</option>{conocidas.filter((a) => a.activo).map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</select></div>

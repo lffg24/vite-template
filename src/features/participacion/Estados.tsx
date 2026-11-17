@@ -8,22 +8,54 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, Loader2, Mail, WifiOff } from "lucide-react";
 import { Escena, type NombreEscena } from "@/shared/ui/Escena";
+import { useCargaVisible } from "@/shared/ui/Esqueleto";
 
 import { BotonSecundario, Panel } from "./ParticipanteLayout";
 import type { ErrorPublico, MotivoPublico } from "@/types/participacion";
 
-export function Cargando({ etiqueta = "Un momento…" }: { etiqueta?: string }) {
+/**
+ * La espera del recorrido público.
+ *
+ * Aquí el giro es lo correcto y no un esqueleto, al revés que en los listados:
+ * estas son cargas de RUTA —buscar el curso, abrir la lección, validar la
+ * invitación— donde lo que va a aparecer cambia de una pantalla a otra. Un
+ * esqueleto que promete una forma y entrega otra sienta peor que un giro.
+ *
+ * Lo que sí comparte con el resto del sistema es la regla de los 300 ms: por
+ * debajo de eso no se pinta nada. Quien abre el enlace con buena conexión no
+ * ve ningún destello, que es exactamente lo que debe pasar.
+ *
+ * Con `esqueleto` una pantalla puede dar su forma concreta, y entonces manda
+ * esa en lugar del giro.
+ */
+export function Cargando({
+  etiqueta = "Un momento…",
+  esqueleto,
+}: {
+  etiqueta?: string;
+  esqueleto?: ReactNode;
+}) {
+  const visible = useCargaVisible(true);
+
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center gap-3 py-16"
       role="status"
       aria-live="polite"
+      aria-busy="true"
     >
-      <Loader2
-        className="h-6 w-6 animate-spin text-rel-primary motion-reduce:animate-none"
-        aria-hidden="true"
-      />
-      <p className="text-sm text-rel-muted">{etiqueta}</p>
+      <span className="sr-only">{etiqueta}</span>
+      {!visible ? null : esqueleto ? (
+        <div className="w-full">{esqueleto}</div>
+      ) : (
+        <>
+          <Loader2
+            className="h-6 w-6 animate-spin text-rel-primary motion-reduce:animate-none"
+            aria-hidden="true"
+          />
+          <p aria-hidden="true" className="text-sm text-rel-muted">{etiqueta}</p>
+        </>
+      )}
     </div>
   );
 }

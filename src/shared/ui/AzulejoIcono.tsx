@@ -23,7 +23,7 @@ const TONO: Record<TonoAzulejo, string> = {
 };
 
 const TAMANO = {
-  sm: { caja: "h-9 w-9 rounded-rel-control", icono: "h-4 w-4" },
+  sm: { caja: "h-8 w-8 rounded-rel-control", icono: "h-4 w-4" },
   md: { caja: "h-11 w-11 rounded-rel-card", icono: "h-5 w-5" },
   lg: { caja: "h-10 w-10 rounded-rel-card sm:h-14 sm:w-14", icono: "h-5 w-5 sm:h-7 sm:w-7" },
 } as const;

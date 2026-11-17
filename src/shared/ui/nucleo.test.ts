@@ -668,7 +668,11 @@ describe("el núcleo es uno solo", () => {
   it("ninguna vista mezcla esqueleto y giro", () => {
     const mezclan = TODOS.filter((ruta) => {
       const texto = contenido(ruta);
-      return /animate-spin/.test(texto) && /Esqueleto|Skeleton/.test(texto);
+      // `<Esqueleto` y no `Esqueleto`: lo que cuenta es lo que se PINTA. Con
+      // la version laxa, un archivo que solo importa `useCargaVisible` del
+      // modulo de esqueletos —para aplicar la regla de los 300 ms a su giro—
+      // salia marcado como mezcla, y no lo es: es justo lo contrario.
+      return /animate-spin/.test(texto) && /<(?:Esqueleto|Skeleton)[\s/>]/.test(texto);
     }).map(comoRuta);
 
     const nuevos = mezclan.filter((r) => !MEZCLA_PENDIENTE.includes(r));
@@ -703,6 +707,74 @@ describe("el núcleo es uno solo", () => {
       "Usa la escala: `duration-press` (90 ms), `duration-exit` (130), " +
         "`duration-enter` (220), `duration-context` (280). Un numero suelto es " +
         "una quinta duracion que nadie volvera a mirar."
+    ).toEqual([]);
+  });
+
+  /**
+   * Los iconos tienen SIETE tamaños, y no un octavo.
+   *
+   * La libreria ya era una sola y el papel de cada icono ya estaba declarado.
+   * Lo que seguia suelto era la medida: habia **diez** tamaños distintos, y
+   * tres de ellos los usaban seis, siete y UN icono respectivamente. Un
+   * tamaño que usa un solo icono no es una decision de diseño, es un numero
+   * que alguien tecleo una vez.
+   *
+   * La escala es:
+   *
+   *   - **3.5** dentro de una pildora o una etiqueta.
+   *   - **4** el corriente, junto a texto. Son 297 de los 635.
+   *   - **5** en botones y cabeceras de seccion.
+   *   - **6** en cabecera de pagina y navegacion.
+   *   - **8** el azulejo de una tarjeta.
+   *   - **10** y **12** ya no son iconos: son ilustracion de un estado vacio
+   *     o de una pantalla de bienvenida.
+   *
+   * El 2026-11-17 se plegaron `h-3` → `h-3.5`, `h-7` → `h-8` y `h-9` → `h-8`
+   * en todo lo que no es Psicosocial. Lo que queda en la lista es Psicosocial,
+   * que no se migra.
+   */
+  const TAMANO_FUERA_DE_ESCALA_PENDIENTE = [
+    "components/ui/reportes/MultiSelectEvaluaciones.tsx",
+    "features/psicosocial/web-direct/WebDirectJourneyScreen.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/AplicacionesBTPage.tsx",
+    "pages/psicosocial/EmpresasPsicoPage.tsx",
+    "pages/psicosocial/PsicoEmpleadoRespuestasPage.tsx",
+  ];
+
+  it("los iconos salen de la escala, y no aparece un tamaño nuevo", () => {
+    const ESCALA = new Set(["3.5", "4", "5", "6", "8", "10", "12"]);
+    const ICONO = /<([A-Z][A-Za-z0-9]*)\b([^<>]*?)\/>/g;
+    const culpables: string[] = [];
+
+    for (const ruta of TODOS) {
+      const texto = contenido(ruta);
+      const imports = texto.match(/import\s*\{([^}]*)\}\s*from\s*"lucide-react"/);
+      if (!imports) continue;
+      const nombres = new Set(
+        imports[1].split(",").map((n) => n.trim().split(" as ").pop()!.trim()).filter(Boolean)
+      );
+      for (const [, tag, props] of texto.matchAll(ICONO)) {
+        if (!nombres.has(tag)) continue;
+        const medida = props.match(/\bh-([0-9.]+) w-\1\b/);
+        if (medida && !ESCALA.has(medida[1])) {
+          culpables.push(comoRuta(ruta));
+          break;
+        }
+      }
+    }
+
+    const nuevos = culpables.filter((r) => !TAMANO_FUERA_DE_ESCALA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "La escala es 3.5 · 4 · 5 · 6 · 8, mas 10 y 12 para ilustrar un estado " +
+        "vacio. Un tamaño nuevo es un octavo criterio que nadie volvera a mirar."
+    ).toEqual([]);
+
+    const yaEnEscala = TAMANO_FUERA_DE_ESCALA_PENDIENTE.filter((r) => !culpables.includes(r));
+    expect(
+      yaEnEscala,
+      "Ya estan en la escala: borralos de TAMANO_FUERA_DE_ESCALA_PENDIENTE."
     ).toEqual([]);
   });
 

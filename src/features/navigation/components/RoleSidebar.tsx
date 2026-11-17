@@ -44,7 +44,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
           </span>
         )}
       </div>
-      {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/85 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : <ChevronLeft className="h-4 w-4" aria-hidden="true" />}</button>}
+      {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/85 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : <ChevronLeft className="h-4 w-4" aria-hidden="true" />}</button>}
     </div>
     <div className={`mb-4 flex items-center rounded-2xl border border-white/10 bg-white/5 ${compact ? "justify-center p-2" : "gap-3 p-3"}`}>
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold ${rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600"}`}>{avatarText}</span>

@@ -323,7 +323,7 @@ export default function SuperAdminHabilitacionPage() {
         <section className="min-w-0 space-y-5">
           {!empresa ? (
             <div className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center">
-              <ShieldCheck className="mx-auto mb-3 h-7 w-7 text-rel-muted" aria-hidden="true" />
+              <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-rel-muted" aria-hidden="true" />
               <h2 className="font-rel-heading font-bold">Elige una empresa</h2>
               <p className="mt-1 text-sm text-rel-muted">
                 Aquí verás qué le falta para usar {configuracion.nombre}.

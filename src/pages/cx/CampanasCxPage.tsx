@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
+import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { CodigoQr } from "@/shared/ui/CodigoQr";
 import { listarContextos, listarServiciosDeSede } from "@/services/cxContextosService";
 import { listarCatalogoCx } from "@/services/cxPuntosFactoresService";
@@ -126,7 +127,7 @@ export default function CampanasCxPage() {
       <div className="sm:col-span-2 lg:col-span-3"><Button type="submit" variant="rel" className="w-full sm:w-auto" disabled={ocupado || !encuestas.length}>{ocupado ? "Guardando…" : "Crear campaña y QR"}</Button><p className="mt-2 text-sm text-rel-muted">Se crea en pausa. Actívala cuando el acceso público esté habilitado y probado.</p></div>
     </form></Panel>
     <Panel titulo="Campañas de tu empresa">
-      {cargando ? <p role="status" className="py-6 text-rel-muted">Cargando campañas…</p> : null}
+      {cargando ? <ZonaCargando cargando etiqueta="Cargando campañas" esqueleto={<EsqueletoLista fichas={3} />}><span /></ZonaCargando> : null}
       {error ? <p role="alert" className="py-6 text-rel-danger">{error} <Button variant="relOutline" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></p> : null}
       {!cargando && !error && campanas.length === 0 ? <p className="py-6 text-rel-muted">Aún no hay campañas. Crea una desde una encuesta publicada.</p> : null}
       {!cargando && !error ? <ul className="space-y-4">{campanas.map((campana) => {

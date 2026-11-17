@@ -466,7 +466,7 @@ export function LeccionesEditor({
               >
                 <div className="flex flex-wrap items-start gap-3 sm:flex-nowrap">
                 <span
-                  className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rel-canvas font-rel-heading text-sm font-bold tabular-nums text-rel-dark"
+                  className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rel-canvas font-rel-heading text-sm font-bold tabular-nums text-rel-dark"
                   aria-hidden="true"
                 >
                   {i + 1}

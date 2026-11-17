@@ -141,6 +141,43 @@ export function EsqueletoTabla({
   );
 }
 
+/**
+ * Una lista vertical de fichas: lo que usan CX y superadministración.
+ *
+ * No es la rejilla de tarjetas ni la tabla: son filas anchas con un título, un
+ * apoyo y un par de etiquetas. Tiene su propia forma porque esa es la regla —
+ * un esqueleto que salta a otra maqueta al cargar es peor que no poner nada.
+ */
+export function EsqueletoLista({
+  fichas = 4,
+  className,
+}: {
+  fichas?: number;
+  className?: string;
+}) {
+  return (
+    <span className={cn("block space-y-3", className)}>
+      {Array.from({ length: fichas }).map((_, i) => (
+        <span
+          key={i}
+          className="flex items-center justify-between gap-4 rounded-xl border border-border p-4 motion-safe:animate-entrada"
+          style={{ animationDelay: `calc(${i} * var(--motion-stagger))` }}
+        >
+          <span className="min-w-0 flex-1 space-y-2">
+            <Esqueleto className="h-3 w-24" />
+            <Esqueleto className="h-4 w-2/3" />
+            <span className="flex gap-2">
+              <Esqueleto className="h-5 w-20 rounded-full" />
+              <Esqueleto className="h-5 w-28 rounded-full" />
+            </span>
+          </span>
+          <Esqueleto className="h-9 w-32 shrink-0 rounded-lg" />
+        </span>
+      ))}
+    </span>
+  );
+}
+
 /** Una rejilla de tarjetas, con el alto de las que van a llegar. */
 export function EsqueletoTarjetas({
   tarjetas = 4,

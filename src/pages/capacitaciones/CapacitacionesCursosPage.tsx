@@ -70,7 +70,7 @@ export default function CapacitacionesCursosPage() {
         />
         <section role="status" className="mx-auto max-w-2xl rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center shadow-sm">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-rel-surface-subtle text-rel-primary">
-            <LockKeyhole className="h-7 w-7" aria-hidden="true" />
+            <LockKeyhole className="h-8 w-8" aria-hidden="true" />
           </div>
           <h2 className="mt-5 font-rel-heading text-xl font-black text-rel-dark">
             Tu rol gestiona capacitaciones, no el catálogo global

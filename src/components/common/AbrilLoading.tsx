@@ -5,7 +5,7 @@ export function AbrilLoading({ title = "Procesando información", subtitle = "Es
     <div className="grid min-h-[360px] place-items-center rounded-3xl border border-border/70 bg-white/80 p-8 shadow-card">
       <div className="flex max-w-md flex-col items-center text-center">
         <div className="relative mb-5 grid h-20 w-20 place-items-center rounded-3xl bg-accent text-brand-primary ring-8 ring-accent/70">
-          <Loader2 className="h-9 w-9 animate-spin" aria-hidden="true" />
+          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
           <div className="absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full bg-white text-brand-turquoise shadow-card">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           </div>

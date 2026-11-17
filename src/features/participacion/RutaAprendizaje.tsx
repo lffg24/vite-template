@@ -94,7 +94,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
               ) : bloqueada ? (
                 <>
                   <Pill tono="neutro" punto={false}>
-                    <Lock className="h-3 w-3" aria-hidden="true" /> Bloqueada
+                    <Lock className="h-3.5 w-3.5" aria-hidden="true" /> Bloqueada
                   </Pill>
                   <span className="text-xs text-rel-muted">Termina la lección anterior</span>
                 </>
@@ -114,7 +114,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
             <div className="flex flex-col items-center" aria-hidden="true">
               <span
                 className={cn(
-                  "grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm font-bold",
+                  "grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold",
                   l.completada
                     ? "bg-rel-success text-white"
                     : enCurso
