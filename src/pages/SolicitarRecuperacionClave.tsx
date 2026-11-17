@@ -61,7 +61,7 @@ export default function SolicitarRecuperacionClave() {
             </div>
             {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
           </div>
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary to-brand-dark text-base font-bold text-primary-foreground">
+          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-marca text-base font-bold text-primary-foreground">
             {loading ? "Procesando..." : "Enviar enlace seguro"}
           </Button>
         </form>

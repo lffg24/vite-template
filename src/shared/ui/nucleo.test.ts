@@ -538,18 +538,13 @@ describe("el núcleo es uno solo", () => {
    * O sea que el defecto no es de estas cuatro pantallas: es del token, y
    * estas son donde se ve.
    *
-   * Arreglarlo es UNA linea (`--primary-foreground: var(--brand-dark)`), pero
-   * cambia el color del texto de todos los botones primarios del producto,
-   * Psicosocial incluido, y eso es una decision del dueño del producto, no de
-   * quien homologa. Hasta que se tome, quedan congeladas: la lista solo puede
-   * menguar y ninguna pantalla nueva puede entrar.
+   * **Resuelto el 2026-11-17**, a peticion expresa del dueño del producto:
+   * `--primary-foreground` pasa a ser el azul de marca, las cuatro pantallas
+   * dejan de escribir `text-white` a mano, y la lista queda vacia. Vacia es
+   * como tiene que quedarse: cualquier nombre que vuelva a aparecer aqui es
+   * una pantalla nueva incumpliendo, no deuda heredada.
    */
-  const BLANCO_SOBRE_MARCA_PENDIENTE = [
-    "components/ui/preguntas/PreguntaLikert.tsx",
-    "components/ui/preguntas/PreguntaSemaforo.tsx",
-    "components/ui/usuarios/FormularioUsuario.tsx",
-    "pages/psicosocial/EmpresaPerfilPage.tsx",
-  ];
+  const BLANCO_SOBRE_MARCA_PENDIENTE: string[] = [];
 
   it("nadie escribe en blanco sobre el turquesa de marca", () => {
     const enBlancoSobreMarca =
@@ -616,6 +611,98 @@ describe("el núcleo es uno solo", () => {
       "Un icono decorativo lleva `aria-hidden=\"true\"`; uno que ES el control " +
         "lleva `aria-label`. Sin ninguno de los dos, el lector de pantalla " +
         "repite lo que el botón ya dice."
+    ).toEqual([]);
+  });
+
+  /**
+   * La carga es un sistema, no un giro por defecto.
+   *
+   * La peticion fue «esqueletos en todas las pantallas». La biblioteca de
+   * patrones de la que sale esa idea dice, en el patron de al lado, que el
+   * esqueleto puesto en todo es la señal de una interfaz perezosa. Las dos
+   * cosas son ciertas y lo que decide es QUE SE SABE de la espera: si se sabe
+   * la forma, esqueleto; si no se sabe y es corta, giro; si se sabe el
+   * porcentaje, barra; por debajo de 300 ms, nada.
+   *
+   * Lo que esta prueba impide es el unico caso sin matices: **un giro tapando
+   * la pantalla entera**. Un giro no dice ni que se carga ni cuanto falta, asi
+   * que a pantalla completa se lee como una aplicacion congelada. Para eso
+   * estan las formas de `@/shared/ui/Esqueleto`.
+   *
+   * El 2026-11-17 se retiro `components/loading/AppLoadingOverlay.tsx`, que
+   * era exactamente eso y ademas no lo importaba ningun archivo: una cuarta
+   * implementacion de carga, muerta, esperando a que alguien la encontrara.
+   */
+  /** Psicosocial, que no se migra. Solo puede menguar. */
+  const GIRO_PANTALLA_PENDIENTE = ["pages/psicosocial/AplicacionDetallePage.tsx"];
+
+  it("ningun giro tapa la pantalla entera", () => {
+    const culpables = TODOS.filter((ruta) => {
+      const texto = contenido(ruta);
+      if (!texto.includes("animate-spin")) return false;
+      // Mismo elemento o muy cerca: una capa a pantalla completa con un giro.
+      return /fixed inset-0[^"'`]*"[\s\S]{0,400}?animate-spin/.test(texto);
+    }).map(comoRuta);
+
+    const nuevos = culpables.filter((r) => !GIRO_PANTALLA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Un giro a pantalla completa se lee como una aplicacion congelada. " +
+        "Usa `ZonaCargando` con la forma de lo que viene, de " +
+        "`@/shared/ui/Esqueleto`."
+    ).toEqual([]);
+
+    const yaLimpios = GIRO_PANTALLA_PENDIENTE.filter((r) => !culpables.includes(r));
+    expect(yaLimpios, "Ya no tapan la pantalla: borralos de GIRO_PANTALLA_PENDIENTE.").toEqual([]);
+  });
+
+  /**
+   * Y nadie mezcla las dos cosas en la misma vista.
+   *
+   * Un esqueleto dice «esto va a tener esta forma» y un giro dice «no se lo
+   * que viene». Juntos se contradicen, y la pantalla parece montada por dos
+   * personas que no hablaron.
+   */
+  const MEZCLA_PENDIENTE = ["pages/ReportesPsico.tsx"];
+
+  it("ninguna vista mezcla esqueleto y giro", () => {
+    const mezclan = TODOS.filter((ruta) => {
+      const texto = contenido(ruta);
+      return /animate-spin/.test(texto) && /Esqueleto|Skeleton/.test(texto);
+    }).map(comoRuta);
+
+    const nuevos = mezclan.filter((r) => !MEZCLA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "O esqueleto —cuando se sabe la forma— o giro —cuando no y la espera es " +
+        "corta—, nunca los dos en la misma vista."
+    ).toEqual([]);
+
+    const yaLimpios = MEZCLA_PENDIENTE.filter((r) => !mezclan.includes(r));
+    expect(yaLimpios, "Ya no mezclan: borralos de MEZCLA_PENDIENTE.").toEqual([]);
+  });
+
+  /**
+   * Hay UNA escala de movimiento, y las duraciones salen de ella.
+   *
+   * Habia dos casi iguales —160/220/300 y 150/220/280— y la de la casa
+   * practicamente no se usaba. Peor: 180 sitios escriben `transition` a secas,
+   * y Tailwind les daba 150 ms con la curva `ease`, que arranca y frena igual.
+   * Eso es literalmente lo que se percibe como «plano». Hoy el valor por
+   * defecto de `transition` es la curva y la duracion de la casa, asi que esos
+   * 180 sitios se movieron sin tocar ni uno.
+   *
+   * Lo que esta prueba impide es volver a escribir milisegundos a mano.
+   */
+  it("nadie escribe duraciones de animacion a mano", () => {
+    const A_MANO = /\bduration-\[\d+m?s\]|transition-duration:\s*\d/;
+    const culpables = TODOS.filter((ruta) => A_MANO.test(contenido(ruta))).map(comoRuta);
+
+    expect(
+      culpables,
+      "Usa la escala: `duration-press` (90 ms), `duration-exit` (130), " +
+        "`duration-enter` (220), `duration-context` (280). Un numero suelto es " +
+        "una quinta duracion que nadie volvera a mirar."
     ).toEqual([]);
   });
 

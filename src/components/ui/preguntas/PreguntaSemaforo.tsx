@@ -57,7 +57,7 @@ export default function PreguntaSemaforo({
               onClick={() => onSeleccionar(pregunta.id, color)}
               className={`flex items-center px-5 py-3 rounded-xl border transition font-semibold ${
                 activo
-                  ? "bg-primary text-white border-primary"
+                  ? "bg-primary text-primary-foreground border-primary"
                   : "bg-muted hover:bg-accent"
               }`}
             >

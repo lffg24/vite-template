@@ -237,7 +237,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-14 w-full rounded-2xl bg-gradient-to-r from-brand-primary via-brand-turquoise to-brand-sky text-base font-bold shadow-floating transition hover:from-primary-hover hover:via-brand-primary hover:to-brand-turquoise"
+                  className="h-14 w-full rounded-2xl bg-marca text-base font-bold shadow-floating transition hover:brightness-[0.96]"
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">

@@ -47,7 +47,7 @@ export default function PreguntaLikert({
             key={opcion}
             className={`cursor-pointer px-4 py-3 rounded-xl border transition ${
               valorSeleccionado === opcion
-                ? "bg-primary text-white border-primary"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-muted hover:bg-accent"
             }`}
             onClick={() => onSeleccionar(pregunta.id, opcion)}

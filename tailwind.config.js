@@ -101,6 +101,9 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          /* La marca cuando hace de TEXTO sobre superficie clara. Ver la nota
+             larga de `--primary` en `index.css`. */
+          ink: "hsl(var(--primary-ink))",
           hover: "hsl(var(--primary-hover))",
           active: "hsl(var(--primary-active))",
         },
@@ -206,7 +209,33 @@ export default {
       /* Las seis duraciones en una sola clave. Ver la nota del principio de
          `extend`: estaban en dos declaraciones y la segunda borraba a la
          primera. */
+      backgroundImage: {
+        /* El degradado de marca, UNA vez.
+           Los tres botones de las pantallas de acceso llevaban cada uno el
+           suyo, y los tres recorrian demasiada distancia: uno iba del turquesa
+           al azul marino, y sobre un degradado asi NINGUN color de texto pasa
+           el contraste de punta a punta —blanco se pierde en el extremo claro,
+           oscuro se pierde en el oscuro—. No era un defecto de un boton: era
+           un degradado mal elegido, repetido tres veces.
+           Los tres pasos de este se quedan dentro de la misma banda de
+           luminosidad, asi que el texto oscuro se lee en todo el recorrido
+           (5,6:1 en el peor punto). */
+        marca:
+          "linear-gradient(90deg, hsl(var(--primary-hover)) 0%, hsl(var(--primary)) 55%, hsl(var(--brand-sky)) 100%)",
+      },
       transitionDuration: {
+        /* `DEFAULT` es el cambio con mas alcance de todo el sistema de
+           movimiento: hay 180 sitios que escriben `transition` a secas, y
+           Tailwind les daba 150 ms con la curva `ease`, que arranca y frena
+           igual. Eso es exactamente lo que se percibe como «plano» o
+           «barato». Con esto, esos 180 sitios pasan a la curva de la casa
+           sin tocar ni uno. */
+        DEFAULT: "var(--motion-enter)",
+        press: "var(--motion-press)",
+        exit: "var(--motion-exit)",
+        enter: "var(--motion-enter)",
+        context: "var(--motion-context)",
+        attention: "var(--motion-attention)",
         fast: "var(--motion-fast)",
         standard: "var(--motion-standard)",
         slow: "var(--motion-slow)",
@@ -217,11 +246,28 @@ export default {
       /* Curvas de salida. Sin esto, toda transicion usa `ease` y se percibe
          plana; ver la nota de `--rel-ease-*` en `index.css`. */
       transitionTimingFunction: {
+        /* Misma idea que la duracion por defecto: `ease-out` sale deprisa y
+           aterriza despacio, que es como se mueven las cosas reales. `ease`
+           no, y por eso se nota. */
+        DEFAULT: "var(--rel-ease-out)",
         "rel-out": "var(--rel-ease-out)",
         "rel-inout": "var(--rel-ease-inout)",
         "rel-spring": "var(--rel-ease-spring)",
       },
       keyframes: {
+        /* Entrada estandar: sube 8 px y aparece. Los 8 px no son decorativos
+           — son los que hacen que el ojo lea «esto acaba de llegar» en vez de
+           «esto parpadeo». Mas recorrido y el bloque se arrastra. */
+        entrada: {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        /* El barrido del esqueleto. Un esqueleto quieto se lee como roto; uno
+           que recorre se lee como «en camino». */
+        barrido: {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(100%)" },
+        },
         "accordion-down": {
           from: {
             height: 0,
@@ -240,8 +286,10 @@ export default {
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        entrada: "entrada var(--motion-enter) var(--rel-ease-out) both",
+        barrido: "barrido 1.6s var(--rel-ease-inout) infinite",
+        "accordion-down": "accordion-down var(--motion-enter) var(--rel-ease-out)",
+        "accordion-up": "accordion-up var(--motion-exit) var(--rel-ease-out)",
       },
     },
   },

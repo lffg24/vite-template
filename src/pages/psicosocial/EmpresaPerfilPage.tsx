@@ -332,7 +332,7 @@ function EmpresaEditDrawer({ empresa, onClose, onSaved, onError }: { empresa: Em
           {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-700">{error}</div>}
           <div className="flex justify-end gap-3 border-t pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border px-5 py-3 font-bold hover:bg-slate-50">Cancelar</button>
-            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-brand-primary hover:bg-primary-hover px-6 py-3 font-bold text-white disabled:opacity-60">
+            <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary hover:bg-primary-hover px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Guardar cambios
             </button>
           </div>

@@ -84,7 +84,13 @@ export function PanelLateral({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex justify-end bg-rel-dark/40 backdrop-blur-sm"
+      /* El velo entra con una atenuacion y la hoja se desliza. Sin esto el
+         panel APARECE de golpe, que es lo que separa una interfaz cara de una
+         barata: el ojo no entiende de donde salio y lee el salto como un
+         fallo. Entrada en 220 ms con `ease-out` —sale deprisa y aterriza
+         despacio, como cualquier objeto real—, y anulada para quien pide
+         menos movimiento. */
+      className="fixed inset-0 z-[100] flex justify-end bg-rel-dark/40 backdrop-blur-sm animate-in fade-in duration-enter motion-reduce:animate-none"
       // Cerrar al pulsar el velo, pero NO al soltar el ratón fuera tras haber
       // seleccionado texto dentro: eso borraría lo que se estaba rellenando.
       onMouseDown={(evento) => {
@@ -99,6 +105,7 @@ export function PanelLateral({
         tabIndex={-1}
         className={cn(
           "flex h-full w-full flex-col bg-surface shadow-2xl focus:outline-none",
+          "animate-in slide-in-from-right duration-enter ease-rel-out motion-reduce:animate-none",
           ANCHOS[ancho],
           className
         )}

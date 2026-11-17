@@ -45,7 +45,7 @@ import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CursorPagination, StandardPagination } from "@/components/common/StandardPagination";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto, useCargaVisible } from "./Esqueleto";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import { TablaBody, TablaHead, TablaPanel } from "./Panel";
@@ -281,6 +281,11 @@ export function TablaDatos<T>({
   const esMovil = useIsMobile();
 
   const { titulares, acciones, detalle } = repartirMovil(columnas);
+  /* Los primeros 300 ms de espera no se pintan. Por debajo de ese umbral el
+     ojo lee la aparicion y la desaparicion del esqueleto como un parpadeo, y
+     un parpadeo se percibe como un fallo grafico y no como una respuesta.
+     Esta linea le da esa regla a TODAS las pantallas que usan la tabla. */
+  const esqueletoVisible = useCargaVisible(cargando);
   const sinFilas = !cargando && visibles.length === 0;
   // Ni una fila de esqueleto —una tabla vacía parpadeando— ni treinta: las que
   // se van a ver sin desplazar la página.
@@ -332,12 +337,12 @@ export function TablaDatos<T>({
            desborda de lado. */
         !esMovil || sinFilas ? null : (
         <div className="grid gap-3 p-4">
-          {cargando ? (
+          {cargando ? (esqueletoVisible &&
             Array.from({ length: 3 }, (_, i) => (
               <div key={`esqueleto-${i}`} className="rounded-xl border border-border p-4">
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="mt-3 h-4 w-full" />
-                <Skeleton className="mt-2 h-4 w-4/5" />
+                <Esqueleto className="h-5 w-2/3" />
+                <Esqueleto className="mt-3 h-4 w-full" />
+                <Esqueleto className="mt-2 h-4 w-4/5" />
               </div>
             ))
           ) : (
@@ -461,7 +466,7 @@ export function TablaDatos<T>({
         </TablaHead>
 
         <TablaBody>
-          {cargando ? (
+          {cargando ? (esqueletoVisible &&
             /* Esqueleto con la forma de la tabla, no un texto «Cargando…»: el
                encabezado y el alto de fila ya están puestos, así que cuando
                llegan los datos no salta nada de sitio. */
@@ -469,7 +474,7 @@ export function TablaDatos<T>({
               <TableRow key={`esqueleto-${i}`}>
                 {columnas.map((c) => (
                   <TableCell key={c.clave}>
-                    <Skeleton className={cn("h-4", c.soloAcciones ? "ml-auto w-16" : "w-3/4")} />
+                    <Esqueleto className={cn("h-4", c.soloAcciones ? "ml-auto w-16" : "w-3/4")} />
                   </TableCell>
                 ))}
               </TableRow>

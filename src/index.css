@@ -12,7 +12,10 @@
     --font-heading: "Open Sans";
     --font-body: "Open Sans";
 
-    --brand-primary: 173 100% 23%;
+    /* Era un literal igual a `--primary-active`, o sea un segundo nombre
+       para lo mismo. En los 36 archivos que la usan hace de TEXTO, asi que
+       hoy es la tinta y no un color aparte. */
+    --brand-primary: var(--primary-ink);
     --brand-turquoise: 172 100% 36%;
     --brand-sky: 172 100% 41%;
     --brand-dark: 215 42% 13%;
@@ -41,10 +44,48 @@
     --input: 168 18% 85%;
     --input-focus: 172 100% 36%;
 
+    /* ===== La marca, y sus dos papeles ================================
+       Decision del 2026-11-17. El turquesa de ABRIL es el de la casa y no se
+       toca: `--primary` sigue valiendo exactamente lo que valia. Lo que
+       cambia es lo que lo rodea, y cambia por una razon medible.
+
+       ## El relleno lleva texto OSCURO
+
+       `--primary-foreground` valia blanco. Blanco sobre este turquesa da
+       **2,5:1** y el minimo para texto es 4,5:1 — no es «se lee peor», es que
+       no se lee: ni con poca vision ni con el movil al sol. El azul de marca
+       encima da **6,6:1**.
+
+       Es el boton primario del producto, asi que el cambio se ve en todas
+       partes, Psicosocial incluida. Se hizo a peticion expresa del dueño del
+       producto.
+
+       ## La rampa oscura tuvo que SUBIR
+
+       Con texto oscuro encima, cada escalon del relleno tiene que seguir
+       siendo lo bastante claro para que ese texto se lea. El estado pulsado
+       estaba en 23 % de luminosidad: con texto oscuro daba 3,0:1. Hoy la
+       rampa es 36 % → 33 % → 31 %, y los tres pasan (6,6:1 · 5,6:1 · 4,8:1).
+
+       Parece poco recorrido para un estado pulsado, y lo es a proposito: en un
+       relleno claro el hundido lo cuenta `active:scale`, no el color. Bajar
+       mas obligaria a cambiar el texto a mitad de gesto.
+
+       ## La tinta es OTRO token, no el estado pulsado
+
+       `--primary-ink` es la marca cuando hace de TEXTO sobre superficie clara.
+       Tiene que ser bastante mas oscura (5,9:1 sobre blanco) y por eso no
+       puede ser el mismo valor que el pulsado. Antes lo era, y de ahi venia
+       la sensacion de que habia «dos primarios».
+
+       Y baja de 100 % a 85 % de saturacion al oscurecerse: un tono oscuro a
+       saturacion plena se lee acido, como de plantilla. Desaturar un poco al
+       bajar la luminosidad es lo que hace que una rampa parezca elegida. */
     --primary: 172 100% 36%;
-    --primary-hover: 172 100% 32%;
-    --primary-active: 173 100% 23%;
-    --primary-foreground: 0 0% 100%;
+    --primary-hover: 173 100% 33%;
+    --primary-active: 173 95% 31%;
+    --primary-foreground: var(--brand-dark);
+    --primary-ink: 174 85% 24%;
 
     --secondary: 180 24% 98%;
     --secondary-foreground: 218 57% 11%;
@@ -96,9 +137,41 @@
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
     --illustration-radius: var(--radius-lg);
 
-    --motion-fast: 160ms;
-    --motion-standard: 220ms;
-    --motion-slow: 300ms;
+    /* ===== Movimiento ==================================================
+       Habia DOS escalas casi iguales —`--motion-*` en 160/220/300 y
+       `--rel-motion-*` en 150/220/280— y la de la casa practicamente no se
+       usaba. Hoy es una sola, y los nombres dicen la INTENCION, no el tamaño:
+       «rapido» no explica por que algo dura lo que dura.
+
+       Las cifras no son de gusto. Son las que separan una interfaz que se
+       siente cara de una que se siente rota:
+
+         - **press (90 ms)** · la respuesta al dedo. Por encima de 100 ms el
+           gesto se percibe como retardo aunque la accion sea instantanea.
+         - **exit (130 ms)** · salir SIEMPRE mas rapido que entrar, en torno a
+           un 40 % menos. Una salida que dura lo mismo que la entrada se
+           siente como si la interfaz se resistiera a irse.
+         - **enter (220 ms)** · entradas y cambios de estado. Por debajo de
+           200 ms no da tiempo a leer el movimiento; por encima de 300 ms
+           estorba.
+         - **context (280 ms)** · algo que recorre distancia y debe leerse
+           entero: un panel que se abre, una pagina que cambia.
+         - **attention (600 ms)** · solo para lo que debe robar la mirada, y
+           solo con la curva de muelle.
+         - **stagger (50 ms)** · el desfase entre elementos de una lista al
+           entrar. Con 30 ms se funden en un bloque; con 100 ms la lista se
+           arrastra. */
+    --motion-press: 90ms;
+    --motion-exit: 130ms;
+    --motion-enter: 220ms;
+    --motion-context: 280ms;
+    --motion-attention: 600ms;
+    --motion-stagger: 50ms;
+
+    /* Los nombres anteriores siguen resolviendo, para no romper lo escrito. */
+    --motion-fast: var(--motion-press);
+    --motion-standard: var(--motion-enter);
+    --motion-slow: var(--motion-context);
 
     --shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
     --shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
@@ -149,8 +222,12 @@
 
     --primary: 172 100% 36%;
     --primary-hover: 172 100% 41%;
-    --primary-active: 173 100% 23%;
+    --primary-active: 173 100% 31%;
     --primary-foreground: 215 42% 13%;
+    /* Sobre fondo oscuro la tinta no puede ser la del tema claro: seria verde
+       oscuro sobre casi negro. Aqui la marca como texto es el propio relleno,
+       que sobre el fondo oscuro da de sobra. */
+    --primary-ink: var(--primary);
 
     --secondary: 218 24% 18%;
     --secondary-foreground: 180 17% 92%;
@@ -352,7 +429,7 @@
        media pantalla lo usaba como fondo con texto blanco y la otra mitad
        como color de letra. */
     --rel-accent: var(--primary);
-    --rel-accent-ink: var(--primary-active);
+    --rel-accent-ink: var(--primary-ink);
     --rel-accent-subtle: var(--accent);
     --rel-turquoise: var(--brand-turquoise);
     --rel-turquoise-foreground: 0 0% 100%;
@@ -417,9 +494,10 @@
     --rel-font-body: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 
     /* --- movimiento (constitucion §15) --- */
-    --rel-motion-micro: 150ms;
-    --rel-motion-panel: 220ms;
-    --rel-motion-context: 280ms;
+    /* Referencian la escala unica; ya no son una segunda tabla de valores. */
+    --rel-motion-micro: var(--motion-press);
+    --rel-motion-panel: var(--motion-enter);
+    --rel-motion-context: var(--motion-context);
 
     /* Curvas. Faltaban, y su ausencia es la razon de que las transiciones se
        sientan planas: sin `transition-timing-function` el navegador aplica
@@ -459,10 +537,21 @@
 
 @layer base {
   /* §21: foco visible siempre, y §15: respetar reduced-motion. */
+  /* Esta regla vivia dentro de `.rel-scope`, asi que quien pide menos
+     movimiento lo obtenia en CX y Capacitaciones y en ningun otro sitio: el
+     resto del producto —Psicosocial incluida— seguia animando igual. No era
+     una decision, era el alcance de un selector. Hoy es global.
+
+     `scroll-behavior` entra aqui tambien: un salto de ancla animado es de las
+     cosas que peor sientan a quien tiene sensibilidad al movimiento. */
   @media (prefers-reduced-motion: reduce) {
-    .rel-scope *,
-    .rel-scope *::before,
-    .rel-scope *::after {
+    html {
+      scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
       animation-duration: 1ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 1ms !important;
