@@ -11,6 +11,7 @@
 
 import { useRef, useState } from "react";
 
+import { Autorizaciones } from "@/shared/ui/Autorizaciones";
 import { Campo } from "@/shared/ui/Campo";
 import { Input } from "@/components/ui/input";
 import { BotonPrincipal } from "./ParticipanteLayout";
@@ -253,76 +254,21 @@ export function FormularioIdentidad({
           falta marcar LAS DOS, así que el problema es del conjunto. Al recibir
           el foco una casilla, el lector de pantalla anuncia la leyenda del
           fieldset y su descripción, y ahí es donde suena el motivo. */}
-      <fieldset
-        className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
-        aria-describedby={errores.aceptaciones ? "err-aceptaciones" : undefined}
+      <Autorizaciones
+        textos={textos}
+        marcados={marcados}
+        alCambiar={setMarcados}
+        idError={errores.aceptaciones ? "err-aceptaciones" : undefined}
+        refPrimera={(el) => {
+          primeraCasilla.current = el;
+        }}
       >
-        <legend className="px-1 text-sm font-semibold">Autorizaciones</legend>
-        <div className="space-y-4">
-          {textos.map((t, i) => (
-            <div key={t.clave}>
-              <label className="flex cursor-pointer items-start gap-3">
-                <input
-                  ref={i === 0 ? primeraCasilla : undefined}
-                  type="checkbox"
-                  checked={Boolean(marcados[t.clave])}
-                  onChange={(e) =>
-                    setMarcados((m) => ({ ...m, [t.clave]: e.target.checked }))
-                  }
-                  // 20 px: una casilla de 13 px por defecto es imposible de dar
-                  // con el pulgar.
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-[hsl(var(--rel-primary))]"
-                  // Solo cuando el texto está DESPLEGADO. `hidden` saca el
-                  // elemento del árbol de accesibilidad, así que apuntar ahí
-                  // estando colapsado deja un `aria-describedby` que no resuelve
-                  // a nada: el lector de pantalla no anuncia descripción alguna
-                  // y además la referencia es inválida. Colapsado, la
-                  // descripción es la etiqueta; para leer el texto está el botón.
-                  aria-describedby={abierto === t.clave ? `texto-${t.clave}` : undefined}
-                />
-                <span className="text-sm leading-relaxed">
-                  {t.finalidad ?? "Autorizo el tratamiento de mis datos."}
-                </span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setAbierto(abierto === t.clave ? null : t.clave)}
-                className="mt-1 pl-8 text-sm font-semibold text-rel-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-                aria-expanded={abierto === t.clave}
-                aria-controls={`texto-${t.clave}`}
-                // El texto visible dice «Leer el texto completo» en los dos
-                // botones. Quien navega por botones con un lector de pantalla
-                // oiría lo mismo dos veces y no sabría cuál abre cuál.
-                aria-label={`${
-                  abierto === t.clave ? "Ocultar" : "Leer"
-                } el texto completo de: ${
-                  t.finalidad ?? "Autorizo el tratamiento de mis datos."
-                }`}
-              >
-                {abierto === t.clave ? "Ocultar el texto" : "Leer el texto completo"}
-              </button>
-              {/* Se oculta con `hidden` y no se desmonta, para que abrirlo no
-                  cueste un renderizado del texto completo. Colapsado NO está en
-                  el árbol de accesibilidad —por eso el `aria-describedby` de
-                  arriba es condicional—, y quien use lector de pantalla llega a
-                  él por el botón, que dice a qué autorización pertenece. */}
-              <div
-                id={`texto-${t.clave}`}
-                hidden={abierto !== t.clave}
-                className="mt-2 max-h-64 overflow-y-auto rounded-rel-control bg-rel-surface-subtle p-3 text-sm leading-relaxed text-rel-muted"
-              >
-                <p className="whitespace-pre-line">{t.contenido}</p>
-                <p className="mt-2 text-xs">Versión {t.version}</p>
-              </div>
-            </div>
-          ))}
-        </div>
         {errores.aceptaciones ? (
           <p id="err-aceptaciones" role="alert" className="mt-3 text-sm text-rel-danger">
             {errores.aceptaciones}
           </p>
         ) : null}
-      </fieldset>
+      </Autorizaciones>
 
       <div className="mt-auto pt-2">
         <BotonPrincipal type="submit" disabled={enviando}>

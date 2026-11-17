@@ -35,6 +35,7 @@ import {
   Panel,
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
+import { Autorizaciones } from "@/shared/ui/Autorizaciones";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 
 function fecha(iso: string): string {
@@ -158,55 +159,13 @@ export default function InvitacionPage() {
         Esta invitación sirve hasta el {fecha(inv.expira_en)}, y solo una vez.
       </p>
 
-      <fieldset
-        className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-4"
-        aria-describedby={!todasMarcadas && error ? "err-aceptaciones" : undefined}
-      >
-        <legend className="px-1 text-sm font-semibold">Autorizaciones</legend>
-        <div className="space-y-4">
-          {inv.textos.map((t) => (
-            <div key={t.clave}>
-              <label className="flex cursor-pointer items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={Boolean(marcados[t.clave])}
-                  onChange={(e) =>
-                    setMarcados((m) => ({ ...m, [t.clave]: e.target.checked }))
-                  }
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-[hsl(var(--rel-primary))]"
-                  // Solo cuando el texto está desplegado: `hidden` saca el
-                  // elemento del árbol de accesibilidad, así que apuntar ahí
-                  // colapsado deja una referencia que no resuelve a nada.
-                  aria-describedby={abierto === t.clave ? `texto-${t.clave}` : undefined}
-                />
-                <span className="text-sm leading-relaxed">
-                  {t.finalidad ?? "Autorizo el tratamiento de mis datos."}
-                </span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setAbierto(abierto === t.clave ? null : t.clave)}
-                className="mt-1 min-h-[2.75rem] pl-8 text-sm font-semibold text-rel-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-                aria-expanded={abierto === t.clave}
-                aria-controls={`texto-${t.clave}`}
-                aria-label={`${abierto === t.clave ? "Ocultar" : "Leer"} el texto completo de: ${
-                  t.finalidad ?? "Autorizo el tratamiento de mis datos."
-                }`}
-              >
-                {abierto === t.clave ? "Ocultar el texto" : "Leer el texto completo"}
-              </button>
-              <div
-                id={`texto-${t.clave}`}
-                hidden={abierto !== t.clave}
-                className="mt-2 max-h-64 overflow-y-auto rounded-rel-control bg-rel-surface-subtle p-3 text-sm leading-relaxed text-rel-muted"
-              >
-                <p className="whitespace-pre-line">{t.contenido}</p>
-                <p className="mt-2 text-xs">Versión {t.version}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </fieldset>
+      <Autorizaciones
+        className="mt-6"
+        textos={inv.textos}
+        marcados={marcados}
+        alCambiar={setMarcados}
+        idError={!todasMarcadas && error ? "err-aceptaciones" : undefined}
+      />
 
       {error ? (
         <p

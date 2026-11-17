@@ -32,6 +32,7 @@ import {
   BotonPrincipal,
   ParticipanteLayout,
 } from "@/features/participacion/ParticipanteLayout";
+import { Casilla } from "@/shared/ui/Casilla";
 import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
 import { Evaluacion } from "@/features/participacion/Evaluacion";
@@ -220,24 +221,19 @@ export default function LeccionPage() {
               vez de fingir una barra de reproducción: de un incrustado de
               terceros no se puede medir cuánto se vio sin la API del proveedor,
               y un porcentaje calculado en el navegador sería inventado. */}
-          <label className="flex cursor-pointer items-start gap-3 rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm lg:sticky lg:top-6">
-            <input
-              type="checkbox"
-              checked={confirmado}
-              onChange={(e) => setConfirmado(e.target.checked)}
-              className="mt-1 h-5 w-5 shrink-0 accent-rel-primary"
-            />
-            <span>
-              <span className="block text-base font-semibold">
+          <Casilla
+            className="rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm lg:sticky lg:top-6"
+            marcada={confirmado}
+            alCambiar={setConfirmado}
+            etiqueta={
+              <span className="text-base font-semibold">
                 {leccion.tipo === "VIDEO"
                   ? "He visto el video completo"
                   : "He revisado el documento"}
               </span>
-              <span className="mt-1 block text-sm text-rel-muted">
-                Con esto queda registrada tu participación en esta lección.
-              </span>
-            </span>
-          </label>
+            }
+            descripcion="Con esto queda registrada tu participación en esta lección."
+          />
         </div>
       ) : (
         <div

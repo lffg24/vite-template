@@ -17,6 +17,8 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { Casilla } from "./Casilla";
+
 export type OpcionMultiple<T extends string> = {
   valor: T;
   titulo: string;
@@ -65,41 +67,31 @@ export function OpcionesMultiples<T extends string>({
           const id = `${nombre}-${o.valor}`;
 
           return (
-            <label
+            <Casilla
               key={o.valor}
-              htmlFor={id}
-              className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-rel-card border p-4 transition-colors",
+              id={id}
+              name={nombre}
+              value={o.valor}
+              marcada={marcada}
+              alCambiar={() => alternar(o.valor)}
+              claseEtiqueta={cn(
+                "rounded-rel-card border p-4 transition-colors",
                 marcada
                   ? "border-rel-primary bg-rel-accent-subtle"
                   : "border-rel-border bg-rel-surface hover:border-rel-border-strong"
               )}
-            >
-              <input
-                type="checkbox"
-                id={id}
-                name={nombre}
-                value={o.valor}
-                checked={marcada}
-                onChange={() => alternar(o.valor)}
-                className="mt-1 h-4 w-4 shrink-0 accent-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
-              />
-              <span className="min-w-0">
-                <span className="block font-rel-body text-sm font-bold text-rel-dark">
-                  {o.titulo}
-                </span>
-                {o.descripcion ? (
-                  <span className="mt-1 block font-rel-body text-sm text-rel-muted">
+              etiqueta={<span className="font-bold">{o.titulo}</span>}
+              descripcion={
+                o.descripcion || o.nota ? (
+                  <>
                     {o.descripcion}
-                  </span>
-                ) : null}
-                {o.nota ? (
-                  <span className="mt-2 block font-rel-body text-xs text-rel-muted">
-                    {o.nota}
-                  </span>
-                ) : null}
-              </span>
-            </label>
+                    {o.nota ? (
+                      <span className="mt-2 block text-xs text-rel-muted">{o.nota}</span>
+                    ) : null}
+                  </>
+                ) : undefined
+              }
+            />
           );
         })}
       </div>

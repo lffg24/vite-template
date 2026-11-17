@@ -623,6 +623,76 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
+   * La casilla tiene UNA definicion.
+   *
+   * Nueve pantallas la dibujaban a mano, y entre las nueve habia cinco formas
+   * distintas de la MISMA casilla: `h-4` o `h-5`; `accent-rel-primary`,
+   * `accent-[hsl(var(--rel-primary))]` o **ningun acento** —dos pantallas de
+   * CX sacaban la casilla azul por defecto del navegador en medio de un
+   * producto turquesa—; con anillo de foco o sin el; con alto minimo para el
+   * pulgar o sin el.
+   *
+   * El tamano se cerro en 16 px de caja y 44 px de fila. Dos de las nueve
+   * habian subido la caja a 20 px, y la razon que escribieron era buena: 13 px
+   * no se da con el pulgar. Pero el blanco tactil no es la caja, es la FILA,
+   * porque la etiqueta esta unida al control. Agrandar la caja arregla el
+   * sintoma en un sitio; garantizar los 44 px lo arregla en todos, y deja la
+   * caja del tamano que el recorrido del participante ya usaba.
+   *
+   * `OpcionesMultiples` ya no tiene casilla propia: la consume. Era la ultima
+   * segunda definicion que quedaba del mismo control.
+   */
+  const CASILLA_LOCAL_PENDIENTE = ["pages/psicosocial/EmpresaAplicacionesPage.tsx"];
+
+  it("la casilla tiene UNA definicion, y esa deuda tampoco crece", () => {
+    const IMPLEMENTACION = ["shared/ui/Casilla.tsx"];
+
+    const locales = TODOS.filter((ruta) => contenido(ruta).includes('type="checkbox"'))
+      .map(comoRuta)
+      .filter((r) => !IMPLEMENTACION.includes(r));
+
+    const nuevos = locales.filter((r) => !CASILLA_LOCAL_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `Casilla` de `@/shared/ui/Casilla`: trae el acento, el anillo de " +
+        "foco, los 44 px de fila y la descripcion atada con `aria-describedby`."
+    ).toEqual([]);
+
+    const yaMigrados = CASILLA_LOCAL_PENDIENTE.filter((r) => !locales.includes(r));
+    expect(
+      yaMigrados,
+      "Ya usan la pieza: borralos de CASILLA_LOCAL_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
+   * El bloque de autorizaciones existe UNA vez.
+   *
+   * Estaba escrito dos veces, casi identico, en la identificacion y en la
+   * invitacion. Casi: una le daba 44 px de alto al boton que despliega el
+   * texto legal y la otra no, asi que la misma pantalla de consentimiento se
+   * podia pulsar bien en un sitio y mal en el otro. Asi se degrada una copia:
+   * nadie la rompe, se arregla una sola.
+   *
+   * Y no era adorno: es la pantalla donde alguien consiente el tratamiento de
+   * sus datos, y de ella depende que la aceptacion quede registrada con su
+   * version.
+   */
+  it("el bloque de autorizaciones existe UNA vez", () => {
+    const IMPLEMENTACION = "shared/ui/Autorizaciones.tsx";
+    const copias = TODOS.filter((ruta) =>
+      contenido(ruta).includes("Leer el texto completo")
+    )
+      .map(comoRuta)
+      .filter((r) => r !== IMPLEMENTACION);
+    expect(
+      copias,
+      "Usa `Autorizaciones` de `@/shared/ui/Autorizaciones`. Una copia de la " +
+        "pantalla de consentimiento es una copia que alguien arreglara a medias."
+    ).toEqual([]);
+  });
+
+  /**
    * Elegir UNA opcion tiene pieza desde hace tiempo. Faltaba la guardia.
    *
    * Aqui hay que corregir una cifra que se dio mal: se dijo que «radio» era,

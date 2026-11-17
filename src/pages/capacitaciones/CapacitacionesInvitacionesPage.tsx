@@ -20,6 +20,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Printer, Send, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Casilla } from "@/shared/ui/Casilla";
 import { Panel } from "@/shared/ui/Panel";
 import { Escena } from "@/shared/ui/Escena";
 import { TablaDatos } from "@/shared/ui/TablaDatos";
@@ -251,27 +252,28 @@ export default function CapacitacionesInvitacionesPage() {
             <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
               {disponibles.map((p) => (
                 <li key={p.id}>
-                  <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-3 rounded-rel-control px-2 hover:bg-rel-surface-subtle">
-                    <input
-                      type="checkbox"
-                      checked={seleccion.has(p.id)}
-                      onChange={(e) =>
-                        setSeleccion((s) => {
-                          const n = new Set(s);
-                          if (e.target.checked) n.add(p.id);
-                          else n.delete(p.id);
-                          return n;
-                        })
-                      }
-                      className="h-4 w-4 accent-[hsl(var(--rel-primary))]"
-                    />
-                    <span className="text-sm text-rel-dark">
-                      {p.nombres} {p.apellidos}
-                    </span>
-                    <span className="ml-auto text-xs tabular-nums text-rel-muted">
-                      {p.tipo_documento} {p.numero_documento}
-                    </span>
-                  </label>
+                  <Casilla
+                    claseEtiqueta="rounded-rel-control px-2 hover:bg-rel-surface-subtle"
+                    marcada={seleccion.has(p.id)}
+                    alCambiar={(marcada) =>
+                      setSeleccion((s) => {
+                        const n = new Set(s);
+                        if (marcada) n.add(p.id);
+                        else n.delete(p.id);
+                        return n;
+                      })
+                    }
+                    etiqueta={
+                      <span className="flex items-center gap-3">
+                        <span>
+                          {p.nombres} {p.apellidos}
+                        </span>
+                        <span className="ml-auto text-xs tabular-nums text-rel-muted">
+                          {p.tipo_documento} {p.numero_documento}
+                        </span>
+                      </span>
+                    }
+                  />
                 </li>
               ))}
             </ul>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Casilla } from "@/shared/ui/Casilla";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Aviso } from "@/shared/ui/Aviso";
 import { Pill } from "@/shared/ui/Pill";
@@ -233,5 +234,5 @@ function FactorDetalleSheet({ factor, cerrar }: { factor: FactorCx | null; cerra
 
 function ReferenciaLista({ titulo, id, buscar, setBuscar, seleccion, cambiar, seleccionadas, candidatas }: { titulo: string; id: string; buscar: string; setBuscar: (v: string) => void; seleccion: string[]; cambiar: (id: string) => void; seleccionadas: { id: string; nombre: string }[]; candidatas: { id: string; nombre: string }[] }) {
   const opciones = [...seleccionadas.filter((x) => seleccion.includes(x.id)), ...candidatas.filter((x) => !seleccionadas.some((s) => s.id === x.id))];
-  return <section aria-label={titulo} className="rounded-rel-card border border-rel-border p-4"><h3 className="font-semibold text-rel-dark">{titulo} ({seleccion.length})</h3><div className="mt-3"><Label htmlFor={id}>Buscar {titulo.toLowerCase()}</Label><Input id={id} type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div><ul className="mt-3 max-h-52 space-y-1 overflow-y-auto">{opciones.map((opcion) => <li key={opcion.id}><label className="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-rel-surface-subtle"><input type="checkbox" checked={seleccion.includes(opcion.id)} onChange={() => cambiar(opcion.id)} className="h-4 w-4 accent-rel-primary" /><span className="break-words text-sm">{opcion.nombre}</span></label></li>)}</ul>{opciones.length === 0 ? <p className="mt-3 text-sm text-rel-muted">No hay opciones para esta búsqueda.</p> : null}</section>;
+  return <section aria-label={titulo} className="rounded-rel-card border border-rel-border p-4"><h3 className="font-semibold text-rel-dark">{titulo} ({seleccion.length})</h3><div className="mt-3"><Label htmlFor={id}>Buscar {titulo.toLowerCase()}</Label><Input id={id} type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div><ul className="mt-3 max-h-52 space-y-1 overflow-y-auto">{opciones.map((opcion) => <li key={opcion.id}><Casilla claseEtiqueta="rounded-md p-2 hover:bg-rel-surface-subtle" marcada={seleccion.includes(opcion.id)} alCambiar={() => cambiar(opcion.id)} etiqueta={<span className="break-words">{opcion.nombre}</span>} /></li>)}</ul>{opciones.length === 0 ? <p className="mt-3 text-sm text-rel-muted">No hay opciones para esta búsqueda.</p> : null}</section>;
 }

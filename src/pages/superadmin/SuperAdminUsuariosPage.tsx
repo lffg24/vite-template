@@ -25,6 +25,7 @@ import {
   type Persona,
   type Rol,
 } from "@/services/accesoService";
+import { Casilla } from "@/shared/ui/Casilla";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
@@ -422,26 +423,18 @@ export default function SuperAdminUsuariosPage() {
                   </p>
                 ) : (
                   rolesConfigurables.map((rol) => (
-                    <label key={rol.id} className="flex cursor-pointer gap-3 rounded-rel-control border border-rel-border p-3">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4"
-                        checked={rolesSeleccionados.includes(rol.id)}
-                        onChange={(event) =>
-                          setRolesSeleccionados((actuales) =>
-                            event.target.checked
-                              ? [...actuales, rol.id]
-                              : actuales.filter((id) => id !== rol.id),
-                          )
-                        }
-                      />
-                      <span>
-                        <span className="block text-sm font-semibold">{rol.nombre}</span>
-                        <span className="mt-1 block text-xs text-rel-muted">
-                          {rol.permisos.length} {rol.permisos.length === 1 ? "permiso delegable" : "permisos delegables"}
-                        </span>
-                      </span>
-                    </label>
+                    <Casilla
+                      key={rol.id}
+                      claseEtiqueta="rounded-rel-control border border-rel-border p-3"
+                      marcada={rolesSeleccionados.includes(rol.id)}
+                      alCambiar={(marcada) =>
+                        setRolesSeleccionados((actuales) =>
+                          marcada ? [...actuales, rol.id] : actuales.filter((id) => id !== rol.id),
+                        )
+                      }
+                      etiqueta={<span className="font-semibold">{rol.nombre}</span>}
+                      descripcion={`${rol.permisos.length} ${rol.permisos.length === 1 ? "permiso delegable" : "permisos delegables"}`}
+                    />
                   ))
                 )}
               </fieldset>
