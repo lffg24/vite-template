@@ -966,7 +966,9 @@ describe("el núcleo es uno solo", () => {
    * El tope solo puede bajar. No obliga a migrar nada; obliga a que la cuenta
    * sea la misma cada vez que se mire.
    */
-  const TOPE_BOTONES_A_MANO = 33;
+  // 33 -> 25 al borrar `layout/Layout.tsx` (muerto, dos botones) y al pasar la
+  // confirmacion a `DialogoCasa`, que le quita la equis propia.
+  const TOPE_BOTONES_A_MANO = 25;
 
   it("los botones a mano no aumentan, y la cuenta no depende de quién mire", () => {
     const cuenta = DENTRO_DEL_PERIMETRO.filter((ruta) =>
