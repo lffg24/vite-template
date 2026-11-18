@@ -154,7 +154,7 @@ VACIO_TEXTO = r"No hay |Aun no|Aún no|Todavía no|Sin resultados|Sin datos|Sin 
 PIEZA = r"<EstadoVacio\b|<SinDatos\b|<IllustratedEmptyState\b|<SinResultados\b|vacio="
 candidatas = [r for r in PERIMETRO if re.search(LISTA, leer(r)) and re.search(VACIO_TEXTO, leer(r))]
 con_pieza = [r for r in candidatas if re.search(PIEZA, leer(r))]
-frente("Vacios", len(con_pieza), len(candidatas) - len(con_pieza), "pantallas con lista y estado vacio")
+frente("Vacios", len(con_pieza), len(candidatas) - len(con_pieza), "los 4 que quedan tienen motivo")
 
 # --- Ilustraciones: cuantas del registro se usan ---------------------------
 registro = leer("shared/ui/illustration/illustration.registry.ts")
@@ -165,7 +165,10 @@ for r in TODOS:
     if "illustration.registry" in r:
         continue
     for k in claves:
-        if re.search(r'(?:name|nombre|escena|escenaVacio|illustration)=\{?"%s"' % re.escape(k), c):
+        # Tambien el valor por defecto de una pieza (`escena = "buscar"`):
+        # es un uso real y el contador no lo veia, asi que la clave que mas
+        # se pinta figuraba como no usada.
+        if re.search(r'(?:name|nombre|escena|escenaVacio|illustration)\s*=\s*\{?"%s"' % re.escape(k), c):
             usadas.add(k)
 frente("Ilustraciones usadas", len(usadas), len(claves) - len(usadas), "del registro, en todo el producto")
 

@@ -27,6 +27,7 @@ import {
 } from "@/services/accesoService";
 import { Casilla } from "@/shared/ui/Casilla";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import { EstadoVacio, SinResultados } from "@/shared/ui/EstadoVacio";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 const panel = "rounded-rel-card border border-rel-border bg-rel-surface p-5";
@@ -315,8 +316,30 @@ export default function SuperAdminUsuariosPage() {
           <ZonaCargando cargando etiqueta="Cargando usuarios" esqueleto={<EsqueletoLista fichas={5} className="p-4" />}>
             <span />
           </ZonaCargando>
+        ) : personas.length === 0 && consulta ? (
+          <SinResultados
+            elemento="usuario"
+            escena="ninguna"
+            limpiar={() => {
+              setBusqueda("");
+              setConsulta("");
+              setPagina(1);
+            }}
+            className="rounded-none border-0 bg-transparent"
+          />
         ) : personas.length === 0 ? (
-          <p className="p-6 text-sm text-rel-muted">No hay usuarios para esta búsqueda.</p>
+          <EstadoVacio
+            escena="ninguna"
+            titulo="Todavía no hay personas registradas"
+            descripcion="Invita a la primera y elige en la misma invitación su empresa y sus roles delegables."
+            accion={
+              <Button variant="rel" onClick={abrirInvitacion}>
+                <MailPlus className="mr-2 h-4 w-4" aria-hidden="true" />
+                Invitar usuario
+              </Button>
+            }
+            className="rounded-none border-0 bg-transparent"
+          />
         ) : (
           personas.map((persona) => (
             <article key={persona.id} className="grid gap-4 border-b border-rel-border px-5 py-4 last:border-0 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">

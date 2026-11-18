@@ -736,8 +736,15 @@ describe("el núcleo es uno solo", () => {
       "shadow-none",
     ]);
 
+    /* `lib/utils.ts` es donde los nombres se DECLARAN, no donde se usan: ahi
+       `shadow` es la clave del grupo que `cn` ensena a `tailwind-merge`, para
+       que `shadow-none` pueda quitarle el relieve a una pieza. Sin esta
+       excepcion el guardia llama clase a una clave de configuracion. */
+    const DECLARA_LOS_NOMBRES = "lib/utils.ts";
+
     const culpables: string[] = [];
     for (const ruta of DENTRO_DEL_PERIMETRO) {
+      if (comoRuta(ruta) === DECLARA_LOS_NOMBRES) continue;
       const sobra = [...contenido(ruta).matchAll(/(?<!-)\bshadow(?:-[^\s"'`{}]+)?/g)]
         .map((coincidencia) => coincidencia[0])
         .filter((clase) => !PERMITIDAS.has(clase));
@@ -1718,5 +1725,69 @@ describe("el núcleo es uno solo", () => {
         "barra invertida que se perdió al escribir el fichero desde un script: " +
         "`\\b` acabó siendo el byte 0x08. Reescribe la expresión regular a mano."
     ).toEqual([]);
+  });
+
+  /**
+   * Ninguna pantalla con lista anuncia su vacío en un párrafo suelto.
+   *
+   * La pieza existe, está en la casa y distingue las dos cosas que no son lo
+   * mismo: «no hay nada todavía» y «tu filtro no encaja». Confundirlas hace
+   * creer a alguien que perdió su información, y la lista de usuarios de
+   * superadmin lo hacía literalmente: decía «no hay usuarios para esta
+   * búsqueda» con la pantalla recien cargada y sin búsqueda escrita.
+   *
+   * Un párrafo gris tampoco lleva la acción que resuelve el vacío. En el
+   * constructor de encuestas el mensaje y el botón que lo arregla estaban en
+   * dos bloques separados por una lista vacía.
+   */
+  it("la pantalla con lista no anuncia su vacío en texto", () => {
+    /* Los cuatro que quedan NO son deuda, y cada uno por una razón distinta:
+
+         - `Evaluacion.tsx` no tiene un vacío: «Todavía no. Puedes volver a
+           intentarlo» es el resultado de un intento, no una ausencia. Lo caza
+           la medida, no la pantalla.
+         - `SelectorCuestionarioBanco.tsx` es la pista de UN campo, no la zona
+           de contenido de una pantalla. Una caja de puntos para un desplegable
+           pesa más que lo que anuncia.
+         - `RoleSidebar.tsx` vive sobre la barra oscura, y la pieza se pinta con
+           los tokens de superficie clara. Ponerla ahí es texto invisible.
+         - `ServicioAreasSheet.tsx` lo dice dentro de una sublista de casillas
+           de un panel lateral, debajo de su propio buscador.
+
+       La lista solo puede menguar. */
+    const CON_MOTIVO = [
+      "features/capacitaciones/components/SelectorCuestionarioBanco.tsx",
+      "features/navigation/components/RoleSidebar.tsx",
+      "features/participacion/Evaluacion.tsx",
+      "pages/cx/ServicioAreasSheet.tsx",
+    ];
+    const LISTA = /<TablaDatos\b|<ul\b|\.map\(/;
+    const ANUNCIO = /No hay |Aun no|Aún no|Todavía no|Sin resultados|Sin datos|Sin registros/;
+    const PIEZA = /<EstadoVacio\b|<SinDatos\b|<IllustratedEmptyState\b|<SinResultados\b|vacio=/;
+
+    const loAnunciaAMano = (ruta: string) => {
+      const texto = contenido(ruta);
+      return LISTA.test(texto) && ANUNCIO.test(texto) && !PIEZA.test(texto);
+    };
+
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) => {
+      if (CON_MOTIVO.includes(comoRuta(ruta))) return false;
+      return loAnunciaAMano(ruta);
+    }).map(comoRuta);
+
+    expect(
+      culpables,
+      "Usa `EstadoVacio` o `SinResultados` de `@/shared/ui/EstadoVacio`. No " +
+        "son la misma pantalla: la primera es «no hay nada todavía» y lleva " +
+        "la acción que lo resuelve; la segunda es «el filtro no encaja» y " +
+        "lleva el botón de quitarlo. Con `escena=\"ninguna\"` las dos dan " +
+        "la estructura sin dibujo, que es lo que toca en superadmin."
+    ).toEqual([]);
+
+    // Y la lista no se queda con nombres que ya cumplen.
+    const siguen = DENTRO_DEL_PERIMETRO.filter(
+      (ruta) => CON_MOTIVO.includes(comoRuta(ruta)) && loAnunciaAMano(ruta)
+    ).map(comoRuta);
+    expect(siguen.sort()).toEqual([...CON_MOTIVO].sort());
   });
 });

@@ -102,13 +102,25 @@ export function EstadoVacio({
 export function SinResultados({
   limpiar,
   elemento = "registro",
+  escena = "buscar",
   className,
 }: {
   limpiar: () => void;
   /** En singular: «curso», «área», «participante». */
   elemento?: string;
+  /**
+   * Lo mismo que en `EstadoVacio`, y por la misma razón.
+   *
+   * La graduación de intensidad por superficie no distingue entre «no hay
+   * nada» y «el filtro no encaja»: en superadmin las dos son bajas. Sin
+   * esta opción, una pantalla de administración que quisiera el estado de
+   * filtro correcto tenía que elegir entre un dibujo que ahí sobra o
+   * escribirse el vacío a mano, y eligió lo segundo.
+   */
+  escena?: IllustrationName | "ninguna";
   className?: string;
 }) {
+  const dibujo = escena === "ninguna" ? null : escena;
   return (
     <div
       className={cn(
@@ -116,7 +128,9 @@ export function SinResultados({
         className
       )}
     >
-      <Illustration name="buscar" variant="spot" size="sm" className="mx-auto mb-4" />
+      {dibujo ? (
+        <Illustration name={dibujo} variant="spot" size="sm" className="mx-auto mb-4" />
+      ) : null}
       <h3 className="font-rel-heading text-base font-bold text-rel-dark">
         Ningún {elemento} coincide con el filtro
       </h3>

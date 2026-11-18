@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 import { Panel } from "@/shared/ui/Panel";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -270,10 +271,11 @@ export default function EvaluacionDetallePage() {
             }
           >
             {datos.versiones.length === 0 ? (
-              <p className="text-sm text-rel-muted">
-                Publicar congela una copia con sus preguntas y sus respuestas
-                correctas. Es lo único que una lección puede referenciar.
-              </p>
+              <EstadoVacio
+                escena="ninguna"
+                titulo="Ninguna versión congelada todavía"
+                descripcion="Publicar congela una copia con sus preguntas y sus respuestas correctas. Es lo único que una lección puede referenciar."
+              />
             ) : (
               <ol className="space-y-2">
                 {datos.versiones.map((v) => (
