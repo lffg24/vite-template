@@ -82,7 +82,7 @@ function SinAccesoAlModulo() {
   return (
     <div
       role="alert"
-      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-8 text-center shadow-sm"
+      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-rel-card"
     >
       <h1 className="font-rel-heading text-xl font-black text-rel-dark">
         No tienes acceso a Capacitaciones

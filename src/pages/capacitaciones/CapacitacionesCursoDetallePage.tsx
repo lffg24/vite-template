@@ -77,7 +77,7 @@ export default function CapacitacionesCursoDetallePage() {
           {/* No usa `PageHeader` porque el estado y la categoría van ENCIMA del
               título: en esta pantalla lo primero que hay que saber es si lo que
               se está editando ya está publicado. La carcasa sí es la misma. */}
-          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-sm">
+          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <EstadoCursoBadge estado={consulta.datos.curso.estado} />

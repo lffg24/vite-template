@@ -146,7 +146,7 @@ export default function AreasCxPage() {
               id="estado-area"
               value={estado}
               onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }}
-              className="flex h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"
+              className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"
             >
               <option value="activos">Activas</option>
               <option value="todos">Todas</option>

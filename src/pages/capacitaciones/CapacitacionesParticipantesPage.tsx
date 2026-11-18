@@ -141,7 +141,7 @@ export default function CapacitacionesParticipantesPage() {
       {consulta.fase === "listo" && personas.length > 0 && visibles.length === 0 ? (
         <div
           role="status"
-          className="rounded-rel-card border border-rel-border bg-rel-surface p-8 text-center"
+          className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center"
         >
           <p className="font-semibold text-rel-dark">
             Nadie coincide con «{filtro.trim()}»
@@ -741,7 +741,7 @@ function PanelImportacion({
 
 function Recuento({ etiqueta, valor }: { etiqueta: string; valor: number }) {
   return (
-    <div className="rounded-rel-card border border-rel-border bg-rel-surface p-3">
+    <div className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
       <p className="text-xs text-rel-muted">{etiqueta}</p>
       <p className="mt-0.5 text-xl font-bold tabular-nums text-rel-dark">{valor}</p>
     </div>

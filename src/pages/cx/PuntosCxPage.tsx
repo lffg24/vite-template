@@ -170,7 +170,7 @@ export default function PuntosCxPage() {
           </form>
           <div>
             <Label htmlFor="estado-puntos">Estado</Label>
-            <select id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm text-foreground shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
+            <select id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
           </div>
         </div>
       }

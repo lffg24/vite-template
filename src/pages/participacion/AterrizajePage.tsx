@@ -118,7 +118,7 @@ export default function AterrizajePage() {
   if (paso === "datos") {
     return (
       <ParticipanteLayout progreso={0.15} ancho="amplio">
-        <div className="grid flex-1 overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
+        <div className="grid flex-1 overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-rel-card lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
           <aside className="hidden bg-rel-accent-subtle p-8 lg:flex lg:flex-col lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent-ink">
@@ -185,7 +185,7 @@ export default function AterrizajePage() {
         </p>
       ) : null}
 
-      <section className="overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-card">
+      <section className="overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-rel-card">
         <div className="grid items-center gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:p-10">
           <div>
             {/* La empresa, grande y con su icono: es lo que hace creíble un

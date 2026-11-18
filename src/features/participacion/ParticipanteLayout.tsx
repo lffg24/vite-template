@@ -99,7 +99,7 @@ export function Panel({
 }) {
   return (
     <div
-      className={`rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm ${className}`}
+      className={`rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-rel-card ${className}`}
     >
       {children}
     </div>

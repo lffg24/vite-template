@@ -219,7 +219,7 @@ export default function CapacitacionesMatrizPage() {
         }
       />
 
-      <section className="space-y-4 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-sm sm:p-6">
+      <section className="space-y-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
         {/* --- buscar y filtrar --- */}
         <div className="space-y-3">
           <div className="relative w-full sm:max-w-md">

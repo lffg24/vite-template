@@ -20,7 +20,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-background px-4 py-8 text-foreground sm:py-12">
       <div className="pointer-events-none absolute -right-24 -top-36 h-[360px] w-[360px] rounded-full bg-brand-primary/10 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-brand-turquoise/15 blur-3xl" aria-hidden="true" />
-      <Card className={`relative w-full border-border/70 bg-card p-6 shadow-card sm:p-9 ${illustrated ? "max-w-3xl rounded-2xl" : "max-w-lg rounded-2xl"}`}>
+      <Card className={`relative w-full border-border/70 bg-card p-6 shadow-rel-card sm:p-9 ${illustrated ? "max-w-3xl rounded-rel-panel" : "max-w-lg rounded-rel-panel"}`}>
         {illustrated ? (
           <>
             <div className="flex items-center justify-between gap-4 border-b border-border/70 pb-5">
@@ -45,7 +45,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
           </>
         ) : (
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-accent">
+            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-rel-panel bg-accent">
               <Marca variante="isotipo" decorativa className="h-10" />
             </div>
             <h1 className="text-3xl font-black tracking-tight"><span className="marker-highlight">{title.split(" ").slice(0, 1).join(" ")}</span>{title.includes(" ") ? ` ${title.split(" ").slice(1).join(" ")}` : ""}</h1>
@@ -73,7 +73,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
           </div>
         </div>
         {!illustrated ? (
-          <div className="mt-4 flex items-center gap-2 rounded-2xl bg-surface-subtle px-4 py-3 text-xs leading-5 text-muted-foreground">
+          <div className="mt-4 flex items-center gap-2 rounded-rel-panel bg-surface-subtle px-4 py-3 text-xs leading-5 text-muted-foreground">
             <LockKeyhole className="h-4 w-4 shrink-0" aria-hidden="true" /> ABRIL360 nunca te solicitará tu contraseña por correo.
           </div>
         ) : null}

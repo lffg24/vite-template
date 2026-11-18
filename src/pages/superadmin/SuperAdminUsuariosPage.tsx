@@ -310,7 +310,7 @@ export default function SuperAdminUsuariosPage() {
         <Button type="submit" variant="outline">Buscar</Button>
       </form>
 
-      <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-sm">
+      <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-rel-card">
         {cargando ? (
           <ZonaCargando cargando etiqueta="Cargando usuarios" esqueleto={<EsqueletoLista fichas={5} className="p-4" />}>
             <span />

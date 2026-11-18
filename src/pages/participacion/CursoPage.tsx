@@ -43,7 +43,7 @@ export default function CursoPage() {
   if (consulta.fase === "error" && (consulta.error as ErrorPublico)?.motivo === "sesion_invalida") {
     return (
       <ParticipanteLayout ancho="compacto">
-        <div className="my-auto rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-card sm:p-8">
+        <div className="my-auto rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-rel-card sm:p-8">
           <h1 className="font-rel-heading text-2xl font-bold">Vuelve a abrir tu enlace</h1>
           <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-rel-muted">
             En este dispositivo no encontramos una sesión activa. Abre de nuevo
@@ -154,7 +154,7 @@ export default function CursoPage() {
           </dl>
         </div>
 
-        <div className="flex items-center gap-5 rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card">
+        <div className="flex items-center gap-5 rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-rel-card">
           <AnilloProgreso valor={avance} etiqueta="Tu progreso en el curso" tamano={112} />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-rel-dark">

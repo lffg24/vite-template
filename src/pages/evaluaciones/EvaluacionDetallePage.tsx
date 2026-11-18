@@ -147,7 +147,7 @@ export default function EvaluacionDetallePage() {
 
       {consulta.fase === "listo" && datos && cuestionario && actual ? (
         <>
-          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-sm">
+          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <EstadoCuestionarioBadge estado={cuestionario.estado} />

@@ -1,8 +1,8 @@
 // src/pages/superadmin/SuperAdminDashboardPage.tsx
 //
 // Estaba escrita en UNA línea de 2.000 caracteres, y eso tenía consecuencias
-// visibles: dentro de ella convivían tres radios distintos (`rounded-2xl`,
-// `rounded-2xl`, el de los `SuperAdminCard`), el error en rojo crudo, el aviso
+// visibles: dentro de ella convivían tres radios distintos (`rounded-rel-panel`,
+// `rounded-rel-panel`, el de los `SuperAdminCard`), el error en rojo crudo, el aviso
 // en ámbar crudo, `bg-white` en vez de la superficie de la casa y un botón
 // dibujado a mano. Es la primera pantalla que ve un superadministrador.
 
@@ -83,7 +83,7 @@ export default function SuperAdminDashboardPage() {
 
       <section className="mt-6 grid gap-5 xl:grid-cols-2">
         <Panel titulo="Consumo de créditos" icono={CreditCard}>
-          <div className="grid place-items-center rounded-xl bg-surface-subtle p-10 text-center">
+          <div className="grid place-items-center rounded-rel-card bg-surface-subtle p-10 text-center">
             <p className="text-5xl font-bold tabular-nums text-primary">
               {Number(k.consumidos_total ?? 0).toLocaleString("es-CO")}
             </p>

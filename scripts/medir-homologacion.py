@@ -105,6 +105,26 @@ a_mano = cuenta(r"<button", PERIMETRO)
 con_pieza = cuenta(r"<Button\b", PERIMETRO)
 frente("Botones", con_pieza, a_mano, "tope en la prueba: 25")
 
+# --- Escalas que se cerraron con la caja -----------------------------------
+# Un nombre por radio: `rounded-lg|xl|2xl` valen lo mismo que
+# `rounded-rel-control|card|panel`, y 86 sitios usaban la segunda forma.
+culpables = archivos_con(r"rounded-(?:lg|xl|2xl)", PERIMETRO)
+frente("Radio por rol", len(PERIMETRO) - len(culpables), len(culpables), "un solo nombre por valor")
+
+# El relieve sale del sistema: las sombras de Tailwind son negras y las de la
+# casa van tintadas de azul, asi que una caja con `shadow-sm` proyectaba una
+# sombra gris en un producto cuya sombra es azul.
+RELIEVE_OK = ("shadow-rel-card", "shadow-rel-floating", "shadow-rel-soft", "shadow-none")
+SOMBRA = re.compile(r"(?<!-)shadow(?:-[^\s\"'`{}]+)?")
+_buenas, _malas = 0, 0
+for _r in PERIMETRO:
+    for _m in SOMBRA.findall(leer(_r)):
+        if _m in RELIEVE_OK:
+            _buenas += 1
+        else:
+            _malas += 1
+frente("Relieve", _buenas, _malas, "solo rel-card, rel-floating o nada")
+
 # --- Tarjetas --------------------------------------------------------------
 caja = r'className="[^"]*\brounded-(?:rel-card|rel-panel|xl|2xl|lg)\b[^"]*\bborder\b[^"]*\bbg-(?:rel-)?surface\b[^"]*"'
 a_mano = cuenta(caja, PERIMETRO)

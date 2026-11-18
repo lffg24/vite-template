@@ -69,7 +69,7 @@ export function ConstanciaDocumento({
   return (
     <article
       // `hoja-constancia`: la hoja de impresión deja solo esto en la página.
-      className="hoja-constancia relative mx-auto w-full max-w-4xl overflow-hidden rounded-rel-panel border border-rel-border bg-white text-rel-dark shadow-card print:max-w-none print:rounded-none print:border-0 print:shadow-none"
+      className="hoja-constancia relative mx-auto w-full max-w-4xl overflow-hidden rounded-rel-panel border border-rel-border bg-white text-rel-dark shadow-rel-card print:max-w-none print:rounded-none print:border-0 print:shadow-none"
       aria-label={`${enFrase(tipo)} ${constancia.codigo_verificacion}`}
     >
       <Illustration

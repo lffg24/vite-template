@@ -25,6 +25,7 @@ import type { LucideIcon } from "lucide-react";
 import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { Caja } from "./Caja";
 import {
   CLASES_CARCASA_TABLA,
   CLASES_SCROLL_TABLA,
@@ -61,12 +62,11 @@ export function Panel({
 }) {
   const conEncabezado = Boolean(titulo || descripcion || accion || Icono);
   return (
-    <section
-      className={cn(
-        "rounded-2xl border border-border/80 bg-card p-5 text-card-foreground shadow-card",
-        className
-      )}
-    >
+    /* La caja la pide `Caja`, no la dibuja esto. Lo propio de `Panel` es el
+       encabezado y ser una `<section>`: estructura, no estilo. Las clases del
+       papel `panel` son las que este archivo tenía, literales, para que ni un
+       `Panel` del producto cambie de aspecto al pasar por la pieza. */
+    <Caja papel="panel" como="section" className={className}>
       {conEncabezado ? (
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -84,7 +84,7 @@ export function Panel({
         </div>
       ) : null}
       {children}
-    </section>
+    </Caja>
   );
 }
 

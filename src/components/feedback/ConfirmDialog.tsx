@@ -97,8 +97,8 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={
               aviso
-                ? "min-h-[2.75rem] rounded-rel-control bg-warning px-5 text-sm font-bold text-warning-foreground shadow-card transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning focus-visible:ring-offset-2"
-                : "min-h-[2.75rem] rounded-rel-control bg-primary px-5 text-sm font-bold text-primary-foreground shadow-card transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                ? "min-h-[2.75rem] rounded-rel-control bg-warning px-5 text-sm font-bold text-warning-foreground shadow-rel-card transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning focus-visible:ring-offset-2"
+                : "min-h-[2.75rem] rounded-rel-control bg-primary px-5 text-sm font-bold text-primary-foreground shadow-rel-card transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             }
           >
             {confirmLabel}

@@ -253,7 +253,7 @@ export default function CapacitacionesConstanciasPage() {
       {consulta.fase === "listo" && constancias.length > 0 && visibles.length === 0 ? (
         <div
           role="status"
-          className="rounded-rel-card border border-rel-border bg-rel-surface p-8 text-center"
+          className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center"
         >
           <p className="font-semibold text-rel-dark">
             Ninguna constancia coincide con «{filtro.trim()}»

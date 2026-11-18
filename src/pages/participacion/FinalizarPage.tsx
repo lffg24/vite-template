@@ -191,7 +191,7 @@ export default function FinalizarPage() {
 
   return (
     <ParticipanteLayout progreso={1} ancho="compacto">
-      <div className="my-auto w-full rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-card sm:p-8">
+      <div className="my-auto w-full rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-rel-card sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent-ink">
         Paso 3 de 3
       </p>

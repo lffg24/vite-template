@@ -35,7 +35,7 @@ export function FormularioReanudacion({
   return (
     <form onSubmit={enviar} className="space-y-5" noValidate>
       <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rel-accent-subtle text-rel-primary">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-rel-panel bg-rel-accent-subtle text-rel-primary">
           <IdCard className="h-5 w-5" aria-hidden="true" />
         </span>
         <div>

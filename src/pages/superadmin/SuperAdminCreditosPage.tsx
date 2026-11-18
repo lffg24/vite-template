@@ -456,7 +456,7 @@ export default function SuperAdminCreditosPage() {
       >
         <div className="space-y-5">
           <Campo etiqueta="Psicólogo" id={ID_PSICOLOGO}>
-            <div className="overflow-hidden rounded-xl border border-border">
+            <div className="overflow-hidden rounded-rel-card border border-border">
               <div className="border-b border-border/70 bg-surface-subtle p-3">
                 <Input
                   id={ID_PSICOLOGO}
@@ -487,7 +487,7 @@ export default function SuperAdminCreditosPage() {
                       )}
                     >
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-card bg-accent text-accent-foreground">
                           <UserRound className="h-5 w-5" aria-hidden="true" />
                         </span>
                         <span className="min-w-0">
@@ -515,7 +515,7 @@ export default function SuperAdminCreditosPage() {
           </Campo>
 
           {selected && (
-            <div className="rounded-xl border border-primary/20 bg-accent p-4">
+            <div className="rounded-rel-card border border-primary/20 bg-accent p-4">
               <p className="font-heading text-xs font-bold uppercase tracking-wide text-primary">
                 Cuenta seleccionada
               </p>
@@ -575,7 +575,7 @@ export default function SuperAdminCreditosPage() {
       >
         {deductTarget ? (
           <div className="space-y-5">
-            <div className="rounded-xl border border-warning/30 bg-warning-subtle p-4">
+            <div className="rounded-rel-card border border-warning/30 bg-warning-subtle p-4">
               <p className="font-heading text-xs font-bold uppercase text-warning">
                 Cuenta seleccionada
               </p>

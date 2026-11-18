@@ -234,7 +234,7 @@ export default function CapacitacionesAsignacionesPage() {
                             <MoreHorizontal aria-hidden="true" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="end" className="rel-scope w-56 space-y-1 rounded-rel-card border-rel-border bg-rel-surface p-2 font-rel-body shadow-floating">
+                        <PopoverContent align="end" className="rel-scope w-56 space-y-1 rounded-rel-card border-rel-border bg-rel-surface p-2 font-rel-body shadow-rel-floating">
                           {a.modo_identidad === "INVITACION_INDIVIDUAL" ? (
                             <Button
                               variant="relGhost"

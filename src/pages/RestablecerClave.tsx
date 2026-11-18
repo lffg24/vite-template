@@ -50,7 +50,7 @@ export default function RestablecerClave() {
   };
 
   if (!token) {
-    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-2xl bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
+    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
   }
 
   return (
@@ -88,13 +88,13 @@ export default function RestablecerClave() {
                 visible={visible}
                 alAlternar={() => setVisible((current) => !current)}
                 onChange={(event) => field.setter(event.target.value)}
-                className="h-14 rounded-lg text-base"
+                className="h-14 rounded-rel-control text-base"
               />
             </div>
           ))}
           <p className="text-xs leading-5 text-muted-foreground">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
           {error ? <p role="alert" className="text-sm font-semibold text-danger">{error}</p> : null}
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-lg bg-marca text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
+          <Button type="submit" disabled={loading} className="h-14 w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>
       )}
     </PasswordRecoveryShell>

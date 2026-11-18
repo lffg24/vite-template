@@ -222,7 +222,7 @@ export default function LeccionPage() {
               terceros no se puede medir cuánto se vio sin la API del proveedor,
               y un porcentaje calculado en el navegador sería inventado. */}
           <Casilla
-            className="rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm lg:sticky lg:top-6"
+            className="rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-rel-card lg:sticky lg:top-6"
             marcada={confirmado}
             alCambiar={setConfirmado}
             etiqueta={
@@ -237,7 +237,7 @@ export default function LeccionPage() {
         </div>
       ) : (
         <div
-          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-sm sm:p-7"
+          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-6 shadow-rel-card"
           aria-live="polite"
         >
           {leccion.bloques[bloque]?.titulo ? (

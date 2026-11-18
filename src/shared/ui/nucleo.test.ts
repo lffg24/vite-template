@@ -52,8 +52,24 @@ function comoRuta(absoluta: string): string {
   return relative(RAIZ, absoluta).split(sep).join("/");
 }
 
+/**
+ * El fuente SIN comentarios.
+ *
+ * Hace falta, y no es cosmética: **cuatro veces** un guardia ha señalado un
+ * comentario que explicaba justo la deuda que el guardia persigue. La primera
+ * cazó la clase prohibida nombrada dentro de la explicación de por qué está
+ * prohibida; la última, una sombra arbitraria citada dentro del comentario que
+ * cuenta que se retiró.
+ *
+ * Cada vez se arregló reescribiendo el comentario, y eso es tratar el síntoma:
+ * mientras el lector no distinga código de prosa, el siguiente que documente
+ * bien su trabajo volverá a romper la prueba. Los guardias miran lo que el
+ * navegador ejecuta, así que lo que leen es el código.
+ */
 function contenido(absoluta: string): string {
-  return readFileSync(absoluta, "utf-8");
+  return readFileSync(absoluta, "utf-8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^[ \t]*\/\/.*$/gm, "");
 }
 
 /**
@@ -296,8 +312,13 @@ describe("el núcleo es uno solo", () => {
   const COLOR_CRUDO = /(?:bg|text|border|ring|divide)-(?:red|rose|emerald|amber|green|yellow|orange)-\d{2,3}/;
 
   /** Solo puede menguar. */
+  /* `ToastCard` salió de esta lista el 2026-11-18. Era el último que quedaba
+     fuera de `components/ui` y de Psicosocial, y era el peor sitio donde
+     estar: la pieza que dice si algo funcionó o falló tenía su propio sistema
+     de color —emerald, amber, rose, sky, más una sombra tintada a mano por
+     tono— y `bg-white/95` con texto casi negro encima, que en tema oscuro es
+     una caja blanca sobre una página oscura. */
   const COLOR_CRUDO_PENDIENTE = [
-    "components/feedback/ToastCard.tsx",
     "components/ui/cargos/ListaCargos.tsx",
     "components/ui/evaluaciones/BienvenidaUsuario.tsx",
     "components/ui/evaluaciones/EvaluacionesPendientes.tsx",
@@ -655,6 +676,149 @@ describe("el núcleo es uno solo", () => {
       yaLimpios,
       "Ya usan radio de control: borralos de CONTROL_CON_RADIO_DE_CAJA_PENDIENTE."
     ).toEqual([]);
+  });
+
+  /**
+   * Un solo nombre por radio.
+   *
+   * La escala de esquinas se cerró en siete VALORES y seguía teniendo **once
+   * nombres**, porque tres de ellos estaban escritos dos veces:
+   *
+   *   - `rounded-lg` === `rounded-rel-control` (las dos valen `--radius`)
+   *   - `rounded-xl` === `rounded-rel-card` (las dos valen `--radius-lg`)
+   *   - `rounded-2xl` === `rounded-rel-panel` (las dos valen `--radius-xl`)
+   *
+   * Y **86 sitios del perímetro usaban la segunda forma**. El efecto no es
+   * estético, es que nadie podía saber leyendo el código si dos cajas tenían
+   * la misma esquina: se veían iguales en pantalla y distintas en el fuente.
+   * El guardia anterior de esto tuvo que listar las dos ortografías, que es la
+   * señal de que el problema estaba en los nombres y no en los valores.
+   *
+   * Se queda el nombre que dice el PAPEL —control, caja, panel—. El genérico
+   * no dice nada: `lg` es grande respecto de nada. `md` y `sm` se quedan donde
+   * están porque son derivados (`--radius` menos 2 y 4 px) y no tienen nombre
+   * de papel.
+   */
+  it("en el perímetro, el radio se escribe por su papel", () => {
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) =>
+      /\brounded-(?:lg|xl|2xl)\b/.test(contenido(ruta))
+    ).map(comoRuta);
+
+    expect(
+      culpables,
+      "Usa `rounded-rel-control`, `rounded-rel-card` o `rounded-rel-panel`. " +
+        "Valen lo mismo que `lg`, `xl` y `2xl`, y encima dicen de qué son."
+    ).toEqual([]);
+  });
+
+  /**
+   * El relieve sale del sistema, no de las utilidades genéricas.
+   *
+   * El perímetro usaba seis sombras: `shadow-sm` (22 veces), `shadow-card`,
+   * `shadow-floating`, `shadow-lg`, `shadow-xl` y `shadow-none`. Tres de ellas
+   * son de Tailwind y **no son versiones más pequeñas de la de la casa: son
+   * negras**. La del producto va tintada de azul —`rgba(12, 22, 44, …)`—, así
+   * que veintidós cajas proyectaban una sombra gris en un producto cuya sombra
+   * es azul. Es el mismo problema que el gris crudo, en otra propiedad.
+   *
+   * Quedan tres: la caja que se levanta, la cosa que flota y nada.
+   */
+  it("el relieve del perímetro sale de los tokens de la casa", () => {
+    /* El `(?<!-)` es lo que distingue el relieve de una CAJA de la sombra de
+       un TEXTO: el `drop-shadow-[…]` del titular de la pantalla de entrada es
+       legítimo y no es una elevación. Sin él, el guardia señalaba esa línea y
+       daba la cifra mal, que es la tercera vez que una medida mía cuenta algo
+       que no era. */
+    const PERMITIDAS = new Set([
+      "shadow-rel-card",
+      "shadow-rel-floating",
+      "shadow-rel-soft",
+      "shadow-none",
+    ]);
+
+    const culpables: string[] = [];
+    for (const ruta of DENTRO_DEL_PERIMETRO) {
+      const sobra = [...contenido(ruta).matchAll(/(?<!-)\bshadow(?:-[^\s"'`{}]+)?/g)]
+        .map((coincidencia) => coincidencia[0])
+        .filter((clase) => !PERMITIDAS.has(clase));
+      if (sobra.length > 0) {
+        culpables.push(`${comoRuta(ruta)}: ${[...new Set(sobra)].join(", ")}`);
+      }
+    }
+
+    expect(
+      culpables,
+      "Usa `shadow-rel-card` (una caja que se levanta de la página) o " +
+        "`shadow-rel-floating` (algo que flota encima). Las de Tailwind son " +
+        "negras y las de la casa van tintadas de azul."
+    ).toEqual([]);
+  });
+
+  /**
+   * La caja tiene UNA definición y el aire por dentro tres valores.
+   *
+   * 66 cajas dibujadas a mano en **47 formas distintas**: casi cada caja era
+   * su propia caja. Y lo que divergía no era el color ni el radio —esos ya
+   * estaban cerrados—, era lo que se nota al poner dos cajas una al lado de la
+   * otra: el aire por dentro, en siete valores (`p-2`, `p-3`, `p-4`, `p-5`,
+   * `p-6`, `p-8` y ninguno).
+   *
+   * Ahora son tres —ajustado, normal, amplio— y los decide el PAPEL de la
+   * caja, no quien la escribe: un panel de página, una caja dentro de un panel
+   * y una fila de lista no necesitan el mismo aire, y por eso el papel trae
+   * radio, relieve y aire juntos. Elegirlos por separado es como se llega a 47
+   * formas.
+   *
+   * Dos excepciones medidas y documentadas: la fila del aviso (`px-4 py-3`) y
+   * el menú desplegable de asignaciones (`p-2`), que no es una caja de
+   * contenido sino algo que flota.
+   */
+  const AIRE_DE_CAJA = new Set(["p-4", "p-5", "p-6", "", "px-4 py-3", "p-2"]);
+
+  it("el aire de la caja sale de tres valores", () => {
+    const CAJA = /className=(?:"|\{`)([^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:rel-)?surface\b[^"`]*)(?:"|`\})/g;
+
+    const fuera: string[] = [];
+    for (const ruta of DENTRO_DEL_PERIMETRO) {
+      const texto = contenido(ruta);
+      for (const [, clases] of texto.matchAll(CAJA)) {
+        const aire = clases
+          .split(/\s+/)
+          .filter((c) => /^p[xy]?-\S/.test(c))
+          .sort()
+          .join(" ");
+        if (!AIRE_DE_CAJA.has(aire)) fuera.push(`${comoRuta(ruta)}: ${aire}`);
+      }
+    }
+
+    expect(
+      fuera,
+      "Usa `Caja` de `@/shared/ui/Caja` y deja que el papel decida el aire, " +
+        "o quédate en `p-4` / `p-5` / `p-6`."
+    ).toEqual([]);
+  });
+
+  /**
+   * Cuántas cajas quedan dibujadas a mano.
+   *
+   * El tope solo puede bajar, como el de los botones. No obliga a migrar nada
+   * de golpe; obliga a que ninguna pantalla nueva añada la caja número 67.
+   */
+  const TOPE_CAJAS_A_MANO = 66;
+
+  it("las cajas a mano no aumentan", () => {
+    const CAJA = /className=(?:"|\{`)[^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:rel-)?surface\b[^"`]*(?:"|`\})/g;
+    const cuenta = DENTRO_DEL_PERIMETRO.reduce(
+      (suma, ruta) => suma + (contenido(ruta).match(CAJA) ?? []).length,
+      0
+    );
+
+    expect(
+      cuenta,
+      `Hay ${cuenta} cajas dibujadas a mano y el tope es ${TOPE_CAJAS_A_MANO}. ` +
+        "Usa `Caja` de `@/shared/ui/Caja`: trae el radio, el relieve y el aire " +
+        "del papel que le toque."
+    ).toBeLessThanOrEqual(TOPE_CAJAS_A_MANO);
   });
 
   /**

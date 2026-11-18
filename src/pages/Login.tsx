@@ -60,7 +60,7 @@ export default function Login() {
   if (!initialized) {
     return (
       <div className="grid h-screen place-items-center overflow-hidden bg-sidebar px-4 text-sm text-sidebar-foreground">
-        <div className="flex items-center gap-3 rounded-2xl border border-sidebar-border bg-sidebar-hover px-5 py-4 shadow-floating backdrop-blur">
+        <div className="flex items-center gap-3 rounded-rel-panel border border-sidebar-border bg-sidebar-hover px-5 py-4 shadow-rel-floating backdrop-blur">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-turquoise border-t-transparent" />
           Validando sesión segura...
         </div>
@@ -140,7 +140,7 @@ export default function Login() {
                 {productCards.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-2xl border border-sidebar-border bg-white/[0.055] p-4 shadow-card backdrop-blur">
+                    <div key={item.title} className="rounded-rel-panel border border-sidebar-border bg-white/[0.055] p-4 shadow-rel-card backdrop-blur">
                       <Icon className="mb-3 h-6 w-6 text-brand-turquoise" />
                       <div className="text-sm font-black">{item.title}</div>
                       <div className="mt-1 text-xs text-sidebar-muted">{item.text}</div>
@@ -164,9 +164,9 @@ export default function Login() {
           <div className="w-full max-w-[620px]">
             <Marca className="mb-4 h-11 lg:hidden" />
 
-            <Card className="rounded-2xl border-white/70 bg-white/92 p-5 shadow-floating backdrop-blur md:p-8 xl:p-9">
+            <Card className="rounded-rel-panel border-white/70 bg-white/92 p-5 shadow-rel-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-accent">
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-rel-panel bg-accent">
                   <Marca variante="isotipo" decorativa className="h-9" />
                 </div>
                 <h2 className="text-3xl font-black tracking-tight">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
@@ -195,7 +195,7 @@ export default function Login() {
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      className="h-14 rounded-lg border-border pl-12 text-base"
+                      className="h-14 rounded-rel-control border-border pl-12 text-base"
                     />
                   </div>
                   {errors.email ? <p id="email-error" className="text-sm font-semibold text-danger">{errors.email}</p> : null}
@@ -221,7 +221,7 @@ export default function Login() {
                       setPassword(e.target.value);
                       if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
-                    className="h-14 rounded-lg border-border text-base"
+                    className="h-14 rounded-rel-control border-border text-base"
                   />
                   {errors.password ? <p id="password-error" className="text-sm font-semibold text-danger">{errors.password}</p> : null}
                 </div>
@@ -237,7 +237,7 @@ export default function Login() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-14 w-full rounded-lg bg-marca text-base font-bold shadow-floating transition hover:brightness-[0.96]"
+                  className="h-14 w-full rounded-rel-control bg-marca text-base font-bold shadow-rel-floating transition hover:brightness-[0.96]"
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
@@ -252,13 +252,13 @@ export default function Login() {
                 </Button>
               </form>
 
-              <div className="mt-5 rounded-2xl border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
+              <div className="mt-5 rounded-rel-panel border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-black text-foreground">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
                     <p className="text-sm text-muted-foreground">Plataforma operada para gestión psicosocial empresarial.</p>
                   </div>
-                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-2xl bg-white/80 px-4 py-2 shadow-card">
+                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-rel-panel bg-white/80 px-4 py-2 shadow-rel-card">
                     {!relLogoError ? (
                       <img
                         src={REL_LOGO_URL}

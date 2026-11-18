@@ -39,7 +39,7 @@ export default function ActivarCuenta() {
   }
 
   return <main className="rel-scope grid min-h-screen place-items-center bg-rel-canvas px-4 py-10 font-rel-body text-rel-dark">
-    <section className="w-full max-w-md rounded-rel-card border border-rel-border bg-rel-surface p-6 shadow-sm sm:p-8">
+    <section className="w-full max-w-md rounded-rel-card border border-rel-border bg-rel-surface p-6 shadow-rel-card">
       <Marca className="h-8" />
       {done ? <div role="status" className="mt-8"><CheckCircle2 className="h-10 w-10 text-rel-success" aria-hidden="true" /><h1 className="mt-4 font-rel-heading text-2xl font-bold">Tu cuenta está lista</h1><p className="mt-2 text-sm text-rel-muted">Ya puedes ingresar con tu correo y la contraseña que acabas de crear.</p><Link to="/login" className="mt-6 inline-flex rounded-rel-control bg-rel-primary px-5 py-3 font-semibold text-white focus-visible:ring-2 focus-visible:ring-rel-primary">Iniciar sesión</Link></div>
       : <><h1 className="mt-8 font-rel-heading text-2xl font-bold">Activa tu cuenta</h1><p className="mt-2 text-sm text-rel-muted">Crea una contraseña personal para comenzar.</p>
