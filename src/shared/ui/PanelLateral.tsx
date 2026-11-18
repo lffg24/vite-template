@@ -90,7 +90,7 @@ export function PanelLateral({
          fallo. Entrada en 220 ms con `ease-out` —sale deprisa y aterriza
          despacio, como cualquier objeto real—, y anulada para quien pide
          menos movimiento. */
-      className="fixed inset-0 z-[100] flex justify-end bg-rel-dark/40 backdrop-blur-sm animate-in fade-in duration-enter motion-reduce:animate-none"
+      className="fixed inset-0 z-rel-modal flex justify-end bg-rel-dark/40 backdrop-blur-sm animate-in fade-in duration-enter motion-reduce:animate-none"
       // Cerrar al pulsar el velo, pero NO al soltar el ratón fuera tras haber
       // seleccionado texto dentro: eso borraría lo que se estaba rellenando.
       onMouseDown={(evento) => {

@@ -56,6 +56,41 @@ function contenido(absoluta: string): string {
   return readFileSync(absoluta, "utf-8");
 }
 
+/**
+ * El PERÍMETRO, en código y en un solo sitio.
+ *
+ * Estaba escrito dentro de la prueba de los botones porque nació ahí, y eso
+ * tenía un coste: cada guardia nuevo lo volvía a escribir, y un perímetro
+ * copiado es un perímetro que se va a desincronizar. Ahora lo comparten todos.
+ *
+ *   - **Las piezas base no cuentan.** `shared/ui`, `components/ui` y
+ *     `components/common` SON el botón, el cajón, la tabla: dibujar un
+ *     `<button>` es su trabajo.
+ *   - **Psicosocial no cuenta.** No se migra.
+ *   - **Todo lo demás cuenta**, incluidas las pantallas de superadmin que
+ *     gestionan psicólogos: administran la plataforma, no son el instrumento.
+ */
+const esPiezaBase = (r: string) =>
+  r.startsWith("shared/ui/") ||
+  r.startsWith("components/ui/") ||
+  r.startsWith("components/common/");
+
+const esPsicosocial = (r: string) =>
+  r.includes("/psicosocial/") ||
+  r.startsWith("features/psicosocial/") ||
+  [
+    "pages/ReportesPsico.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/ResponderEvaluacion.tsx",
+    "layout/PsicologoLayout.tsx",
+  ].includes(r);
+
+/** Lo que el perímetro vigila: ni pieza base ni Psicosocial. */
+const DENTRO_DEL_PERIMETRO = TODOS.filter((ruta) => {
+  const r = comoRuta(ruta);
+  return !esPiezaBase(r) && !esPsicosocial(r);
+});
+
 describe("el núcleo es uno solo", () => {
   it("ningún componente tiene un gemelo con el mismo nombre", () => {
     // Es la forma que tomó el problema las tres veces: alguien copió el archivo
@@ -623,6 +658,133 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
+   * Ningún modal se dibuja a mano, y esta deuda ya está cerrada.
+   *
+   * **La lista está vacía.** Fuera de las piezas base, todo velo escrito a
+   * mano que queda es de Psicosocial, y ahí se queda. La lista vacía es lo que
+   * convierte esto en una regla: cualquier ruta que vuelva a aparecer aquí es
+   * una pantalla nueva incumpliendo, no deuda heredada.
+   *
+   * Los dos que había fuera de Psicosocial eran distintos entre sí:
+   *
+   *   - `layout/Layout.tsx` estaba MUERTO. Nadie lo importaba. Era el armazón
+   *     de la plantilla de Vite y sobrevivía con el nombre viejo del producto
+   *     («EvalPro 360», el único sitio donde quedaba), un usuario inventado
+   *     con su correo escrito a mano, un menú de siete rutas que no era el
+   *     menú por rol, y los grises crudos de Tailwind. Se borró.
+   *   - `components/feedback/ConfirmDialog.tsx` estaba vivo y era el peor
+   *     caso: un modal sin `role="dialog"`, sin `aria-modal`, sin `Escape`,
+   *     sin mover el foco y sin cierre por el velo. Cuatro promesas
+   *     incumplidas en el control donde alguien cierra una aplicación,
+   *     registra un crédito de reproceso o bloquea un instrumento. Ahora es
+   *     un adaptador sobre `DialogoCasa`, con la firma intacta para no tocar
+   *     a sus dos consumidores, que son de Psicosocial.
+   */
+  const VELO_A_MANO_PENDIENTE: string[] = [];
+
+  it("ningún modal se dibuja a mano fuera de las piezas base", () => {
+    const aMano = DENTRO_DEL_PERIMETRO.filter((ruta) =>
+      contenido(ruta).includes("fixed inset-0")
+    ).map(comoRuta);
+
+    const nuevos = aMano.filter((r) => !VELO_A_MANO_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "Usa `DialogoCasa` o `PanelLateral` de `@/shared/ui`: traen el velo, el " +
+        "cierre por `Escape` y por el velo, `role=\"dialog\"` + `aria-modal`, el " +
+        "foco dentro de la tarjeta y la capa correcta. Un modal escrito a mano " +
+        "olvida la mitad de eso, y no se nota hasta que alguien navega con teclado."
+    ).toEqual([]);
+
+    const yaMigrados = VELO_A_MANO_PENDIENTE.filter((r) => !aMano.includes(r));
+    expect(yaMigrados, "Ya usan la pieza: bórralos de VELO_A_MANO_PENDIENTE.").toEqual([]);
+  });
+
+  /**
+   * Un botón que dice `aria-expanded` dice también `aria-controls`.
+   *
+   * Es el mismo contrato a medias que traían las tres imitaciones de pestañas:
+   * anunciar un estado de apertura sin decir QUÉ se abre deja a quien escucha
+   * la pantalla con la mitad del mensaje. `SeccionPlegable` y `Autorizaciones`
+   * lo cumplen; el grupo de la barra lateral no lo cumplía.
+   *
+   * El grupo de la barra **se queda escrito a mano, y es correcto que lo esté**:
+   * `SeccionPlegable` es un panel de contenido sobre superficie clara, con
+   * memoria en `localStorage`, título, descripción y acción propia en la
+   * cabecera; aquello es un grupo de enlaces sobre el azul oscuro de la barra
+   * cuyo estado por defecto lo decide la ruta activa. Lo que faltaba no era la
+   * pieza, era el contrato: se le puso `aria-controls`, y en modo compacto se
+   * le quitó el `aria-expanded`, porque ahí el botón no plega nada —despliega
+   * la barra entera— y un desplegable que se anuncia cerrado cuando en
+   * realidad es otro mando engaña más que callar.
+   *
+   * Las piezas base quedan fuera por una razón distinta de la de siempre: en
+   * `CompetenciaSelect` y `MultiSelectEvaluaciones` el disparador es de Radix,
+   * que inyecta `aria-expanded` y `aria-controls` en el DOM. Leer el fuente no
+   * dice lo que el navegador tiene.
+   */
+  it("todo `aria-expanded` del perímetro dice qué controla", () => {
+    const mudos = DENTRO_DEL_PERIMETRO.filter((ruta) => {
+      const c = contenido(ruta);
+      const anuncia = (c.match(/aria-expanded/g) ?? []).length;
+      if (anuncia === 0) return false;
+      return (c.match(/aria-controls/g) ?? []).length < anuncia;
+    }).map(comoRuta);
+
+    expect(
+      mudos,
+      "Añade `aria-controls` apuntando al id de la región que abre, y no lo " +
+        "emitas cuando el botón no abra una región."
+    ).toEqual([]);
+  });
+
+  /**
+   * Las capas que tapan la página tienen nombre.
+   *
+   * Había cuatro números sueltos decidiendo qué va encima de qué —50, 100, 120
+   * y 130— y entre ellos un empate y un error:
+   *
+   *   - **Empate.** `DialogoCasa` y el aviso de `components/ui/toast` valían
+   *     los dos 100, así que cuál quedaba arriba lo decidía el orden del DOM.
+   *   - **Error.** La confirmación valía 130, por encima de los avisos: un
+   *     mensaje lanzado mientras alguien confirmaba no se veía nunca.
+   *
+   * Ahora son dos capas con nombre en `tailwind.config.js` —`z-rel-modal` y
+   * `z-rel-aviso`—, y el aviso va encima del modal: un mensaje que el modal
+   * tapa es un mensaje que no se dio.
+   *
+   * El guardia vigila solo los valores ARBITRARIOS (`z-[n]`), que son los que
+   * codifican «esto tapa aquello» con un número inventado. Las clases de la
+   * escala (`z-10`, `z-50`) se usan para cabeceras pegajosas y desplegables
+   * dentro de la página y son otra conversación.
+   */
+  const CAPA_INVENTADA_PENDIENTE = [
+    "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
+    "features/psicosocial/components/sociodemografia/SociodemografiaFields.tsx",
+    "features/psicosocial/web-direct/WebDirectParticipantShell.tsx",
+    "pages/ReportesPsico.tsx",
+    "pages/psicosocial/AplicacionDetallePage.tsx",
+    "pages/psicosocial/EmpresaEmpleadosPage.tsx",
+  ];
+
+  it("las capas que tapan la página tienen nombre, y los números sueltos no crecen", () => {
+    const inventadas = TODOS.filter((ruta) => /z-\[\d+\]/.test(contenido(ruta))).map(comoRuta);
+
+    const nuevas = inventadas.filter((r) => !CAPA_INVENTADA_PENDIENTE.includes(r));
+    expect(
+      nuevas,
+      "Usa `z-rel-modal` (velos y cajones) o `z-rel-aviso` (mensajes). Un " +
+        "número inventado solo se puede comparar leyendo todos los demás."
+    ).toEqual([]);
+
+    const yaMigradas = CAPA_INVENTADA_PENDIENTE.filter((r) => !inventadas.includes(r));
+    expect(
+      yaMigradas,
+      "Ya usan la escala: bórralas de CAPA_INVENTADA_PENDIENTE."
+    ).toEqual([]);
+  });
+
+  /**
    * La casilla tiene UNA definicion.
    *
    * Nueve pantallas la dibujaban a mano, y entre las nueve habia cinco formas
@@ -807,22 +969,9 @@ describe("el núcleo es uno solo", () => {
   const TOPE_BOTONES_A_MANO = 33;
 
   it("los botones a mano no aumentan, y la cuenta no depende de quién mire", () => {
-    const esPiezaBase = (r: string) =>
-      r.startsWith("shared/ui/") || r.startsWith("components/ui/") || r.startsWith("components/common/");
-    const esPsicosocial = (r: string) =>
-      r.includes("/psicosocial/") ||
-      r.startsWith("features/psicosocial/") ||
-      [
-        "pages/ReportesPsico.tsx",
-        "pages/ReportesOficialesPsicoPage.tsx",
-        "pages/ResponderEvaluacion.tsx",
-        "layout/PsicologoLayout.tsx",
-      ].includes(r);
-
-    const cuenta = TODOS.filter((ruta) => {
-      const r = comoRuta(ruta);
-      return r.endsWith(".tsx") && !esPiezaBase(r) && !esPsicosocial(r);
-    }).reduce((suma, ruta) => suma + (contenido(ruta).match(/<button/g) ?? []).length, 0);
+    const cuenta = DENTRO_DEL_PERIMETRO.filter((ruta) =>
+      comoRuta(ruta).endsWith(".tsx")
+    ).reduce((suma, ruta) => suma + (contenido(ruta).match(/<button/g) ?? []).length, 0);
 
     expect(
       cuenta,

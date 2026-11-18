@@ -103,7 +103,7 @@ export function DialogoCasa({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-rel-dark/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-rel-modal flex items-center justify-center bg-rel-dark/40 p-4 backdrop-blur-sm"
       // Cerrar al pulsar el velo, pero NO al pulsar dentro de la tarjeta: sin
       // la comprobación, soltar el ratón fuera tras seleccionar texto dentro
       // cierra el modal y se pierde lo que se estaba leyendo.

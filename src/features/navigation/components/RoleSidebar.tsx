@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, LogOut, Menu } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Marca } from "@/components/brand/Marca";
@@ -25,6 +25,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const location = useLocation();
   const rel = tone === "rel";
+  const base = useId();
   useEffect(() => { localStorage.setItem(storageKey, collapsed ? "1" : "0"); }, [collapsed, storageKey]);
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -54,7 +55,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
       {loading && <p role="status" className="px-3 py-4 text-sm text-white/70">Cargando menú…</p>}
       {error && <div role="alert" className="rounded-xl border border-white/20 p-3 text-sm"><p>{error}</p><button type="button" onClick={onRetry} className="mt-2 underline focus-visible:ring-2 focus-visible:ring-rel-sky">Reintentar</button></div>}
       {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-white/70">No hay opciones habilitadas para esta cuenta.</p>}
-      {items.map(entry => {
+      {items.map((entry, indice) => {
         if ("to" in entry) {
           const Icon = entry.icon;
           const active = activeRoute(location.pathname, entry.to);
@@ -63,12 +64,34 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
         const Icon = entry.icon;
         const active = entry.children.some(child => activeRoute(location.pathname, child.to));
         const expanded = openGroups.includes(entry.label) || (active && !openGroups.includes(`closed:${entry.label}`));
+        /* El grupo de navegacion se queda escrito a mano y NO usa
+           `SeccionPlegable`: aquel es un panel de contenido sobre superficie
+           clara, con memoria en `localStorage`, titulo, descripcion y una
+           accion propia en la cabecera. Esto es un grupo de enlaces sobre el
+           azul oscuro de la barra, y su estado por defecto lo decide la ruta
+           activa, no lo que alguien plego la ultima vez. Forzarlo dentro de la
+           pieza seria vestir de panel algo que no lo es.
+
+           Lo que si debia cumplir es el CONTRATO del plegable, y lo cumplia a
+           medias:
+
+             - `aria-controls` no existia, asi que el boton decia «abro algo»
+               sin decir que.
+             - En modo compacto declaraba `aria-expanded={false}`, y ahi el
+               boton no plega nada: despliega la barra entera. Un desplegable
+               que anuncia estar cerrado cuando en realidad es otro mando es
+               peor que no anunciar nada.
+
+           El identificador lleva `d`/`m` porque `renderContent` se llama dos
+           veces —barra de escritorio y hoja movil— y las dos pueden estar en
+           el DOM a la vez. */
+        const idGrupo = `${base}-${mobile ? "m" : "d"}-grupo-${indice}`;
         return <div key={entry.label} className="rounded-xl border border-white/10">
-          <button type="button" aria-expanded={!compact && expanded} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
+          <button type="button" aria-expanded={compact ? undefined : expanded} aria-controls={!compact && expanded ? idGrupo : undefined} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
             if (compact) { setCollapsed(false); setOpenGroups(v => [...v, entry.label]); return; }
             setOpenGroups(v => expanded ? [...v.filter(x => x !== entry.label), `closed:${entry.label}`] : [...v.filter(x => x !== `closed:${entry.label}`), entry.label]);
           }} className={`flex w-full items-center rounded-xl text-left text-sm font-semibold text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center p-3" : "gap-3 px-3 py-2.5"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <><span className="min-w-0 flex-1">{entry.label}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} /></>}</button>
-          {!compact && expanded && <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
+          {!compact && expanded && <div id={idGrupo} className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
             const ChildIcon = child.icon;
             return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
           })}</div>}

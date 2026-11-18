@@ -203,6 +203,21 @@ export default {
         xl: "var(--radius-lg)",
         "2xl": "var(--radius-xl)",
       },
+      /* Las dos capas que TAPAN la pagina.
+         Habia cuatro numeros sueltos para decidir que va encima de que
+         —50, 100, 120 y 130— y uno de ellos empatado: el modal de la casa y
+         el aviso de `components/ui/toast` valian los dos 100, asi que cual
+         quedaba arriba lo decidia el orden del DOM. La confirmacion, en
+         cambio, valia 130: flotaba por encima de los avisos, asi que un
+         mensaje lanzado mientras alguien confirmaba no se veia nunca.
+
+         Dos capas con nombre, y el aviso por encima del modal: un mensaje que
+         el modal tapa es un mensaje que no se dio. Los numeros sueltos que
+         quedan son los de Psicosocial, que no se migra. */
+      zIndex: {
+        "rel-modal": "100",
+        "rel-aviso": "120",
+      },
       boxShadow: {
         soft: "var(--shadow-soft)",
         card: "var(--shadow-card)",
