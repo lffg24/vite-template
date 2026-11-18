@@ -42,7 +42,7 @@ import { forwardRef, type SelectHTMLAttributes } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { CLASE_CONTROL } from "@/shared/ui/controles";
+import { ALTO_CONTROL, CLASE_CONTROL } from "@/shared/ui/controles";
 
 export type PropsDesplegable = Omit<SelectHTMLAttributes<HTMLSelectElement>, "className"> & {
   /** Clases del envoltorio: ancho y colocación. No el aspecto del control. */
@@ -57,7 +57,7 @@ export const Desplegable = forwardRef<HTMLSelectElement, PropsDesplegable>(funct
     <div className={cn("relative w-full", className)}>
       <select
         ref={referencia}
-        className={cn(CLASE_CONTROL, "flex h-10 cursor-pointer appearance-none pr-9")}
+        className={cn(CLASE_CONTROL, ALTO_CONTROL.normal, "flex cursor-pointer appearance-none pr-9")}
         {...resto}
       >
         {children}

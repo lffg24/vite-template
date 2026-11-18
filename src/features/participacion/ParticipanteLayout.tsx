@@ -71,8 +71,8 @@ export function ParticipanteLayout({
 /**
  * Botón de acción principal, a lo ancho.
  *
- * A lo ancho y con 48 px de alto porque se pulsa con el pulgar, de pie, quizá
- * con guantes. Los objetivos táctiles pequeños son la primera causa de que un
+ * A lo ancho y con 56 px de alto porque se pulsa con el pulgar, de pie, quizá
+ * con guantes. (Decía 48; el código ponía 56 desde hacía tiempo.) Los objetivos táctiles pequeños son la primera causa de que un
  * formulario móvil se sienta roto.
  */
 export function BotonPrincipal({

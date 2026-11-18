@@ -52,11 +52,21 @@ const buttonVariants = cva(
         relDanger:
           "bg-rel-danger text-rel-danger-foreground shadow-rel-card hover:bg-rel-danger/90 focus-visible:ring-rel-danger",
       },
+      // El alto sigue al del control, porque un boton y un campo comparten
+      // fila constantemente --buscador y boton Buscar, campo y Guardar-- y
+      // cuatro pixeles de diferencia entre dos cosas de la misma fila es
+      // exactamente el defecto que este trabajo vino a quitar.
+      //
+      // `sm` se queda en 36 px a proposito: vive dentro de filas de tabla, de
+      // paginadores y de tarjetas densas, donde 44 no cabe sin cambiar la
+      // densidad de la pantalla entera. El minimo exigible (WCAG 2.5.8) son
+      // 24 px; los 44 son la recomendacion para el pulgar, y la cumple todo
+      // lo que se toca en una pantalla de movil.
       size: {
-        default: "h-10 px-4 py-2.5",
+        default: "h-11 px-4 py-2.5",
         sm: "h-9 px-3 text-xs",
-        lg: "h-11 px-8 text-sm",
-        icon: "h-10 w-10",
+        lg: "h-12 px-8 text-sm",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

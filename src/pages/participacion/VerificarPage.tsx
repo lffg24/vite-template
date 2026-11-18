@@ -28,6 +28,7 @@ import { AlertTriangle, BadgeCheck, Clock, Search } from "lucide-react";
 
 import { verificarConstancia } from "@/services/participacionService";
 import type { ErrorPublico, Verificacion } from "@/types/participacion";
+import { Input } from "@/components/ui/input";
 import {
   BotonPrincipal,
   Panel,
@@ -147,7 +148,7 @@ export default function VerificarPage() {
         {/* `autoCapitalize` y `spellCheck` apagados: el teclado del móvil, si no,
             corrige el código a una palabra. `inputMode` no es `numeric` porque
             el alfabeto lleva letras. */}
-        <input
+        <Input
           id="codigo"
           value={codigo}
           onChange={(e) => setCodigo(e.target.value)}
@@ -155,7 +156,10 @@ export default function VerificarPage() {
           autoCapitalize="characters"
           autoCorrect="off"
           spellCheck={false}
-          className="mt-1 min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-4 font-mono text-lg uppercase tracking-[0.15em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+          /* Lo propio de este campo es como se LEE un codigo: monoespaciada,
+             mayusculas y las letras separadas. El borde, el foco y el alto
+             salen de la pieza. */
+          className="mt-1 px-4 font-mono text-lg uppercase tracking-[0.15em] md:text-lg"
         />
         <p className="mt-2 text-xs text-rel-muted">
           Da igual si lo escribes en minúsculas o sin el guion.

@@ -3,6 +3,7 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { ALTO_CONTROL, CLASE_CONTROL } from "@/shared/ui/controles"
 
 const Select = SelectPrimitive.Root
 
@@ -17,12 +18,17 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      /* Mismo foco y mismo realce que `Input` y `Textarea`: los tres son
-         campos de un formulario y deben responder igual. Tenia anillo de 2 px
-         al 20 %, ninguna senal de puntero, y lo disparaba con `focus` en vez
-         de `focus-visible`, de modo que el anillo aparecia tambien al abrirlo
-         con el raton. */
-      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-lg border border-input bg-surface px-3 py-2 font-body text-sm text-foreground shadow-sm transition-[border-color,box-shadow,background-color] duration-rel-micro ease-rel-out data-[placeholder]:text-muted-foreground hover:border-border-strong focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 focus-visible:border-input-focus aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/25 disabled:cursor-not-allowed disabled:bg-muted/60 disabled:opacity-50 motion-reduce:transition-none [&>span]:line-clamp-1",
+      /* Esta cadena era una copia mas del aspecto del control, y la sexta.
+         Se homologo a mano con `Input` --mismo foco, mismo realce-- y por eso
+         se quedo con lo que `Input` tenia ENTONCES: `shadow-sm`, que es la
+         sombra negra de Tailwind y se quito del control; `rounded-lg`, que es
+         el radio de control escrito con el otro nombre; y `text-sm` fijo, de
+         modo que en el movil media 14 px mientras el campo de al lado media
+         16 --y por debajo de 16 el navegador del telefono hace zoom al
+         enfocar--. Copiar homologa el dia que se copia. */
+      CLASE_CONTROL,
+      ALTO_CONTROL.normal,
+      "flex items-center justify-between whitespace-nowrap data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
       className
     )}
     {...props}

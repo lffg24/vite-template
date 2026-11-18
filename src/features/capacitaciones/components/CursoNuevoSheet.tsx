@@ -12,6 +12,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Casilla } from "@/shared/ui/Casilla";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -165,18 +166,13 @@ export function CursoNuevoSheet({
           </div>
 
           <div className="rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="curso-restringida"
-                checked={restringida}
-                onCheckedChange={(v) => setRestringida(v === true)}
-                className="mt-0.5"
-              />
-              <div className="min-w-0">
-                <Label htmlFor="curso-restringida" className="text-rel-dark">
-                  Categoría restringida
-                </Label>
-                <p className="mt-1 text-sm text-rel-muted">
+            <Casilla
+              id="curso-restringida"
+              marcada={restringida}
+              alCambiar={setRestringida}
+              etiqueta="Categoría restringida"
+              descripcion={
+                <>
                   Solo puede dictarlo un proveedor autorizado. La marca viaja
                   congelada dentro de cada versión publicada, así que{" "}
                   <strong className="font-semibold text-rel-dark">
@@ -184,9 +180,9 @@ export function CursoNuevoSheet({
                   </strong>
                   : las constancias ya emitidas seguirían diciendo lo que decía la
                   versión con la que se dictaron.
-                </p>
-              </div>
-            </div>
+                </>
+              }
+            />
           </div>
 
           <SheetFooter className="gap-2 sm:gap-2">

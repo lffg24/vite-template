@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/features/auth/passwordResetService";
+import { ALTO_CONTROL } from "@/shared/ui/controles";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -57,11 +58,11 @@ export default function SolicitarRecuperacionClave() {
             <Label htmlFor="recovery-email" className="font-bold">Correo electrónico</Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input id="recovery-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className="h-14 rounded-rel-control pl-12 text-base" />
+              <Input id="recovery-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} className={`${ALTO_CONTROL.entrada} rounded-rel-control pl-12 text-base`} />
             </div>
             {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
           </div>
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground">
+          <Button type="submit" disabled={loading} className={`${ALTO_CONTROL.entrada} w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground`}>
             {loading ? "Procesando..." : "Enviar enlace seguro"}
           </Button>
         </form>

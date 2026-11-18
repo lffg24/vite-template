@@ -1237,7 +1237,11 @@ describe("el núcleo es uno solo", () => {
    */
   // 33 -> 25 al borrar `layout/Layout.tsx` (muerto, dos botones) y al pasar la
   // confirmacion a `DialogoCasa`, que le quita la equis propia.
-  const TOPE_BOTONES_A_MANO = 25;
+  // 25 -> 24 el 2026-11-18: el boton Volver del formulario publico de
+  // participacion medía 48 px junto a uno de 56 en la misma fila, y con el
+  // anillo de foco de 2 px. Hoy es `BotonSecundario`, la misma pieza que el
+  // principal que tiene al lado.
+  const TOPE_BOTONES_A_MANO = 24;
 
   it("los botones a mano no aumentan, y la cuenta no depende de quién mire", () => {
     const cuenta = DENTRO_DEL_PERIMETRO.filter((ruta) =>
@@ -1601,16 +1605,13 @@ describe("el núcleo es uno solo", () => {
    * `Desplegable` es ese mismo `select` nativo con el aspecto de la casa.
    */
   it("el desplegable del perímetro sale de la pieza", () => {
-    /* Los dos que quedan son del formulario publico de participacion, que
-       mide sus controles a 48 px a proposito --es una pantalla de movil para
-       alguien que no conoce el producto-- mientras el campo de la casa mide
-       40. Cambiarlos solos los dejaria 8 px mas bajos que los seis campos de
-       texto que tienen al lado, o sea peor. Salen de aqui cuando se decida el
-       alto del control, y la lista solo puede menguar. */
-    const DEL_FORMULARIO_PUBLICO = [
-      "features/participacion/FormularioIdentidad.tsx",
-      "features/participacion/FormularioReanudacion.tsx",
-    ];
+    /* Esta lista tuvo dos nombres: los del formulario publico de
+       participacion, que median 48 px a proposito mientras el campo de la
+       casa media 40. Migrarlos solos los habria dejado 8 px mas bajos que los
+       campos de texto de al lado, o sea peor, asi que esperaron a que se
+       decidiera el alto. El 2026-11-18 se decidio en 44 y los dos salieron de
+       aqui. La lista solo puede menguar, y ya esta vacia. */
+    const DEL_FORMULARIO_PUBLICO: string[] = [];
     const usaSelect = (ruta: string) => /<select/.test(contenido(ruta));
 
     const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) => {
@@ -1641,8 +1642,13 @@ describe("el núcleo es uno solo", () => {
    * tres piezas piden la misma cadena.
    */
   it("el aspecto del control tiene una sola definición", () => {
+    /* `components/ui/select.tsx` se incorporo el 2026-11-18. Era la SEXTA
+       copia del aspecto y se me habia pasado por estar en las piezas base:
+       se homologo a mano con `Input` y por eso conservaba lo que `Input`
+       tenia entonces --`shadow-sm`, `rounded-lg` y `text-sm` fijo--. */
     const PIEZAS_DE_CONTROL = [
       "components/ui/input.tsx",
+      "components/ui/select.tsx",
       "components/ui/textarea.tsx",
       "shared/ui/Desplegable.tsx",
     ];
@@ -1789,5 +1795,92 @@ describe("el núcleo es uno solo", () => {
       (ruta) => CON_MOTIVO.includes(comoRuta(ruta)) && loAnunciaAMano(ruta)
     ).map(comoRuta);
     expect(siguen.sort()).toEqual([...CON_MOTIVO].sort());
+  });
+
+  /**
+   * El alto del control tiene DOS valores, y los dos tienen nombre.
+   *
+   * Tenía tres y ninguno tenía nombre: 40 px el campo de la casa en 148
+   * sitios, 48 el formulario público de participación y 56 la pantalla de
+   * entrada, cada uno escrito a mano donde hiciera falta. El 2026-11-18 el
+   * dueño del producto cerró la decisión en **44 px**, el mínimo
+   * recomendado para el pulgar, y la puerta de entrada se quedó en 56 como
+   * lo que siempre fue: una tarea por pantalla, sin presión de densidad.
+   *
+   * Lo que esta prueba impide no es un tercer valor —eso es una decisión de
+   * producto y se toma a propósito— sino que aparezca **sin que nadie lo
+   * decida**, que es como aparecieron los tres anteriores.
+   */
+  it("el alto del control tiene dos valores con nombre", () => {
+    const CONTROLES = contenido(
+      TODOS.find((ruta) => comoRuta(ruta) === "shared/ui/controles.ts")!
+    );
+    const valores = [...CONTROLES.matchAll(/^ {2}([a-z]+): "h-\d+",$/gm)].map(
+      (coincidencia) => coincidencia[1]
+    );
+
+    expect(
+      valores,
+      "Añadir un alto de control es una decisión de producto: afecta a la " +
+        "densidad de todos los formularios. Si es deliberada, actualiza esta " +
+        "prueba; si no lo es, usa `ALTO_CONTROL.normal`."
+    ).toEqual(["normal", "entrada"]);
+
+    // Y las piezas lo piden en vez de escribir un numero.
+    const PIEZAS_CON_ALTO = [
+      "components/ui/input.tsx",
+      "components/ui/select.tsx",
+      "shared/ui/Desplegable.tsx",
+    ];
+    const conAltoAMano = PIEZAS_CON_ALTO.filter((ruta) => {
+      const texto = contenido(join(RAIZ, ...ruta.split("/")));
+      return !/ALTO_CONTROL/.test(texto) || /"[^"]*\bh-(?:8|9|10|11|12|14)\b/.test(texto);
+    });
+    expect(
+      conAltoAMano,
+      "El alto de la pieza sale de `ALTO_CONTROL`, no de un `h-10` escrito a mano."
+    ).toEqual([]);
+  });
+
+  /**
+   * El campo de texto del perímetro sale de la pieza.
+   *
+   * El formulario público de participación —el que rellena alguien que no
+   * conoce el producto, casi siempre desde el móvil— tenía sus siete
+   * controles escritos a mano, con **anillo de foco de 2 px**: el que la casa
+   * descartó por no verse sobre blanco. El motivo escrito para no usar la
+   * pieza era que hacían falta `inputMode`, `autoComplete` y `enterKeyHint`,
+   * y el motivo era falso: `Input` ES un `<input>` nativo que reenvía todas
+   * sus propiedades. En el mismo fichero cinco campos ya usaban la pieza.
+   */
+  it("el campo de texto del perímetro sale de la pieza", () => {
+    /* Una casilla o un radio crudos sí son legítimos: lo que se dibuja ahí no
+       es el control de texto sino una marca, y la casa tiene `Casilla` y
+       `OpcionesExcluyentes` construidos sobre el elemento nativo. Estos dos
+       los usan dentro de una lista de opciones. La lista solo puede menguar. */
+    const DE_CASILLA_O_RADIO = [
+      "features/capacitaciones/components/ConstructorEvaluacion.tsx",
+      "pages/cx/CalificacionPublicaPage.tsx",
+    ];
+    const usaInputCrudo = (ruta: string) => /<input/.test(contenido(ruta));
+
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) => {
+      if (DE_CASILLA_O_RADIO.includes(comoRuta(ruta))) return false;
+      return usaInputCrudo(ruta);
+    }).map(comoRuta);
+
+    expect(
+      culpables,
+      "Usa `Input` de `@/components/ui/input`. Es el mismo `<input>` nativo " +
+        "con el aspecto de la casa: reenvía `inputMode`, `autoComplete` y " +
+        "`enterKeyHint` igual que uno escrito a mano, y a cambio trae el " +
+        "anillo de 4 px, el estado deshabilitado y el alto que se decidió."
+    ).toEqual([]);
+
+    // Y la lista no se queda con nombres que ya cumplen.
+    const siguen = DENTRO_DEL_PERIMETRO.filter(
+      (ruta) => DE_CASILLA_O_RADIO.includes(comoRuta(ruta)) && usaInputCrudo(ruta)
+    ).map(comoRuta);
+    expect(siguen.sort()).toEqual([...DE_CASILLA_O_RADIO].sort());
   });
 });

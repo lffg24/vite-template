@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { CLASE_CONTROL } from "@/shared/ui/controles"
+import { ALTO_CONTROL, CLASE_CONTROL } from "@/shared/ui/controles"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
@@ -16,7 +16,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
            multiplico por cinco. */
         className={cn(
           CLASE_CONTROL,
-          "flex h-10 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
+          ALTO_CONTROL.normal,
+          "flex file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
           className
         )}
         ref={ref}

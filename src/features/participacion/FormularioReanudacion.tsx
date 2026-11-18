@@ -3,7 +3,9 @@ import { ArrowRight, IdCard } from "lucide-react";
 
 import type { TipoDocumento } from "@/types/participacion";
 import { ETIQUETA_DOCUMENTO, TIPOS_DOCUMENTO } from "@/types/participacion";
-import { BotonPrincipal } from "./ParticipanteLayout";
+import { BotonPrincipal, BotonSecundario } from "./ParticipanteLayout";
+import { Desplegable } from "@/shared/ui/Desplegable";
+import { Input } from "@/components/ui/input";
 
 export function FormularioReanudacion({
   enviando,
@@ -51,24 +53,23 @@ export function FormularioReanudacion({
           <label htmlFor="tipo-reanudacion" className="mb-1.5 block text-sm font-semibold">
             Tipo de documento
           </label>
-          <select
+          <Desplegable
             id="tipo-reanudacion"
             value={tipo}
             onChange={(e) => setTipo(e.target.value as TipoDocumento)}
-            className="min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
           >
             {TIPOS_DOCUMENTO.map((opcion) => (
               <option key={opcion} value={opcion}>
                 {opcion} · {ETIQUETA_DOCUMENTO[opcion]}
               </option>
             ))}
-          </select>
+          </Desplegable>
         </div>
         <div>
           <label htmlFor="numero-reanudacion" className="mb-1.5 block text-sm font-semibold">
             Número de documento
           </label>
-          <input
+          <Input
             id="numero-reanudacion"
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
@@ -76,7 +77,6 @@ export function FormularioReanudacion({
             autoComplete="off"
             enterKeyHint="go"
             maxLength={30}
-            className="min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
             aria-invalid={mensaje ? true : undefined}
             aria-describedby={mensaje ? "error-reanudacion" : undefined}
           />
@@ -94,13 +94,9 @@ export function FormularioReanudacion({
       ) : null}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
-          onClick={onCancelar}
-          className="min-h-[3rem] rounded-rel-control px-5 text-sm font-semibold text-rel-muted hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-        >
+        <BotonSecundario type="button" onClick={onCancelar} className="sm:w-auto">
           Volver
-        </button>
+        </BotonSecundario>
         <BotonPrincipal type="submit" disabled={enviando} className="sm:w-auto">
           <span className="inline-flex items-center justify-center gap-2">
             {enviando ? "Buscando…" : "Continuar"}

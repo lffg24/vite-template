@@ -103,7 +103,7 @@ for nombre, patron_a_mano, nota in [
 # --- Botones ---------------------------------------------------------------
 a_mano = cuenta(r"<button", PERIMETRO)
 con_pieza = cuenta(r"<Button\b", PERIMETRO)
-frente("Botones", con_pieza, a_mano, "tope en la prueba: 25")
+frente("Botones", con_pieza, a_mano, "tope en la prueba: 24")
 
 # --- Escalas que se cerraron con la caja -----------------------------------
 # Un nombre por radio: `rounded-lg|xl|2xl` valen lo mismo que
@@ -141,15 +141,16 @@ frente("Tarjetas", con_pieza, a_mano, "lo mas grande que queda")
 # de la casa, asi que cuenta como pieza igual que el de Radix.
 a_mano = cuenta(r"<select\b", PERIMETRO)
 con_pieza = cuenta(r"<(?:Select|SelectTrigger|Desplegable)\b", PERIMETRO)
-frente("Desplegables", con_pieza, a_mano, "los 2 que quedan miden 48 px")
+frente("Desplegables", con_pieza, a_mano, "ni uno escrito a mano")
 
 # --- El aspecto del control -------------------------------------------------
 # Campo de texto, area de texto y desplegable: una sola cadena de clases. Antes
 # `Textarea` se homologo copiando las de `Input` caracter por caracter, y el
 # desplegable se quedo fuera: cinco apariencias para dieciocho controles.
-PIEZAS_CONTROL = ["components/ui/input.tsx", "components/ui/textarea.tsx", "shared/ui/Desplegable.tsx"]
+PIEZAS_CONTROL = ["components/ui/input.tsx", "components/ui/select.tsx",
+                  "components/ui/textarea.tsx", "shared/ui/Desplegable.tsx"]
 piden = [r for r in PIEZAS_CONTROL if "CLASE_CONTROL" in leer(r)]
-frente("Aspecto del control", len(piden), len(PIEZAS_CONTROL) - len(piden), "una definicion para los tres")
+frente("Aspecto del control", len(piden), len(PIEZAS_CONTROL) - len(piden), "una definicion para los cuatro")
 
 # --- Vacios: cuantas pantallas con lista usan la pieza ---------------------
 LISTA = r"<TablaDatos\b|<ul\b|\.map\("

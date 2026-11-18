@@ -19,6 +19,7 @@ import { DialogoCasa } from "@/shared/ui/DialogoCasa";
 import { Escena } from "@/shared/ui/Escena";
 import type { EnlaceCreado } from "@/types/capacitaciones";
 import { formatearFechaHora } from "../formato";
+import { Input } from "@/components/ui/input";
 
 /**
  * La URL pública que recibirá el participante (pantalla D-01).
@@ -96,14 +97,16 @@ export function EnlaceGeneradoDialog({
     >
       <div className="space-y-3">
         <div className="flex gap-2">
-          <input
+          <Input
             id="enlace-url"
             aria-label="Enlace para compartir"
             ref={campoRef}
             readOnly
             value={url}
             onFocus={(e) => e.currentTarget.select()}
-            className="min-w-0 flex-1 rounded-rel-control border border-rel-border bg-rel-surface-subtle px-3 py-3 font-mono text-sm text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            /* Solo lo propio: el enlace se lee caracter a caracter, y el
+               fondo apagado dice que no se escribe aqui. */
+            className="min-w-0 flex-1 bg-rel-surface-subtle font-mono text-sm md:text-sm"
           />
           <Button type="button" variant="rel" size="lg" onClick={copiar}>
             {copiado ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}

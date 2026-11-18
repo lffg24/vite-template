@@ -81,6 +81,7 @@ import {
 import { TipoLeccionBadge } from "./Insignias";
 import { formatearIntensidad } from "../formato";
 import { SinDatos } from "./EstadoPantalla";
+import { Casilla } from "@/shared/ui/Casilla";
 
 function estaImplementado(tipo: TipoLeccion) {
   return TIPOS_LECCION_IMPLEMENTADOS.includes(tipo);
@@ -784,26 +785,18 @@ export function LeccionesEditor({
               />
             </div>
 
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="l-obligatoria"
-                checked={obligatoriedadFijada ? false : form.obligatoria}
-                disabled={obligatoriedadFijada}
-                onCheckedChange={(v) => setForm((f) => ({ ...f, obligatoria: v === true }))}
-                className="mt-0.5"
-              />
-              <div>
-                <Label htmlFor="l-obligatoria" className="text-rel-dark">
-                  Obligatoria para completar el curso
-                </Label>
-                {obligatoriedadFijada ? (
-                  <p className="mt-1 text-sm text-rel-muted">
-                    Un recurso externo nunca cuenta para la finalización: no se
-                    puede comprobar que alguien lo consumió.
-                  </p>
-                ) : null}
-              </div>
-            </div>
+            <Casilla
+              id="l-obligatoria"
+              marcada={obligatoriedadFijada ? false : form.obligatoria}
+              deshabilitada={obligatoriedadFijada}
+              alCambiar={(obligatoria) => setForm((f) => ({ ...f, obligatoria }))}
+              etiqueta="Obligatoria para completar el curso"
+              descripcion={
+                obligatoriedadFijada
+                  ? "Un recurso externo nunca cuenta para la finalización: no se puede comprobar que alguien lo consumió."
+                  : undefined
+              }
+            />
 
             {errorServidor ? (
               <div

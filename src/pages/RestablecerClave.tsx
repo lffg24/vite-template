@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Aviso } from "@/shared/ui/Aviso";
 import { EntradaClave } from "@/shared/ui/EntradaClave";
 import { confirmPasswordReset } from "@/features/auth/passwordResetService";
+import { ALTO_CONTROL } from "@/shared/ui/controles";
 
 function validPassword(value: string) {
   return value.length >= 12 && value.length <= 128;
@@ -88,13 +89,13 @@ export default function RestablecerClave() {
                 visible={visible}
                 alAlternar={() => setVisible((current) => !current)}
                 onChange={(event) => field.setter(event.target.value)}
-                className="h-14 rounded-rel-control text-base"
+                className={`${ALTO_CONTROL.entrada} rounded-rel-control text-base`}
               />
             </div>
           ))}
           <p className="text-xs leading-5 text-muted-foreground">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
           {error ? <p role="alert" className="text-sm font-semibold text-danger">{error}</p> : null}
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
+          <Button type="submit" disabled={loading} className={`${ALTO_CONTROL.entrada} w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground`}>{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>
       )}
     </PasswordRecoveryShell>

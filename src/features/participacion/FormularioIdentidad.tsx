@@ -3,16 +3,23 @@
 // Una sola pantalla. Partirla en dos duplica el abandono en móvil sin ganar
 // nada: son siete campos, cuatro de ellos opcionales.
 //
-// Los `<input>` son nativos y no los primitivos de ShadCN a propósito. Aquí
-// importan `inputMode`, `autoComplete` y `enterKeyHint`, que son lo que hace que
-// el teclado del teléfono aparezca con números cuando toca y con «Siguiente» en
-// vez de «Ir». Envolverlos costaría eso sin aportar nada: no hay dos formularios
-// públicos que compartir.
+// Aquí importan `inputMode`, `autoComplete` y `enterKeyHint`: son lo que hace
+// que el teclado del teléfono salga con números cuando toca y con «Siguiente»
+// en vez de «Ir». Durante un tiempo eso fue el motivo para escribir
+// `<input>` a mano en vez de pedir la pieza, y el motivo era falso: `Input`
+// ES un `<input>` nativo que reenvía todas sus propiedades. La prueba estaba
+// en este mismo fichero, donde cinco campos ya usaban la pieza.
+//
+// Lo que costó de verdad: los siete controles llevaban una clase escrita a
+// mano con **anillo de foco de 2 px**, el que la casa descartó por no verse
+// sobre blanco. El formulario que rellena alguien que no conoce el producto,
+// casi siempre desde el móvil, tenía el foco más débil del producto.
 
 import { useRef, useState } from "react";
 
 import { Autorizaciones } from "@/shared/ui/Autorizaciones";
 import { Campo } from "@/shared/ui/Campo";
+import { Desplegable } from "@/shared/ui/Desplegable";
 import { Input } from "@/components/ui/input";
 import { BotonPrincipal } from "./ParticipanteLayout";
 import type {
@@ -29,11 +36,6 @@ interface Errores {
   apellidos?: string;
   aceptaciones?: string;
 }
-
-const claseCampo =
-  "min-h-[3rem] w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 " +
-  "text-base text-rel-dark placeholder:text-rel-muted " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary";
 
 export function FormularioIdentidad({
   textos,
@@ -134,24 +136,23 @@ export function FormularioIdentidad({
           <label htmlFor="tipo-doc" className="mb-1 block text-sm font-semibold">
             Tipo
           </label>
-          <select
+          <Desplegable
             id="tipo-doc"
             value={tipo}
             onChange={(e) => setTipo(e.target.value as TipoDocumento)}
-            className={claseCampo}
           >
             {TIPOS_DOCUMENTO.map((t) => (
               <option key={t} value={t} title={ETIQUETA_DOCUMENTO[t]}>
                 {t}
               </option>
             ))}
-          </select>
+          </Desplegable>
         </div>
         <div className="flex-1">
           <label htmlFor="num-doc" className="mb-1 block text-sm font-semibold">
             Número <span className="text-rel-danger">*</span>
           </label>
-          <input
+          <Input
             id="num-doc"
             value={numero}
             onChange={(e) => setNumero(e.target.value)}
@@ -162,7 +163,6 @@ export function FormularioIdentidad({
             autoComplete="off"
             enterKeyHint="next"
             maxLength={30}
-            className={claseCampo}
             aria-invalid={errores.numero_documento ? true : undefined}
             aria-describedby={errores.numero_documento ? "err-num" : undefined}
           />
@@ -186,7 +186,6 @@ export function FormularioIdentidad({
           onChange={(e) => setNombres(e.target.value)}
           autoComplete="given-name"
           enterKeyHint="next"
-          className={claseCampo}
         />
       </Campo>
       <Campo
@@ -201,7 +200,6 @@ export function FormularioIdentidad({
           onChange={(e) => setApellidos(e.target.value)}
           autoComplete="family-name"
           enterKeyHint="next"
-          className={claseCampo}
         />
       </Campo>
       <Campo
@@ -214,7 +212,6 @@ export function FormularioIdentidad({
           onChange={(e) => setCargo(e.target.value)}
           autoComplete="organization-title"
           enterKeyHint="next"
-          className={claseCampo}
         />
       </Campo>
       {/* La ayuda NO dice «para enviarte la constancia»: no hay envío por
@@ -232,7 +229,6 @@ export function FormularioIdentidad({
           onChange={(e) => setCorreo(e.target.value)}
           autoComplete="email"
           enterKeyHint="next"
-          className={claseCampo}
         />
       </Campo>
       <Campo
@@ -246,7 +242,6 @@ export function FormularioIdentidad({
           onChange={(e) => setTelefono(e.target.value)}
           autoComplete="tel"
           enterKeyHint="next"
-          className={claseCampo}
         />
       </Campo>
 

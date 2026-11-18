@@ -31,10 +31,12 @@
 //
 // ## Lo que decide este módulo
 //
-//   - **No lleva alto.** Cada pieza pone el suyo, porque un campo de una
-//     línea, un área de texto y un desplegable no miden lo mismo. Todo lo
-//     demás —borde, fondo, tipografía, radio, foco, inválido, deshabilitado,
-//     transición— sale de aquí.
+//   - **El alto va aparte, y tiene nombre.** `CLASE_CONTROL` no lo lleva,
+//     porque un campo de una línea, un área de texto y un desplegable no
+//     miden lo mismo; pero un alto escrito a mano en una pantalla es como se
+//     llega a tres alturas, y a eso se llegó. Ver `ALTO_CONTROL` abajo. Todo
+//     lo demás —borde, fondo, tipografía, radio, foco, inválido,
+//     deshabilitado, transición— sale de aquí.
 //   - **El control no tiene relieve.** `Input` y `Textarea` llevaban
 //     `shadow-sm`, que es la sombra negra de Tailwind al 5 %, y un
 //     desplegable llevaba `shadow-rel-card`: una sombra de tarjeta de 24 px
@@ -50,3 +52,32 @@ export const CLASE_CONTROL =
   "aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/25 " +
   "disabled:cursor-not-allowed disabled:bg-muted/60 disabled:opacity-50 " +
   "motion-reduce:transition-none md:text-sm";
+
+
+/**
+ * El alto del control, con nombre y con motivo. Dos valores, no tres.
+ *
+ * El mismo control medía **tres alturas** según la pantalla: 40 px el campo
+ * de la casa, 48 el formulario público de participación y 56 la pantalla de
+ * entrada. Ninguna de las tres estaba mal pensada; lo que faltaba era que
+ * fueran una decisión y no tres costumbres.
+ *
+ * El 2026-11-18 el dueño del producto la cerró en **44 px**, que es el
+ * mínimo recomendado para tocar con el pulgar (WCAG 2.5.5, directriz de
+ * Apple y de Material). El campo de la casa se quedaba 4 px por debajo en 148
+ * sitios: no incumplía el mínimo exigible —que es más bajo— pero la
+ * pantalla «rara», la del formulario público que se rellena desde el móvil,
+ * era la que tenía razón.
+ *
+ * `entrada` sobrevive como lo que siempre fue: la puerta —entrar, recuperar
+ * la clave, poner una nueva—. Una sola tarea por pantalla, sin ninguna
+ * presión de densidad, y casi siempre en el móvil de alguien que todavía no
+ * está dentro. Lo que cambia es que ahora se pide por su nombre en vez de
+ * escribir `h-14` en cada una de las tres.
+ */
+export const ALTO_CONTROL = {
+  /** 44 px. El de la casa, y el mínimo para el pulgar. */
+  normal: "h-11",
+  /** 56 px. Solo la puerta de entrada: una tarea, sin densidad. */
+  entrada: "h-14",
+} as const;

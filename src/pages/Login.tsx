@@ -23,6 +23,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Marca } from "@/components/brand/Marca";
+import { ALTO_CONTROL } from "@/shared/ui/controles";
+import { Casilla } from "@/shared/ui/Casilla";
 
 type FieldErrors = { email?: string; password?: string };
 type LoginLocationState = { from?: string } | null;
@@ -169,7 +171,9 @@ export default function Login() {
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-rel-panel bg-accent">
                   <Marca variante="isotipo" decorativa className="h-9" />
                 </div>
-                <h2 className="text-3xl font-black tracking-tight">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
+                {/* `balance` reparte las dos lineas: a 375 px el titular cortaba por
+                    medio del subrayado y dejaba «de» arriba y «nuevo» abajo. */}
+                <h2 className="text-3xl font-black tracking-tight [text-wrap:balance]">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
                 <p className="mt-1 text-muted-foreground">
                   Inicia sesión en tu cuenta de <span className="font-bold text-brand-primary">ABRIL360</span>
                 </p>
@@ -195,7 +199,7 @@ export default function Login() {
                         setEmail(e.target.value);
                         if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                       }}
-                      className="h-14 rounded-rel-control border-border pl-12 text-base"
+                      className={`${ALTO_CONTROL.entrada} rounded-rel-control border-border pl-12 text-base`}
                     />
                   </div>
                   {errors.email ? <p id="email-error" className="text-sm font-semibold text-danger">{errors.email}</p> : null}
@@ -221,23 +225,27 @@ export default function Login() {
                       setPassword(e.target.value);
                       if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                     }}
-                    className="h-14 rounded-rel-control border-border text-base"
+                    className={`${ALTO_CONTROL.entrada} rounded-rel-control border-border text-base`}
                   />
                   {errors.password ? <p id="password-error" className="text-sm font-semibold text-danger">{errors.password}</p> : null}
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-1">
-                  <label className="flex items-center gap-3 text-sm text-foreground-soft">
-                    <Checkbox checked={remember} onCheckedChange={(v) => setRemember(Boolean(v))} />
-                    Recordarme en este dispositivo
-                  </label>
+                  {/* Medido en pantalla: con la etiqueta a mano el blanco
+                      tactil era de 40 px. La pieza garantiza los 44 de fila. */}
+                  <Casilla
+                    marcada={remember}
+                    alCambiar={setRemember}
+                    etiqueta="Recordarme en este dispositivo"
+                    claseEtiqueta="text-sm text-foreground-soft"
+                  />
                   <Pill tono="exito" className="hidden sm:inline-flex">Acceso seguro</Pill>
                 </div>
 
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-14 w-full rounded-rel-control bg-marca text-base font-bold shadow-rel-floating transition hover:brightness-[0.96]"
+                  className={`${ALTO_CONTROL.entrada} w-full rounded-rel-control bg-marca text-base font-bold shadow-rel-floating transition hover:brightness-[0.96]`}
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
