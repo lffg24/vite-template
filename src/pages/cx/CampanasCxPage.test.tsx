@@ -21,13 +21,13 @@ beforeEach(() => {
 
 it("muestra estado vacío y mantiene la creación deshabilitada sin encuesta publicada", async () => {
   render(<CampanasCxPage />);
-  expect(await screen.findByText("Aún no hay campañas. Crea una desde una encuesta publicada.")).toBeInTheDocument();
+  expect(await screen.findByText("Aún no hay campañas")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Crear campaña y QR" })).toBeDisabled();
 });
 
 it("permite consultar campañas aunque falle un catálogo auxiliar", async () => {
   vi.mocked(listarContextos).mockRejectedValue(new Error("Sin permiso de sedes"));
   render(<CampanasCxPage />);
-  expect(await screen.findByText("Aún no hay campañas. Crea una desde una encuesta publicada.")).toBeInTheDocument();
+  expect(await screen.findByText("Aún no hay campañas")).toBeInTheDocument();
   expect(screen.getByRole("alert")).toHaveTextContent("faltan permisos o datos de catálogos");
 });

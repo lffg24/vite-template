@@ -20,7 +20,6 @@ export default function PsicologoSidebar() {
       loading={menu.loading}
       error={menu.error}
       onRetry={menu.retry}
-      tone="rel"
       storageKey="abril360.psico.sidebar.collapsed"
       brandTitle="ABRIL360"
       brandSubtitle="Riesgo psicosocial"

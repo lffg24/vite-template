@@ -127,6 +127,7 @@ export default function AreasCxPage() {
       etiquetaElemento="áreas"
       cargando={cargando}
       vacio="No hay áreas para este filtro."
+      escenaVacio="companyManagement"
       cabecera={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}>

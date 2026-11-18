@@ -527,10 +527,12 @@
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
     --illustration-radius: var(--rel-radius-panel);
     /* Superficie de marca para ilustraciones («lavender» en la API).
-       Sale del tono de la marca VIGENTE: hoy verde azulado, igual que las
-       ilustraciones. Con el lila (violet-50) las escenas quedaban sobre un
-       fondo de otra familia y no armonizaban. Si la marca pasa a violeta, se
-       vuelve a 250 100% 98% / 251 95% 92% aquí y en ningún otro sitio. */
+       El nombre es lo unico que queda del lila: la marca se cerro en TURQUESA
+       el 2026-11-17, por decision del dueno del producto, asi que esto ya no
+       es «el tono vigente» a la espera de una decision, es el tono. Con el
+       lila las escenas quedaban sobre un fondo de otra familia y no
+       armonizaban; las 75 ilustraciones producidas son verde azulado y se
+       quedan como estan, que es la otra mitad de la misma decision. */
     --illustration-surface-lavender: 168 45% 96%;
     --illustration-surface-lavender-border: 168 35% 88%;
   }

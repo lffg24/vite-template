@@ -389,7 +389,7 @@ export default function CapacitacionesAvancePage() {
                 className="max-w-md"
               />
               {filtradas.length === 0 ? (
-                <SinResultados limpiar={() => setBusqueda("")} />
+                <SinResultados elemento="participante" limpiar={() => setBusqueda("")} />
               ) : (
                 <TablaDatos
                   filas={filtradas}

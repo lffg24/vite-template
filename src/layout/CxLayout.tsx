@@ -16,7 +16,7 @@ export default function CxLayout() {
       </a>
       <RoleSidebar
         items={menu.items} loading={menu.loading} error={menu.error} onRetry={menu.retry}
-        tone="rel" storageKey="abril360.cx.sidebar.collapsed"
+        storageKey="abril360.cx.sidebar.collapsed"
         brandTitle="ABRIL360" brandSubtitle="Experiencia del cliente"
         avatarText={iniciales || "CX"} userTitle={nombre}
         userSubtitle="Gestión de experiencia" navLabel="Navegación de Experiencia del cliente"

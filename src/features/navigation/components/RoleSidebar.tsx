@@ -7,7 +7,7 @@ import type { NavigationEntry, NavigationItem } from "../navigationTree";
 
 export type RoleSidebarItem = NavigationItem;
 type Props = {
-  items: NavigationEntry[]; storageKey: string; tone?: "legacy" | "rel";
+  items: NavigationEntry[]; storageKey: string;
   brandTitle?: string; brandSubtitle?: string; avatarText: string;
   userTitle: string; userSubtitle: string; navLabel: string;
   footerTitle?: string; footerLink?: string; footerLinkLabel?: string;
@@ -15,7 +15,14 @@ type Props = {
 };
 const activeRoute = (current: string, target: string) => current === target || current.startsWith(`${target}/`);
 
-export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitle = "ABRIL360",
+/* El `tone` desaparecio con la decision de marca.
+   Tenia dos valores, `legacy` y `rel`, y los cuatro armazones que montan esta
+   barra pasaban `rel`. `legacy` era la rama muerta donde sobrevivia el
+   violeta: el avatar, el enlace activo y el fondo de la barra tenian cada uno
+   su version lila escrita a mano. Cerrada la marca en turquesa, la rama no es
+   una alternativa, es codigo que nadie ejecuta guardando un color que el
+   producto descarto. */
+export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360",
   brandSubtitle, avatarText, userTitle, userSubtitle, navLabel,
   footerTitle = `© ${new Date().getFullYear()} REL Consilium SAS`,
   footerLink = "https://relconsilium.com/", footerLinkLabel = "relconsilium.com",
@@ -24,7 +31,6 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>([]);
   const location = useLocation();
-  const rel = tone === "rel";
   const base = useId();
   useEffect(() => { localStorage.setItem(storageKey, collapsed ? "1" : "0"); }, [collapsed, storageKey]);
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -48,7 +54,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
       {!mobile && <button type="button" onClick={() => setCollapsed(v => !v)} aria-label={collapsed ? "Expandir menú" : "Contraer menú"} className="grid h-8 w-8 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/85 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky">{collapsed ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : <ChevronLeft className="h-4 w-4" aria-hidden="true" />}</button>}
     </div>
     <div className={`mb-4 flex items-center rounded-2xl border border-white/10 bg-white/5 ${compact ? "justify-center p-2" : "gap-3 p-3"}`}>
-      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full font-bold ${rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600"}`}>{avatarText}</span>
+      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rel-accent font-bold text-rel-dark`}>{avatarText}</span>
       {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-white/70">{userSubtitle}</span></span>}
     </div>
     <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(255_255_255_/_0.25)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent">
@@ -59,7 +65,7 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
         if ("to" in entry) {
           const Icon = entry.icon;
           const active = activeRoute(location.pathname, entry.to);
-          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? (rel ? "bg-rel-accent text-rel-dark" : "bg-violet-600 text-white") : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
+          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-xl text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? "bg-rel-accent text-rel-dark" : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
         }
         const Icon = entry.icon;
         const active = entry.children.some(child => activeRoute(location.pathname, child.to));
@@ -104,6 +110,6 @@ export default function RoleSidebar({ items, storageKey, tone = "rel", brandTitl
 
   return <>
     <div className="flex w-full items-center gap-3 bg-rel-dark px-4 py-3 text-white sm:hidden"><Sheet open={mobileOpen} onOpenChange={setMobileOpen}><SheetTrigger asChild><button type="button" aria-label="Abrir menú" className="rounded-lg p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky"><Menu className="h-6 w-6" aria-hidden="true" /></button></SheetTrigger><SheetContent side="left" className="w-[min(88vw,340px)] border-0 bg-rel-dark p-0 text-white"><SheetTitle className="sr-only">Menú de Abril360</SheetTitle>{renderContent(false, true)}</SheetContent></Sheet><Marca sobre="oscuro" className="h-7" /></div>
-    <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-lg sm:sticky sm:top-0 sm:block ${rel ? "bg-rel-dark" : "bg-[#071329]"}`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
+    <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-lg sm:sticky sm:top-0 sm:block bg-rel-dark`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
   </>;
 }

@@ -658,6 +658,104 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
+   * La pantalla vacía tiene UNA implementación, y vive en la casa.
+   *
+   * Había dos, y la medida de por qué importaba estaba a la vista: las doce
+   * pantallas de Capacitaciones tenían su vacío ilustrado y ninguna de CX,
+   * superadmin o evaluaciones lo tenía. No por descuido —la pieza buena vivía
+   * en `features/capacitaciones/components/EstadoPantalla.tsx`, y escribir
+   * `import … from "@/features/capacitaciones/…"` en una pantalla de CX es
+   * algo que nadie quiere escribir—. Dos pantallas de evaluaciones lo
+   * escribieron igual, que es la otra forma de pagarlo.
+   *
+   * Y a la vez la casa tenía `IllustratedEmptyState`, bien colocado y usado
+   * por nadie. Por eso un producto con 75 ilustraciones producidas las
+   * mostraba en un solo módulo: no faltaban dibujos, faltaba que la pieza
+   * estuviera donde se pudiera coger.
+   *
+   * Ahora hay una implementación en `shared/ui/EstadoVacio.tsx`; el nombre de
+   * Capacitaciones y el documentado por el sistema de ilustración delegan en
+   * ella.
+   */
+  it("la pantalla vacía tiene UNA implementación", () => {
+    const IMPLEMENTACION = "shared/ui/EstadoVacio.tsx";
+    const definen = TODOS.filter((ruta) =>
+      /export function (?:EstadoVacio|SinDatos|SinResultados)\b/.test(contenido(ruta))
+    ).map(comoRuta);
+
+    expect(
+      definen.filter((r) => r !== IMPLEMENTACION),
+      "Usa `EstadoVacio` de `@/shared/ui/EstadoVacio`. Un vacío por módulo es " +
+        "un módulo con ilustraciones y los demás con una línea gris."
+    ).toEqual([]);
+  });
+
+  /**
+   * Ninguna tabla anuncia su vacío con una línea de texto suelta.
+   *
+   * `TablaDatos` pintaba el vacío como un párrafo gris centrado, y lo hacía en
+   * las diecisiete tablas del producto. La casa ya tenía una pantalla vacía
+   * con dibujo, titular y acción; lo que no había era forma de que llegara
+   * hasta ahí. Hoy el texto se envuelve en la pieza, y la escena se elige por
+   * pantalla: `"ninguna"` en superadmin, porque el sistema de ilustración
+   * gradúa la intensidad por superficie y ahí es baja.
+   */
+  it("el vacío de la tabla sale de la pieza, no de un párrafo", () => {
+    const tabla = contenido(
+      TODOS.find((ruta) => comoRuta(ruta) === "shared/ui/TablaDatos.tsx")!
+    );
+    expect(
+      tabla.includes("<EstadoVacio"),
+      "`TablaDatos` debe pintar su vacío con `EstadoVacio`."
+    ).toBe(true);
+  });
+
+  /**
+   * La marca es TURQUESA, y el violeta no vuelve.
+   *
+   * Durante meses hubo dos lineas de marca a la vez. No era indecision de
+   * nadie: el producto nacio con violeta, las 75 ilustraciones se produjeron
+   * en verde azulado, y los tokens se cerraron en turquesa sin que el violeta
+   * escrito a mano saliera del marcado. Quedaba en tres sitios distintos y de
+   * tres clases distintas:
+   *
+   *   - **Vivo y a la vista:** el boton de accion del aviso (`ToastCard`), en
+   *     `violet-700`, en una pieza base que usa todo el producto.
+   *   - **Dormido:** la rama `tone="legacy"` de la barra lateral, con su
+   *     avatar, su enlace activo y su fondo lila. Los cuatro armazones pasaban
+   *     `rel`, asi que nadie la ejecutaba; seguia ahi guardando el color.
+   *   - **Solo de nombre:** los `tone="violet"` de Psicosocial, que se pintan
+   *     turquesa desde que los tokens apuntan a la casa. Mienten, pero no se
+   *     ven.
+   *
+   * El 2026-11-17 el dueno del producto cerro la decision: **turquesa, y se
+   * usan las ilustraciones que ya existen.** Elegir violeta habria obligado a
+   * recolorear 75 ilustraciones; elegir turquesa cuesta esto.
+   *
+   * Los nombres que quedan en Psicosocial se quedan, como todo lo de
+   * Psicosocial. Lo que no puede volver es el color.
+   */
+  /* Vacia, y medida: lo unico que queda del violeta en el perimetro son
+     menciones en comentarios y el nombre `tone="violet"` de la firma que
+     Psicosocial llama. Ni una clase de color. */
+  const VIOLETA_PENDIENTE: string[] = [];
+
+  it("nada pinta violeta fuera de Psicosocial", () => {
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) =>
+      /\b(?:bg|text|border|ring|from|to|via)-(?:violet|purple|fuchsia|indigo)-\d{2,3}\b/.test(
+        contenido(ruta)
+      )
+    ).map(comoRuta);
+
+    const nuevos = culpables.filter((r) => !VIOLETA_PENDIENTE.includes(r));
+    expect(
+      nuevos,
+      "La marca es turquesa. Usa `bg-primary` / `bg-rel-primary` y su " +
+        "`foreground`, que ya es el azul de marca y pasa el contraste."
+    ).toEqual([]);
+  });
+
+  /**
    * Ningún modal se dibuja a mano, y esta deuda ya está cerrada.
    *
    * **La lista está vacía.** Fuera de las piezas base, todo velo escrito a

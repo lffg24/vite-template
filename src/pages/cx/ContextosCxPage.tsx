@@ -186,6 +186,7 @@ export default function ContextosCxPage() {
       etiquetaElemento={tipo}
       cargando={cargando}
       vacio={`No hay ${tipo} para este filtro.`}
+      escenaVacio="settingsParameters"
       cabecera={
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Tipo de catálogo">

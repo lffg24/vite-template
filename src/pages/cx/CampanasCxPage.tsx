@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
 import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
@@ -129,7 +130,7 @@ export default function CampanasCxPage() {
     <Panel titulo="Campañas de tu empresa">
       {cargando ? <ZonaCargando cargando etiqueta="Cargando campañas" esqueleto={<EsqueletoLista fichas={3} />}><span /></ZonaCargando> : null}
       {error ? <p role="alert" className="py-6 text-rel-danger">{error} <Button variant="relOutline" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></p> : null}
-      {!cargando && !error && campanas.length === 0 ? <p className="py-6 text-rel-muted">Aún no hay campañas. Crea una desde una encuesta publicada.</p> : null}
+      {!cargando && !error && campanas.length === 0 ? <EstadoVacio escena="agenda" titulo="Aún no hay campañas" descripcion="Una campaña sale de una encuesta ya publicada: es lo que reparte el enlace y recoge las respuestas." /> : null}
       {!cargando && !error ? <ul className="space-y-4">{campanas.map((campana) => {
         const url = new URL(`/cx/${campana.token}`, window.location.origin).toString();
         const inactiva = Boolean(campana.revocado_en || (campana.fin_en && new Date(campana.fin_en) <= new Date()));

@@ -84,7 +84,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 target="_blank"
                 rel="noreferrer"
                 style={toast.action.style}
-                className="mt-4 inline-flex items-center justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+                className="mt-4 inline-flex items-center justify-center rounded-rel-control bg-primary px-4 py-2.5 text-sm font-black text-primary-foreground transition hover:bg-primary-hover"
               >
                 {toast.action.label}
               </a>
@@ -93,7 +93,7 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 type="button"
                 onClick={toast.action.onClick}
                 style={toast.action.style}
-                className="mt-4 inline-flex items-center justify-center rounded-lg bg-violet-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-800"
+                className="mt-4 inline-flex items-center justify-center rounded-rel-control bg-primary px-4 py-2.5 text-sm font-black text-primary-foreground transition hover:bg-primary-hover"
               >
                 {toast.action.label}
               </button>

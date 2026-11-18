@@ -118,7 +118,7 @@ export default function EvaluacionesPage() {
           </div>
 
           {visibles.length === 0 ? (
-            <SinResultados limpiar={() => setBusqueda("")} />
+            <SinResultados elemento="cuestionario" limpiar={() => setBusqueda("")} />
           ) : (
             <TablaDatos<CuestionarioResumen>
               filas={visibles}

@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Escena, type NombreEscena } from "@/shared/ui/Escena";
+import { Escena } from "@/shared/ui/Escena";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ErrorApi } from "@/types/capacitaciones";
 
@@ -60,62 +60,17 @@ export function CargandoPanel({ etiqueta = "Cargando información…" }: { etiqu
   );
 }
 
-/**
- * Vacío legítimo: no hay nada todavía y eso está bien.
- *
- * Lleva siempre la acción que lo resuelve. Un vacío sin salida deja al usuario
- * mirando una ilustración sin saber qué hacer.
- *
- * `ilustracion` se elige por pantalla porque el vacío de Participantes y el de
- * Constancias no son el mismo vacío. El defecto genérico existe para que nadie
- * tenga que pensarlo cuando da igual.
- */
-export function SinDatos({
-  titulo,
-  descripcion,
-  accion,
-  escena = "checklist",
-}: {
-  titulo: string;
-  descripcion: string;
-  accion?: ReactNode;
-  /**
-   * Qué se dibuja en el hueco. Sale del registro único de ilustraciones.
-   *
-   * Había una familia vectorial aparte, y su argumento era el peso; dejó de valer
-   * al convertir las de marca (40 KB cada una, cargadas cuando se ven).
-   */
-  escena?: NombreEscena;
-}) {
-  return (
-    <div className="rounded-rel-panel border border-dashed border-rel-border-strong bg-rel-surface-subtle px-6 py-12 text-center">
-      <Escena nombre={escena} tamano="lg" className="mx-auto" />
-      <h3 className="mt-4 font-rel-heading text-lg font-bold text-rel-dark">{titulo}</h3>
-      <p className="mx-auto mt-2 max-w-prose font-rel-body text-sm text-rel-muted">
-        {descripcion}
-      </p>
-      {accion ? <div className="mt-6 flex justify-center">{accion}</div> : null}
-    </div>
-  );
-}
+/* El vacío y el «sin resultados» se MUDARON a `@/shared/ui/EstadoVacio`.
+   Vivían aquí y el efecto se medía solo: las doce pantallas de este módulo
+   tenían su vacío ilustrado y ninguna de CX, superadmin o evaluaciones lo
+   tenía, porque importar de `features/capacitaciones` desde una pantalla de CX
+   es algo que nadie quiere escribir —y dos pantallas de evaluaciones lo
+   escribieron de todos modos, que es la otra forma de pagarlo—.
 
-/** Búsqueda o filtro sin resultados. NO es lo mismo que no tener datos. */
-export function SinResultados({ limpiar }: { limpiar: () => void }) {
-  return (
-    <div className="rounded-rel-card border border-rel-border bg-rel-surface px-6 py-10 text-center">
-      <Escena nombre="buscar" tamano="sm" className="mx-auto mb-4" />
-      <h3 className="font-rel-heading text-base font-bold text-rel-dark">
-        Ningún curso coincide con el filtro
-      </h3>
-      <p className="mt-1 font-rel-body text-sm text-rel-muted">
-        Hay cursos en el catálogo; ninguno cumple lo que estás buscando.
-      </p>
-      <Button variant="relGhost" size="sm" className="mt-4" onClick={limpiar}>
-        Quitar los filtros
-      </Button>
-    </div>
-  );
-}
+   Se re-exportan para no reescribir dieciséis bloques de importación por un
+   cambio de sitio. Es una mudanza, no una copia: hay una sola implementación y
+   una prueba que lo vigila. */
+export { EstadoVacio, SinDatos, SinResultados } from "@/shared/ui/EstadoVacio";
 
 /**
  * Error recuperable: se puede reintentar sin perder nada.

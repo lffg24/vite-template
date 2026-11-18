@@ -1,0 +1,157 @@
+# -*- coding: utf-8 -*-
+"""Mide el avance de la homologacion visual, frente por frente.
+
+Por que un script y no una cifra en un informe: la cifra se dio mal dos veces,
+y las dos por mover sin querer lo que entraba en la cuenta. Un numero que
+depende de quien lo mide no sirve para decidir nada.
+
+El PERIMETRO es el mismo que usa `src/shared/ui/nucleo.test.ts`:
+no cuentan las piezas base —dibujar un boton ES su trabajo— y no cuenta
+Psicosocial, que no se migra. Por eso un frente al 100% significa «cerrado en
+lo que se migra», no «no queda ni una linea en el repositorio».
+
+Uso:  python scripts/medir-homologacion.py
+"""
+from __future__ import annotations
+
+import io
+import os
+import re
+import sys
+
+RAIZ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+
+BASE = ("shared/ui/", "components/ui/", "components/common/")
+PSICO_SUELTOS = {
+    "pages/ReportesPsico.tsx",
+    "pages/ReportesOficialesPsicoPage.tsx",
+    "pages/ResponderEvaluacion.tsx",
+    "layout/PsicologoLayout.tsx",
+}
+
+
+def rutas() -> list[str]:
+    salida = []
+    for carpeta, _, ficheros in os.walk(RAIZ):
+        for fichero in ficheros:
+            if re.search(r"\.tsx?$", fichero) and not re.search(r"\.test\.tsx?$", fichero):
+                absoluta = os.path.join(carpeta, fichero)
+                salida.append(absoluta.replace("\\", "/")[len(RAIZ.replace("\\", "/")) + 1 :])
+    return sorted(salida)
+
+
+def es_base(r: str) -> bool:
+    return r.startswith(BASE)
+
+
+def es_psicosocial(r: str) -> bool:
+    return "/psicosocial/" in r or r.startswith("features/psicosocial/") or r in PSICO_SUELTOS
+
+
+COMENTARIO_BLOQUE = re.compile(r"/\*.*?\*/", re.S)
+COMENTARIO_LINEA = re.compile(r"^\s*//.*$", re.M)
+
+
+def leer(r: str) -> str:
+    """El fuente SIN comentarios.
+
+    Hace falta y no es cosmetica: la primera version de esta medida conto como
+    deuda un comentario que explicaba la deuda. Dos de las nueve pantallas que
+    dijo que anunciaban su vacio en texto no lo anunciaban en ningun sitio —una
+    tenia la frase dentro de un comentario y la otra era la respuesta a una
+    pregunta de evaluacion, no un vacio—. Es el mismo error que ya cazo una
+    prueba cuando un comentario nombraba la clase que el guardia prohibe.
+    """
+    bruto = io.open(os.path.join(RAIZ, r), encoding="utf-8").read()
+    return COMENTARIO_LINEA.sub("", COMENTARIO_BLOQUE.sub("", bruto))
+
+
+TODOS = rutas()
+PERIMETRO = [r for r in TODOS if not es_base(r) and not es_psicosocial(r)]
+
+
+def cuenta(patron: str, rutas_: list[str]) -> int:
+    rx = re.compile(patron)
+    return sum(len(rx.findall(leer(r))) for r in rutas_)
+
+
+def archivos_con(patron: str, rutas_: list[str]) -> list[str]:
+    rx = re.compile(patron)
+    return [r for r in rutas_ if rx.search(leer(r))]
+
+
+# (frente, hechos, a_mano, nota)
+FRENTES: list[tuple[str, int, int, str]] = []
+
+
+def frente(nombre: str, hechos: int, a_mano: int, nota: str = "") -> None:
+    FRENTES.append((nombre, hechos, a_mano, nota))
+
+
+# --- Piezas con un guardia de lista vacia en el perimetro ------------------
+for nombre, patron_a_mano, nota in [
+    ("Tablas", r'from "@/components/ui/table"', "lista vacia en el guardia"),
+    ("Modales", r"fixed inset-0", "lista vacia en el guardia"),
+    ("Pestanas", r'role="tab"(?![a-z])', "la que queda es de Psicosocial"),
+    ("Casillas", r'type="checkbox"', "la que queda es de Psicosocial"),
+    ("Gris crudo", r"\b(?:bg|text|border)-(?:gray|slate|zinc|neutral|stone)-\d{2,3}\b", "lo que queda es de Psicosocial"),
+    ("Violeta", r"\b(?:bg|text|border|ring|from|to|via)-(?:violet|purple|fuchsia|indigo)-\d{2,3}\b", "solo quedan menciones en comentarios"),
+]:
+    culpables = archivos_con(patron_a_mano, PERIMETRO)
+    frente(nombre, len(PERIMETRO) - len(culpables), len(culpables), nota)
+
+# --- Botones ---------------------------------------------------------------
+a_mano = cuenta(r"<button", PERIMETRO)
+con_pieza = cuenta(r"<Button\b", PERIMETRO)
+frente("Botones", con_pieza, a_mano, "tope en la prueba: 25")
+
+# --- Tarjetas --------------------------------------------------------------
+caja = r'className="[^"]*\brounded-(?:rel-card|rel-panel|xl|2xl|lg)\b[^"]*\bborder\b[^"]*\bbg-(?:rel-)?surface\b[^"]*"'
+a_mano = cuenta(caja, PERIMETRO)
+con_pieza = cuenta(r"<(?:Card|Panel|TablaPanel)\b", PERIMETRO)
+frente("Tarjetas", con_pieza, a_mano, "lo mas grande que queda")
+
+# --- Desplegables ----------------------------------------------------------
+a_mano = cuenta(r"<select\b", PERIMETRO)
+con_pieza = cuenta(r"<(?:Select|SelectTrigger)\b", PERIMETRO)
+frente("Desplegables", con_pieza, a_mano, "no todo es deuda: ver el informe")
+
+# --- Vacios: cuantas pantallas con lista usan la pieza ---------------------
+LISTA = r"<TablaDatos\b|<ul\b|\.map\("
+VACIO_TEXTO = r"No hay |Aun no|Aún no|Todavía no|Sin resultados|Sin datos|Sin registros"
+PIEZA = r"<EstadoVacio\b|<SinDatos\b|<IllustratedEmptyState\b|<SinResultados\b|vacio="
+candidatas = [r for r in PERIMETRO if re.search(LISTA, leer(r)) and re.search(VACIO_TEXTO, leer(r))]
+con_pieza = [r for r in candidatas if re.search(PIEZA, leer(r))]
+frente("Vacios", len(con_pieza), len(candidatas) - len(con_pieza), "pantallas con lista y estado vacio")
+
+# --- Ilustraciones: cuantas del registro se usan ---------------------------
+registro = leer("shared/ui/illustration/illustration.registry.ts")
+claves = set(re.findall(r"^\s{2}\"?([a-zA-Z][a-zA-Z0-9_-]*)\"?:\s", registro, re.M))
+usadas = set()
+for r in TODOS:
+    c = leer(r)
+    if "illustration.registry" in r:
+        continue
+    for k in claves:
+        if re.search(r'(?:name|nombre|escena|escenaVacio|illustration)=\{?"%s"' % re.escape(k), c):
+            usadas.add(k)
+frente("Ilustraciones usadas", len(usadas), len(claves) - len(usadas), "del registro, en todo el producto")
+
+
+ANCHO = max(len(n) for n, *_ in FRENTES)
+print()
+print("  PERIMETRO: %d archivos .tsx/.ts (sin piezas base, sin Psicosocial)" % len(PERIMETRO))
+print()
+print("  %-*s   %%     cumplen   a mano   nota" % (ANCHO, "frente"))
+print("  " + "-" * (ANCHO + 46))
+for nombre, hechos, a_mano_, nota in FRENTES:
+    total = hechos + a_mano_
+    pct = 100.0 if total == 0 else 100.0 * hechos / total
+    barra = "#" * int(round(pct / 10)) + "." * (10 - int(round(pct / 10)))
+    print("  %-*s  %3.0f%% %s  %6d   %6d   %s" % (ANCHO, nombre, pct, barra, hechos, a_mano_, nota))
+print()
+
+if "--json" in sys.argv:
+    import json
+
+    print(json.dumps([{"frente": n, "pieza": h, "aMano": a, "nota": x} for n, h, a, x in FRENTES], ensure_ascii=False, indent=2))

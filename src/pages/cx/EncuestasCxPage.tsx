@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 import { Panel } from "@/shared/ui/Panel";
 import { crearEncuestaCx, listarEncuestasCx } from "@/services/cxEncuestasService";
 import type { ResumenEncuestaCx } from "@/types/cxEncuestas";
@@ -54,7 +55,7 @@ export default function EncuestasCxPage() {
     <Panel titulo="Instrumentos de tu empresa">
       {cargando ? <ZonaCargando cargando etiqueta="Cargando encuestas" esqueleto={<EsqueletoLista fichas={4} />}><span /></ZonaCargando> : null}
       {error ? <div role="alert" className="py-6 text-rel-danger">{error}<Button variant="relOutline" className="ml-3" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div> : null}
-      {!cargando && !error && filas.length === 0 ? <p className="py-8 text-rel-muted">Aún no hay encuestas. Crea una para empezar.</p> : null}
+      {!cargando && !error && filas.length === 0 ? <EstadoVacio escena="checklist" titulo="Aún no hay encuestas" descripcion="Una encuesta se arma en el constructor y se publica como versión; a partir de ahí se le pueden crear campañas." /> : null}
       {!cargando && !error ? <ul className="space-y-3">{filas.map((fila) => <li key={fila.id} className="flex flex-col gap-3 rounded-rel-card border border-rel-border p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">{fila.codigo}</p><h2 className="break-words font-rel-heading text-lg font-bold">{fila.titulo}</h2><div className="mt-2 flex flex-wrap gap-2"><Badge variant={fila.tiene_borrador ? "relWarning" : "relNeutral"}>{fila.tiene_borrador ? "Borrador pendiente" : "Sin borrador"}</Badge>{fila.ultima_version ? <Badge variant="relSuccess">Versión {fila.ultima_version} publicada</Badge> : null}</div></div><Button variant="relOutline" asChild className="w-full sm:w-auto"><Link to={`/cx/encuestas/${fila.id}/editar`}>Abrir constructor</Link></Button></li>)}</ul> : null}
       {!cargando && !error ? <div className="mt-5 flex items-center justify-between gap-2"><Button variant="relOutline" disabled={historial.length === 0} onClick={() => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); }}>Anterior</Button><span className="text-sm text-rel-muted">Página {historial.length + 1}</span><Button variant="relOutline" disabled={!siguiente} onClick={() => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); }}>Siguiente</Button></div> : null}
     </Panel>

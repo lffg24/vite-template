@@ -45,7 +45,6 @@ function Shell() {
         loading={menu.loading}
         error={menu.error}
         onRetry={menu.retry}
-        tone="rel"
         storageKey="abril360.capacitaciones.sidebar.collapsed"
         brandTitle="ABRIL360"
         brandSubtitle="Capacitaciones"

@@ -44,6 +44,8 @@ import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { EstadoVacio } from "./EstadoVacio";
+import type { IllustrationName } from "./illustration";
 import { CursorPagination, StandardPagination } from "@/components/common/StandardPagination";
 import { Esqueleto, useCargaVisible } from "./Esqueleto";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -187,6 +189,7 @@ export function TablaDatos<T>({
   control,
   cargando = false,
   vacio,
+  escenaVacio = "ninguna",
 }: {
   filas: T[];
   columnas: ColumnaTabla<T>[];
@@ -207,8 +210,23 @@ export function TablaDatos<T>({
   /** Presente = pagina y ordena el servidor. Ausente = lo hace el cliente. */
   control?: ControlServidor;
   cargando?: boolean;
-  /** Qué decir cuando no hay ni una fila. Sin esto se dice lo mínimo. */
+  /**
+   * Qué decir cuando no hay ni una fila.
+   *
+   * Un texto se pinta DENTRO de la pantalla vacía de la casa, no como una
+   * línea gris suelta. Si hace falta otra cosa —un vacío con su propia acción,
+   * o uno sin dibujo— se pasa el nodo ya montado.
+   */
   vacio?: ReactNode;
+  /**
+   * La ilustración del vacío, cuando `vacio` es texto.
+   *
+   * Se elige por pantalla: el vacío de una auditoría y el de un catálogo de
+   * cursos no son el mismo vacío. `"ninguna"` lo deja sin dibujo, que es lo
+   * que corresponde en superadmin —el sistema de ilustración gradúa la
+   * intensidad por superficie y ahí es baja—.
+   */
+  escenaVacio?: IllustrationName | "ninguna";
 }) {
   const [ordenPropio, setOrdenPropio] = useState<Orden | null>(
     ordenInicial ? { clave: ordenInicial.clave, direccion: ordenInicial.direccion ?? "asc" } : null
@@ -302,10 +320,22 @@ export function TablaDatos<T>({
    * encuentra duplicado y lo que un buscador de texto del navegador cuenta
    * dos veces.
    */
+  /* Antes esto era una línea gris centrada, y lo era en las diecisiete tablas
+     del producto. La casa ya tenía una pantalla vacía con su dibujo, su
+     titular y su acción; lo que no tenía era forma de llegar aquí, así que
+     ninguna tabla la usaba. Un texto se envuelve en la pieza; un nodo se
+     respeta tal cual, porque quien pasa un nodo ya decidió qué quiere. */
+  const textoVacio =
+    typeof vacio === "string" ? vacio : vacio == null ? "No hay nada que mostrar." : null;
+
   const bloqueVacio = (
-    <p className="px-5 py-14 text-center text-sm text-muted-foreground">
-      {vacio ?? "No hay nada que mostrar."}
-    </p>
+    <div className="px-5 py-8">
+      {textoVacio === null ? (
+        vacio
+      ) : (
+        <EstadoVacio escena={escenaVacio} titulo={textoVacio} />
+      )}
+    </div>
   );
 
   return (

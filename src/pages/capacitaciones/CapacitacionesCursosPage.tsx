@@ -202,7 +202,7 @@ function CatalogoAutorizado() {
           </div>
 
           {visibles.length === 0 ? (
-            <SinResultados limpiar={limpiarFiltros} />
+            <SinResultados elemento="curso" limpiar={limpiarFiltros} />
           ) : (
             <>
               {/* Escritorio: tabla. Movil: tarjetas. §20 pide reemplazar la

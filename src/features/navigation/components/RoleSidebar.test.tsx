@@ -6,7 +6,7 @@ import { projectNavigation } from "../navigationTree";
 
 function sidebar(destinos: string[]) {
   return render(<MemoryRouter initialEntries={["/superadmin/empresas"]}><RoleSidebar
-    items={projectNavigation(destinos)} storageKey="sidebar-navigation-test" tone="rel"
+    items={projectNavigation(destinos)} storageKey="sidebar-navigation-test"
     avatarText="SA" userTitle="Administrador" userSubtitle="Plataforma"
     navLabel="Navegación principal" footerLink=""
   /></MemoryRouter>);

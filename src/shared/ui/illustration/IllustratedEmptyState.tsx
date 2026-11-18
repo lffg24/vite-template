@@ -1,9 +1,18 @@
+// src/shared/ui/illustration/IllustratedEmptyState.tsx
+//
+// Nombre documentado en `docs/design/ABRIL360_ILLUSTRATION_SYSTEM.md`, que
+// ahora DELEGA en la pieza de la casa.
+//
+// Era la segunda definición del vacío ilustrado, y la que no usaba nadie: el
+// producto entero llamaba a la de Capacitaciones. Dos vacíos, uno bueno en el
+// sitio equivocado y otro en el sitio correcto sin usar. Se quedó la
+// implementación que las pantallas ya mostraban y este nombre sigue existiendo
+// para no romper la API documentada.
+
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 
-import { Illustration } from "./Illustration";
-import { IllustrationSurface } from "./IllustrationSurface";
 import type { IllustrationName } from "./illustration.registry";
 
 export function IllustratedEmptyState({
@@ -20,15 +29,12 @@ export function IllustratedEmptyState({
   className?: string;
 }) {
   return (
-    <section className={cn("grid gap-5 text-center sm:grid-cols-[11rem_1fr] sm:text-left", className)}>
-      <IllustrationSurface>
-        <Illustration name={illustration} variant="spot" size="sm" />
-      </IllustrationSurface>
-      <div className="self-center">
-        <h3 className="font-rel-heading text-lg font-bold text-rel-dark">{title}</h3>
-        <p className="mt-1 text-sm leading-relaxed text-rel-muted">{description}</p>
-        {action ? <div className="mt-4">{action}</div> : null}
-      </div>
-    </section>
+    <EstadoVacio
+      escena={illustration}
+      titulo={title}
+      descripcion={description}
+      accion={action}
+      className={className}
+    />
   );
 }
