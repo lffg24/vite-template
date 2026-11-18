@@ -15,6 +15,7 @@ import { listarContextos, listarServiciosDeSede, obtenerSede } from "@/services/
 import { cambiarEstadoCatalogoCx, crearCatalogoCx, editarCatalogoCx, listarCatalogoCx } from "@/services/cxPuntosFactoresService";
 import type { SedeCx, ServicioDeSede } from "@/types/cxContextos";
 import type { PuntoCx } from "@/types/cxPuntosFactores";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
 const VACIO = { codigo: "", nombre: "", sede_id: "", servicio_id: "" };
 
@@ -170,7 +171,7 @@ export default function PuntosCxPage() {
           </form>
           <div>
             <Label htmlFor="estado-puntos">Estado</Label>
-            <select id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
+            <Desplegable id="estado-puntos" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></Desplegable>
           </div>
         </div>
       }
@@ -187,8 +188,8 @@ export default function PuntosCxPage() {
       <div><Label htmlFor="punto-codigo">Código *</Label><Input id="punto-codigo" value={formulario.codigo} disabled={edicion !== "nuevo" || guardando} maxLength={32} onChange={(e) => setFormulario({ ...formulario, codigo: e.target.value })} /></div>
       <div><Label htmlFor="punto-nombre">Nombre *</Label><Input id="punto-nombre" value={formulario.nombre} disabled={guardando} maxLength={160} onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} /></div>
       <div><Label htmlFor="buscar-sede">Buscar sede</Label><Input id="buscar-sede" type="search" value={buscarSede} maxLength={80} onChange={(e) => setBuscarSede(e.target.value)} /></div>
-      <div><Label htmlFor="punto-sede">Sede *</Label><select id="punto-sede" value={formulario.sede_id} disabled={guardando} onChange={(e) => setFormulario({ ...formulario, sede_id: e.target.value, servicio_id: "" })} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><option value="">Selecciona una sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.codigo} · {s.nombre}</option>)}</select></div>
-      <div><Label htmlFor="punto-servicio">Servicio (opcional)</Label><select id="punto-servicio" value={formulario.servicio_id} disabled={!formulario.sede_id || guardando} onChange={(e) => setFormulario({ ...formulario, servicio_id: e.target.value })} className="flex h-10 w-full rounded-md border border-rel-border bg-rel-surface px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><option value="">Sin servicio específico</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.codigo} · {s.nombre}</option>)}</select></div>
+      <div><Label htmlFor="punto-sede">Sede *</Label><Desplegable id="punto-sede" value={formulario.sede_id} disabled={guardando} onChange={(e) => setFormulario({ ...formulario, sede_id: e.target.value, servicio_id: "" })}><option value="">Selecciona una sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.codigo} · {s.nombre}</option>)}</Desplegable></div>
+      <div><Label htmlFor="punto-servicio">Servicio (opcional)</Label><Desplegable id="punto-servicio" value={formulario.servicio_id} disabled={!formulario.sede_id || guardando} onChange={(e) => setFormulario({ ...formulario, servicio_id: e.target.value })}><option value="">Sin servicio específico</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.codigo} · {s.nombre}</option>)}</Desplegable></div>
       {errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div>
     </form></SheetContent></Sheet>

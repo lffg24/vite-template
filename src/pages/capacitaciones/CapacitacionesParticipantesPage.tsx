@@ -50,6 +50,7 @@ import {
   ErrorConsulta,
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
 const TIPOS = ["CC", "CE", "TI", "PA", "PPT"] as const;
 
@@ -362,18 +363,18 @@ function PanelAlta({
           <div className="flex gap-3">
             <div className="w-28">
               <Label htmlFor="tipo">Tipo</Label>
-              <select
+              <Desplegable
                 id="tipo"
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value)}
-                className="mt-1 h-10 w-full rounded-rel-control border border-rel-border bg-rel-surface px-2 text-sm"
+                className="mt-1"
               >
                 {TIPOS.map((t) => (
                   <option key={t} value={t}>
                     {t}
                   </option>
                 ))}
-              </select>
+              </Desplegable>
             </div>
             <div className="flex-1">
               <Label htmlFor="numero">Número de documento</Label>

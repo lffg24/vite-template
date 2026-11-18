@@ -18,6 +18,7 @@ import {
 } from "@/services/cxContextosService";
 import type { SedeCx, ServicioCx, ServicioDeSede, TipoContexto } from "@/types/cxContextos";
 import ServicioAreasSheet from "./ServicioAreasSheet";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
 type Fila = SedeCx | ServicioCx;
 type Formulario = { codigo: string; nombre: string; detalle: string };
@@ -202,10 +203,10 @@ export default function ContextosCxPage() {
               <Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
             </form>
             <div><Label htmlFor="estado-contexto">Estado</Label>
-              <select id="estado-contexto" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); reiniciarPagina(); }}
-                className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40">
+              <Desplegable id="estado-contexto" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); reiniciarPagina(); }}
+                className="sm:w-40">
                 <option value="activos">Activos</option><option value="inactivos">Inactivos</option><option value="todos">Todos</option>
-              </select></div>
+              </Desplegable></div>
           </div>
         </div>
       }

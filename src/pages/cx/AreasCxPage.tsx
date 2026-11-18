@@ -13,6 +13,7 @@ import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/Tabla
 import { useToast } from "@/hooks/use-toast";
 import { cambiarEstadoAreaCx, crearAreaCx, editarAreaCx, listarAreasCx } from "@/services/cxAreasService";
 import type { AreaCx } from "@/types/cxAreas";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
 /**
  * Las columnas, una sola vez para la tabla y para la tarjeta de movil.
@@ -139,18 +140,20 @@ export default function AreasCxPage() {
           </form>
           <div>
             <Label htmlFor="estado-area">Estado</Label>
-            {/* `select` nativo y no el de la casa: la lista tiene dos opciones y
-                el nativo se opera mejor en movil. Lo que se homologa es el
-                tratamiento —tokens, radio y foco—, no el elemento. */}
-            <select
+            {/* La frase que estaba aqui --«la lista tiene dos opciones y el nativo
+                se opera mejor en movil; lo que se homologa es el tratamiento,
+                no el elemento»-- era correcta, y es exactamente lo que hace
+                `Desplegable`: un `select` nativo con el aspecto de la casa.
+                Estaba cumplida copiando clases a mano, en cinco variantes. */}
+            <Desplegable
               id="estado-area"
               value={estado}
               onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }}
-              className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"
+              className="sm:w-40"
             >
               <option value="activos">Activas</option>
               <option value="todos">Todas</option>
-            </select>
+            </Desplegable>
           </div>
         </div>
       }

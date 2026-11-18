@@ -108,8 +108,8 @@ frente("Botones", con_pieza, a_mano, "tope en la prueba: 25")
 # --- Escalas que se cerraron con la caja -----------------------------------
 # Un nombre por radio: `rounded-lg|xl|2xl` valen lo mismo que
 # `rounded-rel-control|card|panel`, y 86 sitios usaban la segunda forma.
-culpables = archivos_con(r"rounded-(?:lg|xl|2xl)", PERIMETRO)
-frente("Radio por rol", len(PERIMETRO) - len(culpables), len(culpables), "un solo nombre por valor")
+culpables = archivos_con(r"\brounded-(?:lg|xl|2xl|md)\b", PERIMETRO)
+frente("Radio por rol", len(PERIMETRO) - len(culpables), len(culpables), "un nombre por valor, y tres valores")
 
 # El relieve sale del sistema: las sombras de Tailwind son negras y las de la
 # casa van tintadas de azul, asi que una caja con `shadow-sm` proyectaba una
@@ -132,9 +132,21 @@ con_pieza = cuenta(r"<(?:Card|Panel|TablaPanel)\b", PERIMETRO)
 frente("Tarjetas", con_pieza, a_mano, "lo mas grande que queda")
 
 # --- Desplegables ----------------------------------------------------------
+# El elemento nativo NO era la deuda: en movil abre el selector del sistema y
+# se opera mejor. La deuda era que el tratamiento se cumplia copiando clases,
+# en cinco variantes. `Desplegable` es el mismo `select` nativo con el aspecto
+# de la casa, asi que cuenta como pieza igual que el de Radix.
 a_mano = cuenta(r"<select\b", PERIMETRO)
-con_pieza = cuenta(r"<(?:Select|SelectTrigger)\b", PERIMETRO)
-frente("Desplegables", con_pieza, a_mano, "no todo es deuda: ver el informe")
+con_pieza = cuenta(r"<(?:Select|SelectTrigger|Desplegable)\b", PERIMETRO)
+frente("Desplegables", con_pieza, a_mano, "los 2 que quedan miden 48 px")
+
+# --- El aspecto del control -------------------------------------------------
+# Campo de texto, area de texto y desplegable: una sola cadena de clases. Antes
+# `Textarea` se homologo copiando las de `Input` caracter por caracter, y el
+# desplegable se quedo fuera: cinco apariencias para dieciocho controles.
+PIEZAS_CONTROL = ["components/ui/input.tsx", "components/ui/textarea.tsx", "shared/ui/Desplegable.tsx"]
+piden = [r for r in PIEZAS_CONTROL if "CLASE_CONTROL" in leer(r)]
+frente("Aspecto del control", len(piden), len(PIEZAS_CONTROL) - len(piden), "una definicion para los tres")
 
 # --- Vacios: cuantas pantallas con lista usan la pieza ---------------------
 LISTA = r"<TablaDatos\b|<ul\b|\.map\("

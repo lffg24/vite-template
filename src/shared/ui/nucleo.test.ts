@@ -1580,4 +1580,143 @@ describe("el núcleo es uno solo", () => {
     ).map(comoRuta);
     expect(siguen.sort()).toEqual([...DEL_MONOLITO].sort());
   });
+
+  /**
+   * El desplegable del perimetro sale de la pieza.
+   *
+   * Habia DIECIOCHO `<select>` nativos con CINCO apariencias, y ninguna igual
+   * a la del campo de texto que tenian al lado. El elemento nativo no era el
+   * problema --en movil abre el selector del sistema, que se opera mejor--; el
+   * problema era que el tratamiento se cumplia copiando clases. La frase que
+   * lo justificaba estaba escrita a mano en `AreasCxPage` y era correcta; lo
+   * que fallaba era que cada pantalla la cumplia por su cuenta.
+   *
+   * `Desplegable` es ese mismo `select` nativo con el aspecto de la casa.
+   */
+  it("el desplegable del perímetro sale de la pieza", () => {
+    /* Los dos que quedan son del formulario publico de participacion, que
+       mide sus controles a 48 px a proposito --es una pantalla de movil para
+       alguien que no conoce el producto-- mientras el campo de la casa mide
+       40. Cambiarlos solos los dejaria 8 px mas bajos que los seis campos de
+       texto que tienen al lado, o sea peor. Salen de aqui cuando se decida el
+       alto del control, y la lista solo puede menguar. */
+    const DEL_FORMULARIO_PUBLICO = [
+      "features/participacion/FormularioIdentidad.tsx",
+      "features/participacion/FormularioReanudacion.tsx",
+    ];
+    const usaSelect = (ruta: string) => /<select/.test(contenido(ruta));
+
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) => {
+      if (DEL_FORMULARIO_PUBLICO.includes(comoRuta(ruta))) return false;
+      return usaSelect(ruta);
+    }).map(comoRuta);
+
+    expect(
+      culpables,
+      "Usa `Desplegable` de `@/shared/ui/Desplegable`: es el mismo `select` " +
+        "nativo con el aspecto de la casa, el foco de 4 px y el estado " +
+        "deshabilitado que un `select` a mano no tiene."
+    ).toEqual([]);
+
+    // Y la lista no se queda con nombres que ya cumplen.
+    const siguen = DENTRO_DEL_PERIMETRO.filter(
+      (ruta) => DEL_FORMULARIO_PUBLICO.includes(comoRuta(ruta)) && usaSelect(ruta)
+    ).map(comoRuta);
+    expect(siguen.sort()).toEqual([...DEL_FORMULARIO_PUBLICO].sort());
+  });
+
+  /**
+   * El aspecto del control tiene UNA definicion.
+   *
+   * `Textarea` llevaba escrito en su comentario que se homologo copiando las
+   * clases de `Input` caracter por caracter. Copiar funciona una vez: el
+   * desplegable se quedo fuera y la copia se multiplico por cinco. Ahora las
+   * tres piezas piden la misma cadena.
+   */
+  it("el aspecto del control tiene una sola definición", () => {
+    const PIEZAS_DE_CONTROL = [
+      "components/ui/input.tsx",
+      "components/ui/textarea.tsx",
+      "shared/ui/Desplegable.tsx",
+    ];
+    const sinPedirla = PIEZAS_DE_CONTROL.filter(
+      (ruta) => !/CLASE_CONTROL/.test(contenido(join(RAIZ, ...ruta.split("/"))))
+    );
+    expect(
+      sinPedirla,
+      "El borde, el fondo, el radio, el foco y el deshabilitado del control " +
+        "salen de `CLASE_CONTROL` en `shared/ui/controles.ts`. Lo propio de " +
+        "cada pieza es su alto."
+    ).toEqual([]);
+
+    /* Y el control no tiene relieve: `Input` y `Textarea` llevaban `shadow-sm`
+       --la sombra NEGRA de Tailwind al 5 %-- y un desplegable llevaba
+       `shadow-rel-card`, una sombra de tarjeta de 24 px bajo un control de 40.
+       La senal de un control es su borde, su cambio al pasar el puntero y su
+       anillo de foco. */
+    /* El `(?:^|[\s"])` es lo que distingue la CLASE `shadow-sm` del nombre de
+       la propiedad `box-shadow`, que la cadena nombra con razón dentro de
+       `transition-[…]`: el anillo de foco se anima, así que la transición
+       tiene que incluirla. Sin eso, el guardia señalaba la propiedad que hace
+       falta para que el foco aparezca suave. */
+    const clasesDelControl = contenido(join(RAIZ, "shared", "ui", "controles.ts"));
+    expect(/(?:^|[\s"])shadow-/.test(clasesDelControl)).toBe(false);
+  });
+
+  /**
+   * En el perimetro, el radio de una caja es uno de los tres de la casa.
+   *
+   * `rounded-md` NO es otro nombre del radio de control: es `--radius` menos
+   * 2 px, un cuarto valor. Cinco desplegables y una fila de casilla lo usaban,
+   * asi que tenian la esquina 2 px mas cerrada que el campo de al lado. Es el
+   * mismo defecto que ya arreglo `Textarea`, repetido en otra pieza.
+   */
+  it("en el perímetro no hay un cuarto radio de caja", () => {
+    const culpables = DENTRO_DEL_PERIMETRO.filter((ruta) =>
+      /\brounded-md\b/.test(contenido(ruta))
+    ).map(comoRuta);
+
+    expect(
+      culpables,
+      "`rounded-md` son 2 px menos que `rounded-rel-control`, no otro nombre " +
+        "del mismo valor. La escala de cajas tiene tres: control, tarjeta y panel."
+    ).toEqual([]);
+  });
+
+  /**
+   * Ningún fuente lleva un carácter de control invisible.
+   *
+   * No es higiene: es el guardia de un defecto que ya pasó cinco veces y que
+   * la última vez **falseó una medida**. Al escribir una expresión regular
+   * desde un script, un `\b` se convirtió en el byte 0x08 —retroceso—, así que
+   * el patrón que debía buscar `rounded-lg` buscaba un carácter que no existe
+   * en ningún fichero. Encontraba cero, y cero culpables se lee igual que
+   * «cerrado»: el informe dio ese frente al 100 % con un instrumento que no
+   * medía nada. La cifra resultó ser correcta, comprobada aparte, pero eso fue
+   * suerte.
+   *
+   * Un carácter de control no se ve al leer el código ni al mirar la pantalla,
+   * y ni TypeScript ni el empaquetador se quejan: dentro de una expresión
+   * regular es un carácter válido. Esta prueba es el único sitio donde puede
+   * salir a la luz.
+   */
+  it("ningún fuente lleva caracteres de control invisibles", () => {
+    // Tabulador, salto de línea y retorno de carro son los únicos legítimos.
+    const PERMITIDOS = new Set([9, 10, 13]);
+    const sucios = TODOS.filter((ruta) => {
+      const texto = readFileSync(ruta, "utf-8");
+      for (let i = 0; i < texto.length; i += 1) {
+        const codigo = texto.charCodeAt(i);
+        if (codigo < 32 && !PERMITIDOS.has(codigo)) return true;
+      }
+      return false;
+    }).map(comoRuta);
+
+    expect(
+      sucios,
+      "Hay un carácter de control invisible en el fuente. Casi siempre es una " +
+        "barra invertida que se perdió al escribir el fichero desde un script: " +
+        "`\\b` acabó siendo el byte 0x08. Reescribe la expresión regular a mano."
+    ).toEqual([]);
+  });
 });

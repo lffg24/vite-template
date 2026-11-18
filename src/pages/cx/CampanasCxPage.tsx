@@ -21,8 +21,8 @@ import type { SedeCx, ServicioDeSede } from "@/types/cxContextos";
 import type { PuntoCx } from "@/types/cxPuntosFactores";
 import type { EncuestaCx, ResumenEncuestaCx } from "@/types/cxEncuestas";
 import type { CampanaCx, EstadoCampanaCx } from "@/types/cxCampanas";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
-const claseSelect = "flex h-11 w-full rounded-rel-control border border-rel-border bg-rel-surface px-3 text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary";
 
 export default function CampanasCxPage() {
   const [campanas, setCampanas] = useState<CampanaCx[]>([]);
@@ -120,11 +120,11 @@ export default function CampanasCxPage() {
     {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}
     <Panel titulo="Nueva campaña"><form onSubmit={crear} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div><Label htmlFor="campana-nombre">Nombre *</Label><Input id="campana-nombre" value={nombre} maxLength={200} disabled={ocupado} onChange={(e) => setNombre(e.target.value)} placeholder="Atención en sede centro" /></div>
-      <div><Label htmlFor="campana-encuesta">Encuesta publicada *</Label><select id="campana-encuesta" className={claseSelect} value={encuestaId} disabled={ocupado} onChange={(e) => setEncuestaId(e.target.value)}><option value="">Seleccionar encuesta</option>{encuestas.map((q) => <option key={q.id} value={q.id}>{q.titulo}</option>)}</select></div>
-      <div><Label htmlFor="campana-version">Versión *</Label><select id="campana-version" className={claseSelect} value={versionId} disabled={ocupado || !encuesta} onChange={(e) => setVersionId(e.target.value)}><option value="">Seleccionar versión</option>{encuesta?.versiones.map((v) => <option key={v.id} value={v.id}>Versión {v.numero}</option>)}</select></div>
-      <div><Label htmlFor="campana-sede">Sede *</Label><select id="campana-sede" className={claseSelect} value={sedeId} disabled={ocupado} onChange={(e) => { setSedeId(e.target.value); setServicioId(""); setPuntoId(""); }}><option value="">Seleccionar sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}</select></div>
-      <div><Label htmlFor="campana-servicio">Servicio</Label><select id="campana-servicio" className={claseSelect} value={servicioId} disabled={ocupado || !sedeId} onChange={(e) => { setServicioId(e.target.value); setPuntoId(""); }}><option value="">Toda la sede</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.nombre}</option>)}</select></div>
-      <div><Label htmlFor="campana-punto">Punto de contacto</Label><select id="campana-punto" className={claseSelect} value={puntoId} disabled={ocupado || !sedeId} onChange={(e) => setPuntoId(e.target.value)}><option value="">Sin punto específico</option>{puntosDisponibles.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></div>
+      <div><Label htmlFor="campana-encuesta">Encuesta publicada *</Label><Desplegable id="campana-encuesta" value={encuestaId} disabled={ocupado} onChange={(e) => setEncuestaId(e.target.value)}><option value="">Seleccionar encuesta</option>{encuestas.map((q) => <option key={q.id} value={q.id}>{q.titulo}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-version">Versión *</Label><Desplegable id="campana-version" value={versionId} disabled={ocupado || !encuesta} onChange={(e) => setVersionId(e.target.value)}><option value="">Seleccionar versión</option>{encuesta?.versiones.map((v) => <option key={v.id} value={v.id}>Versión {v.numero}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-sede">Sede *</Label><Desplegable id="campana-sede" value={sedeId} disabled={ocupado} onChange={(e) => { setSedeId(e.target.value); setServicioId(""); setPuntoId(""); }}><option value="">Seleccionar sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-servicio">Servicio</Label><Desplegable id="campana-servicio" value={servicioId} disabled={ocupado || !sedeId} onChange={(e) => { setServicioId(e.target.value); setPuntoId(""); }}><option value="">Toda la sede</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.nombre}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-punto">Punto de contacto</Label><Desplegable id="campana-punto" value={puntoId} disabled={ocupado || !sedeId} onChange={(e) => setPuntoId(e.target.value)}><option value="">Sin punto específico</option>{puntosDisponibles.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}</Desplegable></div>
       <div className="sm:col-span-2 lg:col-span-3"><Button type="submit" variant="rel" className="w-full sm:w-auto" disabled={ocupado || !encuestas.length}>{ocupado ? "Guardando…" : "Crear campaña y QR"}</Button><p className="mt-2 text-sm text-rel-muted">Se crea en pausa. Actívala cuando el acceso público esté habilitado y probado.</p></div>
     </form></Panel>
     <Panel titulo="Campañas de tu empresa">
@@ -158,5 +158,5 @@ function CambioVersion({ campana, ocupado, cambiar }: { campana: CampanaCx; ocup
     return () => { vigente = false; };
   }, [campana.encuesta_id]);
   if (campana.revocado_en || campana.estado === "CERRADA") return null;
-  return <div className="max-w-xs"><Label htmlFor={`version-${campana.id}`}>Versión vigente</Label><select id={`version-${campana.id}`} className={claseSelect} disabled={ocupado || !versiones.length} value={campana.version_actual_id} onChange={(e) => cambiar(e.target.value)}>{versiones.map((v) => <option key={v.id} value={v.id}>Versión {v.numero}</option>)}</select>{error ? <p role="alert" className="text-sm text-rel-danger">{error}</p> : null}</div>;
+  return <div className="max-w-xs"><Label htmlFor={`version-${campana.id}`}>Versión vigente</Label><Desplegable id={`version-${campana.id}`} disabled={ocupado || !versiones.length} value={campana.version_actual_id} onChange={(e) => cambiar(e.target.value)}>{versiones.map((v) => <option key={v.id} value={v.id}>Versión {v.numero}</option>)}</Desplegable>{error ? <p role="alert" className="text-sm text-rel-danger">{error}</p> : null}</div>;
 }

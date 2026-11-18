@@ -16,6 +16,7 @@ import { listarContextos } from "@/services/cxContextosService";
 import { cambiarEstadoCatalogoCx, crearCatalogoCx, editarCatalogoCx, guardarAplicabilidad, listarCatalogoCx, obtenerAplicabilidad } from "@/services/cxPuntosFactoresService";
 import type { SedeCx, ServicioCx } from "@/types/cxContextos";
 import type { AplicabilidadCx, FactorCx, SubfactorCx } from "@/types/cxPuntosFactores";
+import { Desplegable } from "@/shared/ui/Desplegable";
 
 /** Columnas de factores: una declaracion para la tabla y la tarjeta. */
 function columnasFactor(
@@ -120,7 +121,7 @@ export default function FactoresCxPage() {
           </form>
           <div>
             <Label htmlFor="estado-factor">Estado</Label>
-            <select id="estado-factor" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="flex h-10 w-full rounded-rel-control border border-input bg-surface px-3 text-sm text-foreground shadow-rel-card transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:border-input-focus focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-input-focus/25 motion-reduce:transition-none sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></select>
+            <Desplegable id="estado-factor" value={estado} onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }} className="sm:w-40"><option value="activos">Activos</option><option value="todos">Todos</option></Desplegable>
           </div>
         </div>
       }
@@ -234,5 +235,5 @@ function FactorDetalleSheet({ factor, cerrar }: { factor: FactorCx | null; cerra
 
 function ReferenciaLista({ titulo, id, buscar, setBuscar, seleccion, cambiar, seleccionadas, candidatas }: { titulo: string; id: string; buscar: string; setBuscar: (v: string) => void; seleccion: string[]; cambiar: (id: string) => void; seleccionadas: { id: string; nombre: string }[]; candidatas: { id: string; nombre: string }[] }) {
   const opciones = [...seleccionadas.filter((x) => seleccion.includes(x.id)), ...candidatas.filter((x) => !seleccionadas.some((s) => s.id === x.id))];
-  return <section aria-label={titulo} className="rounded-rel-card border border-rel-border p-4"><h3 className="font-semibold text-rel-dark">{titulo} ({seleccion.length})</h3><div className="mt-3"><Label htmlFor={id}>Buscar {titulo.toLowerCase()}</Label><Input id={id} type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div><ul className="mt-3 max-h-52 space-y-1 overflow-y-auto">{opciones.map((opcion) => <li key={opcion.id}><Casilla claseEtiqueta="rounded-md p-2 hover:bg-rel-surface-subtle" marcada={seleccion.includes(opcion.id)} alCambiar={() => cambiar(opcion.id)} etiqueta={<span className="break-words">{opcion.nombre}</span>} /></li>)}</ul>{opciones.length === 0 ? <p className="mt-3 text-sm text-rel-muted">No hay opciones para esta búsqueda.</p> : null}</section>;
+  return <section aria-label={titulo} className="rounded-rel-card border border-rel-border p-4"><h3 className="font-semibold text-rel-dark">{titulo} ({seleccion.length})</h3><div className="mt-3"><Label htmlFor={id}>Buscar {titulo.toLowerCase()}</Label><Input id={id} type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} /></div><ul className="mt-3 max-h-52 space-y-1 overflow-y-auto">{opciones.map((opcion) => <li key={opcion.id}><Casilla claseEtiqueta="rounded-rel-control p-2 hover:bg-rel-surface-subtle" marcada={seleccion.includes(opcion.id)} alCambiar={() => cambiar(opcion.id)} etiqueta={<span className="break-words">{opcion.nombre}</span>} /></li>)}</ul>{opciones.length === 0 ? <p className="mt-3 text-sm text-rel-muted">No hay opciones para esta búsqueda.</p> : null}</section>;
 }
