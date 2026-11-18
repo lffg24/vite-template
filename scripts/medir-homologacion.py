@@ -117,7 +117,10 @@ frente("Radio por rol", len(PERIMETRO) - len(culpables), len(culpables), "un nom
 RELIEVE_OK = ("shadow-rel-card", "shadow-rel-floating", "shadow-rel-soft", "shadow-none")
 SOMBRA = re.compile(r"(?<!-)shadow(?:-[^\s\"'`{}]+)?")
 _buenas, _malas = 0, 0
-for _r in PERIMETRO:
+# `lib/utils.ts` es donde los nombres se DECLARAN, no donde se usan: ahi
+# `shadow` es la clave del grupo que `cn` ensena a tailwind-merge. Contarla
+# como clase convierte la configuracion en deuda.
+for _r in [r for r in PERIMETRO if r != "lib/utils.ts"]:
     for _m in SOMBRA.findall(leer(_r)):
         if _m in RELIEVE_OK:
             _buenas += 1
