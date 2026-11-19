@@ -290,9 +290,9 @@ export default function SuperAdminUsuariosPage() {
       {error && !modal ? (
         <p role="alert" className="rounded-rel-control bg-rel-danger-subtle p-4 text-sm text-rel-danger">
           {error}{" "}
-          <button onClick={() => setRevision((valor) => valor + 1)} className="underline">
+          <Button variant="link" size="sm" onClick={() => setRevision((valor) => valor + 1)} className="h-auto px-0 text-rel-danger underline">
             Reintentar
-          </button>
+          </Button>
         </p>
       ) : null}
 

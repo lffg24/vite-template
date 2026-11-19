@@ -38,6 +38,7 @@
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import { Button } from "@/components/ui/button";
 
 export function ConfirmDialog({
   open,
@@ -85,24 +86,23 @@ export function ConfirmDialog({
       }
       acciones={
         <>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="min-h-[2.75rem] rounded-rel-control border border-border px-5 text-sm font-bold text-foreground-soft transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          >
+          <Button type="button" variant="relOutline" onClick={onCancel}>
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          {/* El aviso no tiene variante propia porque no es una familia: es
+              ESTE dialogo cuando lo que confirma no se puede deshacer. El
+              ambar sale de los tokens, no de un color escrito a mano. */}
+          <Button
             type="button"
             onClick={onConfirm}
             className={
               aviso
-                ? "min-h-[2.75rem] rounded-rel-control bg-warning px-5 text-sm font-bold text-warning-foreground shadow-rel-card transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning focus-visible:ring-offset-2"
-                : "min-h-[2.75rem] rounded-rel-control bg-primary px-5 text-sm font-bold text-primary-foreground shadow-rel-card transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                ? "bg-warning text-warning-foreground shadow-rel-card hover:brightness-95 focus-visible:ring-warning"
+                : undefined
             }
           >
             {confirmLabel}
-          </button>
+          </Button>
         </>
       }
     />

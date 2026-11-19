@@ -1241,11 +1241,22 @@ describe("el núcleo es uno solo", () => {
    */
   // 33 -> 25 al borrar `layout/Layout.tsx` (muerto, dos botones) y al pasar la
   // confirmacion a `DialogoCasa`, que le quita la equis propia.
-  // 25 -> 24 el 2026-11-18: el boton Volver del formulario publico de
-  // participacion medía 48 px junto a uno de 56 en la misma fila, y con el
-  // anillo de foco de 2 px. Hoy es `BotonSecundario`, la misma pieza que el
-  // principal que tiene al lado.
-  const TOPE_BOTONES_A_MANO = 24;
+  // 25 -> 24 -> 15 el 2026-11-18. Los nueve que salieron eran botones de
+  // verdad, y dos de ellos median 48 px junto a uno de 56 en la misma fila.
+  //
+  // Los QUINCE que quedan no son «una accion que se ejecuta», que es lo que
+  // la pieza resuelve. Son tres cosas distintas:
+  //
+  //   - **Una opcion que se elige** (`aria-pressed`, `role="option"`): las
+  //     listas de superadmin donde se escoge empresa, modulo, rol o persona.
+  //     Vestirlas de boton de accion dice que pasara algo al pulsar, y lo
+  //     que pasa es que queda marcada.
+  //   - **Navegacion sobre la barra oscura** (`RoleSidebar`): la pieza se
+  //     pinta con los tokens de superficie clara.
+  //   - **Texto que actua dentro de una frase o de una celda**: el codigo de
+  //     verificacion que se copia, el nombre que abre su ficha, la equis que
+  //     cierra un aviso. Llevan su propio blanco tactil.
+  const TOPE_BOTONES_A_MANO = 15;
 
   it("los botones a mano no aumentan, y la cuenta no depende de quién mire", () => {
     const cuenta = DENTRO_DEL_PERIMETRO.filter((ruta) =>

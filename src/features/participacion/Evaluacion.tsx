@@ -24,6 +24,7 @@ import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
 import { OpcionesMultiples } from "@/shared/ui/OpcionesMultiples";
 import { BotonPrincipal } from "@/features/participacion/ParticipanteLayout";
 import type { EvaluacionPublica, IntentoCalificado } from "@/types/participacion";
+import { Button } from "@/components/ui/button";
 
 /** Índice de opción como cadena: `OpcionesExcluyentes` trabaja con claves. */
 const clave = (i: number) => String(i);
@@ -173,13 +174,14 @@ export function Evaluacion({
 
       <div className="flex gap-3">
         {actual > 0 ? (
-          <button
+          <Button
             type="button"
+            variant="relOutline"
             onClick={() => setActual((a) => a - 1)}
-            className="min-h-[3rem] shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="h-14 shrink-0 text-base"
           >
             Anterior
-          </button>
+          </Button>
         ) : null}
 
         {esUltima ? (

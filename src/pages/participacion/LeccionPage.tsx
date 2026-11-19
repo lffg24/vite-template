@@ -38,6 +38,7 @@ import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso"
 import { Evaluacion } from "@/features/participacion/Evaluacion";
 import { BarraAccionesMovil } from "@/shared/ui/BotonAccion";
 import { Caja } from "@/shared/ui/Caja";
+import { Button } from "@/components/ui/button";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -172,14 +173,15 @@ export default function LeccionPage() {
   return (
     <ParticipanteLayout progreso={(bloque + 1) / total}>
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
-      <button
+      <Button
         type="button"
+        variant="link"
         onClick={() => navegar("/c/sesion")}
-        className="-ml-1 mb-3 flex min-h-[2.75rem] items-center gap-1.5 self-start text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+        className="-ml-1 mb-3 self-start px-0 no-underline hover:no-underline"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Volver al curso
-      </button>
+      </Button>
 
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
         {evaluacion
@@ -271,14 +273,16 @@ export default function LeccionPage() {
       {evaluacion ? null : (
       <BarraAccionesMovil className="flex gap-3 lg:ml-auto lg:w-full lg:max-w-md">
         {!recurso && bloque > 0 ? (
-          <button
+          <Button
             type="button"
+            variant="relOutline"
+            size="icon"
             onClick={() => setBloque((b) => b - 1)}
-            className="min-h-[3rem] shrink-0 rounded-rel-control border border-rel-border px-4 text-base font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+            className="h-14 w-14 shrink-0"
             aria-label="Parte anterior"
           >
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-          </button>
+          </Button>
         ) : null}
         <BotonPrincipal onClick={siguiente} disabled={guardando || (Boolean(recurso) && !confirmado)}>
           {guardando ? (

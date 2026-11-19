@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type ToastType = "success" | "error" | "warning" | "info";
 export type ToastPayload = {
@@ -107,14 +108,14 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
                 {toast.action.label}
               </a>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={toast.action.onClick}
                 style={toast.action.style}
-                className="mt-4 inline-flex items-center justify-center rounded-rel-control bg-primary px-4 py-2.5 text-sm font-black text-primary-foreground transition hover:bg-primary-hover"
+                className="mt-4"
               >
                 {toast.action.label}
-              </button>
+              </Button>
             )
           )}
         </div>

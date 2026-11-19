@@ -36,6 +36,7 @@ import { FormularioReanudacion } from "@/features/participacion/FormularioReanud
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import { AzulejoIcono } from "@/shared/ui/AzulejoIcono";
 import { Caja } from "@/shared/ui/Caja";
+import { Button } from "@/components/ui/button";
 
 function formatearDuracion(min: number | null): string | null {
   if (!min) return null;
@@ -235,13 +236,9 @@ export default function AterrizajePage() {
           {!datos.exige_invitacion ? (
             <div className="flex flex-col gap-3 sm:min-w-56">
               <BotonPrincipal onClick={() => setPaso("datos")}>Comenzar</BotonPrincipal>
-              <button
-                type="button"
-                onClick={() => setPaso("reanudar")}
-                className="min-h-[2.75rem] text-sm font-semibold text-rel-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-              >
+              <Button type="button" variant="link" onClick={() => setPaso("reanudar")} className="px-0">
                 Ya había empezado
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

@@ -38,6 +38,7 @@ import type { ConstanciaImprimible } from "@/types/constancia";
 import { Illustration } from "@/shared/ui/illustration";
 import { descargarElementoComoPdf } from "@/shared/pdf/descargarElementoComoPdf";
 import { Caja } from "@/shared/ui/Caja";
+import { Button } from "@/components/ui/button";
 
 export default function FinalizarPage() {
   const navegar = useNavigate();
@@ -379,14 +380,10 @@ function ConstanciaEmitidaPanel({ constancia }: { constancia: ConstanciaEmitida 
         {constancia.codigo_verificacion}
       </p>
 
-      <button
-        type="button"
-        onClick={copiar}
-        className="mt-3 inline-flex min-h-[2.75rem] items-center gap-2 text-sm font-semibold text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
-      >
+      <Button type="button" variant="link" onClick={copiar} className="mt-3 px-0 no-underline hover:no-underline">
         <Copy className="h-4 w-4" aria-hidden="true" />
         {copiado ? "Copiado" : "Copiar el código"}
-      </button>
+      </Button>
       {/* `aria-live` para que un lector de pantalla anuncie el resultado: sin
           esto, pulsar el botón no produce ningún cambio audible. */}
       <span className="sr-only" aria-live="polite">

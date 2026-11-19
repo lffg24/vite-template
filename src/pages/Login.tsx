@@ -208,7 +208,15 @@ export default function Login() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="font-bold">Contraseña</Label>
-                    <Link to="/recuperar-clave" className="text-sm font-semibold text-brand-primary hover:text-brand-turquoise">
+                    {/* `-my-2 py-2`: el blanco tactil sube de 20 a 36 px sin mover la
+                        fila. Medido en pantalla: era el unico objetivo de la
+                        pantalla de entrada por debajo de los 24 px que exige
+                        la norma, y no es un enlace dentro de una frase, que
+                        es el caso que la norma exceptua. */}
+                    <Link
+                      to="/recuperar-clave"
+                      className="-my-2 py-2 text-sm font-semibold text-brand-primary hover:text-brand-turquoise"
+                    >
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>

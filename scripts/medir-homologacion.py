@@ -103,7 +103,7 @@ for nombre, patron_a_mano, nota in [
 # --- Botones ---------------------------------------------------------------
 a_mano = cuenta(r"<button", PERIMETRO)
 con_pieza = cuenta(r"<Button\b", PERIMETRO)
-frente("Botones", con_pieza, a_mano, "tope en la prueba: 24")
+frente("Botones", con_pieza, a_mano, "los 15 no son acciones")
 
 # --- Escalas que se cerraron con la caja -----------------------------------
 # Un nombre por radio: `rounded-lg|xl|2xl` valen lo mismo que
