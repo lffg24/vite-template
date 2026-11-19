@@ -545,6 +545,27 @@ export default function LicitacionesPage() {
                 </SeccionPlegable>;
               })}
             </div>
+            <SeccionPlegable titulo="Historial de revisiones" descripcion={`${selected.reviews?.length ?? 0} revisiones registradas`}>
+              {!selected.reviews?.length ? (
+                <p className="text-sm text-rel-muted">Aún no hay revisiones registradas para esta oportunidad.</p>
+              ) : (
+                <ol className="space-y-2">
+                  {selected.reviews.map((review) => (
+                    <li key={review.id}>
+                      <Caja className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <strong>{fieldLabel(review.field_key)} · revisión {review.revision}</strong>
+                          <Pill tono={["VERIFICADO", "CORREGIDO"].includes(review.status) ? "exito" : "neutro"}>{statusLabel(review.status)}</Pill>
+                        </div>
+                        <p className="break-words text-xs text-rel-muted">Valor revisado: {review.value_json === null ? "Sin valor" : JSON.stringify(review.value_json)}</p>
+                        {review.rationale && <p>{review.rationale}</p>}
+                        <time className="block text-xs text-rel-muted" dateTime={review.created_at}>{date(review.created_at)}</time>
+                      </Caja>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </SeccionPlegable>
             {canReview && <Caja como="form" onSubmit={submitReview} tono="hundida" aire="ajustado" className="space-y-3"><div><h2 className="font-bold">Revisión humana</h2><p className="mt-1 text-xs text-rel-muted">Apertura y admisión empresarial deben quedar verificadas antes de cerrar una decisión GO.</p></div><Label htmlFor="review-field">Control o campo</Label><Desplegable id="review-field" value={reviewField} onChange={(event) => { setReviewField(event.target.value); setReviewValue(""); }}><optgroup label="Controles para decisión GO">{REQUIRED_GO_REVIEWS.map((field) => <option key={field.field_key} value={field.field_key}>{field.label}</option>)}</optgroup>{selected.fields.length > 0 && <optgroup label="Campos extraídos">{selected.fields.map((field) => <option key={field.field_key} value={field.field_key}>{fieldLabel(field.field_key)}</option>)}</optgroup>}</Desplegable><Label htmlFor="review-status">Resultado</Label><Desplegable id="review-status" value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)}><option value="PENDIENTE">{statusLabel("PENDIENTE")}</option><option value="VERIFICADO">{statusLabel("VERIFICADO")}</option><option value="CORREGIDO">{statusLabel("CORREGIDO")}</option><option value="NO_APLICA">{statusLabel("NO_APLICA")}</option></Desplegable>{!reviewControl && <><Label htmlFor="review-value">Valor revisado</Label><Input id="review-value" value={reviewValue} onChange={(event) => setReviewValue(event.target.value)} placeholder={reviewUsesJson ? "JSON válido" : "Valor confirmado"} /></>}<Label htmlFor="review-rationale">Fundamento</Label><Textarea id="review-rationale" value={reviewRationale} onChange={(event) => setReviewRationale(event.target.value)} maxLength={2000} /><Button variant="rel" disabled={saving || !reviewField}>Guardar revisión</Button></Caja>}
             {canDecide && !selected.opportunity.decision && <Caja como="form" onSubmit={submitDecision} tono="hundida" aire="ajustado" className="space-y-3"><h2 className="font-bold">Decisión comercial</h2>{!readyForGo && <p className="text-rel-muted">Para ir o ir con aliado, confirma la apertura oficial y valida apertura y admisión empresarial.</p>}<Label htmlFor="decision">Decisión</Label><Desplegable id="decision" value={decision} onChange={(event) => setDecision(event.target.value)}><option value="" disabled>Selecciona una decisión</option>{Object.entries(DECISIONES).map(([value, label]) => <option key={value} value={value} disabled={!readyForGo && (value === "GO" || value === "GO_CON_ALIADO")}>{label}</option>)}</Desplegable><Label htmlFor="reason-code">Código de motivo</Label><Input id="reason-code" value={reasonCode} onChange={(event) => setReasonCode(event.target.value)} placeholder="CAPACIDAD_TECNICA" pattern="[A-Za-z0-9_]{3,80}" required /><Label htmlFor="decision-rationale">Justificación</Label><Textarea id="decision-rationale" value={decisionRationale} onChange={(event) => setDecisionRationale(event.target.value)} minLength={5} maxLength={3000} required /><Button variant="rel" disabled={saving || !readyToSubmit}>Cerrar decisión</Button></Caja>}
             {formNotice && <p role="status" className="rounded-rel-control bg-rel-success-subtle p-3 text-rel-success">{formNotice}</p>}

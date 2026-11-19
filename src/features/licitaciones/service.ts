@@ -61,6 +61,17 @@ export type EvidenceField = {
   extractor_version: string;
 };
 
+export type FieldReview = {
+  id: string;
+  revision: string;
+  field_key: string;
+  status: string;
+  value_json: unknown;
+  rationale: string | null;
+  actor_user_id: string;
+  created_at: string;
+};
+
 export type OpportunityDetail = {
   opportunity: Opportunity & {
     quality_json?: Record<string, unknown>;
@@ -68,13 +79,8 @@ export type OpportunityDetail = {
     artifact_ref?: string;
   };
   fields: EvidenceField[];
+  reviews?: FieldReview[];
   decisions: Array<Record<string, unknown>>;
-  reviews?: Array<{
-    field_key: string;
-    revision: string;
-    status: string;
-    value_json: unknown;
-  }>;
 };
 
 export type Summary = {
