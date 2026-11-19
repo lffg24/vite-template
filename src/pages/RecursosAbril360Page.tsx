@@ -44,6 +44,7 @@ import {
   Users,
 } from "lucide-react";
 import { Marca } from "@/components/brand/Marca";
+import { Caja } from "@/shared/ui/Caja";
 
 type ResourcePageKey = "manual-uso" | "ficha-tecnica" | "seguridad-cumplimiento" | "certificacion";
 
@@ -381,7 +382,7 @@ function ManualPage() {
           {workflowSteps.map((step) => {
             const Icon = step.icon;
             return (
-              <article key={step.title} className="rounded-rel-panel border border-border bg-surface-subtle p-5">
+              <Caja key={step.title} como="article" tono="hundida" aire="normal">
                 <div className="flex items-center gap-3">
                   <span className="grid h-11 w-11 place-items-center rounded-rel-panel bg-card text-primary shadow-rel-card">
                     <Icon className="h-5 w-5" />
@@ -389,7 +390,7 @@ function ManualPage() {
                   <h3 className="text-base font-black text-foreground">{step.title}</h3>
                 </div>
                 <p className="mt-4 text-sm leading-7 text-foreground-soft">{step.body}</p>
-              </article>
+              </Caja>
             );
           })}
         </div>
@@ -496,10 +497,10 @@ function TechnicalPage() {
               body: "Usa 31 ítems y una fórmula ponderada por bloques antes de clasificar el total con baremo oficial.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-rel-panel border border-border bg-surface-subtle p-5">
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
               <h3 className="text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
-            </article>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -628,10 +629,10 @@ function SecurityPage() {
               body: "Las credenciales e integraciones deben administrarse por variables de entorno y canales seguros, nunca embebidas en código o documentos.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-rel-panel border border-border bg-surface-subtle p-5">
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
               <h3 className="text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
-            </article>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -767,11 +768,11 @@ function CertificationPage() {
               body: "Actualiza la adopción de la batería y la guía técnica en el marco del Ministerio del Trabajo.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-rel-panel border border-border bg-surface-subtle p-5">
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">{item.year}</p>
               <h3 className="mt-3 text-base font-black text-foreground">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
-            </article>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -889,12 +890,12 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
 
                 <div className="grid gap-3 content-start">
                   {current.highlights.map((highlight) => (
-                    <article key={highlight} className="rounded-rel-panel border border-border bg-surface-subtle p-4">
+                    <Caja key={highlight} como="article" tono="hundida">
                       <div className="flex gap-3">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                         <p className="text-sm leading-7 text-foreground-soft">{highlight}</p>
                       </div>
-                    </article>
+                    </Caja>
                   ))}
 
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">

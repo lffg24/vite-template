@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
 import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
 import { ProveedorCapacitaciones, useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 function iniciales(nombre: string): string {
   const letras = nombre
     .split(/\s+/)
@@ -80,9 +81,9 @@ function Shell() {
  */
 function SinAccesoAlModulo() {
   return (
-    <div
+    <Caja
       role="alert"
-      className="mx-auto max-w-prose rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-rel-card"
+      papel="panel" aire="amplio" className="mx-auto max-w-prose text-center"
     >
       <h1 className="font-rel-heading text-xl font-black text-rel-dark">
         No tienes acceso a Capacitaciones
@@ -98,6 +99,6 @@ function SinAccesoAlModulo() {
       >
         Volver al inicio
       </a>
-    </div>
+    </Caja>
   );
 }

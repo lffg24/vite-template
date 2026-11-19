@@ -49,6 +49,7 @@ import { IllustratedEmptyState } from "@/shared/ui/illustration";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
 import { Pill, type TonoPill } from "@/shared/ui/Pill";
+import { Caja } from "@/shared/ui/Caja";
 
 /** Cómo se dice y cómo se ve cada estado. Una sola tabla para pantalla y CSV. */
 export const ESTADO_CELDA: Record<EstadoCelda, { etiqueta: string; tono: TonoPill }> = {
@@ -219,7 +220,7 @@ export default function CapacitacionesMatrizPage() {
         }
       />
 
-      <section className="space-y-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
+      <Caja como="section" papel="panel" aire="amplio" className="space-y-4">
         {/* --- buscar y filtrar --- */}
         <div className="space-y-3">
           <div className="relative w-full sm:max-w-md">
@@ -289,7 +290,7 @@ export default function CapacitacionesMatrizPage() {
             className="rounded-rel-card border border-rel-border"
           />
         ) : null}
-      </section>
+      </Caja>
     </div>
   );
 }

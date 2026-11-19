@@ -35,6 +35,7 @@ import { FormularioIdentidad } from "@/features/participacion/FormularioIdentida
 import { FormularioReanudacion } from "@/features/participacion/FormularioReanudacion";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import { AzulejoIcono } from "@/shared/ui/AzulejoIcono";
+import { Caja } from "@/shared/ui/Caja";
 
 function formatearDuracion(min: number | null): string | null {
   if (!min) return null;
@@ -118,7 +119,7 @@ export default function AterrizajePage() {
   if (paso === "datos") {
     return (
       <ParticipanteLayout progreso={0.15} ancho="amplio">
-        <div className="grid flex-1 overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-rel-card lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
+        <Caja papel="panel" aire="ninguno" className="grid flex-1 overflow-hidden lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
           <aside className="hidden bg-rel-accent-subtle p-8 lg:flex lg:flex-col lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-rel-accent-ink">
@@ -150,7 +151,7 @@ export default function AterrizajePage() {
               onEnviar={enviar}
             />
           </div>
-        </div>
+        </Caja>
       </ParticipanteLayout>
     );
   }
@@ -185,7 +186,7 @@ export default function AterrizajePage() {
         </p>
       ) : null}
 
-      <section className="overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-rel-card">
+      <Caja como="section" papel="panel" aire="ninguno" className="overflow-hidden">
         <div className="grid items-center gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)] lg:p-10">
           <div>
             {/* La empresa, grande y con su icono: es lo que hace creíble un
@@ -244,7 +245,7 @@ export default function AterrizajePage() {
             </div>
           ) : null}
         </div>
-      </section>
+      </Caja>
 
       {/* Lo que tranquiliza a quien abre un enlace desconocido, dicho una vez
           y sin prometer nada que el sistema no haga. */}

@@ -42,6 +42,7 @@ import {
 } from "@/features/capacitaciones/components/Insignias";
 import { CursoNuevoSheet } from "@/features/capacitaciones/components/CursoNuevoSheet";
 import { useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 import {
   formatearIntensidad,
   formatearVigenciaMeses,
@@ -68,7 +69,7 @@ export default function CapacitacionesCursosPage() {
           icono={BookOpen}
           descripcion="El catálogo editorial es común para toda la plataforma."
         />
-        <section role="status" className="mx-auto max-w-2xl rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-rel-card">
+        <Caja role="status" como="section" papel="panel" aire="amplio" className="mx-auto max-w-2xl text-center">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-rel-panel bg-rel-surface-subtle text-rel-primary">
             <LockKeyhole className="h-8 w-8" aria-hidden="true" />
           </div>
@@ -82,7 +83,7 @@ export default function CapacitacionesCursosPage() {
           <Button asChild variant="rel" className="mt-5">
             <Link to="/capacitaciones/asignaciones">Ir a asignaciones</Link>
           </Button>
-        </section>
+        </Caja>
       </div>
     );
   }
@@ -299,9 +300,9 @@ function CatalogoAutorizado() {
 
               <ul className="space-y-3 md:hidden">
                 {visibles.map((c) => (
-                  <li
+                  <Caja
                     key={c.id}
-                    className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
+                    como="li"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="font-rel-heading text-base font-bold">
@@ -341,7 +342,7 @@ function CatalogoAutorizado() {
                       {c.estado === "BORRADOR" ? "Continuar" : "Abrir"}
                       <span className="sr-only"> el curso {c.titulo}</span>
                     </Button>
-                  </li>
+                  </Caja>
                 ))}
               </ul>
             </>

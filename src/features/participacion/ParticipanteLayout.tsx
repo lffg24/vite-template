@@ -18,6 +18,8 @@ import type { ReactNode } from "react";
 
 import { BotonAccion } from "@/shared/ui/BotonAccion";
 import { CabeceraParticipante } from "@/shared/ui/CabeceraParticipante";
+import { Caja } from "@/shared/ui/Caja";
+import { cn } from "@/lib/utils";
 
 export function ParticipanteLayout({
   children,
@@ -98,10 +100,8 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-rel-card ${className}`}
-    >
+    <Caja aire="normal" className={cn("shadow-rel-card", className)}>
       {children}
-    </div>
+    </Caja>
   );
 }

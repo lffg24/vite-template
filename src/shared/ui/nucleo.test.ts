@@ -811,7 +811,11 @@ describe("el núcleo es uno solo", () => {
    * El tope solo puede bajar, como el de los botones. No obliga a migrar nada
    * de golpe; obliga a que ninguna pantalla nueva añada la caja número 67.
    */
-  const TOPE_CAJAS_A_MANO = 66;
+  // 66 -> 2 el 2026-11-18. Las dos que quedan no son cajas de contenido:
+  // la fila del aviso, que es translucida y vive dentro de algo que ya
+  // flota, y el menu desplegable de asignaciones, que flota el tambien.
+  // Ninguna es «una caja en una pagina», que es lo que la pieza resuelve.
+  const TOPE_CAJAS_A_MANO = 2;
 
   it("las cajas a mano no aumentan", () => {
     const CAJA = /className=(?:"|\{`)[^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:rel-)?surface\b[^"`]*(?:"|`\})/g;

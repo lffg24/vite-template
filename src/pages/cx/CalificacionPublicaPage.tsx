@@ -7,6 +7,7 @@ import { BotonPrincipal, BotonSecundario, Panel, ParticipanteLayout } from "@/fe
 import { Cargando } from "@/features/participacion/Estados";
 import { Illustration } from "@/shared/ui/illustration/Illustration";
 import { IllustrationSurface } from "@/shared/ui/illustration/IllustrationSurface";
+import { Caja } from "@/shared/ui/Caja";
 import {
   abrirCalificacion,
   enviarCalificacion,
@@ -203,7 +204,7 @@ export default function CalificacionPublicaPage() {
           </fieldset>
         </Panel>
 
-        {errorEnvio && <p className="mt-4 rounded-rel-card border border-rel-danger bg-rel-surface p-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</p>}
+        {errorEnvio && <Caja como="p" tono="peligro" className="mt-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</Caja>}
 
         <BarraAccionesMovil className="mt-auto lg:mt-6">
           <div className="flex flex-col-reverse gap-3 sm:flex-row">

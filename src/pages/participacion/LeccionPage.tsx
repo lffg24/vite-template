@@ -37,6 +37,7 @@ import { Cargando, PantallaDeError } from "@/features/participacion/Estados";
 import { ReproductorRecurso } from "@/features/participacion/ReproductorRecurso";
 import { Evaluacion } from "@/features/participacion/Evaluacion";
 import { BarraAccionesMovil } from "@/shared/ui/BotonAccion";
+import { Caja } from "@/shared/ui/Caja";
 
 export default function LeccionPage() {
   const { leccionId = "" } = useParams<{ leccionId: string }>();
@@ -221,8 +222,11 @@ export default function LeccionPage() {
               vez de fingir una barra de reproducción: de un incrustado de
               terceros no se puede medir cuánto se vio sin la API del proveedor,
               y un porcentaje calculado en el navegador sería inventado. */}
+          <Caja
+            aire="normal"
+            className="shadow-rel-card lg:sticky lg:top-6"
+          >
           <Casilla
-            className="rounded-rel-card border border-rel-border bg-rel-surface p-5 shadow-rel-card lg:sticky lg:top-6"
             marcada={confirmado}
             alCambiar={setConfirmado}
             etiqueta={
@@ -234,10 +238,11 @@ export default function LeccionPage() {
             }
             descripcion="Con esto queda registrada tu participación en esta lección."
           />
+          </Caja>
         </div>
       ) : (
-        <div
-          className="mt-5 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-6 shadow-rel-card"
+        <Caja
+          aire="amplio" className="mt-5 flex-1 shadow-rel-card"
           aria-live="polite"
         >
           {leccion.bloques[bloque]?.titulo ? (
@@ -251,7 +256,7 @@ export default function LeccionPage() {
           <p className="whitespace-pre-line text-base leading-relaxed">
             {leccion.bloques[bloque]?.contenido ?? ""}
           </p>
-        </div>
+        </Caja>
       )}
 
       {errorGuardado && !evaluacion ? (

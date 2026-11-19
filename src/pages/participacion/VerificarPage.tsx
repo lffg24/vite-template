@@ -29,6 +29,7 @@ import { AlertTriangle, BadgeCheck, Clock, Search } from "lucide-react";
 import { verificarConstancia } from "@/services/participacionService";
 import type { ErrorPublico, Verificacion } from "@/types/participacion";
 import { Input } from "@/components/ui/input";
+import { Caja } from "@/shared/ui/Caja";
 import {
   BotonPrincipal,
   Panel,
@@ -180,12 +181,12 @@ export default function VerificarPage() {
       </form>
 
       {error ? (
-        <p
+        <Caja
           role="alert"
-          className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 text-sm leading-relaxed"
+          como="p" tono="hundida" className="mt-6 text-sm leading-relaxed"
         >
           {error}
-        </p>
+        </Caja>
       ) : null}
 
       {resultado ? <Resultado v={resultado} /> : null}

@@ -16,6 +16,7 @@ import type { EncuestaCx, ItemCx, TipoItemCx } from "@/types/cxEncuestas";
 import { listarCatalogoCx } from "@/services/cxPuntosFactoresService";
 import type { FactorCx } from "@/types/cxPuntosFactores";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Caja } from "@/shared/ui/Caja";
 
 const inicio: ItemCx = { tipo: "CSAT", enunciado: "¿Qué tan satisfecho estás con la experiencia?", obligatorio: true };
 const nombres: Record<TipoItemCx, string> = { NPS_RELACIONAL: "NPS relacional · 0 a 10", NPS_EXPERIENCIA: "NPS experiencia · 0 a 10", CSAT: "CSAT · 1 a 5", CES: "CES · 1 a 7", FACTOR: "Factor · 1 a 5" };
@@ -112,7 +113,7 @@ export default function ConstructorEncuestaCxPage() {
   return <div className="space-y-5">
     <Link to="/cx/encuestas" className="inline-flex items-center gap-2 text-sm font-medium text-rel-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a encuestas</Link>
     <PageHeader antetitulo={`Encuesta · ${encuesta.codigo}`} titulo="Constructor de encuesta" descripcion="Define una medición corta, guarda el borrador y publica una versión verificable." icono={ClipboardList} />
-    {mensaje ? <p role="status" className="rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4 text-rel-dark">{mensaje}</p> : null}
+    {mensaje ? <Caja role="status" como="p" tono="hundida" className="text-rel-dark">{mensaje}</Caja> : null}
     {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
       <form onSubmit={guardar} className="min-w-0 space-y-5">

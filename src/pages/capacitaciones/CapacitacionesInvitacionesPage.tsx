@@ -66,6 +66,7 @@ import {
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { HojaDeInvitaciones } from "@/features/capacitaciones/components/HojaDeInvitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 function EstadoInvitacion({ inv }: { inv: InvitacionResumen }) {
   if (inv.estado === "CONSUMIDA") return <Badge variant="secondary">Usada</Badge>;
@@ -235,7 +236,7 @@ export default function CapacitacionesInvitacionesPage() {
         </Panel>
       ) : (
         // Generar. Solo se ofrece a quien no tiene una invitación viva.
-        <section className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+        <Caja como="section">
         <h2 className="font-semibold text-rel-dark">Generar invitaciones</h2>
         {personas.fase === "listo" && disponibles.length === 0 ? (
           <p className="mt-2 text-sm text-rel-muted">
@@ -299,7 +300,7 @@ export default function CapacitacionesInvitacionesPage() {
             </div>
           </>
         )}
-      </section>
+      </Caja>
       )}
 
       {invitaciones.fase === "cargando" ? <CargandoTabla /> : null}

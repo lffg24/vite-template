@@ -51,6 +51,7 @@ import {
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Caja } from "@/shared/ui/Caja";
 
 const TIPOS = ["CC", "CE", "TI", "PA", "PPT"] as const;
 
@@ -140,9 +141,9 @@ export default function CapacitacionesParticipantesPage() {
       ) : null}
 
       {consulta.fase === "listo" && personas.length > 0 && visibles.length === 0 ? (
-        <div
+        <Caja
           role="status"
-          className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center"
+          aire="amplio" className="text-center"
         >
           <p className="font-semibold text-rel-dark">
             Nadie coincide con «{filtro.trim()}»
@@ -155,7 +156,7 @@ export default function CapacitacionesParticipantesPage() {
               Quitar el filtro
             </Button>
           </div>
-        </div>
+        </Caja>
       ) : null}
 
       {consulta.fase === "listo" && visibles.length > 0 ? (
@@ -229,9 +230,9 @@ export default function CapacitacionesParticipantesPage() {
 
           <ul className="space-y-3 md:hidden">
             {visibles.map((p) => (
-              <li
+              <Caja
                 key={p.id}
-                className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
+                como="li"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -255,7 +256,7 @@ export default function CapacitacionesParticipantesPage() {
                     Corregir
                   </Button>
                 </div>
-              </li>
+              </Caja>
             ))}
           </ul>
         </>
@@ -742,10 +743,10 @@ function PanelImportacion({
 
 function Recuento({ etiqueta, valor }: { etiqueta: string; valor: number }) {
   return (
-    <div className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+    <Caja>
       <p className="text-xs text-rel-muted">{etiqueta}</p>
       <p className="mt-0.5 text-xl font-bold tabular-nums text-rel-dark">{valor}</p>
-    </div>
+    </Caja>
   );
 }
 

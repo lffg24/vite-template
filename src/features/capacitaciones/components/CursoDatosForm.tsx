@@ -32,6 +32,7 @@ import type {
   ErrorApi,
 } from "@/types/capacitaciones";
 import { CATEGORIAS_CURSO, ETIQUETA_CATEGORIA } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 interface Borrador {
   titulo: string;
@@ -267,7 +268,7 @@ export function CursoDatosForm({
             </div>
           </div>
 
-          <fieldset className="rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4">
+          <Caja como="fieldset" tono="hundida">
             <legend className="px-1 font-rel-heading text-sm font-bold text-rel-dark">
               Datos normativos
             </legend>
@@ -319,7 +320,7 @@ export function CursoDatosForm({
                 />
               </div>
             </div>
-          </fieldset>
+          </Caja>
 
           <div className="flex flex-wrap items-center justify-end gap-3">
             {sucio ? (

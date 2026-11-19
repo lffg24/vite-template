@@ -22,6 +22,7 @@ import type { PuntoCx } from "@/types/cxPuntosFactores";
 import type { EncuestaCx, ResumenEncuestaCx } from "@/types/cxEncuestas";
 import type { CampanaCx, EstadoCampanaCx } from "@/types/cxCampanas";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Caja } from "@/shared/ui/Caja";
 
 
 export default function CampanasCxPage() {
@@ -116,7 +117,7 @@ export default function CampanasCxPage() {
   const puntosDisponibles = puntos.filter((p) => p.sede_id === sedeId && (!p.servicio_id || p.servicio_id === servicioId));
   return <div className="space-y-5">
     <PageHeader antetitulo="Experiencia del cliente" titulo="Campañas y QR" descripcion="Distribuye una encuesta publicada en cada sede y conserva el mismo enlace al actualizar su versión." icono={Link2} />
-    {mensaje ? <p role="status" className="rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4">{mensaje}</p> : null}
+    {mensaje ? <Caja role="status" como="p" tono="hundida">{mensaje}</Caja> : null}
     {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}
     <Panel titulo="Nueva campaña"><form onSubmit={crear} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div><Label htmlFor="campana-nombre">Nombre *</Label><Input id="campana-nombre" value={nombre} maxLength={200} disabled={ocupado} onChange={(e) => setNombre(e.target.value)} placeholder="Atención en sede centro" /></div>

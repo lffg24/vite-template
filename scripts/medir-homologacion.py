@@ -131,8 +131,8 @@ frente("Relieve", _buenas, _malas, "solo rel-card, rel-floating o nada")
 # --- Tarjetas --------------------------------------------------------------
 caja = r'className="[^"]*\brounded-(?:rel-card|rel-panel|xl|2xl|lg)\b[^"]*\bborder\b[^"]*\bbg-(?:rel-)?surface\b[^"]*"'
 a_mano = cuenta(caja, PERIMETRO)
-con_pieza = cuenta(r"<(?:Card|Panel|TablaPanel)\b", PERIMETRO)
-frente("Tarjetas", con_pieza, a_mano, "lo mas grande que queda")
+con_pieza = cuenta(r"<(?:Card|Panel|TablaPanel|Caja)\b", PERIMETRO)
+frente("Tarjetas", con_pieza, a_mano, "las 2 que quedan son excepciones")
 
 # --- Desplegables ----------------------------------------------------------
 # El elemento nativo NO era la deuda: en movil abre el selector del sistema y

@@ -46,6 +46,7 @@ import {
 } from "@/services/habilitacionService";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import type { ErrorApi } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 const MODULOS = [
   {
@@ -175,7 +176,7 @@ export default function SuperAdminHabilitacionPage() {
         icon={ShieldCheck}
       />
 
-      <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5" aria-labelledby="titulo-modulos">
+      <Caja como="section" aire="normal" className="mt-6" aria-labelledby="titulo-modulos">
         <h2 id="titulo-modulos" className="font-rel-heading text-lg font-bold">Módulo que quieres habilitar</h2>
         <p className="mt-1 text-sm text-rel-muted">El contrato y las funcionalidades se gestionan por módulo y por empresa.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -204,10 +205,10 @@ export default function SuperAdminHabilitacionPage() {
             );
           })}
         </div>
-      </section>
+      </Caja>
 
       {modulo === "CAPACITACIONES" ? (
-        <section className="mt-6 rounded-rel-card border border-rel-border bg-rel-surface p-5">
+        <Caja como="section" aire="normal" className="mt-6">
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-accent-subtle text-rel-primary">
               <BookOpen className="h-5 w-5" aria-hidden="true" />
@@ -256,11 +257,11 @@ export default function SuperAdminHabilitacionPage() {
               </li>
             ))}
           </ul>
-        </section>
+        </Caja>
       ) : null}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface">
+        <Caja como="aside" aire="ninguno" className="overflow-hidden">
           <div className="space-y-3 p-4">
           <Label htmlFor="buscar-empresa" className="text-rel-dark">
             Buscar empresa
@@ -325,17 +326,17 @@ export default function SuperAdminHabilitacionPage() {
             }}
             className="px-3"
           />
-        </aside>
+        </Caja>
 
         <section className="min-w-0 space-y-5">
           {!empresa ? (
-            <div className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center">
+            <Caja aire="amplio" className="text-center">
               <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-rel-muted" aria-hidden="true" />
               <h2 className="font-rel-heading font-bold">Elige una empresa</h2>
               <p className="mt-1 text-sm text-rel-muted">
                 Aquí verás qué le falta para usar {configuracion.nombre}.
               </p>
-            </div>
+            </Caja>
           ) : null}
 
           {empresa && estado.fase === "cargando" ? (
@@ -348,14 +349,14 @@ export default function SuperAdminHabilitacionPage() {
             </ZonaCargando>
           ) : null}
           {empresa && estado.fase === "error" ? (
-            <div role="alert" className="rounded-rel-card border border-destructive/30 bg-rel-surface p-5 text-sm text-destructive">
+            <Caja role="alert" tono="peligro" aire="normal" className="text-sm text-destructive">
               No pudimos consultar la habilitación de {empresa.nombre}. <Button variant="link" onClick={() => void estado.refrescar()}>Reintentar</Button>
-            </div>
+            </Caja>
           ) : null}
 
           {empresa && datos ? (
             <>
-              <div className="rounded-rel-card border border-rel-border bg-rel-surface p-5">
+              <Caja aire="normal">
                 <h2 className="font-rel-heading text-lg font-bold">
                   Qué le falta a {empresa.nombre}
                 </h2>
@@ -403,10 +404,10 @@ export default function SuperAdminHabilitacionPage() {
                     .
                   </Condicion>
                 </ul>
-              </div>
+              </Caja>
 
               {/* --- contrato --- */}
-              <div className="rounded-rel-card border border-rel-border bg-rel-surface p-5">
+              <Caja aire="normal">
                 <h3 className="font-rel-heading font-bold">Contrato</h3>
                 {datos.contratos.length === 0 ? (
                   <p className="mt-1 text-sm text-rel-muted">
@@ -466,10 +467,10 @@ export default function SuperAdminHabilitacionPage() {
                     Activar desde hoy, sin fecha de fin
                   </Button>
                 ) : null}
-              </div>
+              </Caja>
 
               {/* --- funcionalidades --- */}
-              <div className="rounded-rel-card border border-rel-border bg-rel-surface p-5">
+              <Caja aire="normal">
                 <h3 className="font-rel-heading font-bold">Funcionalidades</h3>
                 <p className="mt-1 text-sm text-rel-muted">
                   {modulo === "CX"
@@ -506,7 +507,7 @@ export default function SuperAdminHabilitacionPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </Caja>
             </>
           ) : null}
         </section>

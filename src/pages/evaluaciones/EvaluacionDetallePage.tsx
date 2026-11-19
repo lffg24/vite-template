@@ -39,6 +39,7 @@ import { formatearFechaHora } from "@/features/capacitaciones/formato";
 import { EstadoCuestionarioBadge } from "./EvaluacionesPage";
 import { ETIQUETA_AMBITO, type CuestionarioDetalle } from "@/types/evaluaciones";
 import type { ErrorApi, EvaluacionLeccion } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 export default function EvaluacionDetallePage() {
   const { cuestionarioId = "" } = useParams<{ cuestionarioId: string }>();
@@ -148,7 +149,7 @@ export default function EvaluacionDetallePage() {
 
       {consulta.fase === "listo" && datos && cuestionario && actual ? (
         <>
-          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
+          <Caja como="header" papel="panel" aire="amplio" className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <EstadoCuestionarioBadge estado={cuestionario.estado} />
@@ -181,7 +182,7 @@ export default function EvaluacionDetallePage() {
                 Publicar versión
               </Button>
             </div>
-          </header>
+          </Caja>
 
           <section className="flex items-start gap-3 rounded-rel-card border border-rel-info/25 bg-rel-info-subtle p-4">
             <BookOpenCheck className="mt-0.5 h-5 w-5 shrink-0 text-rel-info" aria-hidden="true" />

@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { EtiquetaConAyuda } from "@/shared/ui/Ayuda";
 import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
 import { Textarea } from "@/components/ui/textarea";
+import { Caja } from "@/shared/ui/Caja";
 import {
   AYUDA_TIPO_PREGUNTA,
   ETIQUETA_TIPO_PREGUNTA,
@@ -375,10 +376,10 @@ export function ConstructorEvaluacion({
         })}
 
         {valor.preguntas.length === 0 ? (
-          <p className="rounded-rel-card border border-dashed border-rel-border-strong bg-rel-surface-subtle p-4 text-sm text-rel-muted">
+          <Caja como="p" tono="discontinua" className="text-sm text-rel-muted">
             Una evaluación sin preguntas no se puede publicar: no habría nada que
             responder.
-          </p>
+          </Caja>
         ) : null}
 
         <Button

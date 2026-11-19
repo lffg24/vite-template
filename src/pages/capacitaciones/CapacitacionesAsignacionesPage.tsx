@@ -38,6 +38,7 @@ import {
 import { EstadoAsignacionBadge, ModoIdentidadBadge } from "@/features/capacitaciones/components/Insignias";
 import { AsignacionNuevaSheet } from "@/features/capacitaciones/components/AsignacionNuevaSheet";
 import { formatearFecha, formatearVigenciaMeses } from "@/features/capacitaciones/formato";
+import { Caja } from "@/shared/ui/Caja";
 
 /** Activa y sin enlaces = trabajo detenido. Esas van primero. */
 function detenida(a: AsignacionResumen) {
@@ -271,7 +272,7 @@ export default function CapacitacionesAsignacionesPage() {
 
           <ul className="space-y-3 md:hidden">
             {filas.map((a) => (
-              <li key={a.id} className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+              <Caja key={a.id} como="li">
                 {/* El estado va ARRIBA del titulo, no a su lado: en 320 px un
                     rotulo de 90 px deja al titulo del curso en 80 px y lo parte
                     en seis lineas. */}
@@ -350,7 +351,7 @@ export default function CapacitacionesAsignacionesPage() {
                     </Button>
                   ) : null}
                 </div>
-              </li>
+              </Caja>
             ))}
           </ul>
         </>

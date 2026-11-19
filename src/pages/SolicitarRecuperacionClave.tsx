@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/features/auth/passwordResetService";
 import { ALTO_CONTROL } from "@/shared/ui/controles";
+import { Caja } from "@/shared/ui/Caja";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -45,13 +46,13 @@ export default function SolicitarRecuperacionClave() {
       successIllustration={submitted ? recoverySentIllustration : undefined}
     >
       {submitted ? (
-        <div className="mt-6 flex items-start gap-3 rounded-rel-card border border-border bg-surface-subtle p-4 text-left">
+        <Caja tono="hundida" className="mt-6 flex items-start gap-3 text-left">
           <Mail className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden="true" />
           <div>
             <p className="text-sm font-bold text-foreground">¿Aún no ves el mensaje?</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">Revisa la carpeta de correo no deseado. La entrega puede tardar unos minutos.</p>
           </div>
-        </div>
+        </Caja>
       ) : (
         <form onSubmit={submit} className="space-y-5" noValidate>
           <div className="space-y-2">

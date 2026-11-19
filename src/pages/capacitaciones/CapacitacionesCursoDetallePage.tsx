@@ -30,6 +30,7 @@ import { CursoDatosForm } from "@/features/capacitaciones/components/CursoDatosF
 import { LeccionesEditor } from "@/features/capacitaciones/components/LeccionesEditor";
 import { PanelPublicacion } from "@/features/capacitaciones/components/PanelPublicacion";
 import { useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 export default function CapacitacionesCursoDetallePage() {
   const { cursoId = "" } = useParams<{ cursoId: string }>();
@@ -53,9 +54,9 @@ export default function CapacitacionesCursoDetallePage() {
         consulta.error.status === 404 ? (
           // 404 y no 403 aunque el curso exista en otra empresa: distinguirlos
           // confirmaria que el identificador existe en otro inquilino.
-          <div
+          <Caja
             role="alert"
-            className="rounded-rel-panel border border-rel-border bg-rel-surface p-6"
+            papel="panel" aire="amplio"
           >
             <h1 className="font-rel-heading text-lg font-bold text-rel-dark">
               Este curso no existe
@@ -66,7 +67,7 @@ export default function CapacitacionesCursoDetallePage() {
             <Button variant="relOutline" size="sm" className="mt-4" asChild>
               <Link to="/capacitaciones/cursos">Ir al catálogo</Link>
             </Button>
-          </div>
+          </Caja>
         ) : (
           <ErrorConsulta error={consulta.error} reintentar={consulta.refrescar} />
         )
@@ -77,7 +78,7 @@ export default function CapacitacionesCursoDetallePage() {
           {/* No usa `PageHeader` porque el estado y la categoría van ENCIMA del
               título: en esta pantalla lo primero que hay que saber es si lo que
               se está editando ya está publicado. La carcasa sí es la misma. */}
-          <header className="flex flex-wrap items-start justify-between gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6 shadow-rel-card">
+          <Caja como="header" papel="panel" aire="amplio" className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <EstadoCursoBadge estado={consulta.datos.curso.estado} />
@@ -102,7 +103,7 @@ export default function CapacitacionesCursoDetallePage() {
                 Asignar este curso
               </Button>
             ) : null}
-          </header>
+          </Caja>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div className="space-y-6">

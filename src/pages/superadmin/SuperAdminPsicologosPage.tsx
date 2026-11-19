@@ -56,6 +56,7 @@ import {
   type SuperPsicologo,
 } from "@/features/superadmin/api/superadminService";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
+import { Caja } from "@/shared/ui/Caja";
 
 type FormState = {
   nombre: string;
@@ -663,7 +664,7 @@ export default function SuperAdminPsicologosPage() {
               <legend className="mb-1.5 font-heading text-sm font-semibold text-foreground">
                 Empresas asignadas iniciales
               </legend>
-              <div className="overflow-hidden rounded-rel-card border border-border bg-surface">
+              <Caja aire="ninguno" className="overflow-hidden">
                 <div className="border-b border-border bg-surface-subtle p-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <Label htmlFor={ID.buscarEmpresa} className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -713,12 +714,12 @@ export default function SuperAdminPsicologosPage() {
                     );
                   })}
                 </div>
-              </div>
+              </Caja>
               {fieldErrors.empresa_ids ? (
                 <p className="text-xs font-semibold text-danger">{fieldErrors.empresa_ids}</p>
               ) : null}
             </fieldset>
-            <div className="space-y-3 rounded-rel-card border border-border bg-surface-subtle p-4">
+            <Caja tono="hundida" className="space-y-3">
               {PERMISOS.map(({ clave, etiqueta }) => (
                 <div key={clave} className="flex items-center justify-between gap-3">
                   <Label htmlFor={`permiso-${clave}`} className="text-sm font-semibold text-foreground">
@@ -734,7 +735,7 @@ export default function SuperAdminPsicologosPage() {
               <p className="pt-2 text-xs leading-5 text-muted-foreground">
                 El usuario se crea con rol PSICOLOGO_EVALUADOR y podrá ingresar con el correo y contraseña definidos. Las empresas iniciales son opcionales.
               </p>
-            </div>
+            </Caja>
           </div>
         </div>
       </PanelLateral>
@@ -864,7 +865,7 @@ function FichaPsicologo({
   email?: string | null;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-rel-card border border-border bg-surface-subtle p-4">
+    <Caja tono="hundida" className="flex items-center gap-3">
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-rel-card bg-accent text-accent-foreground">
         <Icono className="h-5 w-5" aria-hidden="true" />
       </span>
@@ -872,17 +873,17 @@ function FichaPsicologo({
         <strong className="block truncate text-foreground">{nombre}</strong>
         <span className="block truncate text-sm text-muted-foreground">{email || "Sin correo"}</span>
       </div>
-    </div>
+    </Caja>
   );
 }
 
 function Saldo({ etiqueta, valor, destacado }: { etiqueta: string; valor?: number | null; destacado?: boolean }) {
   return (
-    <div className="rounded-rel-card border border-border bg-surface p-4">
+    <Caja>
       <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{etiqueta}</p>
       <p className={`text-2xl font-bold tabular-nums ${destacado ? "text-primary" : "text-foreground"}`}>
         {Number(valor ?? 0).toLocaleString("es-CO")}
       </p>
-    </div>
+    </Caja>
   );
 }

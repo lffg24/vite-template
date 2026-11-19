@@ -22,6 +22,7 @@
 import { ExternalLink } from "lucide-react";
 
 import type { RecursoPublico } from "@/types/participacion";
+import { Caja } from "@/shared/ui/Caja";
 
 /**
  * La dirección que se puede meter en un `iframe`, o `null` si no la hay.
@@ -111,11 +112,11 @@ export function ReproductorRecurso({
           />
         </div>
       ) : (
-        <div className="rounded-rel-card border border-dashed border-rel-border-strong bg-rel-surface-subtle p-6 text-center">
+        <Caja tono="discontinua" aire="amplio" className="text-center">
           <p className="font-rel-body text-sm text-rel-muted">
             Este material se abre en una pestaña aparte.
           </p>
-        </div>
+        </Caja>
       )}
 
       <a

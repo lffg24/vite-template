@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Escena } from "@/shared/ui/Escena";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ErrorApi } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 /**
  * Esqueleto de tabla.
@@ -31,14 +32,14 @@ export function CargandoTabla({ filas = 4 }: { filas?: number }) {
     >
       <span className="sr-only">Cargando información…</span>
       {Array.from({ length: filas }).map((_, i) => (
-        <div
+        <Caja
           key={i}
-          className="flex items-center gap-4 rounded-rel-card border border-rel-border bg-rel-surface p-4"
+          className="flex items-center gap-4"
         >
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="h-4 w-24" />
           <Skeleton className="ml-auto h-4 w-16" />
-        </div>
+        </Caja>
       ))}
     </div>
   );
@@ -46,8 +47,8 @@ export function CargandoTabla({ filas = 4 }: { filas?: number }) {
 
 export function CargandoPanel({ etiqueta = "Cargando información…" }: { etiqueta?: string }) {
   return (
-    <div
-      className="space-y-4 rounded-rel-panel border border-rel-border bg-rel-surface p-6"
+    <Caja
+      papel="panel" aire="amplio" className="space-y-4"
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -56,7 +57,7 @@ export function CargandoPanel({ etiqueta = "Cargando información…" }: { etiqu
       <Skeleton className="h-6 w-1/2" />
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-4 w-2/3" />
-    </div>
+    </Caja>
   );
 }
 

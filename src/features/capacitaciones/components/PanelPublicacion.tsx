@@ -80,7 +80,7 @@ export function PanelPublicacion({
   }
 
   return (
-    <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
+    <Card>
       <CardHeader>
         <CardTitle className="font-rel-heading text-lg text-rel-dark">
           Publicación

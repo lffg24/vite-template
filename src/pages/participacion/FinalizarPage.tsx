@@ -37,6 +37,7 @@ import { ConstanciaDocumento } from "@/features/capacitaciones/components/Consta
 import type { ConstanciaImprimible } from "@/types/constancia";
 import { Illustration } from "@/shared/ui/illustration";
 import { descargarElementoComoPdf } from "@/shared/pdf/descargarElementoComoPdf";
+import { Caja } from "@/shared/ui/Caja";
 
 export default function FinalizarPage() {
   const navegar = useNavigate();
@@ -144,7 +145,7 @@ export default function FinalizarPage() {
             {constancia ? (
               <DocumentoDeLaConstancia emitida={constancia} />
             ) : falloConstancia ? (
-              <div className="mx-auto max-w-xl rounded-rel-card border border-rel-border bg-rel-surface p-5">
+              <Caja aire="normal" className="mx-auto max-w-xl">
                 {/* Dice qué se perdió y qué NO: la asistencia está a salvo. Sin
                     esa distinción, quien lea esto creerá que hay que repetir el
                     curso. */}
@@ -158,7 +159,7 @@ export default function FinalizarPage() {
                     Volver a intentarlo
                   </BotonSecundario>
                 </div>
-              </div>
+              </Caja>
             ) : (
               <p className="text-center text-sm text-rel-muted" aria-live="polite">
                 Preparando tu constancia…
@@ -191,7 +192,7 @@ export default function FinalizarPage() {
 
   return (
     <ParticipanteLayout progreso={1} ancho="compacto">
-      <div className="my-auto w-full rounded-rel-panel border border-rel-border bg-rel-surface p-5 shadow-rel-card sm:p-8">
+      <Caja papel="panel" className="my-auto w-full sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent-ink">
         Paso 3 de 3
       </p>
@@ -246,7 +247,7 @@ export default function FinalizarPage() {
           Volver al curso
         </BotonSecundario>
       </div>
-      </div>
+      </Caja>
     </ParticipanteLayout>
   );
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { safeEffectiveRedirectPath } from "@/lib/accessRoutes";
 import { resolveLandingRoute } from "./navigationTree";
 import { useEffectiveNavigation } from "./useEffectiveNavigation";
+import { Caja } from "@/shared/ui/Caja";
 
 type LocationState = { from?: string } | null;
 
@@ -22,11 +23,11 @@ export function EffectiveAccessRedirect() {
   if (error) {
     return (
       <main className="grid min-h-screen place-items-center bg-rel-canvas px-4">
-        <section role="alert" className="w-full max-w-md rounded-rel-panel border border-rel-border bg-rel-surface p-6 text-center shadow-rel-card">
+        <Caja role="alert" como="section" papel="panel" aire="amplio" className="w-full max-w-md text-center">
           <h1 className="font-rel-heading text-xl font-black text-rel-dark">No pudimos abrir tu espacio</h1>
           <p className="mt-2 text-sm text-rel-muted">Tu sesión sigue activa. Vuelve a comprobar los accesos asignados.</p>
           <Button variant="rel" className="mt-5" onClick={retry}>Reintentar</Button>
-        </section>
+        </Caja>
       </main>
     );
   }

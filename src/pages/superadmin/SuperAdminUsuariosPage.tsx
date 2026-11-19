@@ -29,6 +29,7 @@ import { Casilla } from "@/shared/ui/Casilla";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
 import { EstadoVacio, SinResultados } from "@/shared/ui/EstadoVacio";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
+import { Caja } from "@/shared/ui/Caja";
 
 const panel = "rounded-rel-card border border-rel-border bg-rel-surface p-5";
 
@@ -311,7 +312,7 @@ export default function SuperAdminUsuariosPage() {
         <Button type="submit" variant="outline">Buscar</Button>
       </form>
 
-      <section aria-label="Usuarios registrados" className="overflow-hidden rounded-rel-card border border-rel-border bg-rel-surface shadow-rel-card">
+      <Caja aria-label="Usuarios registrados" como="section" aire="ninguno" className="overflow-hidden shadow-rel-card">
         {cargando ? (
           <ZonaCargando cargando etiqueta="Cargando usuarios" esqueleto={<EsqueletoLista fichas={5} className="p-4" />}>
             <span />
@@ -391,7 +392,7 @@ export default function SuperAdminUsuariosPage() {
             setPagina(1);
           }}
         />
-      </section>
+      </Caja>
 
       <Dialog open={Boolean(modal)} onOpenChange={(open) => {
         if (!open && !ocupado) {

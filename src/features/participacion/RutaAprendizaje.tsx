@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { AzulejoIcono } from "@/shared/ui/AzulejoIcono";
 import { Pill } from "@/shared/ui/Pill";
 import type { LeccionEnCurso } from "@/types/participacion";
+import { Caja } from "@/shared/ui/Caja";
 
 const ICONO_TIPO: Record<string, LucideIcon> = {
   NATIVA: FileText,
@@ -135,9 +136,9 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
             </div>
 
             {bloqueada ? (
-              <div className="mb-1 flex min-w-0 flex-1 rounded-rel-card border border-rel-border bg-rel-surface p-4 opacity-75">
+              <Caja className="mb-1 flex min-w-0 flex-1 opacity-75">
                 {tarjeta}
-              </div>
+              </Caja>
             ) : (
               <Link
                 to={`/c/sesion/leccion/${l.leccion_id}`}

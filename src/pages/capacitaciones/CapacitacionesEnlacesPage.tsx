@@ -69,6 +69,7 @@ import {
 import { EstadoEnlaceBadge } from "@/features/capacitaciones/components/Insignias";
 import { EnlaceGeneradoDialog } from "@/features/capacitaciones/components/EnlaceGeneradoDialog";
 import { formatearCupo, formatearFechaHora } from "@/features/capacitaciones/formato";
+import { Caja } from "@/shared/ui/Caja";
 
 export default function CapacitacionesEnlacesPage() {
   const { asignacionId = "" } = useParams<{ asignacionId: string }>();
@@ -304,7 +305,7 @@ export default function CapacitacionesEnlacesPage() {
 
           <ul className="space-y-3 md:hidden">
             {(enlaces.datos ?? []).map((e) => (
-              <li key={e.id} className="rounded-rel-card border border-rel-border bg-rel-surface p-4">
+              <Caja key={e.id} como="li">
                 <EstadoEnlaceBadge enlace={e} />
                 <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-rel-body text-sm">
                   <dt className="text-rel-muted">Generado</dt>
@@ -326,7 +327,7 @@ export default function CapacitacionesEnlacesPage() {
                     Revocar enlace
                   </Button>
                 ) : null}
-              </li>
+              </Caja>
             ))}
           </ul>
         </>

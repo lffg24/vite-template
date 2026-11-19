@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { crearCurso } from "@/services/capacitacionesService";
 import type { CategoriaCurso, ErrorApi } from "@/types/capacitaciones";
 import { CATEGORIAS_CURSO, ETIQUETA_CATEGORIA } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 export function CursoNuevoSheet({
   abierto,
@@ -165,7 +166,7 @@ export function CursoNuevoSheet({
             />
           </div>
 
-          <div className="rounded-rel-card border border-rel-border bg-rel-surface-subtle p-4">
+          <Caja tono="hundida">
             <Casilla
               id="curso-restringida"
               marcada={restringida}
@@ -183,7 +184,7 @@ export function CursoNuevoSheet({
                 </>
               }
             />
-          </div>
+          </Caja>
 
           <SheetFooter className="gap-2 sm:gap-2">
             <Button type="button" variant="relGhost" onClick={alCerrar} disabled={guardando}>

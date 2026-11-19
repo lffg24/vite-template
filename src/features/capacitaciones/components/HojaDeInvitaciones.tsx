@@ -25,6 +25,7 @@ import { Printer, Scissors } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { InvitacionesGeneradas } from "@/types/capacitaciones";
+import { Caja } from "@/shared/ui/Caja";
 
 /** La URL que abrirá cada persona. Se construye con el origen actual. */
 export function urlInvitacion(token: string): string {
@@ -68,7 +69,7 @@ export function HojaDeInvitaciones({
         </div>
 
         {generadas.omitidas.length > 0 ? (
-          <div className="rounded-rel-card border border-rel-border bg-rel-surface p-4 text-sm">
+          <Caja className="text-sm">
             <p className="font-semibold text-rel-dark">
               {generadas.omitidas.length}{" "}
               {generadas.omitidas.length === 1 ? "persona" : "personas"} sin
@@ -81,7 +82,7 @@ export function HojaDeInvitaciones({
                 </li>
               ))}
             </ul>
-          </div>
+          </Caja>
         ) : null}
 
         <div className="flex flex-wrap gap-2">
@@ -99,9 +100,9 @@ export function HojaDeInvitaciones({
           sin que el código quede pequeño para leerlo a mano. */}
       <div className="grid gap-4 sm:grid-cols-2 print:grid-cols-2 print:gap-2">
         {generadas.emitidas.map((inv) => (
-          <article
+          <Caja
             key={inv.invitacion_id}
-            className="relative rounded-rel-card border border-dashed border-rel-border-strong bg-rel-surface p-4 print:break-inside-avoid print:border-black"
+            como="article" tono="discontinua" className="relative bg-rel-surface print:break-inside-avoid print:border-black"
           >
             <Scissors
               className="absolute right-3 top-3 h-4 w-4 text-rel-muted print:text-black"
@@ -130,7 +131,7 @@ export function HojaDeInvitaciones({
               Es personal y sirve una sola vez. No la compartas: la constancia
               quedará a nombre de quien la use.
             </p>
-          </article>
+          </Caja>
         ))}
       </div>
     </div>

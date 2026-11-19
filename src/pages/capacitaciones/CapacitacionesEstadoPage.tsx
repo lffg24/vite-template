@@ -186,7 +186,7 @@ export default function CapacitacionesEstadoPage() {
         <>
           <Resumen estado={consulta.datos} />
 
-          <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
+          <Card>
             <CardHeader>
               <CardTitle className="font-rel-heading text-lg text-rel-dark">
                 Las tres condiciones
@@ -258,7 +258,7 @@ export default function CapacitacionesEstadoPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-rel-panel border-rel-border bg-rel-surface">
+          <Card>
             <CardHeader>
               <CardTitle className="font-rel-heading text-lg text-rel-dark">
                 Tus permisos

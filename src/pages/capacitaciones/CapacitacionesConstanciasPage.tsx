@@ -56,6 +56,7 @@ import {
   SinDatos,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha, formatearFechaHora } from "@/features/capacitaciones/formato";
+import { Caja } from "@/shared/ui/Caja";
 
 /** El motivo de la anulación es obligatorio, y el servidor exige cinco caracteres. */
 const MOTIVO_MINIMO = 5;
@@ -251,9 +252,9 @@ export default function CapacitacionesConstanciasPage() {
           alguien crea que perdió su información. Aquí sí hay constancias: lo que
           no encaja es la búsqueda, así que la salida es borrar el filtro. */}
       {consulta.fase === "listo" && constancias.length > 0 && visibles.length === 0 ? (
-        <div
+        <Caja
           role="status"
-          className="rounded-rel-card border border-rel-border bg-rel-surface p-6 text-center"
+          aire="amplio" className="text-center"
         >
           <p className="font-semibold text-rel-dark">
             Ninguna constancia coincide con «{filtro.trim()}»
@@ -267,7 +268,7 @@ export default function CapacitacionesConstanciasPage() {
               Quitar el filtro
             </Button>
           </div>
-        </div>
+        </Caja>
       ) : null}
 
       {consulta.fase === "listo" && visibles.length > 0 ? (
@@ -359,9 +360,9 @@ export default function CapacitacionesConstanciasPage() {
 
           <ul className="space-y-3 md:hidden">
             {visibles.map((c) => (
-              <li
+              <Caja
                 key={c.id}
-                className="rounded-rel-card border border-rel-border bg-rel-surface p-4"
+                como="li"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -409,7 +410,7 @@ export default function CapacitacionesConstanciasPage() {
                     </span>
                   )}
                 </div>
-              </li>
+              </Caja>
             ))}
           </ul>
         </>
