@@ -27,6 +27,7 @@ type WebDirectQuestionScreenProps = {
   onPrevious: (question: WebDirectQuestion) => void;
   onNext: (question: WebDirectQuestion) => void;
   answerState?: "idle" | "selected";
+  isTransitioning?: boolean;
 };
 
 const answerStateCopy = {
@@ -46,6 +47,7 @@ export function WebDirectQuestionScreen({
   onPrevious,
   onNext,
   answerState = "idle",
+  isTransitioning = false,
 }: WebDirectQuestionScreenProps) {
   const applicableQuestions = getApplicableWebDirectQuestions(questions, conditionalRules);
   const currentIndex = Math.max(
@@ -74,7 +76,9 @@ export function WebDirectQuestionScreen({
 
   const selectedValue = answers[question.questionId] ?? "";
   const percentage = Math.round(((currentIndex + 1) / applicableQuestions.length) * 100);
-  const stateCopy = answerStateCopy[answerState];
+  const stateCopy = isTransitioning
+    ? { icon: Check, label: "Respuesta seleccionada. Continuando…", className: "text-success" }
+    : answerStateCopy[answerState];
 
   return (
     <WebDirectParticipantShell
@@ -82,7 +86,7 @@ export function WebDirectQuestionScreen({
       showStepLabel={false}
       className="max-w-6xl"
     >
-      <section aria-labelledby="question-title">
+      <section aria-labelledby="question-title" className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-1 motion-safe:duration-500 motion-safe:ease-out">
         <div className="mb-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -120,6 +124,7 @@ export function WebDirectQuestionScreen({
                     className={cn(
                       "flex min-h-12 cursor-pointer items-center gap-4 rounded-2xl border border-border px-4 py-2.5 text-base font-semibold transition-colors duration-standard focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
                       selected && "border-accent-foreground/40 bg-accent text-accent-foreground",
+                      isTransitioning && "cursor-wait opacity-80",
                     )}
                   >
                     <input
@@ -128,7 +133,9 @@ export function WebDirectQuestionScreen({
                       name={`question-${question.questionId}`}
                       value={option.value}
                       checked={selected}
+                      disabled={isTransitioning}
                       onChange={() => {
+                        if (isTransitioning) return;
                         onAnswer({
                           questionId: question.questionId,
                           order: question.order,
@@ -149,10 +156,10 @@ export function WebDirectQuestionScreen({
           </fieldset>
 
           <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button type="button" variant="outline" size="lg" disabled={currentIndex === 0} onClick={() => onPrevious(question)} className="w-full sm:w-auto">
+            <Button type="button" variant="outline" size="lg" disabled={currentIndex === 0 || isTransitioning} onClick={() => onPrevious(question)} className="w-full sm:w-auto">
               <ArrowLeft aria-hidden="true" /> Anterior
             </Button>
-            <Button type="button" size="lg" disabled={!selectedValue} onClick={() => onNext(question)} className="w-full sm:w-auto">
+            <Button type="button" size="lg" disabled={!selectedValue || isTransitioning} onClick={() => onNext(question)} className="w-full sm:w-auto">
               {currentIndex === applicableQuestions.length - 1 ? "Completar instrumento" : "Siguiente"}
               {currentIndex === applicableQuestions.length - 1 ? <Check aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
             </Button>

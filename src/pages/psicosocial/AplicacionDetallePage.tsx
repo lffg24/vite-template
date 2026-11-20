@@ -46,7 +46,6 @@ import {
   psicoAdminService,
 } from "@/features/psicosocial/api/psicoAdminService";
 import { CreditGuardDialog } from "@/features/psicosocial/components/credits/CreditGuardDialog";
-import { PsicoFeatureFlagGate } from "@/features/psicosocial/components/PsicoFeatureFlagGate";
 import { WebDirectSetupCard } from "@/features/psicosocial/components/WebDirectSetupCard";
 import AbrilDatePicker from "@/features/psicosocial/components/AbrilDatePicker";
 import { assignWebDirectParticipant } from "@/features/psicosocial/api/psicoAccessService";
@@ -1486,13 +1485,11 @@ export default function AplicacionDetallePage() {
                 <BarChart3 className="h-4 w-4" /> Dashboard de resultados
               </button>
               {webDirectAvailable && (
-                <PsicoFeatureFlagGate feature="web_direct">
-                  <WebDirectSetupCard
-                    applicationId={Number(aplicacionId)}
-                    employees={data.empleados}
-                    onParticipantsChanged={() => load({ silent: true })}
-                  />
-                </PsicoFeatureFlagGate>
+                <WebDirectSetupCard
+                  applicationId={Number(aplicacionId)}
+                  employees={data.empleados}
+                  onParticipantsChanged={() => load({ silent: true })}
+                />
               )}
               {finalizada && (
                 <button
@@ -2040,8 +2037,7 @@ export default function AplicacionDetallePage() {
               </dl>
             </section>
 
-            <PsicoFeatureFlagGate feature="web_direct">
-              <section className="mt-4 rounded-3xl border border-info/25 bg-info/5 p-4">
+            <section className="mt-4 rounded-3xl border border-info/25 bg-info/5 p-4">
                 <div className="flex items-start gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -2142,7 +2138,6 @@ export default function AplicacionDetallePage() {
                   </div>
                 )}
               </section>
-            </PsicoFeatureFlagGate>
           </aside>
         </div>
       )}
@@ -2285,7 +2280,6 @@ export default function AplicacionDetallePage() {
                   </div>
                 </Field>
               </div>
-              <PsicoFeatureFlagGate feature="web_direct">
                 <div className="mt-4 rounded-2xl border border-info/25 bg-info/5 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -2348,7 +2342,6 @@ export default function AplicacionDetallePage() {
                     />
                   </div>
                 </div>
-              </PsicoFeatureFlagGate>
               </section>
 
               <section className="rounded-3xl border border-accent bg-accent/50 p-4">

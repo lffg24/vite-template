@@ -31,6 +31,16 @@ export const FALLBACK_SOCIO_CATALOGOS: CatalogosSocio = {
 export const SOCIO_SEXO_OPTIONS = ["Masculino", "Femenino"];
 export const SOCIO_ESTRATO_OPTIONS = ["1", "2", "3", "4", "5", "6", "Finca", "No sé"];
 export const SOCIO_CURRENT_YEAR = new Date().getFullYear();
+export const SOCIO_MINIMUM_AGE = 16;
+export const SOCIO_MINIMUM_BIRTH_YEAR = 1900;
+
+export function getSocioBirthYearOptions() {
+  const latestBirthYear = SOCIO_CURRENT_YEAR - SOCIO_MINIMUM_AGE;
+  return Array.from(
+    { length: latestBirthYear - SOCIO_MINIMUM_BIRTH_YEAR + 1 },
+    (_, index) => String(latestBirthYear - index),
+  );
+}
 
 function optionKey(value: string) {
   return value
