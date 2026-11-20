@@ -166,7 +166,7 @@ export default function Login() {
           <div className="w-full max-w-[620px]">
             <Marca className="mb-4 h-11 lg:hidden" />
 
-            <Card className="rounded-rel-panel border-white/70 bg-white/92 p-5 shadow-rel-floating backdrop-blur md:p-8 xl:p-9">
+            <Card className="border-border/70 bg-card/92 p-5 shadow-rel-floating backdrop-blur md:p-8 xl:p-9">
               <div className="mb-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-rel-panel bg-accent">
                   <Marca variante="isotipo" decorativa className="h-9" />
@@ -257,7 +257,7 @@ export default function Login() {
                 >
                   {loading ? (
                     <span className="inline-flex items-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground/70 border-t-transparent" />
                       Iniciando sesión...
                     </span>
                   ) : (
@@ -274,7 +274,7 @@ export default function Login() {
                     <p className="text-sm font-black text-foreground">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>
                     <p className="text-sm text-muted-foreground">Plataforma operada para gestión psicosocial empresarial.</p>
                   </div>
-                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-rel-panel bg-white/80 px-4 py-2 shadow-rel-card">
+                  <div className="flex h-14 min-w-[180px] items-center justify-center rounded-rel-panel bg-card/80 px-4 py-2 shadow-rel-card">
                     {!relLogoError ? (
                       <img
                         src={REL_LOGO_URL}

@@ -780,10 +780,16 @@ describe("el núcleo es uno solo", () => {
    * el menú desplegable de asignaciones (`p-2`), que no es una caja de
    * contenido sino algo que flota.
    */
-  const AIRE_DE_CAJA = new Set(["p-4", "p-5", "p-6", "", "px-4 py-3", "p-2"]);
+  /* Dos excepciones mas desde que el patron ve `bg-card` y `bg-white`, y
+     ninguna es una caja de contenido: `px-8 py-3` es el sello de ANULADA
+     girado sobre la hoja de la constancia, donde el aire es tipografico,
+     y `p-3.5` es un recuadro pequeno sobre el encabezado oscuro. */
+  const AIRE_DE_CAJA = new Set([
+    "p-4", "p-5", "p-6", "", "px-4 py-3", "p-2", "px-8 py-3", "p-3.5",
+  ]);
 
   it("el aire de la caja sale de tres valores", () => {
-    const CAJA = /className=(?:"|\{`)([^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:rel-)?surface\b[^"`]*)(?:"|`\})/g;
+    const CAJA = /className=(?:"|\{`)([^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:(?:rel-)?surface|card|white)\b[^"`]*)(?:"|`\})/g;
 
     const fuera: string[] = [];
     for (const ruta of DENTRO_DEL_PERIMETRO) {
@@ -811,14 +817,25 @@ describe("el núcleo es uno solo", () => {
    * El tope solo puede bajar, como el de los botones. No obliga a migrar nada
    * de golpe; obliga a que ninguna pantalla nueva añada la caja número 67.
    */
-  // 66 -> 2 el 2026-11-18. Las dos que quedan no son cajas de contenido:
-  // la fila del aviso, que es translucida y vive dentro de algo que ya
-  // flota, y el menu desplegable de asignaciones, que flota el tambien.
-  // Ninguna es «una caja en una pagina», que es lo que la pieza resuelve.
-  const TOPE_CAJAS_A_MANO = 2;
+  // 66 -> 2 el 2026-11-18, y 2 -> 9 el 2026-11-19 SIN que haya vuelto
+  // ninguna deuda: el patron no veia una caja dibujada con `bg-card` o
+  // `bg-white`, y habia doce. Seis eran cajas de verdad y ya piden la
+  // pieza; las otras seis entran ahora en la cuenta y son legitimas:
+  //
+  //   - La hoja de la constancia y su sello de ANULADA: el papel es
+  //     blanco, y esa hoja se imprime.
+  //   - Tres recuadros de la barra lateral y uno del panel oscuro de la
+  //     entrada: son veladuras sobre una superficie oscura permanente,
+  //     no cajas sobre una pagina.
+  //   - El recuadro del encabezado oscuro de recursos, por lo mismo.
+  //
+  // Mas las dos de siempre: la fila del aviso y el menu que flota.
+  // La cifra subio porque mejoro el instrumento, no porque empeorara el
+  // producto. Desde aqui solo puede bajar.
+  const TOPE_CAJAS_A_MANO = 9;
 
   it("las cajas a mano no aumentan", () => {
-    const CAJA = /className=(?:"|\{`)[^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:rel-)?surface\b[^"`]*(?:"|`\})/g;
+    const CAJA = /className=(?:"|\{`)[^"`]*\brounded-rel-(?:card|panel)\b[^"`]*\bborder\b[^"`]*\bbg-(?:(?:rel-)?surface|card|white)\b[^"`]*(?:"|`\})/g;
     const cuenta = DENTRO_DEL_PERIMETRO.reduce(
       (suma, ruta) => suma + (contenido(ruta).match(CAJA) ?? []).length,
       0

@@ -342,7 +342,7 @@ function Surface({
   children: ReactNode;
 }) {
   return (
-    <article className="rounded-rel-panel border border-border bg-card p-6 shadow-rel-card">
+    <Caja como="article" papel="panel" aire="amplio">
       <div className="flex items-start gap-3">
         {icon ? (
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-rel-panel bg-accent text-primary">{icon}</span>
@@ -353,7 +353,7 @@ function Surface({
         </div>
       </div>
       <div className="mt-5">{children}</div>
-    </article>
+    </Caja>
   );
 }
 
@@ -859,7 +859,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
             <Link to="/login" className="inline-flex hover:opacity-90">
               <Marca className="h-9" />
             </Link>
-            <div className="mt-3 rounded-rel-panel border border-border/80 bg-card/95 p-5 shadow-rel-card">
+            <Caja papel="panel" className="mt-3">
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)]">
                 <div className="min-w-0">
                   <div className="flex items-start gap-4">
@@ -905,7 +905,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                   </div>
                 </div>
               </div>
-            </div>
+            </Caja>
           </div>
 
           <aside className="rounded-rel-panel border border-white/10 bg-rel-dark p-4 text-white shadow-rel-floating">
@@ -935,7 +935,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
       </section>
 
       <div className="mx-auto grid max-w-7xl gap-5 px-5 py-5 lg:grid-cols-[270px_minmax(0,1fr)]">
-        <nav className="h-fit rounded-rel-panel border border-border bg-card p-3 shadow-rel-card lg:sticky lg:top-6" aria-label="Recursos ABRIL360">
+        <Caja como="nav" papel="panel" aire="ajustado" className="h-fit lg:sticky lg:top-6" aria-label="Recursos ABRIL360">
           <p className="px-3 pb-2 text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">Centro de recursos</p>
           {resourcePages.map((item) => {
             const ItemIcon = item.icon;
@@ -964,7 +964,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
               </Link>
             );
           })}
-        </nav>
+        </Caja>
 
         <section className="space-y-6">
           {renderBody(current.key)}
