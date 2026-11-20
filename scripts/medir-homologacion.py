@@ -154,6 +154,23 @@ PIEZAS_CONTROL = ["components/ui/input.tsx", "components/ui/select.tsx",
 piden = [r for r in PIEZAS_CONTROL if "CLASE_CONTROL" in leer(r)]
 frente("Aspecto del control", len(piden), len(PIEZAS_CONTROL) - len(piden), "una definicion para los cuatro")
 
+# --- Movimiento: de donde sale la duracion y la curva ----------------------
+# `transition` a secas YA es de la casa: la configuracion cambio el valor por
+# defecto de Tailwind a la duracion y la curva del sistema, asi que 180 sitios
+# pasaron a la curva correcta sin tocar ninguno. Lo que se mide aqui es lo que
+# se escapa de eso: un numero suelto (`duration-200`) o una curva de Tailwind
+# (`ease-linear`), que no siguen al sistema cuando el sistema cambie.
+# Y se mide sobre las piezas TAMBIEN: el movimiento vive sobre todo ahi, y
+# una pieza con la curva de Tailwind se la pasa a todo el que la use. Fuera
+# quedan las tres carpetas de `components/ui` que son de Psicosocial.
+DE_PSICOSOCIAL_EN_PIEZAS = ("components/ui/preguntas/", "components/ui/reportes/",
+                            "components/ui/usuarios/")
+CON_PIEZAS = [r for r in TODOS
+              if not es_psicosocial(r) and not r.startswith(DE_PSICOSOCIAL_EN_PIEZAS)]
+con_sistema = cuenta(r'\btransition\b(?!-)|\bduration-(?:rel-[a-z]+|press|exit|enter|context|attention)\b|\bease-rel-[a-z]+', CON_PIEZAS)
+a_mano = cuenta(r'\bduration-\d+\b|\bease-(?:in|out|linear|in-out)\b', CON_PIEZAS)
+frente("Movimiento", con_sistema, a_mano, "duracion y curva del sistema")
+
 # --- Vacios: cuantas pantallas con lista usan la pieza ---------------------
 LISTA = r"<TablaDatos\b|<ul\b|\.map\("
 VACIO_TEXTO = r"No hay |Aun no|Aún no|Todavía no|Sin resultados|Sin datos|Sin registros"

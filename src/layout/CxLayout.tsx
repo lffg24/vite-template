@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
 import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
+import { TransicionDePagina } from "@/shared/ui/TransicionDePagina";
 
 export default function CxLayout() {
   const { user } = useAuth();
@@ -22,7 +23,9 @@ export default function CxLayout() {
         userSubtitle="Gestión de experiencia" navLabel="Navegación de Experiencia del cliente"
       />
       <main id="contenido-cx" className="min-w-0 flex-1 p-4 sm:p-6">
-        <Outlet />
+        <TransicionDePagina>
+          <Outlet />
+        </TransicionDePagina>
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import RoleSidebar from "@/features/navigation/components/RoleSidebar";
 import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
+import { TransicionDePagina } from "@/shared/ui/TransicionDePagina";
 
 export default function SuperAdminLayout() {
   const menu = useEffectiveNavigation();
@@ -24,7 +25,9 @@ export default function SuperAdminLayout() {
       />
 
       <main className="min-w-0 flex-1 p-3 sm:p-6">
-        <Outlet />
+        <TransicionDePagina>
+          <Outlet />
+        </TransicionDePagina>
       </main>
     </div>
   );

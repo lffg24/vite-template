@@ -93,14 +93,31 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
            el DOM a la vez. */
         const idGrupo = `${base}-${mobile ? "m" : "d"}-grupo-${indice}`;
         return <div key={entry.label} className="rounded-rel-card border border-white/10">
-          <button type="button" aria-expanded={compact ? undefined : expanded} aria-controls={!compact && expanded ? idGrupo : undefined} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
+          <button type="button" aria-expanded={compact ? undefined : expanded} aria-controls={compact ? undefined : idGrupo} aria-label={compact ? `Abrir ${entry.label}` : undefined} onClick={() => {
             if (compact) { setCollapsed(false); setOpenGroups(v => [...v, entry.label]); return; }
             setOpenGroups(v => expanded ? [...v.filter(x => x !== entry.label), `closed:${entry.label}`] : [...v.filter(x => x !== `closed:${entry.label}`), entry.label]);
           }} className={`flex w-full items-center rounded-rel-card text-left text-sm font-semibold text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center p-3" : "gap-3 px-3 py-2.5"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <><span className="min-w-0 flex-1">{entry.label}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} /></>}</button>
-          {!compact && expanded && <div id={idGrupo} className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
+          {/* El submenu no se monta y desmonta: aparecia y desaparecia en
+              el mismo fotograma, que es el salto que mas se nota del menu.
+              Con `grid-rows` de 0fr a 1fr la altura se puede animar sin
+              saber cuanto mide el contenido --lo que `height: auto` no
+              permite-- y sin medir nada en JavaScript.
+
+              `invisible` cuando esta cerrado NO es decorativo: sin ello los
+              enlaces siguen en el orden de tabulacion y alguien que navega
+              con el teclado cae dentro de un grupo que no ve. Y lleva su
+              propia transicion porque `visibility` se interpola a saltos:
+              al cerrar espera a que la fila termine de encogerse en vez de
+              dejar el hueco vacio a medio camino. */}
+          {!compact && <div id={idGrupo} aria-hidden={expanded ? undefined : true}
+            className={`grid transition-[grid-template-rows] duration-enter ease-rel-out ${expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+            <div className={`overflow-hidden transition-[visibility] duration-enter ${expanded ? "visible" : "invisible"}`}>
+            <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
             const ChildIcon = child.icon;
             return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-rel-control px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
-          })}</div>}
+          })}</div>
+            </div>
+          </div>}
         </div>;
       })}
     </nav>
@@ -110,6 +127,6 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
 
   return <>
     <div className="flex w-full items-center gap-3 bg-rel-dark px-4 py-3 text-white sm:hidden"><Sheet open={mobileOpen} onOpenChange={setMobileOpen}><SheetTrigger asChild><button type="button" aria-label="Abrir menú" className="rounded-rel-control p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky"><Menu className="h-6 w-6" aria-hidden="true" /></button></SheetTrigger><SheetContent side="left" className="w-[min(88vw,340px)] border-0 bg-rel-dark p-0 text-white"><SheetTitle className="sr-only">Menú de Abril360</SheetTitle>{renderContent(false, true)}</SheetContent></Sheet><Marca sobre="oscuro" className="h-7" /></div>
-    <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-rel-floating sm:sticky sm:top-0 sm:block bg-rel-dark`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
+    <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-rel-floating transition-[width] duration-context ease-rel-out sm:sticky sm:top-0 sm:block bg-rel-dark`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
   </>;
 }

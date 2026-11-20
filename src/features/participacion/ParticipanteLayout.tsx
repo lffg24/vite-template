@@ -20,6 +20,7 @@ import { BotonAccion } from "@/shared/ui/BotonAccion";
 import { CabeceraParticipante } from "@/shared/ui/CabeceraParticipante";
 import { Caja } from "@/shared/ui/Caja";
 import { cn } from "@/lib/utils";
+import { TransicionDePagina } from "@/shared/ui/TransicionDePagina";
 
 export function ParticipanteLayout({
   children,
@@ -58,7 +59,9 @@ export function ParticipanteLayout({
           ancho === "compacto" ? "max-w-3xl" : "max-w-7xl"
         }`}
       >
-        {children}
+        <TransicionDePagina className="flex w-full flex-1 flex-col">
+          {children}
+        </TransicionDePagina>
       </main>
 
       <footer className="mt-auto border-t border-rel-border/80 bg-rel-surface">

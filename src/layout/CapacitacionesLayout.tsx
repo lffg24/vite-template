@@ -4,6 +4,7 @@ import RoleSidebar from "@/features/navigation/components/RoleSidebar";
 import { useEffectiveNavigation } from "@/features/navigation/useEffectiveNavigation";
 import { ProveedorCapacitaciones, useCapacitaciones } from "@/features/capacitaciones/ContextoCapacitaciones";
 import { Caja } from "@/shared/ui/Caja";
+import { TransicionDePagina } from "@/shared/ui/TransicionDePagina";
 function iniciales(nombre: string): string {
   const letras = nombre
     .split(/\s+/)
@@ -60,7 +61,9 @@ function Shell() {
           {fase === "listo" && capacidades && !capacidades.tiene_acceso && !pathname.startsWith("/evaluaciones") ? (
             <SinAccesoAlModulo />
           ) : (
-            <Outlet />
+            <TransicionDePagina className="flex min-w-0 flex-1 flex-col">
+              <Outlet />
+            </TransicionDePagina>
           )}
         </div>
       </main>

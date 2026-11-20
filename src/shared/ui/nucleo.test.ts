@@ -1915,4 +1915,42 @@ describe("el núcleo es uno solo", () => {
     ).map(comoRuta);
     expect(siguen.sort()).toEqual([...DE_CASILLA_O_RADIO].sort());
   });
+  /**
+   * La duración y la curva salen del sistema, también en las piezas.
+   *
+   * `transition` a secas ya es de la casa: la configuración cambió el valor
+   * por defecto de Tailwind, así que 180 sitios pasaron a la curva correcta
+   * sin tocar ninguno. Lo que se escapa de eso es un número suelto
+   * (`duration-200`) o una curva de Tailwind (`ease-linear`): el día que el
+   * sistema cambie, esos no se enteran.
+   *
+   * Se vigila en las PIEZAS también, y no solo en el perímetro, porque ahí es
+   * donde vive casi todo el movimiento: una pieza con la curva de Tailwind se
+   * la pasa a todo el que la use. Así llegaron `ease-in-out` y 300/500 ms al
+   * panel lateral, que es la puerta del menú en móvil.
+   */
+  it("la duración y la curva salen del sistema", () => {
+    /* Las tres carpetas de `components/ui` que son de Psicosocial: viven
+       entre las piezas por donde se colocaron, no por lo que son. */
+    const DE_PSICOSOCIAL_EN_PIEZAS = [
+      "components/ui/preguntas/",
+      "components/ui/reportes/",
+      "components/ui/usuarios/",
+    ];
+    const A_MANO = /\bduration-\d+\b|\bease-(?:in|out|linear|in-out)\b/g;
+
+    const culpables: string[] = [];
+    for (const ruta of TODOS) {
+      const r = comoRuta(ruta);
+      if (esPsicosocial(r) || DE_PSICOSOCIAL_EN_PIEZAS.some((d) => r.startsWith(d))) continue;
+      const sueltas = [...contenido(ruta).matchAll(A_MANO)].map((m) => m[0]);
+      if (sueltas.length > 0) culpables.push(`${r}: ${[...new Set(sueltas)].join(", ")}`);
+    }
+
+    expect(
+      culpables,
+      "Usa `duration-press|exit|enter|context|attention` y `ease-rel-out`, o " +
+        "escribe `transition` a secas y deja que la casa ponga las dos."
+    ).toEqual([]);
+  });
 });
