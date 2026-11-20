@@ -95,7 +95,7 @@ export function SeccionPlegable({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-sm",
+        "overflow-hidden rounded-rel-panel border border-rel-border bg-rel-surface shadow-xs",
         className
       )}
     >
@@ -105,7 +105,7 @@ export function SeccionPlegable({
           onClick={alternar}
           aria-expanded={abierta}
           aria-controls={idContenido}
-          className="group flex min-w-0 flex-1 items-start gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+          className="group flex min-w-0 flex-1 items-start gap-3 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
         >
           <ChevronDown
             className={cn(

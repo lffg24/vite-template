@@ -141,11 +141,11 @@ export default function EmpresaAreasCargosPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       <div className="mx-auto max-w-7xl space-y-6">
-        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm hover:bg-slate-50">
+        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-xs hover:bg-slate-50">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a empresa
         </button>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Configuración de colaboradores</p>
@@ -158,7 +158,7 @@ export default function EmpresaAreasCargosPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xs">
           <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between">
             <div role="tablist" aria-label="Gestión de áreas y cargos" className="flex flex-wrap gap-2">
               <CatalogTabButton
@@ -262,7 +262,7 @@ function CatalogTabButton({ active, icon, label, count, onClick }: { active: boo
       aria-selected={active}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black transition ${
-        active ? "bg-primary text-primary-foreground shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-accent hover:text-brand-primary"
+        active ? "bg-primary text-primary-foreground shadow-xs" : "bg-slate-100 text-slate-600 hover:bg-accent hover:text-brand-primary"
       }`}
     >
       {icon}
@@ -330,7 +330,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
       <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
@@ -346,7 +346,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
           ) : (
             <>
               <Field label="Área *">
-                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20">
+                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20">
                   <option value="">Selecciona área</option>
                   {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
                 </select>
@@ -371,5 +371,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Input({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" />;
+  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" />;
 }

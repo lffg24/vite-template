@@ -2,7 +2,7 @@ import type { PsicoEmpleadoResultados } from '../../types/psicoEmpleado.types';
 
 export function IndividualRiskTable({ resultados }: { resultados: PsicoEmpleadoResultados }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-950">Resultados por dimensión</h2>

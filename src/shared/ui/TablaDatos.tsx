@@ -470,7 +470,7 @@ export function TablaDatos<T>({
                       type="button"
                       onClick={() => alternar(c.clave)}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-md py-0.5 transition-colors duration-rel-micro ease-rel-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
+                        "inline-flex items-center gap-1.5 rounded-md py-0.5 transition-colors duration-rel-micro ease-rel-out hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
                         activa && "text-foreground",
                         derecha && "flex-row-reverse"
                       )}
@@ -554,7 +554,7 @@ type CeldaPrincipalProps = {
 );
 
 const CLASES_PRINCIPAL =
-  "rounded-md text-left font-bold text-foreground underline-offset-4 transition-colors duration-rel-micro ease-rel-out hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none";
+  "rounded-md text-left font-bold text-foreground underline-offset-4 transition-colors duration-rel-micro ease-rel-out hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none";
 
 export function CeldaPrincipal({ a, alAbrir, titulo, apoyo }: CeldaPrincipalProps) {
   return (

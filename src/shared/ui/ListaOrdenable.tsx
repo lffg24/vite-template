@@ -136,7 +136,7 @@ export function FilaOrdenable({
           {...attributes}
           {...listeners}
           aria-label={`Reordenar ${etiqueta}`}
-          className="mt-0.5 shrink-0 cursor-grab touch-none rounded-rel-control p-1 text-rel-muted transition-colors hover:bg-rel-surface-subtle hover:text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary active:cursor-grabbing"
+          className="mt-0.5 shrink-0 cursor-grab touch-none rounded-rel-control p-1 text-rel-muted transition-colors hover:bg-rel-surface-subtle hover:text-rel-dark focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary active:cursor-grabbing"
         >
           <GripVertical className="h-5 w-5" aria-hidden="true" />
         </button>

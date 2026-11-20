@@ -16,7 +16,7 @@ type WebDirectWelcomeScreenProps = {
 export function WebDirectWelcomeScreen({ context, onStart }: WebDirectWelcomeScreenProps) {
   return (
     <WebDirectParticipantShell stepLabel="Inicio del proceso">
-      <Card className="overflow-hidden rounded-[1.5rem] border-border bg-surface shadow-soft sm:rounded-[2rem]">
+      <Card className="overflow-hidden rounded-3xl border-border bg-surface shadow-soft sm:rounded-4xl">
         <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
           <div className="flex flex-col p-6 sm:p-9 lg:p-12">
             <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Batería de riesgo psicosocial</p>
@@ -65,7 +65,7 @@ export function WebDirectWelcomeScreen({ context, onStart }: WebDirectWelcomeScr
               variant="hero"
               size="full"
               priority
-              className="mx-auto hidden max-h-[22rem] max-w-lg lg:block"
+              className="mx-auto hidden max-h-88 max-w-lg lg:block"
             />
             <div className="mt-5">
               <WebDirectResponsibleContact responsible={context.responsible} />

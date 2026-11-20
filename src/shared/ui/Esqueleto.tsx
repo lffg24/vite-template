@@ -78,7 +78,7 @@ export function Esqueleto({
       aria-hidden="true"
       className={cn("relative block overflow-hidden rounded-md bg-muted", className)}
     >
-      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/45 to-transparent motion-safe:animate-barrido dark:via-white/10" />
+      <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/45 to-transparent motion-safe:animate-barrido dark:via-white/10" />
     </span>
   );
 }

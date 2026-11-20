@@ -193,7 +193,7 @@ export default function CalificacionPublicaPage() {
                     onChange={() => { setRespuestas((actuales) => ({ ...actuales, [pregunta.id]: valor })); setErrorPregunta(false); setErrorEnvio(false); }}
                     aria-label={`${valor} de ${valores[valores.length - 1]}`}
                   />
-                  <span className="flex min-h-[3.5rem] items-center justify-center rounded-rel-control border border-rel-border-strong bg-rel-surface text-base font-bold text-rel-dark transition-colors peer-checked:border-rel-primary peer-checked:bg-rel-accent-subtle peer-checked:text-rel-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rel-primary hover:border-rel-primary">
+                  <span className="flex min-h-14 items-center justify-center rounded-rel-control border border-rel-border-strong bg-rel-surface text-base font-bold text-rel-dark transition-colors peer-checked:border-rel-primary peer-checked:bg-rel-accent-subtle peer-checked:text-rel-primary peer-focus-visible:outline-solid peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rel-primary hover:border-rel-primary">
                     {valor}
                   </span>
                 </label>

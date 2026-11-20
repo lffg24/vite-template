@@ -23,7 +23,7 @@ export function IllustrationSurface({
   return (
     <div
       className={cn(
-        "flex items-center justify-center overflow-hidden rounded-[var(--illustration-radius)] border",
+        "flex items-center justify-center overflow-hidden rounded-(--illustration-radius) border",
         TONES[tone],
         className
       )}

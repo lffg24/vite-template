@@ -20,7 +20,7 @@ const SelectTrigger = React.forwardRef<
     className={cn(
       /* Esta cadena era una copia mas del aspecto del control, y la sexta.
          Se homologo a mano con `Input` --mismo foco, mismo realce-- y por eso
-         se quedo con lo que `Input` tenia ENTONCES: `shadow-sm`, que es la
+         se quedo con lo que `Input` tenia ENTONCES: `shadow-xs`, que es la
          sombra negra de Tailwind y se quito del control; `rounded-lg`, que es
          el radio de control escrito con el otro nombre; y `text-sm` fijo, de
          modo que en el movil media 14 px mientras el campo de al lado media
@@ -28,7 +28,7 @@ const SelectTrigger = React.forwardRef<
          enfocar--. Copiar homologa el dia que se copia. */
       CLASE_CONTROL,
       ALTO_CONTROL.normal,
-      "flex items-center justify-between whitespace-nowrap data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
+      "flex items-center justify-between whitespace-nowrap data-placeholder:text-muted-foreground [&>span]:line-clamp-1",
       className
     )}
     {...props}
@@ -84,7 +84,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border border-border/80 bg-popover text-popover-foreground shadow-floating data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
+        "relative z-50 max-h-(--radix-select-content-available-height) min-w-32 overflow-y-auto overflow-x-hidden rounded-xl border border-border/80 bg-popover text-popover-foreground shadow-floating data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-select-content-transform-origin)",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -97,7 +97,7 @@ const SelectContent = React.forwardRef<
         className={cn(
           "p-1",
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+            "h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width)"
         )}
       >
         {children}
@@ -127,7 +127,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-2.5 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-2.5 pr-8 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     {...props}

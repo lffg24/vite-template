@@ -57,7 +57,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rel-accent font-bold text-rel-dark`}>{avatarText}</span>
       {!compact && <span className="min-w-0"><span className="block truncate font-semibold">{userTitle}</span><span className="block truncate text-xs text-white/70">{userSubtitle}</span></span>}
     </div>
-    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(255_255_255_/_0.25)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent">
+    <nav aria-label={navLabel} className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1 [scrollbar-color:rgb(255_255_255/0.25)_transparent] scrollbar-thin [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent">
       {loading && <p role="status" className="px-3 py-4 text-sm text-white/70">Cargando menú…</p>}
       {error && <div role="alert" className="rounded-rel-card border border-white/20 p-3 text-sm"><p>{error}</p><button type="button" onClick={onRetry} className="mt-2 underline focus-visible:ring-2 focus-visible:ring-rel-sky">Reintentar</button></div>}
       {!loading && !error && items.length === 0 && <p className="px-3 py-4 text-sm text-white/70">No hay opciones habilitadas para esta cuenta.</p>}
@@ -65,7 +65,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
         if ("to" in entry) {
           const Icon = entry.icon;
           const active = activeRoute(location.pathname, entry.to);
-          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-rel-card text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? "bg-rel-accent text-rel-dark" : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
+          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-rel-card text-sm font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? "bg-rel-accent text-rel-dark" : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
         }
         const Icon = entry.icon;
         const active = entry.children.some(child => activeRoute(location.pathname, child.to));
@@ -114,7 +114,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
             <div className={`overflow-hidden transition-[visibility] duration-enter ${expanded ? "visible" : "invisible"}`}>
             <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
             const ChildIcon = child.icon;
-            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-rel-control px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
+            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-rel-control px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
           })}</div>
             </div>
           </div>}
@@ -126,7 +126,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
   </div>;
 
   return <>
-    <div className="flex w-full items-center gap-3 bg-rel-dark px-4 py-3 text-white sm:hidden"><Sheet open={mobileOpen} onOpenChange={setMobileOpen}><SheetTrigger asChild><button type="button" aria-label="Abrir menú" className="rounded-rel-control p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-sky"><Menu className="h-6 w-6" aria-hidden="true" /></button></SheetTrigger><SheetContent side="left" className="w-[min(88vw,340px)] border-0 bg-rel-dark p-0 text-white"><SheetTitle className="sr-only">Menú de Abril360</SheetTitle>{renderContent(false, true)}</SheetContent></Sheet><Marca sobre="oscuro" className="h-7" /></div>
+    <div className="flex w-full items-center gap-3 bg-rel-dark px-4 py-3 text-white sm:hidden"><Sheet open={mobileOpen} onOpenChange={setMobileOpen}><SheetTrigger asChild><button type="button" aria-label="Abrir menú" className="rounded-rel-control p-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky"><Menu className="h-6 w-6" aria-hidden="true" /></button></SheetTrigger><SheetContent side="left" className="w-[min(88vw,340px)] border-0 bg-rel-dark p-0 text-white"><SheetTitle className="sr-only">Menú de Abril360</SheetTitle>{renderContent(false, true)}</SheetContent></Sheet><Marca sobre="oscuro" className="h-7" /></div>
     <aside className={`hidden h-screen shrink-0 overflow-hidden text-white shadow-rel-floating transition-[width] duration-context ease-rel-out sm:sticky sm:top-0 sm:block bg-rel-dark`} style={{ width: collapsed ? 84 : 292 }} aria-label={brandTitle}>{renderContent(collapsed)}</aside>
   </>;
 }

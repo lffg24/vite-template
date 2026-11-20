@@ -13,7 +13,7 @@
 // En un telefono el menu ocupa un riel de 96 px y al titulo le quedan ~160.
 // «Asignaciones» a 3xl mide 185 px de ancho minimo: una sola palabra que no
 // cabe empuja la pagina entera y aparece scroll horizontal. De ahi el tamano
-// menor en movil y el `break-words`, que es el que de verdad lo garantiza para
+// menor en movil y el `wrap-break-word`, que es el que de verdad lo garantiza para
 // cualquier titulo futuro, no solo para los de hoy.
 //
 // Psicosocial no se toca en este cambio. Se migrará cuando haya con qué
@@ -68,7 +68,7 @@ export function PageHeader({
     return (
       <section
         className={cn(
-          "relative isolate min-h-[8rem] overflow-hidden rounded-rel-panel border border-white/10 bg-rel-dark px-5 py-6 text-white shadow-card sm:px-7 md:min-h-[9rem] md:py-7",
+          "relative isolate min-h-32 overflow-hidden rounded-rel-panel border border-white/10 bg-rel-dark px-5 py-6 text-white shadow-card sm:px-7 md:min-h-36 md:py-7",
           className,
         )}
       >
@@ -91,7 +91,7 @@ export function PageHeader({
                     {antetitulo}
                   </p>
                 ) : null}
-                <h1 className="break-words font-rel-heading text-2xl font-black tracking-tight text-white sm:text-3xl">
+                <h1 className="wrap-break-word font-rel-heading text-2xl font-black tracking-tight text-white sm:text-3xl">
                   {titulo}
                 </h1>
                 {descripcion ? (
@@ -125,7 +125,7 @@ export function PageHeader({
   return (
     <section
       className={cn(
-        "rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-sm sm:p-6",
+        "rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-xs sm:p-6",
         className
       )}
     >
@@ -138,7 +138,7 @@ export function PageHeader({
                 {antetitulo}
               </p>
             ) : null}
-            <h1 className="break-words font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-3xl">
+            <h1 className="wrap-break-word font-rel-heading text-xl font-black tracking-tight text-rel-dark sm:text-3xl">
               {titulo}
             </h1>
             {descripcion ? (

@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils"
    cualquier recalculo de layout entra animado y produce ese arrastre elastico
    que delata una interfaz mal ajustada. */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent font-heading text-sm font-semibold tracking-[0.01em] transition-[background-color,border-color,color,box-shadow,transform] duration-rel-micro ease-rel-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent font-heading text-sm font-semibold tracking-[0.01em] transition-[background-color,border-color,color,box-shadow,transform] duration-rel-micro ease-rel-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -29,11 +29,11 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground shadow-card hover:bg-destructive/90",
         outline:
-          "border-border bg-surface text-foreground shadow-sm hover:border-primary/30 hover:bg-surface-subtle hover:text-foreground",
+          "border-border bg-surface text-foreground shadow-xs hover:border-primary/30 hover:bg-surface-subtle hover:text-foreground",
         secondary:
-          "border-border bg-secondary text-secondary-foreground shadow-sm hover:bg-muted",
+          "border-border bg-secondary text-secondary-foreground shadow-xs hover:bg-muted",
         tertiary:
-          "bg-accent text-accent-foreground shadow-sm hover:bg-accent-hover",
+          "bg-accent text-accent-foreground shadow-xs hover:bg-accent-hover",
         ghost: "text-foreground-soft hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Variantes REL (constitucion §16 y §24: extender antes de duplicar).
@@ -45,7 +45,7 @@ const buttonVariants = cva(
         // separasen en cuanto una de las dos cambiara.
         rel: "bg-rel-accent text-rel-dark shadow-rel-card hover:bg-rel-accent/90",
         relOutline:
-          "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-sm hover:border-rel-primary/40 hover:bg-rel-surface-subtle",
+          "border border-rel-border-strong bg-rel-surface text-rel-dark shadow-xs hover:border-rel-primary/40 hover:bg-rel-surface-subtle",
         relGhost: "text-rel-dark hover:bg-rel-surface-subtle",
         // Destructiva: rojo semantico, NUNCA el azul corporativo (§16). Esta si
         // conserva anillo propio, porque el foco debe avisar del peligro.

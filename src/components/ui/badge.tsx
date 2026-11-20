@@ -19,16 +19,16 @@ import { cn } from "@/lib/utils"
  * Las `rel*` se conservan como alias exactos porque hay 90 pantallas que las
  * nombran; no son otra familia, son el mismo estilo con el nombre viejo. */
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 font-heading text-xs font-semibold transition-colors duration-rel-micro ease-rel-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 font-heading text-xs font-semibold transition-colors duration-rel-micro ease-rel-out focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover",
+          "border-transparent bg-primary text-primary-foreground shadow-xs hover:bg-primary-hover",
         secondary:
           "border-transparent bg-secondary text-secondary-foreground hover:bg-muted",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+          "border-transparent bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
         outline: "border-border text-foreground",
         accent: "border-transparent bg-accent text-accent-foreground",
 

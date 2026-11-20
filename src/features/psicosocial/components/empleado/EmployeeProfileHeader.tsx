@@ -10,7 +10,7 @@ export function EmployeeProfileHeader({ perfil, onBack, onRegister }: { perfil: 
     .join('');
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-4">
           {onBack && (
@@ -25,23 +25,23 @@ export function EmployeeProfileHeader({ perfil, onBack, onRegister }: { perfil: 
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+          <button className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50">
             <Pencil className="h-4 w-4" /> Editar perfil
           </button>
-          <button onClick={onRegister} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm hover:bg-primary-hover">
+          <button onClick={onRegister} className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-xs hover:bg-primary-hover">
             <ClipboardCheck className="h-4 w-4" /> Registrar respuestas
           </button>
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-2xl border border-slate-100 bg-gradient-to-r from-white to-slate-50 p-5">
+        <div className="rounded-2xl border border-slate-100 bg-linear-to-r from-white to-slate-50 p-5">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-black text-brand-primary">
               {initials || <UserRound className="h-10 w-10" />}
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold text-slate-950 break-words">{perfil.nombre_completo}</h2>
+              <h2 className="text-2xl font-bold text-slate-950 wrap-break-word">{perfil.nombre_completo}</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <MiniMetric label="Documento" value={perfil.cedula} icon={<FileText className="h-4 w-4" />} />
                 <MiniMetric label="Cargo" value={perfil.cargo || 'Sin cargo'} />

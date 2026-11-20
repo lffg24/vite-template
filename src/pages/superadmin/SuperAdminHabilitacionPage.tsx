@@ -98,7 +98,7 @@ function Condicion({
           {titulo}{" "}
           <span className="sr-only">{cumplida === undefined ? "se verifica por usuario" : cumplida ? "cumplida" : "pendiente"}</span>
         </p>
-        <p className="break-words text-sm text-rel-muted">{children}</p>
+        <p className="wrap-break-word text-sm text-rel-muted">{children}</p>
       </div>
     </li>
   );
@@ -190,7 +190,7 @@ export default function SuperAdminHabilitacionPage() {
                 aria-pressed={elegido}
                 disabled={guardando !== null}
                 onClick={() => setModulo(item.codigo)}
-                className={`flex min-h-[5rem] min-w-0 items-start gap-3 rounded-rel-control border p-4 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary disabled:opacity-60 ${
+                className={`flex min-h-20 min-w-0 items-start gap-3 rounded-rel-control border p-4 text-left transition-colors focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary disabled:opacity-60 ${
                   elegido ? "border-rel-primary bg-rel-accent-subtle" : "border-rel-border bg-rel-surface hover:bg-rel-surface-subtle"
                 }`}
               >
@@ -282,7 +282,7 @@ export default function SuperAdminHabilitacionPage() {
             </div>
           ) : null}
           </div>
-          <ul className="max-h-[27rem] space-y-1 overflow-y-auto border-t border-rel-border p-2">
+          <ul className="max-h-108 space-y-1 overflow-y-auto border-t border-rel-border p-2">
             {empresas.fase === "cargando" ? (
               <li>
                 <ZonaCargando cargando etiqueta="Consultando empresas" esqueleto={<EsqueletoTexto lineas={4} className="p-3" />}>
@@ -299,13 +299,13 @@ export default function SuperAdminHabilitacionPage() {
                   type="button"
                   onClick={() => setEmpresa(e)}
                   aria-current={empresa?.id === e.id ? "true" : undefined}
-                  className={`w-full rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary ${
+                  className={`w-full rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary ${
                     empresa?.id === e.id
                       ? "bg-rel-accent-subtle font-semibold text-rel-primary"
                       : "hover:bg-rel-surface-subtle"
                   }`}
                 >
-                  <span className="block break-words">{e.nombre}</span>
+                  <span className="block wrap-break-word">{e.nombre}</span>
                   {e.nit ? (
                     <span className="block text-xs text-rel-muted">NIT {e.nit}</span>
                   ) : null}
@@ -448,7 +448,7 @@ export default function SuperAdminHabilitacionPage() {
                 )}
                 {!contratoActivo ? (
                   <Button
-                    className="mt-4 min-h-[2.75rem] w-full sm:w-auto"
+                    className="mt-4 min-h-11 w-full sm:w-auto"
                     variant="rel"
                     disabled={guardando !== null}
                     onClick={() =>
@@ -482,7 +482,7 @@ export default function SuperAdminHabilitacionPage() {
                     <li key={b.clave} className="flex min-w-0 items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="font-semibold text-rel-dark">{b.nombre}</p>
-                        <p className="break-words text-sm text-rel-muted">{b.para_que}</p>
+                        <p className="wrap-break-word text-sm text-rel-muted">{b.para_que}</p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2 text-sm">
                         <Switch

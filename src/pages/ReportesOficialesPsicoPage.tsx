@@ -242,7 +242,7 @@ export default function ReportesOficialesPsicoPage() {
         </div>
       </section>
 
-      <Card className="rounded-2xl border-slate-200 shadow-sm">
+      <Card className="rounded-2xl border-slate-200 shadow-xs">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base"><FileText className="h-5 w-5 text-brand-primary" aria-hidden="true" /> Parámetros del informe</CardTitle>
         </CardHeader>
@@ -251,7 +251,7 @@ export default function ReportesOficialesPsicoPage() {
             <div className="space-y-2">
               <label className="text-sm font-black text-slate-700">Aplicación</label>
               <Select value={aplicacionId} onValueChange={setAplicacionId} disabled={loadingApps || !aplicaciones.length}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder={loadingApps ? "Cargando aplicaciones..." : "Selecciona aplicación"} /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder={loadingApps ? "Cargando aplicaciones..." : "Selecciona aplicación"} /></SelectTrigger>
                 <SelectContent>{aplicaciones.map((app) => <SelectItem key={app.id} value={String(app.id)}>{app.nombre || `Aplicación ${app.id}`} · #{app.id}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -308,7 +308,7 @@ export default function ReportesOficialesPsicoPage() {
                 </Dialog>
               </div>
               <Select value={tipoReporte} onValueChange={(v) => setTipoReporte(v as TipoReportePsicoOficial)}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {reportGroups.map((group, index) => (
                     <div key={group.label}>
@@ -341,7 +341,7 @@ export default function ReportesOficialesPsicoPage() {
 
       {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div> : null}
 
-      <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+      <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-xs">
         <CardHeader className="border-b bg-slate-50/80">
           <CardTitle className="text-base">Vista <span className="marker-highlight">previa</span></CardTitle>
           {selectedApp ? <p className="text-sm text-slate-500">{selectedApp.nombre}</p> : null}

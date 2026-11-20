@@ -228,10 +228,10 @@ export default function CapacitacionesAvancePage() {
       valor: (p) => `${p.apellidos} ${p.nombres}`,
       celda: (p) => (
         <div className="min-w-0">
-          <p className="break-words font-semibold text-rel-dark">
+          <p className="wrap-break-word font-semibold text-rel-dark">
             {p.apellidos}, {p.nombres}
           </p>
-          <p className="break-words text-xs text-rel-muted">
+          <p className="wrap-break-word text-xs text-rel-muted">
             {p.tipo_documento} {p.numero_documento}
             {p.cargo ? ` · ${p.cargo}` : ""}
           </p>

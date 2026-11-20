@@ -19,7 +19,7 @@ export function ApplicationLinkModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-rel-modal flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-xs">
       <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>

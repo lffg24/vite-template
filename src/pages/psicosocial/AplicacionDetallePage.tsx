@@ -1303,7 +1303,7 @@ export default function AplicacionDetallePage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-8">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border bg-white p-8 shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-3xl border bg-white p-8 shadow-xs">
           <Loader2 className="h-5 w-5 animate-spin text-brand-primary" aria-hidden="true" /> Cargando
           aplicación...
         </div>
@@ -1354,7 +1354,7 @@ export default function AplicacionDetallePage() {
   return (
     <main className="min-h-screen bg-background px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       {closing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-xs">
           <div className="w-full max-w-xl rounded-3xl border border-accent bg-white p-6 shadow-floating">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-brand-primary">
@@ -1416,12 +1416,12 @@ export default function AplicacionDetallePage() {
           onClick={() =>
             navigate(`/psicosocial/empresas/${empresaId}/aplicaciones`)
           }
-          className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm"
+          className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-xs"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a aplicaciones
         </button>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div>
                 <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
@@ -1519,9 +1519,9 @@ export default function AplicacionDetallePage() {
             </div>
           </div>
           {!finalizada && showClosureGuide && (
-            <div className="mt-5 rounded-3xl border border-accent bg-gradient-to-r from-accent via-white to-brand-canvas p-4 shadow-card">
+            <div className="mt-5 rounded-3xl border border-accent bg-linear-to-r from-accent via-white to-brand-canvas p-4 shadow-card">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-primary shadow-xs ring-1 ring-accent">
                   <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -1569,7 +1569,7 @@ export default function AplicacionDetallePage() {
             value={pendientesCompletar}
           />
           <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-accent bg-accent/50 p-5 shadow-card">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-brand-primary shadow-sm ring-1 ring-accent">
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white text-brand-primary shadow-xs ring-1 ring-accent">
               <Coins className="h-6 w-6" aria-hidden="true" />
             </div>
             <div className="min-w-0">
@@ -1583,7 +1583,7 @@ export default function AplicacionDetallePage() {
           </article>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-black text-slate-950">
@@ -1625,7 +1625,7 @@ export default function AplicacionDetallePage() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              className="w-full outline-none"
+              className="w-full outline-hidden"
               placeholder="Buscar por cédula, nombre, área o cargo..."
             />
           </div>
@@ -1664,18 +1664,18 @@ export default function AplicacionDetallePage() {
                 )}
                 {paginatedEmpleados.map((emp) => (
                   <tr key={emp.id} className="hover:bg-slate-50">
-                    <td className="break-words px-3 py-4">
+                    <td className="wrap-break-word px-3 py-4">
                       <button
                         type="button"
                         onClick={() => openEmployeeDetail(emp)}
-                        className="group flex max-w-full items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                        className="group flex max-w-full items-center gap-3 rounded-xl text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary"
                         aria-label={`Ver datos de ${emp.nombre}`}
                       >
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-xs">
                           <EmployeeGenderIcon sexo={emp.sexo} />
                         </span>
                         <span className="min-w-0">
-                          <strong className="block break-words text-slate-950 underline-offset-4 group-hover:text-brand-primary group-hover:underline">
+                          <strong className="block wrap-break-word text-slate-950 underline-offset-4 group-hover:text-brand-primary group-hover:underline">
                             {emp.nombre}
                           </strong>
                           <span className="block break-all text-xs text-slate-500">
@@ -1685,8 +1685,8 @@ export default function AplicacionDetallePage() {
                         </span>
                       </button>
                     </td>
-                    <td className="break-words px-3 py-4">
-                      <span className="block break-words font-bold">
+                    <td className="wrap-break-word px-3 py-4">
+                      <span className="block wrap-break-word font-bold">
                         {emp.area || "Sin área"}
                       </span>
                       <span className="text-xs text-slate-500">
@@ -1839,7 +1839,7 @@ export default function AplicacionDetallePage() {
               <select
                 value={participantPageSize}
                 onChange={(e) => setParticipantPageSize(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -1891,7 +1891,7 @@ export default function AplicacionDetallePage() {
       </div>
 
       {cleanupTarget && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-70 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-xs">
           <div className="w-full max-w-xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
@@ -1996,21 +1996,21 @@ export default function AplicacionDetallePage() {
       )}
 
       {employeeDetailTarget && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
           <aside
             className="h-full w-full max-w-2xl overflow-y-auto bg-white p-5 shadow-2xl sm:p-6"
             aria-label={`Datos de ${employeeDetailTarget.nombre}`}
           >
             <div className="mb-6 flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-xs">
                   <EmployeeGenderIcon sexo={employeeDetailTarget.sexo} />
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-black uppercase tracking-widest text-brand-sky">
                     Datos del colaborador
                   </p>
-                  <h2 className="break-words text-2xl font-black text-slate-950">
+                  <h2 className="wrap-break-word text-2xl font-black text-slate-950">
                     {employeeDetailTarget.nombre}
                   </h2>
                   <p className="text-sm text-slate-500">
@@ -2054,7 +2054,7 @@ export default function AplicacionDetallePage() {
                             <button
                               type="button"
                               aria-label="Información sobre el formulario asignado"
-                              className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
+                              className="rounded-full text-info focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-info"
                             >
                               <Info className="h-4 w-4" aria-hidden="true" />
                             </button>
@@ -2148,7 +2148,7 @@ export default function AplicacionDetallePage() {
       )}
 
       {openEmployeeDrawer && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
           <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
@@ -2299,7 +2299,7 @@ export default function AplicacionDetallePage() {
                               <button
                                 type="button"
                                 aria-label="Información sobre la asignación web"
-                                className="rounded-full text-info focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info"
+                                className="rounded-full text-info focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-info"
                               >
                                 <Info className="h-4 w-4" aria-hidden="true" />
                               </button>
@@ -2325,7 +2325,7 @@ export default function AplicacionDetallePage() {
                             event.target.value as "" | "A" | "B",
                           )
                         }
-                        className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
+                        className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
                       >
                         <option value="">Sin asignar por ahora</option>
                         <option value="A">Forma A</option>
@@ -2538,7 +2538,7 @@ export default function AplicacionDetallePage() {
       )}
 
       {catalogModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-xs">
           <form
             onSubmit={saveCatalog}
             className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl"
@@ -2631,7 +2631,7 @@ function EmployeeDetailField({
       <dt className="text-xs font-black uppercase tracking-wide text-slate-500">
         {label}
       </dt>
-      <dd className="mt-1 break-words font-semibold text-slate-900">
+      <dd className="mt-1 wrap-break-word font-semibold text-slate-900">
         {value || "Sin dato"}
       </dd>
     </div>
@@ -2648,7 +2648,7 @@ function Card({
   value: number;
 }) {
   return (
-    <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="flex min-h-[132px] items-start gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">
         {icon}
       </div>
@@ -2688,7 +2688,7 @@ function Input({ value, onChange, className = "", ...props }: any) {
       {...props}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${className}`}
+      className={`w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-normal outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${className}`}
     />
   );
 }
@@ -2728,7 +2728,7 @@ function Combo({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : open ? "border-brand-primary/30 bg-accent/60" : "border-slate-200 bg-white hover:border-brand-primary/30"}`}
+        className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left font-normal outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400" : open ? "border-brand-primary/30 bg-accent/60" : "border-slate-200 bg-white hover:border-brand-primary/30"}`}
       >
         <div className="min-w-0">
           <span
@@ -2746,7 +2746,7 @@ function Combo({
           className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180 text-brand-primary" : ""}`} aria-hidden="true" />
       </button>
       {open && !disabled && (
-        <div className="absolute z-[70] mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
+        <div className="absolute z-70 mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.16)]">
           <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-brand-sky">
               Catálogo

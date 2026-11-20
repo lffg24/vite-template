@@ -82,7 +82,7 @@ function InfoRow({ label, value }: { label: string; value: unknown }) {
 
 function SectionCard({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-bold text-brand-primary">
           {number}
@@ -96,7 +96,7 @@ function SectionCard({ number, title, children }: { number: number; title: strin
 
 function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplicacionEmpleado; onRegister: () => void; onResults: () => void }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-brand-primary">Aplicación psicosocial</p>
@@ -143,14 +143,14 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
       ) : null}
 
       <div className="mt-5 flex flex-wrap justify-end gap-3">
-        <button type="button" onClick={onResults} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm hover:bg-slate-50">
+        <button type="button" onClick={onResults} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-xs hover:bg-slate-50">
           <Eye className="h-4 w-4" aria-hidden="true" /> Ver resultados
         </button>
         <button
           type="button"
           onClick={onRegister}
           disabled={!app.puede_registrar}
-          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-sm hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-xs hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
         >
           <ClipboardList className="h-4 w-4" aria-hidden="true" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
         </button>
@@ -161,7 +161,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
 
 function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: PsicoAplicacionEmpleado[]; onClose: () => void; onSelect: (app: PsicoAplicacionEmpleado) => void; onResults: (app: PsicoAplicacionEmpleado) => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-xs">
       <div className="max-h-[88vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-100 p-6">
           <div>
@@ -239,7 +239,7 @@ function TextInput({ value, onChange, type = "text", inputMode }: { value: strin
       inputMode={inputMode}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
+      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
     />
   );
 }
@@ -344,7 +344,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
       <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
@@ -382,7 +382,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.area_id}
                 onChange={(event) => update("area_id", event.target.value)}
                 disabled={loadingCatalogs}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{loadingCatalogs ? "Cargando áreas..." : "Selecciona área"}</option>
                 {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
@@ -393,7 +393,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.cargo_id}
                 onChange={(event) => update("cargo_id", event.target.value)}
                 disabled={loadingCatalogs || !form.area_id}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{form.area_id ? "Selecciona cargo" : "Selecciona primero un área"}</option>
                 {visibleCargos.map((cargo) => <option key={cargo.id} value={cargo.id}>{cargo.nombre}</option>)}
@@ -473,14 +473,14 @@ export default function PsicoEmpleadoPerfilPage() {
       <main className="mx-auto max-w-[1500px] space-y-5 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50">
+            <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-xs hover:bg-slate-50">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver
             </button>
             <h1 className="text-3xl font-black tracking-tight md:text-4xl">Perfil del empleado</h1>
             <p className="mt-1 text-slate-500">Consulta la base transversal del colaborador y sus aplicaciones psicosociales.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
+            <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50">
               <FileText className="h-4 w-4" aria-hidden="true" /> Editar colaborador
             </button>
             <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover">
@@ -492,7 +492,7 @@ export default function PsicoEmpleadoPerfilPage() {
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
         <section className="grid gap-5 lg:grid-cols-[1fr_430px]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
               <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-accent text-3xl font-black text-brand-primary">
                 {(nombre.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("") || "CE").toUpperCase()}
@@ -508,7 +508,7 @@ export default function PsicoEmpleadoPerfilPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-slate-500">Última batería</p>
@@ -530,7 +530,7 @@ export default function PsicoEmpleadoPerfilPage() {
           </div>
         </section>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-xs">
           <button type="button" onClick={() => setTab("perfil")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "perfil" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Perfil</button>
           <button type="button" onClick={() => setTab("aplicaciones")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "aplicaciones" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Aplicaciones y resultados</button>
         </div>

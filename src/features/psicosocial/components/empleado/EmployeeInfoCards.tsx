@@ -4,7 +4,7 @@ import { InfoField } from './InfoField';
 export function EmployeeInfoCards({ perfil }: { perfil: PsicoEmpleadoPerfil }) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
         <CardTitle number="1" title="Información personal" />
         <InfoField label="Nombre completo" value={perfil.nombre_completo} />
         <InfoField label="Tipo documento" value="Cédula de ciudadanía" />
@@ -15,7 +15,7 @@ export function EmployeeInfoCards({ perfil }: { perfil: PsicoEmpleadoPerfil }) {
         <InfoField label="Correo" value={perfil.correo} />
         <InfoField label="Teléfono" value={perfil.telefono} />
       </section>
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
         <CardTitle number="2" title="Información sociodemográfica" />
         <InfoField label="Nivel de estudios" value={perfil.nivel_estudios} />
         <InfoField label="Ocupación / profesión" value={perfil.ocupacion} />
@@ -25,7 +25,7 @@ export function EmployeeInfoCards({ perfil }: { perfil: PsicoEmpleadoPerfil }) {
         <InfoField label="Tipo de vivienda" value={perfil.tipo_vivienda} />
         <InfoField label="Personas dependientes" value={perfil.personas_dependen} />
       </section>
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
         <CardTitle number="3" title="Información laboral" />
         <InfoField label="Ciudad de trabajo" value={perfil.ciudad_trabajo} />
         <InfoField label="Departamento trabajo" value={perfil.departamento_trabajo} />

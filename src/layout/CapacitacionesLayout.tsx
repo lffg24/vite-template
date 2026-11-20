@@ -98,7 +98,7 @@ function SinAccesoAlModulo() {
       </p>
       <a
         href="/"
-        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-accent px-4 py-2 text-sm font-bold text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+        className="mt-6 inline-flex items-center rounded-rel-control bg-rel-accent px-4 py-2 text-sm font-bold text-rel-dark focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
       >
         Volver al inicio
       </a>

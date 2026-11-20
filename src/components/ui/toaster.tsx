@@ -38,7 +38,7 @@ export function Toaster() {
                 del producto y no como un cuadro del navegador. */}
             <span
               aria-hidden="true"
-              className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90"
+              className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90"
             />
             <span
               aria-hidden="true"

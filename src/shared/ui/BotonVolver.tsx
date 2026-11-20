@@ -32,7 +32,7 @@ export function BotonVolver({
     <Link
       to={a}
       className={cn(
-        "inline-flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface px-4 py-2 text-sm font-bold text-rel-dark shadow-sm transition-colors hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+        "inline-flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface px-4 py-2 text-sm font-bold text-rel-dark shadow-xs transition-colors hover:bg-rel-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
         className
       )}
     >

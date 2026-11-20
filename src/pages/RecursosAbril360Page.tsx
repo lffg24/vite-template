@@ -852,8 +852,8 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
   const Icon = current.icon;
 
   return (
-    <main className="min-h-screen bg-background bg-[radial-gradient(circle_at_top_left,_hsl(var(--primary)/0.12),_transparent_28%)] text-foreground">
-      <section className="border-b border-border/70 bg-card/80 backdrop-blur">
+    <main className="min-h-screen bg-background bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.12),transparent_28%)] text-foreground">
+      <section className="border-b border-border/70 bg-card/80 backdrop-blur-sm">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <div>
             <Link to="/login" className="inline-flex hover:opacity-90">

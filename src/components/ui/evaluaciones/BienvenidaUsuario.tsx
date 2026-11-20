@@ -11,7 +11,7 @@ export default function BienvenidaUsuario({
   cantidadPendientes,
 }: BienvenidaUsuarioProps) {
   return (
-    <Card className="bg-emerald-50 p-6 rounded-xl shadow-sm flex items-start space-x-4">
+    <Card className="bg-emerald-50 p-6 rounded-xl shadow-xs flex items-start space-x-4">
       <div className="bg-emerald-100 rounded-full p-2">
         <Hand className="h-6 w-6 text-emerald-600" aria-hidden="true" />
       </div>

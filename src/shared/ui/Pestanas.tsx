@@ -159,7 +159,7 @@ export function Pestanas<T extends string>({
               className={cn(
                 "flex min-w-0 items-center gap-2 text-left text-sm font-semibold",
                 "transition-colors duration-enter ease-rel-out",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                 aspecto === "subrayado"
                   ? cn(
                       "border-b-2 px-2 py-3 sm:px-4",
@@ -176,7 +176,7 @@ export function Pestanas<T extends string>({
               )}
             >
               {Icono ? <Icono className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
-              <span className="min-w-0 break-words">{p.nombre}</span>
+              <span className="min-w-0 wrap-break-word">{p.nombre}</span>
               {typeof p.cuenta === "number" ? (
                 <span
                   aria-hidden="true"
@@ -204,7 +204,7 @@ export function Pestanas<T extends string>({
            la animación de entrada vuelve a correr. Sin ella el contenido se
            sustituye en el sitio y el cambio pasa desapercibido. */
         key={valor}
-        className="mt-6 focus-visible:outline-none motion-safe:animate-entrada"
+        className="mt-6 focus-visible:outline-hidden motion-safe:animate-entrada"
       >
         {children}
       </div>

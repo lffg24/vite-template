@@ -482,7 +482,7 @@ export default function SuperAdminCreditosPage() {
                       aria-pressed={elegido}
                       onClick={() => setSelected(psicologo)}
                       className={cn(
-                        "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-rel-micro focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                        "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-rel-micro focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                         elegido ? "bg-accent text-accent-foreground" : "hover:bg-surface-subtle"
                       )}
                     >

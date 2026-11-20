@@ -17,7 +17,7 @@ function ContactLink({
   return (
     <a
       href={href}
-      className="inline-flex min-h-9 w-fit max-w-full items-center gap-2 break-all rounded-lg px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex min-h-9 w-fit max-w-full items-center gap-2 break-all rounded-lg px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       <span>{children}</span>
@@ -35,10 +35,10 @@ export function WebDirectHelpCenter() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex min-h-10 items-center gap-2 rounded-full border border-sidebar-active/30 bg-sidebar-active px-3 text-sm font-bold text-sidebar transition-colors hover:bg-sidebar-active/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring sm:px-4"
+          className="inline-flex min-h-10 items-center gap-2 rounded-full border border-sidebar-active/30 bg-sidebar-active px-3 text-sm font-bold text-sidebar transition-colors hover:bg-sidebar-active/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-sidebar-ring sm:px-4"
           aria-label="Abrir centro de ayuda"
         >
-          <HelpCircle className="h-[1.125rem] w-[1.125rem]" aria-hidden="true" />
+          <HelpCircle className="h-4.5 w-4.5" aria-hidden="true" />
           <span className="hidden sm:inline">¿Necesitas ayuda?</span>
           <span className="sm:hidden">Ayuda</span>
         </button>

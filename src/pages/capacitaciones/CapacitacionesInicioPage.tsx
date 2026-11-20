@@ -200,10 +200,10 @@ export default function CapacitacionesInicioPage() {
                     className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3"
                   >
                     <div className="min-w-0">
-                      <p className="break-words font-semibold text-rel-dark">
+                      <p className="wrap-break-word font-semibold text-rel-dark">
                         {a.curso_titulo}
                       </p>
-                      <p className="break-words text-sm text-rel-muted">
+                      <p className="wrap-break-word text-sm text-rel-muted">
                         Objetivo {formatearFecha(a.fecha_objetivo)} ·{" "}
                         {a.en_curso} en curso · {a.sin_empezar} sin empezar
                       </p>

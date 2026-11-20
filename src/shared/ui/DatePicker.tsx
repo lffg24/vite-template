@@ -108,7 +108,7 @@ export function DatePicker({
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy ?? (error ? `${inputId}-error` : undefined)}
             className={cn(
-              "flex h-10 w-full items-center justify-between rounded-rel-control border bg-rel-surface px-3 text-left text-sm outline-none transition",
+              "flex h-10 w-full items-center justify-between rounded-rel-control border bg-rel-surface px-3 text-left text-sm outline-hidden transition",
               "focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
               error ? "border-rel-danger" : "border-rel-border hover:border-rel-primary/40"
             )}
@@ -166,7 +166,7 @@ export function DatePicker({
                   aria-selected={active}
                   onClick={() => { onChange(iso); setOpen(false); }}
                   className={cn(
-                    "h-9 rounded-rel-control text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary",
+                    "h-9 rounded-rel-control text-sm font-semibold transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary",
                     active && "bg-rel-primary text-rel-primary-foreground",
                     !active && today && "bg-rel-info-subtle text-rel-info",
                     !active && !today && !outside && "text-rel-dark hover:bg-rel-surface-subtle",

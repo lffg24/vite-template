@@ -6,7 +6,7 @@ import { BarraAccionesMovil, BotonAccion } from "./BotonAccion";
 describe("acciones móviles del núcleo", () => {
   it("mantiene un objetivo táctil amplio y ocupa el ancho disponible", () => {
     render(<BotonAccion>Continuar</BotonAccion>);
-    expect(screen.getByRole("button", { name: "Continuar" })).toHaveClass("min-h-[3.5rem]", "w-full");
+    expect(screen.getByRole("button", { name: "Continuar" })).toHaveClass("min-h-14", "w-full");
   });
 
   it("hereda el comportamiento del botón de la casa, no lo reescribe", () => {

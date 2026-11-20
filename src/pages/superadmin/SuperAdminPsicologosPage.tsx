@@ -698,7 +698,7 @@ export default function SuperAdminPsicologosPage() {
                            estaban marcadas. */
                         aria-pressed={checked}
                         onClick={() => toggleEmpresa(empresa.id)}
-                        className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-sm transition-colors duration-rel-micro ease-rel-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none ${checked ? "bg-accent text-accent-foreground" : "hover:bg-surface-subtle"}`}
+                        className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-sm transition-colors duration-rel-micro ease-rel-out focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring motion-reduce:transition-none ${checked ? "bg-accent text-accent-foreground" : "hover:bg-surface-subtle"}`}
                       >
                         <span className="min-w-0">
                           <strong className="block truncate">{empresa.nombre}</strong>

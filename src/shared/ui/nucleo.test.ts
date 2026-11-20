@@ -595,7 +595,9 @@ describe("el núcleo es uno solo", () => {
       const malos = [...contenido(ruta).matchAll(RADIO)]
         .map((m) => m[1])
         // Un token con nombre es una decision del sistema, no un numero.
-        .filter((v) => !ESCALA.has(v) && !v.startsWith("[var("));
+        /* `[var(--x)]` en la v3 y `(--x)` en la v4: las dos formas son la
+           misma variable, y las dos son una decision del sistema. */
+        .filter((v) => !ESCALA.has(v) && !v.startsWith("[var(") && !v.startsWith("(--"));
       if (malos.length) culpables.push(comoRuta(ruta));
     }
 
@@ -714,7 +716,7 @@ describe("el núcleo es uno solo", () => {
   /**
    * El relieve sale del sistema, no de las utilidades genéricas.
    *
-   * El perímetro usaba seis sombras: `shadow-sm` (22 veces), `shadow-card`,
+   * El perímetro usaba seis sombras: `shadow-xs` (22 veces), `shadow-card`,
    * `shadow-floating`, `shadow-lg`, `shadow-xl` y `shadow-none`. Tres de ellas
    * son de Tailwind y **no son versiones más pequeñas de la de la casa: son
    * negras**. La del producto va tintada de azul —`rgba(12, 22, 44, …)`—, así
@@ -737,7 +739,7 @@ describe("el núcleo es uno solo", () => {
     ]);
 
     /* `lib/utils.ts` es donde los nombres se DECLARAN, no donde se usan: ahi
-       `shadow` es la clave del grupo que `cn` ensena a `tailwind-merge`, para
+       `shadow-sm` es la clave del grupo que `cn` ensena a `tailwind-merge`, para
        que `shadow-none` pueda quitarle el relieve a una pieza. Sin esta
        excepcion el guardia llama clase a una clave de configuracion. */
     const DECLARA_LOS_NOMBRES = "lib/utils.ts";
@@ -1039,7 +1041,8 @@ describe("el núcleo es uno solo", () => {
    *   - **Error.** La confirmación valía 130, por encima de los avisos: un
    *     mensaje lanzado mientras alguien confirmaba no se veía nunca.
    *
-   * Ahora son dos capas con nombre en `tailwind.config.js` —`z-rel-modal` y
+   * Ahora son dos capas con nombre en el tema (`src/index.css`, desde que
+   * la v4 lo movio del JavaScript al CSS) —`z-rel-modal` y
    * `z-rel-aviso`—, y el aviso va encima del modal: un mensaje que el modal
    * tapa es un mensaje que no se dio.
    *
@@ -1048,17 +1051,28 @@ describe("el núcleo es uno solo", () => {
    * escala (`z-10`, `z-50`) se usan para cabeceras pegajosas y desplegables
    * dentro de la página y son otra conversación.
    */
+  /* De seis a tres el 2026-11-19, sin tocar Psicosocial: al subir a la v4,
+     el codemod convirtio sus capas inventadas en la escala --`z-[50]` pasa a
+     `z-50`, que es el mismo valor con el nombre que ya existia-- y tres
+     dejaron de inventar nada. Las otras tres siguen en 60, 70 y 80. */
   const CAPA_INVENTADA_PENDIENTE = [
-    "features/psicosocial/components/aplicaciones/ApplicationLinkModal.tsx",
     "features/psicosocial/components/sociodemografia/SociodemografiaFields.tsx",
-    "features/psicosocial/web-direct/WebDirectParticipantShell.tsx",
-    "pages/ReportesPsico.tsx",
     "pages/psicosocial/AplicacionDetallePage.tsx",
     "pages/psicosocial/EmpresaEmpleadosPage.tsx",
   ];
 
   it("las capas que tapan la página tienen nombre, y los números sueltos no crecen", () => {
-    const inventadas = TODOS.filter((ruta) => /z-\[\d+\]/.test(contenido(ruta))).map(comoRuta);
+    /* La v3 solo generaba 0/10/20/30/40/50, asi que una capa inventada
+       tenia que escribirse `z-[70]` y se reconocia por los corchetes. La
+       v4 genera cualquier numero, de modo que `z-70` ya no se distingue de
+       la escala a simple vista. El guardia mira las dos formas y conoce la
+       escala en vez de los corchetes. */
+    const DE_LA_ESCALA = new Set(["0", "10", "20", "30", "40", "50"]);
+    const inventadas = TODOS.filter((ruta) =>
+      [...contenido(ruta).matchAll(/\bz-(?:\[(\d+)\]|(\d+))\b/g)].some(
+        (m) => !DE_LA_ESCALA.has(m[1] ?? m[2])
+      )
+    ).map(comoRuta);
 
     const nuevas = inventadas.filter((r) => !CAPA_INVENTADA_PENDIENTE.includes(r));
     expect(
@@ -1507,8 +1521,13 @@ describe("el núcleo es uno solo", () => {
    * en todo lo que no es Psicosocial. Lo que queda en la lista es Psicosocial,
    * que no se migra.
    */
+  /* `WebDirectHelpCenter` entro el 2026-11-19 sin que nadie lo cambiara: su
+     icono medía 18 px escritos como valor explicito, y la v4 lo convirtio en
+     `h-4.5`, que la escala si nombra. El tamaño siempre estuvo fuera; lo que
+     cambio es que ahora se ve. Es de Psicosocial, asi que se congela. */
   const TAMANO_FUERA_DE_ESCALA_PENDIENTE = [
     "components/ui/reportes/MultiSelectEvaluaciones.tsx",
+    "features/psicosocial/web-direct/WebDirectHelpCenter.tsx",
     "features/psicosocial/web-direct/WebDirectJourneyScreen.tsx",
     "pages/psicosocial/AplicacionDetallePage.tsx",
     "pages/psicosocial/AplicacionesBTPage.tsx",
@@ -1593,35 +1612,42 @@ describe("el núcleo es uno solo", () => {
     expect(propios).toEqual([]);
   });
 
-  it("nadie usa `min-h-<número>`: en Tailwind 3.3 no genera nada", () => {
-    // La escala de espaciado en `min-h` llegó en Tailwind 3.4 y el proyecto
-    // usa la 3.3. `min-h-12` no falla ni avisa: simplemente no existe, y el
-    // botón que debía medir 48 px para el pulgar medía 26. Se descubrió
-    // midiendo, no leyendo. Lo que funciona es el valor explícito:
-    // `min-h-[3rem]`.
-    //
-    // Psicosocial queda fuera: es el monolito inicial y no se toca. Las
-    // pantallas de superadmin que son suyas (créditos, empresas) quedan
-    // congeladas aquí: la lista solo puede menguar. Psicólogos salió el
-    // 2026-11-17 al homologarse.
-    const DEL_MONOLITO = [
-      "pages/superadmin/SuperAdminCreditosPage.tsx",
-      "pages/superadmin/SuperAdminEmpresasPage.tsx",
-    ];
-    const usaMinHNumerico = (ruta: string) =>
-      /\bmin-h-\d+\b/.test(contenido(ruta).replace(/\bmin-h-0\b/g, ""));
-    const rotos = TODOS.filter((ruta) => {
-      const r = comoRuta(ruta);
-      if (r.includes("/psicosocial/") || DEL_MONOLITO.includes(r)) return false;
-      return usaMinHNumerico(ruta);
-    }).map(comoRuta);
+  /**
+   * Nadie escribe un valor explicito que la escala ya nombra.
+   *
+   * Este guardia decia lo contrario, y tenia razon mientras duro: en la 3.3
+   * `min-h-12` no generaba nada --no fallaba, no avisaba, simplemente no
+   * existia-- y un boton que debia medir 48 px para el pulgar media 26. Se
+   * descubrio midiendo, no leyendo, y la unica salida era el valor explicito.
+   *
+   * La v4 genera cualquier numero de la escala, asi que el motivo desaparecio
+   * y la regla se da la vuelta: ahora lo que sobra es el valor explicito.
+   * `min-h-[3rem]` y `min-h-12` pintan lo mismo, pero el primero no se puede
+   * comparar de un vistazo con el de al lado ni sigue a la escala si la
+   * escala cambia.
+   *
+   * Solo mira las medidas que la escala cubre entera. Un `clamp()` o un
+   * porcentaje no tienen numero en la escala y no entran aqui.
+   */
+  it("nadie escribe en rem lo que la escala ya nombra", () => {
+    /* `0.3125rem` (5 px) no esta en la escala de espaciado: es el radio mas
+       pequeno de la casa y se queda escrito asi. */
+    const EXPLICITO = /\b(?:min-h|min-w|h|w|p|px|py|m|mx|my|gap|top|left|right|bottom)-\[([0-9.]+)rem\]/g;
+    const culpables: string[] = [];
+    for (const ruta of TODOS) {
+      const valores = [...contenido(ruta).matchAll(EXPLICITO)]
+        .map((m) => Number(m[1]))
+        // La escala va de 0.25 en 0.25 (`--spacing` = 0.25rem).
+        .filter((v) => Number.isFinite(v) && Math.abs(v * 4 - Math.round(v * 4)) < 1e-9);
+      if (valores.length) culpables.push(`${comoRuta(ruta)}: ${[...new Set(valores)].join(", ")}rem`);
+    }
 
-    expect(rotos).toEqual([]);
-    // Y la lista no se queda con nombres que ya cumplen.
-    const siguen = TODOS.filter(
-      (ruta) => DEL_MONOLITO.includes(comoRuta(ruta)) && usaMinHNumerico(ruta)
-    ).map(comoRuta);
-    expect(siguen.sort()).toEqual([...DEL_MONOLITO].sort());
+    expect(
+      culpables,
+      "La v4 genera la escala entera, asi que `min-h-[3rem]` sobra: es " +
+        "`min-h-12`. El valor explicito solo se justifica cuando la escala no " +
+        "llega, como `clamp()` o un porcentaje."
+    ).toEqual([]);
   });
 
   /**
@@ -1677,7 +1703,7 @@ describe("el núcleo es uno solo", () => {
     /* `components/ui/select.tsx` se incorporo el 2026-11-18. Era la SEXTA
        copia del aspecto y se me habia pasado por estar en las piezas base:
        se homologo a mano con `Input` y por eso conservaba lo que `Input`
-       tenia entonces --`shadow-sm`, `rounded-lg` y `text-sm` fijo--. */
+       tenia entonces --`shadow-xs`, `rounded-lg` y `text-sm` fijo--. */
     const PIEZAS_DE_CONTROL = [
       "components/ui/input.tsx",
       "components/ui/select.tsx",
@@ -1694,12 +1720,12 @@ describe("el núcleo es uno solo", () => {
         "cada pieza es su alto."
     ).toEqual([]);
 
-    /* Y el control no tiene relieve: `Input` y `Textarea` llevaban `shadow-sm`
+    /* Y el control no tiene relieve: `Input` y `Textarea` llevaban `shadow-xs`
        --la sombra NEGRA de Tailwind al 5 %-- y un desplegable llevaba
        `shadow-rel-card`, una sombra de tarjeta de 24 px bajo un control de 40.
        La senal de un control es su borde, su cambio al pasar el puntero y su
        anillo de foco. */
-    /* El `(?:^|[\s"])` es lo que distingue la CLASE `shadow-sm` del nombre de
+    /* El `(?:^|[\s"])` es lo que distingue la CLASE `shadow-xs` del nombre de
        la propiedad `box-shadow`, que la cadena nombra con razón dentro de
        `transition-[…]`: el anillo de foco se anima, así que la transición
        tiene que incluirla. Sin eso, el guardia señalaba la propiedad que hace

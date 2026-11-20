@@ -209,7 +209,7 @@ function MetricCard({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-          <p className="mt-1 break-words text-2xl font-black text-foreground">{value}</p>
+          <p className="mt-1 wrap-break-word text-2xl font-black text-foreground">{value}</p>
           {helper ? <p className="mt-1 text-xs text-muted-foreground">{helper}</p> : null}
         </div>
       </div>
@@ -417,7 +417,7 @@ function RespuestasTable({ rows }: { rows: RespuestaRow[] }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar pregunta, respuesta o dimensión..."
-          className="rounded-2xl border border-input bg-surface px-4 py-3 text-sm outline-none focus:border-input-focus focus:ring-2 focus:ring-input-focus/20 md:col-span-2"
+          className="rounded-2xl border border-input bg-surface px-4 py-3 text-sm outline-hidden focus:border-input-focus focus:ring-2 focus:ring-input-focus/20 md:col-span-2"
         />
         <select value={instrumento} onChange={(event) => setInstrumento(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
           <option value="TODOS">Todos los instrumentos</option>
@@ -544,7 +544,7 @@ export default function PsicoEmpleadoResultadosPage() {
           <button
             type="button"
             onClick={() => navigate(`/psicosocial/empleados/${empleadoId}`)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Volver al perfil
@@ -553,7 +553,7 @@ export default function PsicoEmpleadoResultadosPage() {
             <button
               type="button"
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/respuestas`)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50"
             >
               <ClipboardList className="h-4 w-4" aria-hidden="true" />
               Ver respuestas
@@ -587,7 +587,7 @@ export default function PsicoEmpleadoResultadosPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-black uppercase tracking-wide text-brand-sky">Resultado individual</p>
-                <h1 className="mt-1 break-words text-3xl font-black text-foreground lg:text-4xl">
+                <h1 className="mt-1 wrap-break-word text-3xl font-black text-foreground lg:text-4xl">
                   {data?.empleado?.nombre_completo || `Colaborador ${empleadoId}`}
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">

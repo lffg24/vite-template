@@ -356,7 +356,7 @@ export default function SuperAdminEmpresasPage() {
             </div>
             <Campo id="empresa-actividad-economica" etiqueta="Actividad económica">
               <textarea
-                className="min-h-24 rounded-rel-control border border-rel-border bg-rel-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+                className="min-h-24 rounded-rel-control border border-rel-border bg-rel-surface px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary"
                 maxLength={2000}
                 value={form.actividad_economica ?? ""}
                 onChange={(e) => cambiar("actividad_economica", e.target.value)}

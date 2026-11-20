@@ -60,8 +60,8 @@ export function ToastCard({ toast, onClose }: { toast: ToastPayload; onClose: ()
   const theme = TOAST_THEME[toast.type];
   const Icon = theme.Icon;
   return (
-    <div className={`fixed right-5 top-5 z-rel-aviso w-full max-w-[420px] overflow-hidden rounded-rel-panel border shadow-rel-floating backdrop-blur ${theme.wrapper}`}>
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90" />
+    <div className={`fixed right-5 top-5 z-rel-aviso w-full max-w-[420px] overflow-hidden rounded-rel-panel border shadow-rel-floating backdrop-blur-sm ${theme.wrapper}`}>
+      <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-brand-primary via-brand-sky to-brand-turquoise opacity-90" />
       <div className="flex gap-4 p-5">
         <div className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-rel-card ${theme.accent}`}>
           {toast.icon || <Icon className="h-5 w-5" />}

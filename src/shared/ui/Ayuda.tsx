@@ -42,7 +42,7 @@ export function Ayuda({
           type="button"
           aria-label={etiqueta}
           className={cn(
-            "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-rel-muted transition-colors hover:bg-rel-accent-subtle hover:text-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+            "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-rel-muted transition-colors hover:bg-rel-accent-subtle hover:text-rel-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
             className
           )}
         >

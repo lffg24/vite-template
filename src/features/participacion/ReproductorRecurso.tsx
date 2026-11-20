@@ -123,7 +123,7 @@ export function ReproductorRecurso({
         href={recurso.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface px-4 py-2 text-sm font-bold text-rel-dark hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+        className="inline-flex items-center gap-2 rounded-rel-control border border-rel-border bg-rel-surface px-4 py-2 text-sm font-bold text-rel-dark hover:bg-rel-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
       >
         <ExternalLink className="h-4 w-4" aria-hidden="true" />
         {esVideo ? "Ver el video en su sitio" : "Abrir el documento"}

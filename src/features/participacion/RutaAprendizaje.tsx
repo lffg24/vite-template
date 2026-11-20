@@ -84,7 +84,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-rel-muted">
                 Lección {i + 1}
               </p>
-              <p className="break-words font-semibold text-rel-dark">{l.titulo}</p>
+              <p className="wrap-break-word font-semibold text-rel-dark">{l.titulo}</p>
               <p className="text-sm text-rel-muted">{detalle(l)}</p>
             </div>
             <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
@@ -145,7 +145,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                 aria-current={enCurso ? "step" : undefined}
                 className={cn(
                   "mb-1 flex min-w-0 flex-1 rounded-rel-card border bg-rel-surface p-4 transition-colors duration-rel-micro hover:bg-rel-surface-subtle",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
+                  "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
                   enCurso ? "border-rel-primary bg-rel-accent-subtle/40" : "border-rel-border"
                 )}
               >

@@ -24,7 +24,7 @@ interface Props {
 
 export default function TablaDominiosConsolidada({ data, title }: Props) {
   return (
-    <div className="border rounded-2xl p-5 bg-white shadow-sm">
+    <div className="border rounded-2xl p-5 bg-white shadow-xs">
       <h3 className="text-base font-semibold text-gray-800 mb-2">
         {title ?? "Consolidado general de Factores Intralaborales"}
       </h3>

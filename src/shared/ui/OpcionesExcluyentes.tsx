@@ -119,7 +119,7 @@ export function OpcionesExcluyentes<T extends string>({
                 checked={elegida}
                 disabled={o.deshabilitada}
                 onChange={() => alCambiar(o.valor)}
-                className="mt-1 h-4 w-4 shrink-0 accent-rel-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+                className="mt-1 h-4 w-4 shrink-0 accent-rel-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
               />
               <span className="min-w-0">
                 <span className="block font-rel-body text-sm font-bold text-rel-dark">

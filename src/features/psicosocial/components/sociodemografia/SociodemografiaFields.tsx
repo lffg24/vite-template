@@ -53,7 +53,7 @@ export function normalizeSocioOptions(fallback: string[], remote?: Array<{ nombr
 }
 
 export function fieldBase(disabled = false) {
-  return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`;
+  return `w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : "bg-white"}`;
 }
 
 export function SocioTextField({ label, value, onChange, disabled = false }: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean }) {
@@ -65,7 +65,7 @@ export function SocioNumberField({ label, value, min, max, onChange, disabled = 
 }
 
 export function SocioReadOnlyField({ label, value }: { label: string; value: string }) {
-  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input value={value} readOnly className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-normal text-slate-500 outline-none" /></label>;
+  return <label className="space-y-1 text-sm font-bold text-slate-700">{label}<input value={value} readOnly className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-normal text-slate-500 outline-hidden" /></label>;
 }
 
 export function SocioSelectField({ label, value, options, onChange, disabled = false }: { label: string; value: string; options: string[]; onChange: (v: string) => void; disabled?: boolean }) {
@@ -102,7 +102,7 @@ export function SocioSelectField({ label, value, options, onChange, disabled = f
         <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && !disabled && (
-        <div className="absolute z-[80] mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
+        <div className="absolute z-80 mt-2 max-h-72 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
           <button
             type="button"
             onClick={() => { onChange(""); setOpen(false); }}
@@ -147,7 +147,7 @@ export function SocioMunicipioField({ label, query, selectedValue, setQuery, opt
         autoComplete="off"
       />
       {showPanel && (
-        <div className="absolute z-[80] mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
+        <div className="absolute z-80 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-200/70">
           {options.length > 0 ? (
             options.map((item) => (
               <button

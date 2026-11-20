@@ -35,7 +35,7 @@ export function BotonAccion({
       {...props}
       variant={variante === "principal" ? "rel" : "relOutline"}
       className={cn(
-        "min-h-[3.5rem] w-full px-6 py-3 font-rel-heading text-base font-bold",
+        "min-h-14 w-full px-6 py-3 font-rel-heading text-base font-bold",
         className
       )}
     >
@@ -54,7 +54,7 @@ export function BarraAccionesMovil({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-30 -mx-4 mt-6 border-t border-rel-border bg-rel-surface/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(12,22,44,0.08)] backdrop-blur",
+        "sticky bottom-0 z-30 -mx-4 mt-6 border-t border-rel-border bg-rel-surface/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-10px_30px_rgba(12,22,44,0.08)] backdrop-blur-sm",
         "sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none",
         className
       )}

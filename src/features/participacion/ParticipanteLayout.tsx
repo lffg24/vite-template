@@ -35,7 +35,7 @@ export function ParticipanteLayout({
   ancho?: "compacto" | "amplio";
 }) {
   return (
-    <div className="rel-scope flex min-h-screen min-h-[100dvh] flex-col bg-rel-canvas font-rel-body text-rel-dark">
+    <div className="rel-scope flex min-h-screen min-h-dvh flex-col bg-rel-canvas font-rel-body text-rel-dark">
       {progreso !== undefined ? (
         <div
           className="h-1 w-full bg-rel-border"

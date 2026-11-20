@@ -83,7 +83,7 @@ export function WebDirectQuestionScreen({
       className="max-w-6xl"
     >
       <section aria-labelledby="question-title">
-        <div className="mb-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm sm:px-6 sm:py-4">
+        <div className="mb-3 rounded-2xl border border-border bg-surface px-4 py-3 shadow-xs sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-primary">{instrumentLabel}</p>
@@ -99,7 +99,7 @@ export function WebDirectQuestionScreen({
           <Progress className="mt-3" value={percentage} aria-label={`${percentage}% de ${instrumentLabel} completado`} />
         </div>
 
-        <Card className="rounded-[1.5rem] border-border bg-surface p-5 shadow-soft sm:rounded-[2rem] sm:p-7 lg:p-8">
+        <Card className="rounded-3xl border-border bg-surface p-5 shadow-soft sm:rounded-4xl sm:p-7 lg:p-8">
           <fieldset aria-labelledby="question-title">
             <legend className="sr-only">Pregunta {currentIndex + 1}</legend>
             <h1 id="question-title" className="max-w-5xl font-heading text-2xl font-black leading-tight text-foreground sm:text-3xl lg:text-[2rem]">

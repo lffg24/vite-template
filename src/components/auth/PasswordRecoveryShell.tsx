@@ -59,7 +59,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
               <Link to="/login"><ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" /> Volver al inicio de sesión</Link>
             </Button>
           ) : (
-            <Link to="/login" className="inline-flex items-center gap-2 rounded-sm text-sm font-bold text-brand-primary hover:text-brand-sky focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Link to="/login" className="inline-flex items-center gap-2 rounded-sm text-sm font-bold text-brand-primary hover:text-brand-sky focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver al login
             </Link>
           )}

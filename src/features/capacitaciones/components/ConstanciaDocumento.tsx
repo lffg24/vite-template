@@ -105,7 +105,7 @@ export function ConstanciaDocumento({
           </p>
 
           <p className="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-rel-muted">A</p>
-          <h2 className="mt-1 break-words border-b border-rel-border pb-3 font-rel-heading text-2xl font-black tracking-tight sm:text-3xl">
+          <h2 className="mt-1 wrap-break-word border-b border-rel-border pb-3 font-rel-heading text-2xl font-black tracking-tight sm:text-3xl">
             {nombre}
           </h2>
           {p.numero_documento ? (
@@ -116,7 +116,7 @@ export function ConstanciaDocumento({
           ) : null}
 
           <p className="mt-6 text-sm text-rel-muted">Por su asistencia a la formación</p>
-          <h3 className="mt-1 break-words font-rel-heading text-lg font-black uppercase tracking-tight sm:text-xl">
+          <h3 className="mt-1 wrap-break-word font-rel-heading text-lg font-black uppercase tracking-tight sm:text-xl">
             {curso.titulo ?? "—"}
           </h3>
           <p className="mt-1 text-sm text-rel-muted">

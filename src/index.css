@@ -1,16 +1,314 @@
-@import "@fontsource/open-sans/400.css";
-@import "@fontsource/open-sans/600.css";
-@import "@fontsource/open-sans/700.css";
-@import "@fontsource/open-sans/800.css";
+@import '@fontsource/open-sans/400.css' layer(base);
+@import '@fontsource/open-sans/600.css' layer(base);
+@import '@fontsource/open-sans/700.css' layer(base);
+@import '@fontsource/open-sans/800.css' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme {
+  --font-rel-heading: var(--rel-font-heading);
+  --font-rel-body: var(--rel-font-body);
+  --font-sans: var(--rel-font-body);
+  --font-body: var(--rel-font-body);
+  --font-heading: var(--rel-font-heading);
+
+  --color-rel-primary: hsl(var(--rel-primary));
+  --color-rel-primary-foreground: hsl(var(--rel-primary-foreground));
+
+  --color-rel-accent: hsl(var(--rel-accent));
+  --color-rel-accent-ink: hsl(var(--rel-accent-ink));
+  --color-rel-accent-subtle: hsl(var(--rel-accent-subtle));
+
+  --color-rel-turquoise: hsl(var(--rel-turquoise));
+  --color-rel-turquoise-foreground: hsl(var(--rel-turquoise-foreground));
+
+  --color-rel-sky: hsl(var(--rel-sky));
+  --color-rel-sky-foreground: hsl(var(--rel-sky-foreground));
+
+  --color-rel-dark: hsl(var(--rel-dark));
+  --color-rel-canvas: hsl(var(--rel-canvas));
+
+  --color-rel-surface: hsl(var(--rel-surface));
+  --color-rel-surface-subtle: hsl(var(--rel-surface-subtle));
+
+  --color-rel-border: hsl(var(--rel-border));
+  --color-rel-border-strong: hsl(var(--rel-border-strong));
+
+  --color-rel-muted: hsl(var(--rel-muted-foreground));
+
+  --color-rel-success: hsl(var(--rel-success));
+  --color-rel-success-foreground: hsl(var(--rel-success-foreground));
+  --color-rel-success-subtle: hsl(var(--rel-success-subtle));
+
+  --color-rel-info: hsl(var(--rel-info));
+  --color-rel-info-foreground: hsl(var(--rel-info-foreground));
+  --color-rel-info-subtle: hsl(var(--rel-info-subtle));
+
+  --color-rel-warning: hsl(var(--rel-warning));
+  --color-rel-warning-foreground: hsl(var(--rel-warning-foreground));
+  --color-rel-warning-subtle: hsl(var(--rel-warning-subtle));
+
+  --color-rel-danger: hsl(var(--rel-danger));
+  --color-rel-danger-foreground: hsl(var(--rel-danger-foreground));
+  --color-rel-danger-subtle: hsl(var(--rel-danger-subtle));
+
+  --color-rel-neutral: hsl(var(--rel-neutral));
+  --color-rel-neutral-subtle: hsl(var(--rel-neutral-subtle));
+
+  --color-border: hsl(var(--border));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-input: hsl(var(--input));
+  --color-input-focus: hsl(var(--input-focus));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-foreground-soft: hsl(var(--foreground-soft));
+  --color-surface: hsl(var(--surface));
+  --color-surface-subtle: hsl(var(--surface-subtle));
+  --color-surface-elevated: hsl(var(--surface-elevated));
+  --color-overlay: hsl(var(--overlay));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-ink: hsl(var(--primary-ink));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-active: hsl(var(--primary-active));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-hover: hsl(var(--accent-hover));
+
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-subtle: hsl(var(--info-subtle));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-subtle: hsl(var(--success-subtle));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-subtle: hsl(var(--warning-subtle));
+
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-danger-subtle: hsl(var(--danger-subtle));
+
+  --color-risk-none: hsl(var(--risk-none));
+  --color-risk-low: hsl(var(--risk-low));
+  --color-risk-medium: hsl(var(--risk-medium));
+  --color-risk-high: hsl(var(--risk-high));
+  --color-risk-very-high: hsl(var(--risk-very-high));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-brand-primary: hsl(var(--brand-primary));
+  --color-brand-turquoise: hsl(var(--brand-turquoise));
+  --color-brand-sky: hsl(var(--brand-sky));
+  --color-brand-dark: hsl(var(--brand-dark));
+  --color-brand-canvas: hsl(var(--brand-canvas));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-muted: hsl(var(--sidebar-muted));
+  --color-sidebar-hover: hsl(var(--sidebar-hover));
+  --color-sidebar-active: hsl(var(--sidebar-active));
+  --color-sidebar-active-foreground: hsl(var(--sidebar-active-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-rel-control: var(--rel-radius-control);
+  --radius-rel-card: var(--rel-radius-card);
+  --radius-rel-panel: var(--rel-radius-panel);
+  /* Los nombres `--radius-*`, `--shadow-*` y `--font-*` son el espacio de
+     nombres del tema en la v4, y esta casa los usaba desde antes como
+     variables propias. Al subir quedaron declarados dos veces, y uno de los
+     dos lados ganaba por orden de aparicion: `rounded-lg` pasaba de 14 a
+     16 px y `rounded-xl` de 16 a 20 en TODO el producto, Psicosocial
+     incluido, sin que nada fallara.
+
+     Se arregla en el origen: la capa `rel-*` pasa a tener el valor y el tema
+     la referencia. Un nombre, un valor, y ninguna colision. */
+  --radius-xs: var(--rel-radius-xs);
+  --radius-sm: calc(var(--rel-radius-control) - 4px);
+  --radius-md: calc(var(--rel-radius-control) - 2px);
+  --radius-lg: var(--rel-radius-control);
+  --radius-xl: var(--rel-radius-card);
+  --radius-2xl: var(--rel-radius-panel);
+
+  --z-index-rel-modal: 100;
+  --z-index-rel-aviso: 120;
+
+  --shadow-soft: var(--rel-shadow-soft);
+  --shadow-card: var(--rel-shadow-card);
+  --shadow-floating: var(--rel-shadow-floating);
+  --shadow-rel-card: var(--rel-shadow-card);
+  --shadow-rel-soft: var(--rel-shadow-soft);
+  --shadow-rel-floating: var(--rel-shadow-floating);
+
+  --background-image-marca: linear-gradient(
+    90deg,
+    hsl(var(--primary-hover)) 0%,
+    hsl(var(--primary)) 55%,
+    hsl(var(--brand-sky)) 100%
+  );
+
+  --default-transition-duration: var(--motion-enter);
+  --transition-duration-press: var(--motion-press);
+  --transition-duration-exit: var(--motion-exit);
+  --transition-duration-enter: var(--motion-enter);
+  --transition-duration-context: var(--motion-context);
+  --transition-duration-attention: var(--motion-attention);
+  --transition-duration-fast: var(--motion-fast);
+  --transition-duration-standard: var(--motion-standard);
+  --transition-duration-slow: var(--motion-slow);
+  --transition-duration-rel-micro: var(--rel-motion-micro);
+  --transition-duration-rel-panel: var(--rel-motion-panel);
+  --transition-duration-rel-context: var(--rel-motion-context);
+
+  --default-transition-timing-function: var(--rel-ease-out);
+  --ease-rel-out: var(--rel-ease-out);
+  --ease-rel-inout: var(--rel-ease-inout);
+  --ease-rel-spring: var(--rel-ease-spring);
+
+  --animate-entrada: entrada var(--motion-enter) var(--rel-ease-out) both;
+  --animate-barrido: barrido 1.6s var(--rel-ease-inout) infinite;
+  --animate-accordion-down: accordion-down var(--motion-enter)
+    var(--rel-ease-out);
+  --animate-accordion-up: accordion-up var(--motion-exit) var(--rel-ease-out);
+
+  @keyframes entrada {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes barrido {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  En la v4 el color de borde por defecto pasa a ser `currentcolor`, y hay 584
+  sitios en el producto que escriben `border` sin decir de que color. El
+  codemod deja aqui una compatibilidad que apunta a `gray-200`, que es el
+  valor por defecto de Tailwind, y ESTE PRODUCTO NUNCA USO ESE: su borde por
+  defecto sale del token de la casa, porque mas abajo hay un `* { @apply
+  border-border }` heredado de la plantilla de componentes.
+
+  Dejarlo como vino tenia dos problemas. Uno, que `gray-200` ni siquiera esta
+  declarado aqui, asi que la regla caia en `currentcolor`. Y otro, que la
+  regla de abajo la pisa para `*` pero NO para los pseudoelementos, que en la
+  v3 si tomaban el color por defecto.
+
+  Asi que apunta al token de la casa, que es lo que estos 584 bordes han
+  estado pintando siempre.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: hsl(var(--border));
+  }
+}
+
+@utility surface-elevated {
+  @apply bg-surface shadow-card;
+}
+
+@utility soft-institutional-glass {
+  background-color: hsl(var(--surface) / 0.86);
+  backdrop-filter: blur(18px);
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility marker-highlight {
+  display: inline;
+  padding: 0.02em 0.2em 0.16em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: 1.08;
+  background-image: linear-gradient(
+    180deg,
+    transparent 6%,
+    hsl(var(--marker)) 6%,
+    hsl(var(--marker)) 96%,
+    transparent 96%
+  );
+}
 
 @layer base {
   :root {
-    --font-heading: "Open Sans";
-    --font-body: "Open Sans";
+    /* El valor vive en la capa `rel-*`, mas abajo: aqui chocaria con el
+       espacio de nombres del tema. */
 
     /* Era un literal igual a `--primary-active`, o sea un segundo nombre
        para lo mismo. En los 36 archivos que la usan hace de TEXTO, asi que
@@ -126,17 +424,14 @@
     --ring: 172 100% 36%;
     --overlay: 215 42% 13% / 0.58;
 
-    --radius-xs: 0.3125rem;
-    --radius: 0.875rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.25rem;
+    /* Los cuatro radios viven en la capa `rel-*`, mas abajo. */
 
     --illustration-size-xs: 5rem;
     --illustration-size-sm: 8rem;
     --illustration-size-md: 12rem;
     --illustration-size-lg: clamp(14rem, 24vw, 20rem);
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
-    --illustration-radius: var(--radius-lg);
+    --illustration-radius: var(--rel-radius-card);
 
     /* ===== Movimiento ==================================================
        Habia DOS escalas casi iguales —`--motion-*` en 160/220/300 y
@@ -174,9 +469,7 @@
     --motion-standard: var(--motion-enter);
     --motion-slow: var(--motion-context);
 
-    --shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
-    --shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
-    --shadow-floating: 0 28px 60px rgba(12, 22, 44, 0.14);
+    /* Las tres elevaciones viven en la capa `rel-*`, mas abajo. */
 
     --chart-1: 172 100% 36%;
     --chart-2: 173 100% 23%;
@@ -312,43 +605,19 @@
 
   button,
   [role="button"] {
-    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--rel-font-heading);
   }
 
   input,
   textarea,
   select,
   table {
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--rel-font-body);
   }
 
   ::selection {
     background: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
-  }
-}
-
-@layer utilities {
-  .surface-elevated {
-    @apply bg-surface shadow-card;
-  }
-
-  .soft-institutional-glass {
-    background-color: hsl(var(--surface) / 0.86);
-    backdrop-filter: blur(18px);
-  }
-
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .marker-highlight {
-    display: inline;
-    padding: 0.02em 0.2em 0.16em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    line-height: 1.08;
-    background-image: linear-gradient(180deg, transparent 6%, hsl(var(--marker)) 6%, hsl(var(--marker)) 96%, transparent 96%);
   }
 }
 
@@ -475,9 +744,10 @@
        dejaria la esquina sin redondear. Ya llegaron: `--radius`, `--radius-lg`
        y `--radius-xl` estan declarados al principio de este archivo, asi que
        toca la referencia que esa misma nota pedia. */
-    --rel-radius-control: var(--radius);
-    --rel-radius-card: var(--radius-lg);
-    --rel-radius-panel: var(--radius-xl);
+    --rel-radius-xs: 0.3125rem;
+    --rel-radius-control: 0.875rem;
+    --rel-radius-card: 1rem;
+    --rel-radius-panel: 1.25rem;
 
     /* --- tipografia -------------------------------------------------------
        La nota anterior era correcta y ya caduco. Decia que declarar Open Sans
@@ -491,8 +761,8 @@
        nuevas —CX y Capacitaciones, que son las que usan `font-rel-*`— en la
        fuente del sistema. Dos tipografias en un mismo producto, en pantallas
        contiguas. */
-    --rel-font-heading: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
-    --rel-font-body: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    --rel-font-heading: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+    --rel-font-body: "Open Sans", ui-sans-serif, system-ui, sans-serif;
 
     /* --- movimiento (constitucion §15) --- */
     /* Referencian la escala unica; ya no son una segunda tabla de valores. */
@@ -515,9 +785,9 @@
     /* Elevacion. Tres niveles y ningun valor suelto en las pantallas: una
        sombra escrita a mano en un componente es como se desalinea un sistema.
        Heredan de la casa para no abrir una segunda escala. */
-    --rel-shadow-card: var(--shadow-card);
-    --rel-shadow-soft: var(--shadow-soft);
-    --rel-shadow-floating: var(--shadow-floating);
+    --rel-shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
+    --rel-shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
+    --rel-shadow-floating: 0 28px 60px rgba(12, 22, 44, 0.14);
 
     /* Illustration System · medidas compartidas, nunca por pantalla. */
     --illustration-size-xs: 5rem;

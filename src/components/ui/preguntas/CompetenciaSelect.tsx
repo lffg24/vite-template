@@ -62,7 +62,7 @@ export default function CompetenciaSelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
         <Command>
           <CommandInput placeholder="Buscar competencia..." />
           <CommandEmpty>Sin resultados</CommandEmpty>

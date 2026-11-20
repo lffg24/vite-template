@@ -231,7 +231,7 @@ export default function AplicacionesBTPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Select value={empresaFilter} onValueChange={(v) => { setEmpresaFilter(v); setPage(1); }}>
-              <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-sm">
+              <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-xs">
                 <Building2 className="mr-2 h-4 w-4 text-brand-primary" aria-hidden="true" />
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
@@ -240,7 +240,7 @@ export default function AplicacionesBTPage() {
                 {empresas.map((empresa) => <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button variant="outline" className="h-11 rounded-xl bg-white shadow-sm" onClick={load} disabled={loading}>
+            <Button variant="outline" className="h-11 rounded-xl bg-white shadow-xs" onClick={load} disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <TimerReset className="mr-2 h-4 w-4" aria-hidden="true" />} Actualizar
             </Button>
             <Button asChild className="h-11 rounded-xl bg-primary px-5 font-bold shadow-card hover:bg-primary-hover">
@@ -258,22 +258,22 @@ export default function AplicacionesBTPage() {
           <MetricCard icon={WalletCards} label="Créditos" value={summary.creditos} note="consumidos" accent="from-brand-primary to-brand-dark" progress={100} />
         </section>
 
-        <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-sm">
+        <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-xs">
           <CardContent className="p-0">
             <div className="grid gap-4 border-b border-slate-100 p-5 lg:grid-cols-[1.45fr_0.95fr_0.95fr_0.95fr_auto]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-sm" placeholder="Buscar aplicación, empresa o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-xs" placeholder="Buscar aplicación, empresa o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
               <Select value={instrumentFilter} onValueChange={(v) => { setInstrumentFilter(v); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Formulario" /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Formulario" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TODOS">Todos los formularios</SelectItem>
                   {instruments.map((code) => <SelectItem key={code} value={code}>{instrumentLabels[code] ?? code}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Estado" /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Estado" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TODOS">Todos los estados</SelectItem>
                   <SelectItem value="BORRADOR">Borrador</SelectItem>
@@ -285,10 +285,10 @@ export default function AplicacionesBTPage() {
                 </SelectContent>
               </Select>
               <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{PAGE_SIZES.map((size) => <SelectItem key={size} value={String(size)}>{size} filas</SelectItem>)}</SelectContent>
               </Select>
-              <Button variant="outline" className="h-12 rounded-xl bg-white shadow-sm" type="button">
+              <Button variant="outline" className="h-12 rounded-xl bg-white shadow-xs" type="button">
                 <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Exportar
               </Button>
             </div>
@@ -379,10 +379,10 @@ type MetricCardProps = {
 
 function MetricCard({ icon: Icon, label, value, note, accent, progress }: MetricCardProps) {
   return (
-    <Card className="rounded-[1.5rem] border-slate-200 bg-white shadow-sm">
+    <Card className="rounded-3xl border-slate-200 bg-white shadow-xs">
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-card`}><Icon className="h-6 w-6" /></div>
+          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br ${accent} text-white shadow-card`}><Icon className="h-6 w-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-500">{label}</p>
             <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">{value}</p>
@@ -390,7 +390,7 @@ function MetricCard({ icon: Icon, label, value, note, accent, progress }: Metric
         </div>
         <p className="mt-4 text-xs font-medium text-slate-500">{note}</p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <div className={`h-full rounded-full bg-gradient-to-r ${accent}`} style={{ width: `${Math.max(4, Math.min(100, progress))}%` }} />
+          <div className={`h-full rounded-full bg-linear-to-r ${accent}`} style={{ width: `${Math.max(4, Math.min(100, progress))}%` }} />
         </div>
       </CardContent>
     </Card>

@@ -128,11 +128,11 @@ export default function EmpresaAplicacionesPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       <div className="mx-auto max-w-7xl space-y-6">
-        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm">
+        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-xs">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a empresa
         </button>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black text-slate-950">Aplicaciones de batería</h1>
@@ -144,10 +144,10 @@ export default function EmpresaAplicacionesPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
           <div className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
             <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} className="w-full outline-none" placeholder="Buscar por nombre o estado..." />
+            <input value={q} onChange={(e) => setQ(e.target.value)} className="w-full outline-hidden" placeholder="Buscar por nombre o estado..." />
           </div>
 
           {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button onClick={load} className="ml-3 font-bold underline">Reintentar</button></div>}
@@ -177,11 +177,11 @@ export default function EmpresaAplicacionesPage() {
       </div>
 
       {openCreate && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
           <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
             <div className="mb-6 flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-widest text-brand-primary">Nueva aplicación</p><h2 className="text-2xl font-black text-slate-950">Crear batería psicosocial</h2><p className="mt-1 text-sm text-slate-500">La batería queda vinculada a esta empresa y crea las evaluaciones seleccionadas.</p></div><button onClick={() => setOpenCreate(false)} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" aria-hidden="true" /></button></div>
             <form onSubmit={crear} className="space-y-5">
-              <label className="space-y-1 text-sm font-bold text-slate-700">Nombre de la batería *<input value={form.nombre} onChange={(e) => updateForm("nombre", e.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" placeholder="Ej. Batería planta operativa mayo 2026" />{fieldErrors.nombre && <span className="block text-xs font-semibold text-red-600">{fieldErrors.nombre}</span>}</label>
+              <label className="space-y-1 text-sm font-bold text-slate-700">Nombre de la batería *<input value={form.nombre} onChange={(e) => updateForm("nombre", e.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 font-normal outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" placeholder="Ej. Batería planta operativa mayo 2026" />{fieldErrors.nombre && <span className="block text-xs font-semibold text-red-600">{fieldErrors.nombre}</span>}</label>
               <AbrilDatePicker label="Fecha de aplicación" value={form.fecha_aplicacion} onChange={(value) => updateForm("fecha_aplicacion", value)} />
               <div className="rounded-2xl border border-slate-200 p-4"><div className="mb-3 flex items-center gap-2 font-black"><CalendarDays className="h-4 w-4 text-brand-primary" aria-hidden="true" /> Instrumentos</div><div className="grid gap-3 sm:grid-cols-2">{([
                 ["include_intra_a", "Intralaboral Forma A"],

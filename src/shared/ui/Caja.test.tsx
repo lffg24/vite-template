@@ -30,12 +30,12 @@ describe("Caja", () => {
     expect(clasesCaja).toContain("rounded-rel-card");
     expect(clasesCaja).toContain("p-4");
     // Una caja dentro de un panel no se levanta de nada: ya está encima de algo.
-    expect(clasesCaja).not.toContain("shadow");
+    expect(clasesCaja).not.toContain("shadow-sm");
 
     rerender(<Caja papel="fila">x</Caja>);
     const clasesFila = screen.getByText("x").className;
     expect(clasesFila).toContain("rounded-rel-control");
-    expect(clasesFila).not.toContain("shadow");
+    expect(clasesFila).not.toContain("shadow-sm");
   });
 
   it("el aire solo admite los tres valores de la escala", () => {

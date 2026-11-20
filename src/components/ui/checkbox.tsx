@@ -21,7 +21,7 @@ const Checkbox = React.forwardRef<
            se leia como activada.
          - Anillo de 2 px con separacion, el de los controles pulsables
            —boton, interruptor—, en lugar del de 1 px sin separacion. */
-      "peer h-[18px] w-[18px] shrink-0 rounded-xs border border-input bg-surface shadow-sm transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground motion-reduce:transition-none",
+      "peer h-[18px] w-[18px] shrink-0 rounded-xs border border-input bg-surface shadow-xs transition-colors duration-rel-micro ease-rel-out hover:border-border-strong focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground motion-reduce:transition-none",
       className
     )}
     {...props}

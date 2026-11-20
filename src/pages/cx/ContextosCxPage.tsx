@@ -287,7 +287,7 @@ function VinculosSheet({ sede, cerrar }: { sede: SedeCx | null; cerrar: () => vo
       <section aria-labelledby="servicios-vinculados"><h3 id="servicios-vinculados" className="font-semibold text-rel-dark">Vinculados ({vinculados.length})</h3>
         {!cargando && vinculados.length === 0 ? <p className="mt-2 text-sm text-rel-muted">Esta sede aún no tiene servicios vinculados.</p> : null}
         <ul className="mt-2 space-y-2">{vinculados.map((v) => <li key={v.id} className="flex items-center justify-between gap-2 rounded-rel-card border border-rel-border p-3">
-          <span className="min-w-0"><strong className="block break-words">{v.nombre}</strong><span className="text-sm text-rel-muted">{v.codigo}</span></span>
+          <span className="min-w-0"><strong className="block wrap-break-word">{v.nombre}</strong><span className="text-sm text-rel-muted">{v.codigo}</span></span>
           <Button type="button" variant="relOutline" size="sm" disabled={ocupado !== null} onClick={() => alternar(v.servicio_id, true)}>{ocupado === v.servicio_id ? "Guardando…" : "Desvincular"}</Button>
         </li>)}</ul>
       </section>
@@ -296,7 +296,7 @@ function VinculosSheet({ sede, cerrar }: { sede: SedeCx | null; cerrar: () => vo
       {cargando ? <p role="status" className="text-rel-muted">Cargando servicios…</p> : null}
       {!cargando && disponibles.length === 0 ? <p className="text-rel-muted">No hay servicios activos para esta búsqueda.</p> : null}
       {!cargando ? <ul className="space-y-2">{disponibles.filter((s) => !vinculados.some((v) => v.servicio_id === s.id)).map((servicio) => <li key={servicio.id} className="flex items-center justify-between gap-2 rounded-rel-card border border-rel-border p-3">
-        <span className="min-w-0"><strong className="block break-words">{servicio.nombre}</strong><span className="text-sm text-rel-muted">{servicio.codigo}</span></span>
+        <span className="min-w-0"><strong className="block wrap-break-word">{servicio.nombre}</strong><span className="text-sm text-rel-muted">{servicio.codigo}</span></span>
         <Button type="button" variant="rel" size="sm" disabled={ocupado !== null} onClick={() => alternar(servicio.id, false)}>{ocupado === servicio.id ? "Guardando…" : "Vincular"}</Button>
       </li>)}</ul> : null}
     </div>

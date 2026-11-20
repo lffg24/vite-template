@@ -312,7 +312,7 @@ export default function ResponderEvaluacion() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 pt-6 md:pt-8">
       {/* Header vistoso y temado con el color primario */}
-      <div className="sticky top-4 md:top-6 z-10 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-4 md:top-6 z-10 bg-background/80 backdrop-blur-sm supports-backdrop-filter:bg-background/60">
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
             <CardTitle className="text-xl font-semibold text-primary">

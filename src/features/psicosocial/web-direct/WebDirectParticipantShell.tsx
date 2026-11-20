@@ -20,10 +20,10 @@ export function WebDirectParticipantShell({
   showStepLabel = true,
 }: WebDirectParticipantShellProps) {
   return (
-    <div className="min-h-[100svh] bg-background text-foreground">
+    <div className="min-h-svh bg-background text-foreground">
       <a
         href="#contenido-principal"
-        className="sr-only z-[100] rounded-lg bg-surface px-4 py-3 font-semibold text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="sr-only z-rel-modal rounded-lg bg-surface px-4 py-3 font-semibold text-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       >
         Saltar al contenido
       </a>

@@ -62,7 +62,7 @@ export default function Login() {
   if (!initialized) {
     return (
       <div className="grid h-screen place-items-center overflow-hidden bg-sidebar px-4 text-sm text-sidebar-foreground">
-        <div className="flex items-center gap-3 rounded-rel-panel border border-sidebar-border bg-sidebar-hover px-5 py-4 shadow-rel-floating backdrop-blur">
+        <div className="flex items-center gap-3 rounded-rel-panel border border-sidebar-border bg-sidebar-hover px-5 py-4 shadow-rel-floating backdrop-blur-sm">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-turquoise border-t-transparent" />
           Validando sesión segura...
         </div>
@@ -123,7 +123,7 @@ export default function Login() {
       <div className="grid h-full lg:grid-cols-[0.92fr_1.08fr]">
         <section className="relative hidden overflow-hidden bg-sidebar text-sidebar-foreground lg:block">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_14%,rgba(0,212,184,0.22),transparent_26%),radial-gradient(circle_at_78%_82%,rgba(0,152,214,0.12),transparent_30%),linear-gradient(135deg,rgba(0,212,184,0.06)_0%,transparent_36%)]" />
-          <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-brand-primary/10 bg-brand-turquoise/12 blur-sm" />
+          <div className="absolute -bottom-20 left-12 h-64 w-64 rounded-full border border-brand-primary/10 bg-brand-turquoise/12 blur-xs" />
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-8 xl:px-12 xl:py-10">
             <div>
               <Marca sobre="oscuro" className="mb-10 h-14" />
@@ -142,7 +142,7 @@ export default function Login() {
                 {productCards.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-rel-panel border border-sidebar-border bg-white/[0.055] p-4 shadow-rel-card backdrop-blur">
+                    <div key={item.title} className="rounded-rel-panel border border-sidebar-border bg-white/5.5 p-4 shadow-rel-card backdrop-blur-sm">
                       <Icon className="mb-3 h-6 w-6 text-brand-turquoise" />
                       <div className="text-sm font-black">{item.title}</div>
                       <div className="mt-1 text-xs text-sidebar-muted">{item.text}</div>
@@ -166,14 +166,14 @@ export default function Login() {
           <div className="w-full max-w-[620px]">
             <Marca className="mb-4 h-11 lg:hidden" />
 
-            <Card className="border-border/70 bg-card/92 p-5 shadow-rel-floating backdrop-blur md:p-8 xl:p-9">
+            <Card className="border-border/70 bg-card/92 p-5 shadow-rel-floating backdrop-blur-sm md:p-8 xl:p-9">
               <div className="mb-6 text-center">
                 <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-rel-panel bg-accent">
                   <Marca variante="isotipo" decorativa className="h-9" />
                 </div>
                 {/* `balance` reparte las dos lineas: a 375 px el titular cortaba por
                     medio del subrayado y dejaba «de» arriba y «nuevo» abajo. */}
-                <h2 className="text-3xl font-black tracking-tight [text-wrap:balance]">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
+                <h2 className="text-3xl font-black tracking-tight text-balance">Bienvenido <span className="marker-highlight">de nuevo</span></h2>
                 <p className="mt-1 text-muted-foreground">
                   Inicia sesión en tu cuenta de <span className="font-bold text-brand-primary">ABRIL360</span>
                 </p>
@@ -268,7 +268,7 @@ export default function Login() {
                 </Button>
               </form>
 
-              <div className="mt-5 rounded-rel-panel border border-accent bg-gradient-to-r from-accent/90 to-brand-canvas px-4 py-3">
+              <div className="mt-5 rounded-rel-panel border border-accent bg-linear-to-r from-accent/90 to-brand-canvas px-4 py-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-black text-foreground">Cumplimiento normativo colombiano y trazabilidad SG-SST</p>

@@ -90,7 +90,7 @@ export function PanelLateral({
          fallo. Entrada en 220 ms con `ease-out` —sale deprisa y aterriza
          despacio, como cualquier objeto real—, y anulada para quien pide
          menos movimiento. */
-      className="fixed inset-0 z-rel-modal flex justify-end bg-rel-dark/40 backdrop-blur-sm animate-in fade-in duration-enter motion-reduce:animate-none"
+      className="fixed inset-0 z-rel-modal flex justify-end bg-rel-dark/40 backdrop-blur-xs animate-in fade-in duration-enter motion-reduce:animate-none"
       // Cerrar al pulsar el velo, pero NO al soltar el ratón fuera tras haber
       // seleccionado texto dentro: eso borraría lo que se estaba rellenando.
       onMouseDown={(evento) => {
@@ -104,7 +104,7 @@ export function PanelLateral({
         aria-labelledby={idTitulo}
         tabIndex={-1}
         className={cn(
-          "flex h-full w-full flex-col bg-surface shadow-2xl focus:outline-none",
+          "flex h-full w-full flex-col bg-surface shadow-2xl focus:outline-hidden",
           "animate-in slide-in-from-right duration-enter ease-rel-out motion-reduce:animate-none",
           ANCHOS[ancho],
           className
@@ -131,7 +131,7 @@ export function PanelLateral({
             type="button"
             onClick={alCerrar}
             aria-label="Cerrar"
-            className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground transition-colors duration-rel-micro hover:bg-surface-subtle hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground transition-colors duration-rel-micro hover:bg-surface-subtle hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>

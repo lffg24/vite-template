@@ -180,7 +180,7 @@ export function WebDirectSetupCard({
             type="button"
             disabled={disabled}
             onClick={openBulkUpload}
-            className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
             <span>
@@ -192,7 +192,7 @@ export function WebDirectSetupCard({
             type="button"
             disabled={!active || statusLoading}
             onClick={openAccessDetails}
-            className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             <QrCode className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
             <span>
@@ -269,7 +269,7 @@ export function WebDirectSetupCard({
                     <h3 id="web-direct-qr-title" className="font-heading font-black text-foreground">Código QR para acceso</h3>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">También pueden ingresar escaneando este código.</p>
                     <div className="mt-3 flex flex-col items-center gap-3 sm:flex-row md:flex-col">
-                      <div role="img" aria-label="Código QR del enlace público" className="rounded-2xl border border-border bg-white p-2 shadow-sm"><QRCodeSVG id={`web-direct-qr-${applicationId}`} value={publicUrl} size={132} level="M" marginSize={1} bgColor="#FFFFFF" fgColor="#0C162C" /></div>
+                      <div role="img" aria-label="Código QR del enlace público" className="rounded-2xl border border-border bg-white p-2 shadow-xs"><QRCodeSVG id={`web-direct-qr-${applicationId}`} value={publicUrl} size={132} level="M" marginSize={1} bgColor="#FFFFFF" fgColor="#0C162C" /></div>
                       <Button type="button" variant="outline" size="sm" onClick={downloadQr}><Download aria-hidden="true" /> Descargar QR</Button>
                     </div>
                   </section>

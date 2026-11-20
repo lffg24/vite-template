@@ -129,7 +129,7 @@ export default function CursoPage() {
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-rel-accent-ink">
             Curso · Versión {curso.numero_version}
           </p>
-          <h1 className="mt-2 break-words font-rel-heading text-3xl font-black leading-tight sm:text-4xl">
+          <h1 className="mt-2 wrap-break-word font-rel-heading text-3xl font-black leading-tight sm:text-4xl">
             {curso.curso}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-rel-muted">
@@ -188,7 +188,7 @@ export default function CursoPage() {
           <Panel>
             {/* La ilustración LLENA su superficie. Con un tamaño fijo quedaba
                 en 110 px dentro de una caja de 310 y se veía perdida. */}
-            <IllustrationSurface tone="lavender" className="mb-4 aspect-[4/3] p-3">
+            <IllustrationSurface tone="lavender" className="mb-4 aspect-4/3 p-3">
               <Illustration
                 name={curso.puede_finalizar ? "courseApproved" : "learningPath"}
                 size="full"

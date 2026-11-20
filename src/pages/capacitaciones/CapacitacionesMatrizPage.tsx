@@ -337,7 +337,7 @@ function ListaMovil({ datos }: { datos: MatrizCapacitacion }) {
         <li key={f.participante_id} className="rounded-rel-card border border-rel-border p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="break-words font-semibold text-rel-dark">{nombreDe(f)}</p>
+              <p className="wrap-break-word font-semibold text-rel-dark">{nombreDe(f)}</p>
               <p className="text-xs text-rel-muted">
                 {[f.numero_documento ? `${f.tipo_documento ?? ""} ${f.numero_documento}`.trim() : null, f.cargo]
                   .filter(Boolean)
@@ -355,7 +355,7 @@ function ListaMovil({ datos }: { datos: MatrizCapacitacion }) {
               const detalle = detalleCelda(c);
               return (
                 <li key={c.curso_id} className="flex items-start justify-between gap-3 text-sm">
-                  <span className="min-w-0 break-words text-rel-dark">{titulo.get(c.curso_id) ?? "Curso"}</span>
+                  <span className="min-w-0 wrap-break-word text-rel-dark">{titulo.get(c.curso_id) ?? "Curso"}</span>
                   <span className="flex shrink-0 flex-col items-end">
                     <Pill tono={tono}>{etiqueta}</Pill>
                     {detalle && c.estado !== "VIGENTE" ? (
@@ -383,7 +383,7 @@ function TablaMatrizAncha({ datos }: { datos: MatrizCapacitacion }) {
           <tr>
             <th
               scope="col"
-              className="sticky left-0 z-10 min-w-[14rem] bg-rel-surface-subtle px-4 py-3 text-left font-semibold"
+              className="sticky left-0 z-10 min-w-56 bg-rel-surface-subtle px-4 py-3 text-left font-semibold"
             >
               Colaborador
             </th>
@@ -392,7 +392,7 @@ function TablaMatrizAncha({ datos }: { datos: MatrizCapacitacion }) {
                 key={c.curso_id}
                 scope="col"
                 title={c.titulo}
-                className="min-w-[9rem] max-w-[12rem] px-3 py-3 text-center font-semibold normal-case tracking-normal"
+                className="min-w-36 max-w-48 px-3 py-3 text-center font-semibold normal-case tracking-normal"
               >
                 <span className="line-clamp-2">{c.titulo}</span>
               </th>

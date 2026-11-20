@@ -170,7 +170,7 @@ export function WebDirectBulkUploadModal({
                 {rows.map((row) => (
                   <article key={`${row.tipo_documento}-${row.numero_documento}`} className="grid gap-3 rounded-2xl border border-border bg-surface-subtle p-4 sm:grid-cols-[minmax(14rem,1fr)_auto] sm:items-center">
                     <div className="min-w-0">
-                      <strong className="block break-words text-sm text-foreground">{row.nombres} {row.apellidos}</strong>
+                      <strong className="block wrap-break-word text-sm text-foreground">{row.nombres} {row.apellidos}</strong>
                       <span className="mt-1 block text-xs text-muted-foreground">{row.tipo_documento} {row.numero_documento} · {row.fecha_nacimiento}</span>
                     </div>
                     <div className="flex items-center gap-3 sm:justify-end">

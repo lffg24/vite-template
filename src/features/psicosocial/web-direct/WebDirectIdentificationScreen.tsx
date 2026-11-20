@@ -61,7 +61,7 @@ export function WebDirectIdentificationScreen({
 
   return (
     <WebDirectParticipantShell stepLabel="Paso 2 · Verificación de identidad">
-      <Card className="overflow-hidden rounded-[1.5rem] border-border bg-surface shadow-soft sm:rounded-[2rem]">
+      <Card className="overflow-hidden rounded-3xl border-border bg-surface shadow-soft sm:rounded-4xl">
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.8fr)]">
           <form noValidate onSubmit={handleSubmit} className="p-6 sm:p-9 lg:p-12">
             <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">Identificación</p>
@@ -158,7 +158,7 @@ export function WebDirectIdentificationScreen({
               variant="hero"
               size="full"
               priority
-              className="mx-auto hidden max-h-[21rem] max-w-lg lg:block"
+              className="mx-auto hidden max-h-84 max-w-lg lg:block"
             />
             <div className="mt-5 space-y-4">
               <p className="text-sm leading-6 text-muted-foreground">Si no reconocemos tus datos, podrás revisarlos o comunicarte con el profesional responsable sin revelar cuál dato no coincidió.</p>

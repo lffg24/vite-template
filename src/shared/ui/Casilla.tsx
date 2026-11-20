@@ -24,7 +24,7 @@
 // `OpcionesMultiples` y `OpcionesExcluyentes`, que es el tamaño que el
 // recorrido del participante ya usa en todas sus preguntas.
 //
-// Los 44 px se escriben como valor explícito —`min-h-[2.75rem]`— y no con
+// Los 44 px se escriben como valor explícito —`min-h-11`— y no con
 // la clase numérica de la escala: en la versión de Tailwind de este proyecto
 // esa clase no genera nada. Hay una prueba que lo vigila, y acaba de cazar
 // este mismo comentario cuando nombraba la clase prohibida.
@@ -80,7 +80,7 @@ export function Casilla({
       <label
         htmlFor={idCasilla}
         className={cn(
-          "flex min-h-[2.75rem] gap-3 py-1",
+          "flex min-h-11 gap-3 py-1",
           // Con descripción la fila crece y la caja tiene que quedarse arriba,
           // junto a la primera línea. Sin ella, la fila es de una línea y
           // centrar es lo que hace que no quede un hueco debajo.
@@ -101,7 +101,7 @@ export function Casilla({
           className={cn(
             "h-4 w-4 shrink-0 accent-rel-primary",
             descripcion && "mt-1",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
+            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
           )}
         />
         {/* `grow`: en una fila de lista, lo que va a la derecha —un numero de

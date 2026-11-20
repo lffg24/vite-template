@@ -126,7 +126,7 @@ export default function PsicologoPerfilPage() {
   return (
     <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-center justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
               <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-xl font-black text-brand-primary">
@@ -157,7 +157,7 @@ export default function PsicologoPerfilPage() {
           <InfoCard icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />} label="Rol principal" value={roleLabel} />
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="inline-flex items-center gap-2 text-xs font-black uppercase text-brand-primary">
@@ -194,7 +194,7 @@ export default function PsicologoPerfilPage() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
             <h2 className="text-lg font-black text-slate-950">Alcance de acceso</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Detail label="Estado de sesión" value="Autenticada" />
@@ -221,7 +221,7 @@ export default function PsicologoPerfilPage() {
       </div>
 
       {passwordOpen ? (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-4 backdrop-blur-xs">
           <form onSubmit={submitPassword} className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
             <div className="border-b border-slate-100 bg-slate-50 px-6 py-5">
               <div className="flex items-start justify-between gap-4">
@@ -386,12 +386,12 @@ function getPasswordChecks(password: string, nombre: string, email: string) {
 
 function InfoCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="flex items-start gap-4">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent text-brand-primary">{icon}</div>
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
-          <p className="mt-1 break-words text-base font-black leading-snug text-slate-950">{value}</p>
+          <p className="mt-1 wrap-break-word text-base font-black leading-snug text-slate-950">{value}</p>
         </div>
       </div>
     </div>
@@ -405,7 +405,7 @@ function Detail({ icon, label, value }: { icon?: ReactNode; label: string; value
         {icon ? <span className="text-brand-primary">{icon}</span> : null}
         {label}
       </p>
-      <p className="mt-1 break-words text-sm font-bold text-slate-900">{value}</p>
+      <p className="mt-1 wrap-break-word text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
 }
@@ -434,7 +434,7 @@ function PasswordField({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           autoComplete={autoComplete}
-          className="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
+          className="min-w-0 flex-1 px-4 py-3 text-sm outline-hidden"
         />
         <button type="button" onClick={onToggle} className="grid w-12 place-items-center text-slate-500 hover:bg-slate-50" aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}>
           {visible ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}

@@ -103,7 +103,7 @@ export function DialogoCasa({
 
   return (
     <div
-      className="fixed inset-0 z-rel-modal flex items-center justify-center bg-rel-dark/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-rel-modal flex items-center justify-center bg-rel-dark/40 p-4 backdrop-blur-xs"
       // Cerrar al pulsar el velo, pero NO al pulsar dentro de la tarjeta: sin
       // la comprobación, soltar el ratón fuera tras seleccionar texto dentro
       // cierra el modal y se pierde lo que se estaba leyendo.
@@ -118,7 +118,7 @@ export function DialogoCasa({
         aria-labelledby={idTitulo}
         tabIndex={-1}
         className={cn(
-          "max-h-[90vh] w-full overflow-y-auto rounded-rel-panel bg-rel-surface shadow-2xl focus:outline-none",
+          "max-h-[90vh] w-full overflow-y-auto rounded-rel-panel bg-rel-surface shadow-2xl focus:outline-hidden",
           anchos[ancho]
         )}
       >
@@ -128,7 +128,7 @@ export function DialogoCasa({
               type="button"
               onClick={alCerrar}
               aria-label="Cerrar"
-              className="absolute right-4 top-4 rounded-rel-control p-2 text-rel-muted transition-colors hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"
+              className="absolute right-4 top-4 rounded-rel-control p-2 text-rel-muted transition-colors hover:bg-rel-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>

@@ -81,7 +81,7 @@ export function WebDirectTrainingScreen({
       </div>
 
       <details className="mt-4 rounded-2xl border border-info/20 bg-info/10 p-4 text-sm leading-6 text-foreground-soft" open={!videoSrc}>
-        <summary className="flex cursor-pointer list-none items-center gap-2 font-heading font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <summary className="flex cursor-pointer list-none items-center gap-2 font-heading font-bold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring">
           <Captions className="h-5 w-5 text-info" aria-hidden="true" /> Alternativa textual accesible
         </summary>
         <div className="mt-3 border-t border-info/20 pt-3">{transcript}</div>

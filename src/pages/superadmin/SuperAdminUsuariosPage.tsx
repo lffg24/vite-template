@@ -78,7 +78,7 @@ function SelectorEmpresa({
                 role="option"
                 aria-selected={activa}
                 onClick={() => alSeleccionar(item.id)}
-                className={`flex w-full items-center justify-between gap-3 rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary ${
+                className={`flex w-full items-center justify-between gap-3 rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary ${
                   activa ? "bg-rel-canvas font-semibold text-rel-primary" : "hover:bg-rel-surface-subtle"
                 }`}
               >
@@ -349,8 +349,8 @@ export default function SuperAdminUsuariosPage() {
                   {persona.nombre.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join("").toUpperCase()}
                 </span>
                 <div className="min-w-0">
-                  <h2 className="break-words font-semibold">{persona.nombre}</h2>
-                  <p className="break-words text-sm text-rel-muted">{persona.email || `Cuenta #${persona.id}`}</p>
+                  <h2 className="wrap-break-word font-semibold">{persona.nombre}</h2>
+                  <p className="wrap-break-word text-sm text-rel-muted">{persona.email || `Cuenta #${persona.id}`}</p>
                 </div>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs font-semibold ${persona.estado_cuenta === "PENDIENTE" ? "bg-rel-warning-subtle text-rel-warning" : "bg-rel-success-subtle text-rel-success"}`}>

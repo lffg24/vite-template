@@ -30,7 +30,7 @@ export function WebDirectSelectField({ id, label, value, options, onChange, plac
           <SelectValue placeholder={placeholder ?? "Selecciona una opción"} />
         </SelectTrigger>
         <SelectContent className="max-h-[min(22rem,var(--radix-select-content-available-height))] max-w-[calc(100vw-2rem)]">
-          {options.map((option) => <SelectItem key={option.value} value={option.value} className="whitespace-normal break-words leading-5">{option.label}</SelectItem>)}
+          {options.map((option) => <SelectItem key={option.value} value={option.value} className="whitespace-normal wrap-break-word leading-5">{option.label}</SelectItem>)}
         </SelectContent>
       </Select>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
@@ -109,7 +109,7 @@ export function WebDirectMunicipalityField({ id, label, value, required, error, 
           onKeyDown={(event) => { if (event.key === "Escape") { setOpen(false); setQuery(value); } }}
           placeholder="Busca municipio o departamento"
           className={cn(
-            "h-12 w-full rounded-xl border border-input bg-surface py-2 pl-10 pr-10 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-input-focus focus:ring-4 focus:ring-input-focus/20",
+            "h-12 w-full rounded-xl border border-input bg-surface py-2 pl-10 pr-10 text-sm text-foreground shadow-xs outline-hidden transition placeholder:text-muted-foreground focus:border-input-focus focus:ring-4 focus:ring-input-focus/20",
             error && "border-destructive",
           )}
         />
@@ -126,7 +126,7 @@ export function WebDirectMunicipalityField({ id, label, value, required, error, 
               role="option"
               aria-selected={item.municipio === value}
               onClick={() => { onSelect(item); setQuery(item.municipio); setOpen(false); }}
-              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm transition hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span><strong className="block text-foreground">{item.municipio}</strong><span className="text-xs text-muted-foreground">{item.departamento}</span></span>
               {item.municipio === value ? <Check className="h-4 w-4 text-primary" aria-hidden="true" /> : null}
@@ -149,7 +149,7 @@ export function FieldError({ id, children }: { id?: string; children: string }) 
 
 export function WebDirectInlineAlert({ title, children }: { title: string; children: string }) {
   return (
-    <div role="alert" className="flex gap-3 rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-foreground shadow-sm">
+    <div role="alert" className="flex gap-3 rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-foreground shadow-xs">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-destructive/10 text-destructive"><AlertCircle className="h-5 w-5" aria-hidden="true" /></span>
       <div><p className="font-heading font-black">{title}</p><p className="mt-1 leading-6 text-muted-foreground">{children}</p></div>
     </div>

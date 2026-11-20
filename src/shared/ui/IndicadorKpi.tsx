@@ -37,7 +37,7 @@ export function IndicadorKpi({
   return (
     <div
       className={cn(
-        "flex min-w-0 items-center gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-sm sm:p-5",
+        "flex min-w-0 items-center gap-4 rounded-rel-panel border border-rel-border bg-rel-surface p-4 shadow-xs sm:p-5",
         className
       )}
     >

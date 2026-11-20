@@ -50,7 +50,7 @@ export default function FormularioUsuario({ onCreated }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 p-4 border rounded-lg shadow-sm bg-white"
+      className="space-y-4 p-4 border rounded-lg shadow-xs bg-white"
       noValidate
     >
       <div>
@@ -61,7 +61,7 @@ export default function FormularioUsuario({ onCreated }: Props) {
           id="nombre"
           type="text"
           placeholder="Nombre completo"
-          className="w-full border rounded-md px-3 py-2 mt-1 outline-none focus:ring-2 focus:ring-primary"
+          className="w-full border rounded-md px-3 py-2 mt-1 outline-hidden focus:ring-2 focus:ring-primary"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           autoComplete="name"
@@ -77,7 +77,7 @@ export default function FormularioUsuario({ onCreated }: Props) {
           id="correo"
           type="email"
           placeholder="ejemplo@correo.com"
-          className="w-full border rounded-md px-3 py-2 mt-1 outline-none focus:ring-2 focus:ring-primary"
+          className="w-full border rounded-md px-3 py-2 mt-1 outline-hidden focus:ring-2 focus:ring-primary"
           value={correo}
           onChange={(e) => setCorreo(e.target.value)}
           autoComplete="email"

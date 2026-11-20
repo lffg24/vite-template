@@ -141,7 +141,7 @@ export default function PsicoEmpleadoInformesPage() {
   if (loadingSummary) {
     return (
       <main className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
           <Loader2 className="h-5 w-5 animate-spin text-brand-primary" aria-hidden="true" />
           <span className="font-bold text-slate-700">Cargando informes individuales...</span>
         </div>
@@ -172,7 +172,7 @@ export default function PsicoEmpleadoInformesPage() {
           </div>
         </div>
 
-        <Card className="rounded-2xl border-accent bg-gradient-to-r from-accent to-brand-canvas shadow-sm">
+        <Card className="rounded-2xl border-accent bg-linear-to-r from-accent to-brand-canvas shadow-xs">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-brand-primary">
@@ -186,7 +186,7 @@ export default function PsicoEmpleadoInformesPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-slate-200 shadow-sm">
+        <Card className="rounded-2xl border-slate-200 shadow-xs">
           <CardContent className="p-3">
             <div className="grid gap-3 2xl:grid-cols-[auto_minmax(260px,1fr)_minmax(180px,0.45fr)] 2xl:items-center">
               <CardTitle className="flex min-h-10 items-center gap-2 px-1 text-sm">
@@ -196,7 +196,7 @@ export default function PsicoEmpleadoInformesPage() {
               <div className="min-w-0">
                 <label className="sr-only">Instrumento</label>
                 <Select value={instrumentCode} onValueChange={setInstrumentCode} disabled={!data?.informes.length}>
-                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Selecciona instrumento" /></SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Selecciona instrumento" /></SelectTrigger>
                   <SelectContent>
                     {(data?.informes || []).map((item) => (
                       <SelectItem key={item.instrument_code} value={item.instrument_code}>
@@ -209,7 +209,7 @@ export default function PsicoEmpleadoInformesPage() {
 
               <div className="min-w-0">
                 <label className="sr-only">Estado</label>
-                <div className="flex h-10 items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm">
+                <div className="flex h-10 items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-xs">
                   <span className={`font-black ${selectedReport?.available ? "text-emerald-700" : "text-amber-700"}`}>{statusLabel(selectedReport)}</span>
                   {selectedReport?.reason ? <span className="min-w-0 truncate text-xs text-slate-500">{selectedReport.reason}</span> : null}
                 </div>
@@ -237,7 +237,7 @@ export default function PsicoEmpleadoInformesPage() {
           </div>
         ) : null}
 
-        <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+        <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-xs">
           <CardHeader className="border-b bg-slate-50/80">
             <CardTitle className="text-base">Vista previa</CardTitle>
             <p className="text-sm text-slate-500">{selectedReport?.titulo || "Selecciona un instrumento"}</p>

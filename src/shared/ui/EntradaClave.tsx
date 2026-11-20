@@ -96,7 +96,7 @@ export function EntradaClave({ visible, alAlternar, icono: Icono, className, ...
            de 3.5rem y el botón tiene que centrarse en el alto que tenga el
            campo, no en el alto por omisión. Un control que solo encaja a una
            altura es un control que se vuelve a copiar. */
-        className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-lg text-muted-foreground transition-colors duration-rel-micro ease-rel-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
+        className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-lg text-muted-foreground transition-colors duration-rel-micro ease-rel-out hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
       >
         {mostrando ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
       </button>

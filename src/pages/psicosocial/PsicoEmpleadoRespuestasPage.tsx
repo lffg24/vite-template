@@ -686,7 +686,7 @@ export default function PsicoEmpleadoRespuestasPage() {
             <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
             <div className="h-36 animate-pulse rounded-3xl border border-slate-200 bg-white" />
           </div>
-          <div className="grid min-h-[360px] place-items-center rounded-3xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+          <div className="grid min-h-[360px] place-items-center rounded-3xl border border-slate-200 bg-white text-slate-600 shadow-xs">
             <div className="text-center">
               <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-primary" aria-hidden="true" />
               <p className="mt-3 text-sm font-black">Cargando registro de respuestas…</p>
@@ -717,14 +717,14 @@ export default function PsicoEmpleadoRespuestasPage() {
 
       <div className="mx-auto max-w-[1540px] space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold shadow-sm transition hover:bg-slate-50">
+          <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold shadow-xs transition hover:bg-slate-50">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver
           </button>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-4 py-2.5 text-sm font-black text-brand-primary shadow-sm transition hover:bg-accent-hover"
+              className="inline-flex items-center gap-2 rounded-2xl border border-accent bg-accent px-4 py-2.5 text-sm font-black text-brand-primary shadow-xs transition hover:bg-accent-hover"
             >
               <FileText className="h-4 w-4" aria-hidden="true" /> Informe individual
             </button>
@@ -733,7 +733,7 @@ export default function PsicoEmpleadoRespuestasPage() {
           </div>
         </div>
 
-        <section className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+        <section className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-xs md:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-sky">Registro de respuestas · Baterías psicosociales</p>
@@ -755,7 +755,7 @@ export default function PsicoEmpleadoRespuestasPage() {
         ) : (
           <>
             <section className="grid gap-4 min-[1380px]:grid-cols-[minmax(340px,0.95fr)_minmax(520px,1.05fr)] min-[1850px]:grid-cols-[1fr_1.25fr_1fr]">
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
                 <div className="flex items-center gap-4">
                   <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent text-2xl font-black text-brand-primary">
                     {nombre.split(" ").slice(0, 2).map((p) => p[0]).join("").toUpperCase() || "CO"}
@@ -767,13 +767,13 @@ export default function PsicoEmpleadoRespuestasPage() {
                   </div>
                 </div>
               </div>
-              <div className="grid min-w-0 grid-cols-2 gap-2 rounded-3xl border border-slate-200 bg-white p-2 text-center shadow-sm md:grid-cols-4 min-[1380px]:grid-cols-4">
+              <div className="grid min-w-0 grid-cols-2 gap-2 rounded-3xl border border-slate-200 bg-white p-2 text-center shadow-xs md:grid-cols-4 min-[1380px]:grid-cols-4">
                 <Kpi label={showFicha ? "Campos requeridos" : conditionalRules.length ? "Ítems requeridos" : "Total preguntas"} value={metricTotal} />
                 <Kpi label={showFicha ? "Completados" : "Respondidas"} value={metricAnswered} tone="text-emerald-600" />
                 <Kpi label="Pendientes" value={metricPending} tone="text-amber-600" />
                 <Kpi label="Avance" value={`${metricProgress}%`} tone="text-brand-primary" />
               </div>
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm min-[1380px]:col-span-2 min-[1850px]:col-span-1">
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs min-[1380px]:col-span-2 min-[1850px]:col-span-1">
                 <p className="text-sm font-black text-slate-950">Alertas de validación</p>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   {metricPending > 0 ? (
@@ -801,8 +801,8 @@ export default function PsicoEmpleadoRespuestasPage() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex overflow-x-auto border-b border-slate-200 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <section className="rounded-3xl border border-slate-200 bg-white shadow-xs">
+              <div className="flex overflow-x-auto border-b border-slate-200 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
                 {app.evaluaciones.map((ev) => {
                   const meta = getEvalMeta(ev);
                   const active = !showFicha && selectedEval?.evaluacion_id === ev.evaluacion_id;
@@ -849,7 +849,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                           <span className="rounded-full bg-accent px-2 py-1 text-xs font-black text-brand-primary">{s.answered}/{s.total}</span>
                         </div>
                         <div className="mt-2 h-2 rounded-full bg-slate-100">
-                          <div className="h-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-turquoise" style={{ width: `${pct(s.answered, s.total)}%` }} />
+                          <div className="h-2 rounded-full bg-linear-to-r from-brand-primary to-brand-turquoise" style={{ width: `${pct(s.answered, s.total)}%` }} />
                         </div>
                       </div>
                     ))
@@ -901,7 +901,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                       maxLength={500}
                       disabled={selectedLocked}
                       placeholder="Observación técnica del digitador o psicólogo..."
-                      className="mt-3 min-h-36 w-full resize-none rounded-2xl border border-slate-200 p-3 text-sm outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
+                      className="mt-3 min-h-36 w-full resize-none rounded-2xl border border-slate-200 p-3 text-sm outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
                     />
                   </div>
 
@@ -917,7 +917,7 @@ export default function PsicoEmpleadoRespuestasPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-xs">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="font-black text-slate-950">Acciones de captura</h3>
@@ -961,7 +961,7 @@ export default function PsicoEmpleadoRespuestasPage() {
 function Kpi({ label, value, tone = "text-slate-950" }: { label: string; value: number | string; tone?: string }) {
   return (
     <div className="min-w-0 rounded-2xl bg-slate-50/70 p-3 text-center sm:p-4">
-      <p className="mx-auto min-h-[2rem] max-w-[8rem] text-[11px] font-extrabold leading-tight text-slate-500 sm:text-xs">{label}</p>
+      <p className="mx-auto min-h-8 max-w-32 text-[11px] font-extrabold leading-tight text-slate-500 sm:text-xs">{label}</p>
       <p className={`mt-1 truncate text-2xl font-black leading-none tracking-tight sm:text-3xl ${tone}`}>{value}</p>
     </div>
   );
@@ -1022,8 +1022,8 @@ function ConditionalQuestionBlock({
             <span className={`z-10 flex-1 text-center transition ${active ? "text-white" : "text-slate-500"}`}>Sí</span>
             <span
               aria-hidden="true"
-              className={`absolute left-1 top-1 h-9 w-[4.75rem] rounded-full bg-white shadow-sm transition-transform ${
-                active ? "translate-x-[4.75rem]" : "translate-x-0"
+              className={`absolute left-1 top-1 h-9 w-19 rounded-full bg-white shadow-xs transition-transform ${
+                active ? "translate-x-19" : "translate-x-0"
               }`}
             />
           </button>
@@ -1041,7 +1041,7 @@ function ConditionalQuestionBlock({
           <button
             type="button"
             onClick={onToggleOpen}
-            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-brand-primary shadow-sm"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left text-sm font-black text-brand-primary shadow-xs"
           >
             <span>Se habilitan preguntas condicionales</span>
             <ChevronDown className={`h-4 w-4 shrink-0 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
@@ -1234,7 +1234,7 @@ function QuestionRow({
     ? "sm:grid-cols-2 lg:grid-cols-4 min-[1500px]:grid-cols-4"
     : "sm:grid-cols-3 lg:grid-cols-5 min-[1500px]:grid-cols-5";
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm transition hover:border-brand-primary/20 sm:p-4">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-3 shadow-xs transition hover:border-brand-primary/20 sm:p-4">
       <div className="grid gap-3 min-[1500px]:grid-cols-[minmax(260px,1fr)_minmax(430px,500px)] min-[1500px]:items-center">
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent text-sm font-black text-brand-primary">{pregunta.orden}</span>

@@ -13,8 +13,8 @@
 //   - **El aire por dentro, en siete valores:** `p-2`, `p-3`, `p-4`, `p-5`,
 //     `p-6`, `p-8` y sin relleno. Dos cajas contiguas con 16 y 24 px de aire
 //     no se leen como dos cajas del mismo producto.
-//   - **El relieve, en cuatro:** 49 sin sombra, 11 con `shadow-sm`, 5 con
-//     `shadow-card` y 1 con `shadow-floating`. `shadow-sm` era media sombra,
+//   - **El relieve, en cuatro:** 49 sin sombra, 11 con `shadow-xs`, 5 con
+//     `shadow-card` y 1 con `shadow-floating`. `shadow-xs` era media sombra,
 //     elegida once veces sin criterio.
 //
 // ## Los tres papeles
