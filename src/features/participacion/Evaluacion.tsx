@@ -18,13 +18,13 @@
 // responder allí, y que arreglar el foco una vez lo arregle en los tres sitios.
 
 import { useState } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
 
 import { OpcionesExcluyentes } from "@/shared/ui/OpcionesExcluyentes";
 import { OpcionesMultiples } from "@/shared/ui/OpcionesMultiples";
 import { BotonPrincipal } from "@/features/participacion/ParticipanteLayout";
 import type { EvaluacionPublica, IntentoCalificado } from "@/types/participacion";
 import { Button } from "@/components/ui/button";
+import { Illustration } from "@/shared/ui/illustration";
 
 /** Índice de opción como cadena: `OpcionesExcluyentes` trabaja con claves. */
 const clave = (i: number) => String(i);
@@ -224,7 +224,17 @@ function Veredicto({
   alReintentar: () => void;
   alTerminar: () => void;
 }) {
-  const Icono = resultado.aprobado ? CheckCircle2 : XCircle;
+  /* Tres desenlaces y tres escenas, no dos.
+     Antes eran dos iconos de 40 px —un visto y una equis— para el momento
+     que decide si alguien aprobó o no. Y el icono de la equis se usaba
+     también cuando QUEDAN intentos, que no es lo mismo que haberse quedado
+     sin ellos: el texto sí distinguía los tres casos, la imagen no.
+     Las tres ilustraciones ya existían en el registro sin usarse. */
+  const escena = resultado.aprobado
+    ? "evaluationPassed"
+    : resultado.puede_reintentar
+      ? "retryAvailable"
+      : "retryNotAllowed";
 
   return (
     <div className="mt-5 flex-1 space-y-5" aria-live="polite">
@@ -235,12 +245,7 @@ function Veredicto({
             : "border-rel-warning/30 bg-rel-warning-subtle"
         }`}
       >
-        <Icono
-          className={`mx-auto h-10 w-10 ${
-            resultado.aprobado ? "text-rel-success" : "text-rel-warning"
-          }`}
-          aria-hidden="true"
-        />
+        <Illustration name={escena} variant="spot" size="md" className="mx-auto" />
         <p className="mt-3 font-rel-heading text-2xl font-black tabular-nums">
           {resultado.puntaje} %
         </p>

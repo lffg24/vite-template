@@ -161,18 +161,30 @@ con_pieza = [r for r in candidatas if re.search(PIEZA, leer(r))]
 frente("Vacios", len(con_pieza), len(candidatas) - len(con_pieza), "los 4 que quedan tienen motivo")
 
 # --- Ilustraciones: cuantas del registro se usan ---------------------------
+# La cuenta es la union de dos lecturas, porque una sola se equivoca en un
+# sentido o en el otro:
+#
+#   A. La clave escrita en un atributo (`escena="agenda"`). Precisa, pero ciega
+#      a la escena elegida con una variable --que es como se pintan los tres
+#      desenlaces de una evaluacion-- y al valor por defecto de una pieza.
+#   B. La clave como cadena suelta, SOLO en los ficheros que importan el
+#      sistema de ilustracion. Ahi "retryAvailable" no es otra cosa.
+#
+# Fuera de esos ficheros B no se aplica: hay claves que son palabras
+# corrientes --"error", "pdf", "firma"-- y contarlas en cualquier sitio
+# inflaria la cifra con usos que no existen.
 registro = leer("shared/ui/illustration/illustration.registry.ts")
-claves = set(re.findall(r"^\s{2}\"?([a-zA-Z][a-zA-Z0-9_-]*)\"?:\s", registro, re.M))
+claves = set(re.findall(r'^\s{2}\"?([a-zA-Z][a-zA-Z0-9_-]*)\"?:\s*\{', registro, re.M))
 usadas = set()
 for r in TODOS:
-    c = leer(r)
     if "illustration.registry" in r:
         continue
+    c = leer(r)
+    pide_el_sistema = "shared/ui/illustration" in c
     for k in claves:
-        # Tambien el valor por defecto de una pieza (`escena = "buscar"`):
-        # es un uso real y el contador no lo veia, asi que la clave que mas
-        # se pinta figuraba como no usada.
         if re.search(r'(?:name|nombre|escena|escenaVacio|illustration)\s*=\s*\{?"%s"' % re.escape(k), c):
+            usadas.add(k)
+        elif pide_el_sistema and re.search(r'(?<![\w-])"%s"(?![\w-])' % re.escape(k), c):
             usadas.add(k)
 frente("Ilustraciones usadas", len(usadas), len(claves) - len(usadas), "del registro, en todo el producto")
 

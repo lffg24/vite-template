@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import { Evaluacion } from "./Evaluacion";
 import type { EvaluacionPublica, IntentoCalificado } from "@/types/participacion";
@@ -148,5 +148,37 @@ describe("la evaluación del participante", () => {
     expect(barra).toHaveAttribute("aria-valuenow", "0");
     fireEvent.click(screen.getByRole("radio", { name: /^a$/ }));
     expect(barra).toHaveAttribute("aria-valuenow", "1");
+  });
+  /**
+   * Tres desenlaces, tres imágenes.
+   *
+   * El texto distinguía los tres casos desde el principio —aprobaste, todavía
+   * no, se acabaron los intentos— pero la imagen solo distinguía dos: un
+   * visto o una equis, de 40 px. Quedarse sin intentos y tener otro por
+   * delante se veían igual, que es precisamente la diferencia que importa.
+   */
+  it("el desenlace se ve, y los tres son distintos", () => {
+    const escena = () => {
+      const img = document.querySelector("img[data-illustration-variant]");
+      return img?.getAttribute("src") ?? "";
+    };
+
+    pintar({ resultado: intento({ aprobado: true, puntaje: 100, puede_reintentar: false }) });
+    const aprobada = escena();
+    cleanup();
+
+    pintar({ resultado: intento({ puede_reintentar: true }) });
+    const conReintento = escena();
+    cleanup();
+
+    pintar({ resultado: intento({ puede_reintentar: false, intentos_usados: 2 }) });
+    const sinReintento = escena();
+
+    expect(aprobada, "la aprobada tiene que pintar algo").not.toBe("");
+    expect(
+      new Set([aprobada, conReintento, sinReintento]).size,
+      "aprobar, poder reintentar y haberse quedado sin intentos son tres " +
+        "desenlaces distintos y no pueden compartir imagen."
+    ).toBe(3);
   });
 });
