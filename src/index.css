@@ -5,7 +5,7 @@
 
 @import 'tailwindcss';
 
-@plugin 'tailwindcss-animate';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -274,6 +274,17 @@
   ::backdrop,
   ::file-selector-button {
     border-color: hsl(var(--border));
+  }
+
+  /* Duracion por defecto de toda animacion de entrada y salida (animate-in,
+     animate-out). El plugin de animaciones usa 150 ms si nadie dice nada; la
+     casa dice 220 ms, la misma que la del resto de entradas. Si un elemento
+     trae su propia duracion (duration-enter, data-[state=closed]:duration-exit)
+     esa manda: --tw-duration es lo que escribe la utilidad de duracion. */
+  *,
+  ::after,
+  ::before {
+    --tw-animation-duration: var(--tw-duration, var(--motion-enter));
   }
 }
 

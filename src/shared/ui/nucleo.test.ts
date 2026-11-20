@@ -1632,7 +1632,11 @@ describe("el núcleo es uno solo", () => {
   it("nadie escribe en rem lo que la escala ya nombra", () => {
     /* `0.3125rem` (5 px) no esta en la escala de espaciado: es el radio mas
        pequeno de la casa y se queda escrito asi. */
-    const EXPLICITO = /\b(?:min-h|min-w|h|w|p|px|py|m|mx|my|gap|top|left|right|bottom)-\[([0-9.]+)rem\]/g;
+    /* Los deslizamientos (`slide-in-from-bottom-[2.5rem]`) quedan fuera: en el
+       plugin de animaciones un numero pelado es un PORCENTAJE (`-10` es el
+       10 %), no un paso de la escala, asi que la distancia en rem solo se
+       puede escribir explicita. De ahi el `(?<!from-|to-)`. */
+    const EXPLICITO = /(?<!from-|to-)\b(?:min-h|min-w|h|w|p|px|py|m|mx|my|gap|top|left|right|bottom)-\[([0-9.]+)rem\]/g;
     const culpables: string[] = [];
     for (const ruta of TODOS) {
       const valores = [...contenido(ruta).matchAll(EXPLICITO)]
