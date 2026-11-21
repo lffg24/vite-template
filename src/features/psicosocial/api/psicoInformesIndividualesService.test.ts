@@ -22,7 +22,7 @@ describe("psicoInformesIndividualesService.descargarZipInformesIndividuales", ()
       return element;
     });
     const fetchMock = vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(new Blob(["PK"], { type: "application/zip" }), {
+      new Response(new Uint8Array([0x50, 0x4b]), {
         status: 200,
         headers: { "Content-Type": "application/zip" },
       }) as any,
