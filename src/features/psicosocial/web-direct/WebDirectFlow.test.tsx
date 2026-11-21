@@ -146,4 +146,25 @@ describe("recorrido WEB_DIRECT por asignación", () => {
     });
     expect(onNext).toHaveBeenCalledWith(expect.objectContaining({ questionId: 10, order: 1 }));
   });
+
+  it("muestra la confirmación y bloquea cambios durante la transición entre preguntas", () => {
+    render(
+      <WebDirectQuestionScreen
+        form="B"
+        instrumentCode="PSICO_INTRA_B"
+        instrumentLabel="Cuestionario intralaboral"
+        questions={questions}
+        currentQuestionId={10}
+        answers={{ 10: "Siempre" }}
+        onAnswer={() => undefined}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+        isTransitioning
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Respuesta seleccionada. Continuando…");
+    expect(screen.getByRole("radio", { name: "Siempre" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled();
+  });
 });
