@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useParams } from "react-router-dom";
 import type { ReactNode } from "react";
@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   FALLBACK_SOCIO_CATALOGOS,
-  SOCIO_CURRENT_YEAR,
   SOCIO_ESTRATO_OPTIONS,
   SOCIO_SEXO_OPTIONS,
+  getSocioBirthYearOptions,
 } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 import {
   getWebDirectSessionContent,
@@ -69,7 +69,13 @@ function demographicSections(areaOptions: string[], currentArea = ""): WebDirect
     title: "Información personal",
     fields: [
       { id: "sexo", label: "Sexo", type: "select", required: true, options: options(SOCIO_SEXO_OPTIONS) },
-      { id: "anio_nacimiento", label: "Año de nacimiento", type: "number", required: true, min: 1900, max: SOCIO_CURRENT_YEAR },
+      {
+        id: "anio_nacimiento",
+        label: "Año de nacimiento",
+        type: "select",
+        required: true,
+        options: options(getSocioBirthYearOptions()),
+      },
       { id: "estado_civil", label: "Estado civil", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.estado_civil) },
       { id: "nivel_estudios", label: "Nivel de estudios", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.nivel_estudios) },
       { id: "ocupacion_profesion", label: "Ocupación / profesión", type: "text", required: true, autoComplete: "organization-title" },
@@ -151,6 +157,14 @@ function WebDirectAttemptController({
   const [state, dispatch] = useWebDirectAttempt(content.form, content.evaluations, content.demographics);
   const [currentQuestionByInstrument, setCurrentQuestionByInstrument] = useState<Partial<Record<WebDirectInstrumentCode, number>>>({});
   const [activeConditionalByInstrument, setActiveConditionalByInstrument] = useState<Partial<Record<WebDirectInstrumentCode, string>>>({});
+  const [isQuestionTransitioning, setIsQuestionTransitioning] = useState(false);
+  const questionTransitionTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (questionTransitionTimer.current !== null) {
+      window.clearTimeout(questionTransitionTimer.current);
+    }
+  }, []);
 
   const activeCode = state.activeStageCode && state.activeStageCode !== "DATOS_GENERALES"
     ? state.activeStageCode as WebDirectInstrumentCode
@@ -232,6 +246,25 @@ function WebDirectAttemptController({
       );
     }
 
+    const advanceToNextQuestion = (question: typeof questions[number]) => {
+      if (isQuestionTransitioning) return;
+      setIsQuestionTransitioning(true);
+      questionTransitionTimer.current = window.setTimeout(() => {
+        const index = questions.findIndex((item) => item.questionId === question.questionId);
+        const nextQuestion = questions[index + 1];
+        const nextRule = getNextPendingWebDirectConditional(orderedConditionalRules, question.order, nextQuestion?.order);
+        if (nextRule) {
+          setActiveConditionalByInstrument((current) => ({ ...current, [activeCode]: nextRule.code }));
+        } else if (nextQuestion) {
+          setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: nextQuestion.questionId }));
+        } else {
+          dispatch({ type: "complete_active_stage" });
+        }
+        questionTransitionTimer.current = null;
+        setIsQuestionTransitioning(false);
+      }, 340);
+    };
+
     return (
       <WebDirectQuestionScreen
         key={`question-${activeCode}-${currentQuestionId}`}
@@ -244,22 +277,13 @@ function WebDirectAttemptController({
         answers={Object.fromEntries(Object.entries(state.answersByInstrument[activeCode] ?? {}).map(([id, answer]) => [id, answer.value]))}
         onAnswer={(answer) => dispatch({ type: "answer", answer })}
         onPrevious={(question) => {
+          if (isQuestionTransitioning) return;
           const index = questions.findIndex((item) => item.questionId === question.questionId);
           if (index > 0) setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: questions[index - 1].questionId }));
         }}
-        onNext={(question) => {
-          const index = questions.findIndex((item) => item.questionId === question.questionId);
-          const nextQuestion = questions[index + 1];
-          const nextRule = getNextPendingWebDirectConditional(orderedConditionalRules, question.order, nextQuestion?.order);
-          if (nextRule) {
-            setActiveConditionalByInstrument((current) => ({ ...current, [activeCode]: nextRule.code }));
-          } else if (nextQuestion) {
-            setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: nextQuestion.questionId }));
-          } else {
-            dispatch({ type: "complete_active_stage" });
-          }
-        }}
+        onNext={advanceToNextQuestion}
         answerState={state.answersByInstrument[activeCode]?.[currentQuestionId] ? "selected" : "idle"}
+        isTransitioning={isQuestionTransitioning}
       />
     );
   }
