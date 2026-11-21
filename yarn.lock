@@ -1794,10 +1794,10 @@ lru-cache@^11.3.5:
   resolved "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz"
   integrity sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==
 
-lucide-react@^0.503.0:
-  version "0.503.0"
-  resolved "https://registry.npmjs.org/lucide-react/-/lucide-react-0.503.0.tgz"
-  integrity sha512-HGGkdlPWQ0vTF8jJ5TdIqhQXZi6uh3LnNgfZ8MHiuxFfX3RZeA79r2MW2tHAZKlAVfoNE8esm3p+O6VkIvpj6w==
+lucide-react@^1.77.0:
+  version "1.77.0"
+  resolved "https://registry.npmjs.org/lucide-react/-/lucide-react-1.77.0.tgz"
+  integrity sha512-VS6sOi8ZUH1qm6swBL/tpI4xAhB6pFTdHvw3pfCJD+DaTJwpyynVzfOS6mdyMZ+OCdY/GMSQbqinOMOPbNSrQA==
 
 lz-string@^1.5.0:
   version "1.5.0"
