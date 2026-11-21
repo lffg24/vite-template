@@ -77,6 +77,7 @@ import { Pill, type TonoPill } from "@/shared/ui/Pill";
 import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
+import DemoTablero from "@/pages/dev/DemoTablero";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import {
   illustrationRegistry,
@@ -96,6 +97,7 @@ const SECCIONES = [
   { id: "navegacion", nombre: "Navegación" },
   { id: "datos", nombre: "Datos" },
   { id: "progreso", nombre: "Progreso" },
+  { id: "tareas", nombre: "Tareas y tableros" },
   { id: "superposiciones", nombre: "Superposiciones" },
   { id: "ilustraciones", nombre: "Ilustraciones" },
   { id: "iconos", nombre: "Iconos" },
@@ -712,6 +714,20 @@ export default function CatalogoUiKitPage() {
                   Repetir
                 </Button>
               </div>
+            </Pieza>
+          </Seccion>
+
+          <Seccion
+            id="tareas"
+            titulo="Tareas y tableros"
+            descripcion="Lista, tablero y detalle sobre un modelo común (`TareaVista`). Se adapta el dominio una vez y se recibe todo. Arrastra una tarjeta, ábrela, cambia de vista; mover a un estado que cierra una decisión pide motivo."
+          >
+            <Pieza
+              nombre="VistaTareas · Tablero · ListaTareas · PanelTarea · DialogoTransicion"
+              archivo="shared/ui/tablero/"
+              cuando="Para Licitaciones y para cualquier gestor de tareas. Datos de ejemplo con la forma de Licitaciones; la receta de adaptación está en `pages/dev/DemoTablero.tsx`."
+            >
+              <DemoTablero />
             </Pieza>
           </Seccion>
 
