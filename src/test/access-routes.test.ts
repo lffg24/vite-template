@@ -27,4 +27,10 @@ describe("rutas de negocio por acceso", () => {
   it("bloquea deep links psicosociales si el usuario no tiene permiso compatible", () => {
     expect(safeRedirectPath("/psicosocial/dashboard", [], [])).toBe(NO_ACCESS_ROUTE);
   });
+
+  it("abre licitaciones por permiso y no por rol SuperAdmin", () => {
+    expect(routeByAccess([], ["licitaciones.opportunities.view"])).toBe("/licitaciones");
+    expect(safeRedirectPath("/licitaciones", ["SUPER_ADMIN"], [])).toBe("/superadmin/dashboard");
+    expect(safeRedirectPath("/licitaciones", [], ["licitaciones.admin"])).toBe("/licitaciones");
+  });
 });
