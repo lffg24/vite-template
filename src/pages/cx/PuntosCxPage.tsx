@@ -16,6 +16,7 @@ import { cambiarEstadoCatalogoCx, crearCatalogoCx, editarCatalogoCx, listarCatal
 import type { SedeCx, ServicioDeSede } from "@/types/cxContextos";
 import type { PuntoCx } from "@/types/cxPuntosFactores";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Seleccion } from "@/shared/ui/Seleccion";
 
 const VACIO = { codigo: "", nombre: "", sede_id: "", servicio_id: "" };
 
@@ -188,7 +189,7 @@ export default function PuntosCxPage() {
       <div><Label htmlFor="punto-codigo">Código *</Label><Input id="punto-codigo" value={formulario.codigo} disabled={edicion !== "nuevo" || guardando} maxLength={32} onChange={(e) => setFormulario({ ...formulario, codigo: e.target.value })} /></div>
       <div><Label htmlFor="punto-nombre">Nombre *</Label><Input id="punto-nombre" value={formulario.nombre} disabled={guardando} maxLength={160} onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })} /></div>
       <div><Label htmlFor="buscar-sede">Buscar sede</Label><Input id="buscar-sede" type="search" value={buscarSede} maxLength={80} onChange={(e) => setBuscarSede(e.target.value)} /></div>
-      <div><Label htmlFor="punto-sede">Sede *</Label><Desplegable id="punto-sede" value={formulario.sede_id} disabled={guardando} onChange={(e) => setFormulario({ ...formulario, sede_id: e.target.value, servicio_id: "" })}><option value="">Selecciona una sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.codigo} · {s.nombre}</option>)}</Desplegable></div>
+      <div><Label htmlFor="punto-sede">Sede *</Label><Seleccion id="punto-sede" valor={formulario.sede_id} deshabilitada={guardando} alCambiar={(v) => setFormulario({ ...formulario, sede_id: v, servicio_id: "" })} placeholder="Selecciona una sede" textoBusqueda="Buscar sede…" opciones={sedes.map((s) => ({ valor: String(s.id), etiqueta: s.nombre, descripcion: s.codigo }))} /></div>
       <div><Label htmlFor="punto-servicio">Servicio (opcional)</Label><Desplegable id="punto-servicio" value={formulario.servicio_id} disabled={!formulario.sede_id || guardando} onChange={(e) => setFormulario({ ...formulario, servicio_id: e.target.value })}><option value="">Sin servicio específico</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.codigo} · {s.nombre}</option>)}</Desplegable></div>
       {errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div>

@@ -10,6 +10,7 @@ import { guardarAreasServicioCx, listarAreasCx, obtenerAreasServicioCx } from "@
 import type { AreaCx, ServicioAreasCx } from "@/types/cxAreas";
 import type { ServicioCx } from "@/types/cxContextos";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Seleccion } from "@/shared/ui/Seleccion";
 
 export default function ServicioAreasSheet({ servicio, cerrar }: { servicio: ServicioCx | null; cerrar: () => void }) {
   const { toast } = useToast();
@@ -87,7 +88,7 @@ export default function ServicioAreasSheet({ servicio, cerrar }: { servicio: Ser
       {cargando ? <ZonaCargando cargando etiqueta="Cargando responsabilidad" esqueleto={<EsqueletoTexto lineas={3} />}><span /></ZonaCargando> : null}
       {error ? <div role="alert" className="text-sm text-rel-danger">{error}<Button type="button" variant="relOutline" size="sm" className="ml-2" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div> : null}
       {!cargando && actual ? <>
-        <div><Label htmlFor="area-principal">Área principal</Label><Desplegable id="area-principal" value={principal ?? ""} disabled={guardando} onChange={(e) => { const id = Number(e.target.value) || null; setPrincipal(id); if (id) setColaboradoras((a) => a.filter((v) => v !== id)); }} className="mt-1"><option value="">Sin asignar</option>{conocidas.filter((a) => a.activo).map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</Desplegable></div>
+        <div><Label htmlFor="area-principal">Área principal</Label><Seleccion id="area-principal" valor={principal === null ? "" : String(principal)} deshabilitada={guardando} alCambiar={(v) => { const id = Number(v) || null; setPrincipal(id); if (id) setColaboradoras((a) => a.filter((x) => x !== id)); }} className="mt-1" placeholder="Sin asignar" textoBusqueda="Buscar área…" opciones={[{ valor: "", etiqueta: "Sin asignar" }, ...conocidas.filter((a) => a.activo).map((a) => ({ valor: String(a.id), etiqueta: a.nombre }))]} /></div>
         <div><Label htmlFor="buscar-area-servicio">Buscar áreas colaboradoras</Label><Input id="buscar-area-servicio" type="search" maxLength={80} value={buscar} onChange={(e) => setBuscar(e.target.value)} /></div>
         {buscando ? <p role="status" className="text-sm text-rel-muted">Buscando áreas…</p> : null}
         {seleccionadas.length > 0 ? <div><p className="mb-2 text-sm font-semibold">Colaboradoras seleccionadas ({seleccionadas.length})</p><ul className="space-y-2">{seleccionadas.map((a) => <li key={a.id}><Casilla claseEtiqueta="rounded-rel-card border border-rel-border p-3" marcada deshabilitada={guardando} alCambiar={() => alternar(a.id, false)} etiqueta={a.nombre} /></li>)}</ul></div> : null}

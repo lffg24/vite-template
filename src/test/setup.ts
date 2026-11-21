@@ -35,3 +35,6 @@ if (!window.matchMedia) {
     dispatchEvent: () => false,
   })) as unknown as typeof window.matchMedia;
 }
+
+// cmdk (Seleccion) desplaza la opción marcada; jsdom no implementa scrollIntoView.
+Element.prototype.scrollIntoView ||= () => {};

@@ -22,6 +22,7 @@ import type { PuntoCx } from "@/types/cxPuntosFactores";
 import type { EncuestaCx, ResumenEncuestaCx } from "@/types/cxEncuestas";
 import type { CampanaCx, EstadoCampanaCx } from "@/types/cxCampanas";
 import { Desplegable } from "@/shared/ui/Desplegable";
+import { Seleccion } from "@/shared/ui/Seleccion";
 import { Caja } from "@/shared/ui/Caja";
 
 
@@ -121,9 +122,9 @@ export default function CampanasCxPage() {
     {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}
     <Panel titulo="Nueva campaña"><form onSubmit={crear} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div><Label htmlFor="campana-nombre">Nombre *</Label><Input id="campana-nombre" value={nombre} maxLength={200} disabled={ocupado} onChange={(e) => setNombre(e.target.value)} placeholder="Atención en sede centro" /></div>
-      <div><Label htmlFor="campana-encuesta">Encuesta publicada *</Label><Desplegable id="campana-encuesta" value={encuestaId} disabled={ocupado} onChange={(e) => setEncuestaId(e.target.value)}><option value="">Seleccionar encuesta</option>{encuestas.map((q) => <option key={q.id} value={q.id}>{q.titulo}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-encuesta">Encuesta publicada *</Label><Seleccion id="campana-encuesta" valor={encuestaId} deshabilitada={ocupado} alCambiar={setEncuestaId} placeholder="Seleccionar encuesta" textoBusqueda="Buscar encuesta…" opciones={encuestas.map((q) => ({ valor: String(q.id), etiqueta: q.titulo }))} /></div>
       <div><Label htmlFor="campana-version">Versión *</Label><Desplegable id="campana-version" value={versionId} disabled={ocupado || !encuesta} onChange={(e) => setVersionId(e.target.value)}><option value="">Seleccionar versión</option>{encuesta?.versiones.map((v) => <option key={v.id} value={v.id}>Versión {v.numero}</option>)}</Desplegable></div>
-      <div><Label htmlFor="campana-sede">Sede *</Label><Desplegable id="campana-sede" value={sedeId} disabled={ocupado} onChange={(e) => { setSedeId(e.target.value); setServicioId(""); setPuntoId(""); }}><option value="">Seleccionar sede</option>{sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}</Desplegable></div>
+      <div><Label htmlFor="campana-sede">Sede *</Label><Seleccion id="campana-sede" valor={sedeId} deshabilitada={ocupado} alCambiar={(v) => { setSedeId(v); setServicioId(""); setPuntoId(""); }} placeholder="Seleccionar sede" textoBusqueda="Buscar sede…" opciones={sedes.map((s) => ({ valor: String(s.id), etiqueta: s.nombre }))} /></div>
       <div><Label htmlFor="campana-servicio">Servicio</Label><Desplegable id="campana-servicio" value={servicioId} disabled={ocupado || !sedeId} onChange={(e) => { setServicioId(e.target.value); setPuntoId(""); }}><option value="">Toda la sede</option>{servicios.map((s) => <option key={s.servicio_id} value={s.servicio_id}>{s.nombre}</option>)}</Desplegable></div>
       <div><Label htmlFor="campana-punto">Punto de contacto</Label><Desplegable id="campana-punto" value={puntoId} disabled={ocupado || !sedeId} onChange={(e) => setPuntoId(e.target.value)}><option value="">Sin punto específico</option>{puntosDisponibles.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}</Desplegable></div>
       <div className="sm:col-span-2 lg:col-span-3"><Button type="submit" variant="rel" className="w-full sm:w-auto" disabled={ocupado || !encuestas.length}>{ocupado ? "Guardando…" : "Crear campaña y QR"}</Button><p className="mt-2 text-sm text-rel-muted">Se crea en pausa. Actívala cuando el acceso público esté habilitado y probado.</p></div>

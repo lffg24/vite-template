@@ -19,7 +19,9 @@ it("edita principal y colaboradora en una operación", async () => {
   const cerrar = vi.fn();
   render(<ServicioAreasSheet servicio={{ id: "s", codigo: "AT", nombre: "Atención", sector: null, activo: true, creado_en: "", actualizado_en: "" }} cerrar={cerrar} />);
   const principal = await screen.findByLabelText("Área principal");
-  fireEvent.change(principal, { target: { value: "1" } });
+  // La lista es una selección con búsqueda: se abre y se elige la opción.
+  fireEvent.click(principal);
+  fireEvent.click(await screen.findByRole("option", { name: "Operaciones" }));
   fireEvent.click(await screen.findByLabelText("Calidad"));
   fireEvent.click(screen.getByRole("button", { name: "Guardar áreas" }));
   await waitFor(() => expect(guardarAreasServicioCx).toHaveBeenCalledWith("s", {
