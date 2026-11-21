@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Mail } from "lucide-react";
 
-import recoverySentIllustration from "@/assets/password-recovery-sent.png";
 import { PasswordRecoveryShell } from "@/components/auth/PasswordRecoveryShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +42,8 @@ export default function SolicitarRecuperacionClave() {
       description={submitted
         ? "Si existe una cuenta asociada, recibirás un enlace de un solo uso para recuperar el acceso."
         : "Te enviaremos un enlace de un solo uso al correo asociado con tu cuenta."}
-      successIllustration={submitted ? recoverySentIllustration : undefined}
+      successIllustration={submitted ? "recuperacionAcceso" : undefined}
+      escena={submitted ? undefined : "seguridad-bloqueo"}
     >
       {submitted ? (
         <Caja tono="hundida" className="mt-6 flex items-start gap-3 text-left">

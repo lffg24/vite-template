@@ -51,11 +51,11 @@ export default function RestablecerClave() {
   };
 
   if (!token) {
-    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
+    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible." escena="link-fallido"><Link to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
   }
 
   return (
-    <PasswordRecoveryShell title="Crea una nueva contraseña" description="El enlace es de un solo uso. Al completar el cambio, las sesiones anteriores quedarán cerradas.">
+    <PasswordRecoveryShell title="Crea una nueva contraseña" description="El enlace es de un solo uso. Al completar el cambio, las sesiones anteriores quedarán cerradas." escena="cambio-contrasena">
       {completed ? (
         <Aviso
           tono="exito"

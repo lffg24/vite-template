@@ -5,15 +5,19 @@ import { ArrowLeft, CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Marca } from "@/components/brand/Marca";
+import { Illustration, type IllustrationName } from "@/shared/ui/illustration";
 
 type PasswordRecoveryShellProps = {
   title: string;
   description: string;
   children: ReactNode;
-  successIllustration?: string;
+  /** Pantalla de «solicitud recibida»: composición ancha con la escena a un lado. */
+  successIllustration?: IllustrationName;
+  /** Pantalla de un paso en curso: escena pequeña sobre el título (reemplaza el isotipo). */
+  escena?: IllustrationName;
 };
 
-export function PasswordRecoveryShell({ title, description, children, successIllustration }: PasswordRecoveryShellProps) {
+export function PasswordRecoveryShell({ title, description, children, successIllustration, escena }: PasswordRecoveryShellProps) {
   const illustrated = Boolean(successIllustration);
 
   return (
@@ -32,7 +36,7 @@ export function PasswordRecoveryShell({ title, description, children, successIll
               </span>
             </div>
             <div role="status" aria-live="polite" className="grid items-center gap-4 py-6 text-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-8 md:py-8 md:text-left">
-              <img src={successIllustration} alt="" aria-hidden="true" className="mx-auto w-full max-w-56 object-contain sm:max-w-64 md:max-w-none" />
+              <Illustration name={successIllustration!} size="full" className="mx-auto max-w-56 sm:max-w-64 md:max-w-none" />
               <div>
                 <p className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-accent-foreground">
                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Solicitud recibida
@@ -45,9 +49,13 @@ export function PasswordRecoveryShell({ title, description, children, successIll
           </>
         ) : (
           <div className="mb-7 text-center">
-            <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-rel-panel bg-accent">
-              <Marca variante="isotipo" decorativa className="h-10" />
-            </div>
+            {escena ? (
+              <Illustration name={escena} size="sm" className="mx-auto mb-3" />
+            ) : (
+              <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-rel-panel bg-accent">
+                <Marca variante="isotipo" decorativa className="h-10" />
+              </div>
+            )}
             <h1 className="text-3xl font-black tracking-tight"><span className="marker-highlight">{title.split(" ").slice(0, 1).join(" ")}</span>{title.includes(" ") ? ` ${title.split(" ").slice(1).join(" ")}` : ""}</h1>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
           </div>
