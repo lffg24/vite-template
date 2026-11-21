@@ -32,7 +32,7 @@ export function AppSidebar({ items, brand, userBlock, footer, className = "" }: 
                 ].join(" ")
               }
             >
-              {Icon ? <Icon className="h-5 w-5" /> : null}
+              {Icon ? <Icon aria-hidden="true" className="h-5 w-5" /> : null}
               <span>{item.label}</span>
             </NavLink>
           );

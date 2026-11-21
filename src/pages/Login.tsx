@@ -143,7 +143,7 @@ export default function Login() {
                   const Icon = item.icon;
                   return (
                     <div key={item.title} className="rounded-rel-panel border border-sidebar-border bg-white/5.5 p-4 shadow-rel-card backdrop-blur-sm">
-                      <Icon className="mb-3 h-6 w-6 text-brand-turquoise" />
+                      <Icon aria-hidden="true" className="mb-3 h-6 w-6 text-brand-turquoise" />
                       <div className="text-sm font-black">{item.title}</div>
                       <div className="mt-1 text-xs text-sidebar-muted">{item.text}</div>
                     </div>

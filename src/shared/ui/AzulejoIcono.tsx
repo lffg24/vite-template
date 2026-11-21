@@ -42,7 +42,7 @@ export function AzulejoIcono({
   const t = TAMANO[tamano];
   return (
     <span aria-hidden="true" className={cn("grid shrink-0 place-items-center", t.caja, TONO[tono], className)}>
-      <Icono className={t.icono} />
+      <Icono aria-hidden="true" className={t.icono} />
     </span>
   );
 }

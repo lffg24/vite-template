@@ -385,7 +385,7 @@ function ManualPage() {
               <Caja key={step.title} como="article" tono="hundida" aire="normal">
                 <div className="flex items-center gap-3">
                   <span className="grid h-11 w-11 place-items-center rounded-rel-panel bg-card text-primary shadow-rel-card">
-                    <Icon className="h-5 w-5" />
+                    <Icon aria-hidden="true" className="h-5 w-5" />
                   </span>
                   <h3 className="text-base font-black text-foreground">{step.title}</h3>
                 </div>
@@ -864,7 +864,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                 <div className="min-w-0">
                   <div className="flex items-start gap-4">
                     <span className="grid h-12 w-12 shrink-0 place-items-center rounded-rel-card bg-accent text-primary shadow-rel-card">
-                      <Icon className="h-6 w-6" />
+                      <Icon aria-hidden="true" className="h-6 w-6" />
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap gap-2">
@@ -953,7 +953,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                     active ? "bg-card/10 text-white" : "bg-accent text-primary"
                   }`}
                 >
-                  <ItemIcon className="h-4 w-4" />
+                  <ItemIcon aria-hidden="true" className="h-4 w-4" />
                 </span>
                 <span>
                   <span className="block text-sm font-black">{item.title}</span>

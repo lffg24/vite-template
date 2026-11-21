@@ -101,10 +101,17 @@ const esPsicosocial = (r: string) =>
     "layout/PsicologoLayout.tsx",
   ].includes(r);
 
-/** Lo que el perímetro vigila: ni pieza base ni Psicosocial. */
+/**
+ * Herramientas internas: el catálogo del UI kit. MUESTRA los tokens (cajas,
+ * botones y sombras en bruto, a propósito), así que contarlo como pantalla del
+ * producto haría subir los topes por lo mismo que está enseñando.
+ */
+const esHerramientaInterna = (r: string) => r.startsWith("pages/dev/");
+
+/** Lo que el perímetro vigila: ni pieza base ni Psicosocial ni herramienta interna. */
 const DENTRO_DEL_PERIMETRO = TODOS.filter((ruta) => {
   const r = comoRuta(ruta);
-  return !esPiezaBase(r) && !esPsicosocial(r);
+  return !esPiezaBase(r) && !esPsicosocial(r) && !esHerramientaInterna(r);
 });
 
 describe("el núcleo es uno solo", () => {
@@ -1399,6 +1406,50 @@ describe("el núcleo es uno solo", () => {
       "Un icono decorativo lleva `aria-hidden=\"true\"`; uno que ES el control " +
         "lleva `aria-label`. Sin ninguno de los dos, el lector de pantalla " +
         "repite lo que el botón ya dice."
+    ).toEqual([]);
+  });
+
+  /**
+   * El icono que llega COMO VARIABLE también declara su papel.
+   *
+   * La prueba de arriba mira las etiquetas que se importan de `lucide-react`
+   * por su nombre. Pero un icono que se pasa como dato —`icono={Award}`, y
+   * dentro `<Icono />`— no se importa en el archivo que lo dibuja, y esa prueba
+   * no lo veía: eran 13 sitios, entre ellos el menú lateral, la portada de
+   * acceso y las pantallas de recursos. Cada uno se anunciaba en voz alta al
+   * lado del texto que ya lo dice.
+   *
+   * Psicosocial no se toca; los suyos quedaron fuera de la cuenta.
+   */
+  it("el icono que llega como variable también declara si pinta o si habla", () => {
+    const culpables: string[] = [];
+    const ETIQUETA = /<([A-Z][A-Za-z0-9]*)\b([^<>]*?)\/>/g;
+
+    for (const ruta of TODOS) {
+      const r = comoRuta(ruta);
+      // Las piezas base se comparten con Psicosocial y no se tocan por esto.
+      if (esPsicosocial(r) || esPiezaBase(r)) continue;
+      const texto = contenido(ruta);
+      // Nombres que reciben un icono: `icono: Icono`, `icon: Icon`, `item.icon`.
+      const variables = new Set([
+        ...[...texto.matchAll(/\bicono?:\s*([A-Z]\w*)/g)].map((m) => m[1]),
+        ...[...texto.matchAll(/\b(?:const|let)\s+([A-Z]\w*)\s*=[^;\n]*(?:icono|Icono|\.icon)/g)].map(
+          (m) => m[1]
+        ),
+      ]);
+      for (const [, tag, props] of texto.matchAll(ETIQUETA)) {
+        if (!variables.has(tag)) continue;
+        if (/aria-hidden|aria-label|role=/.test(props)) continue;
+        culpables.push(`${r} → <${tag}>`);
+        break;
+      }
+    }
+
+    expect(
+      culpables,
+      "Un icono que se dibuja desde una variable lleva `aria-hidden=" + '"' + "true" + '"' + "` si es " +
+        "decorativo, o `aria-label` si ES el control. Sin ninguno, el lector de " +
+        "pantalla lo anuncia junto al texto que ya dice lo mismo."
     ).toEqual([]);
   });
 

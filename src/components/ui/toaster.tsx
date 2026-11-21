@@ -44,7 +44,7 @@ export function Toaster() {
               aria-hidden="true"
               className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${tono.clases}`}
             >
-              <Icono className="h-5 w-5" />
+              <Icono aria-hidden="true" className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
               {title && <ToastTitle>{title}</ToastTitle>}

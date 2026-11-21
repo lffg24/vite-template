@@ -83,6 +83,8 @@ const SeleccionDeAsignacion = lazy(
 );
 
 const SuperAdminLayout = lazy(() => import("@/layout/SuperAdminLayout"));
+// Catálogo del UI kit: herramienta interna. Solo en desarrollo o con VITE_UI_KIT=1.
+const CatalogoUiKitPage = lazy(() => import("@/pages/dev/CatalogoUiKitPage"));
 const SuperAdminDashboardPage = lazy(() => import("@/pages/superadmin/SuperAdminDashboardPage"));
 const SuperAdminEmpresasPage = lazy(() => import("@/pages/superadmin/SuperAdminEmpresasPage"));
 const SuperAdminPsicologosPage = lazy(() => import("@/pages/superadmin/SuperAdminPsicologosPage"));
@@ -108,6 +110,9 @@ function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           {/* Públicas */}
+          {import.meta.env.DEV || import.meta.env.VITE_UI_KIT === "1" ? (
+            <Route path="/ui-kit" element={<CatalogoUiKitPage />} />
+          ) : null}
           <Route path="/login" element={<Login />} />
           <Route path="/activar-cuenta" element={<ActivarCuenta />} />
           <Route path="/recuperar-clave" element={<SolicitarRecuperacionClave />} />
