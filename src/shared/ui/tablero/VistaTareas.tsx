@@ -61,6 +61,7 @@ export function VistaTareas<T>({
   tareas,
   alSolicitarMovimiento,
   detalle,
+  alAbrirTarea,
   acciones,
   enVuelo,
   cargando = false,
@@ -71,8 +72,13 @@ export function VistaTareas<T>({
   columnas: ColumnaTablero[];
   tareas: TareaVista<T>[];
   alSolicitarMovimiento?: SolicitudMovimiento<T>;
-  /** Lo que el panel muestra de cada tarea. Sin esto, las tarjetas no abren. */
+  /** Lo que el panel muestra de cada tarea. Sin esto ni `alAbrirTarea`, las tarjetas no abren. */
   detalle?: (tarea: TareaVista<T>) => DetalleDeTarea;
+  /**
+   * Para quien ya tiene SU propio detalle (carga asíncrona, formularios): se
+   * llama al abrir una tarea y el panel genérico no se dibuja.
+   */
+  alAbrirTarea?: (tarea: TareaVista<T>) => void;
   /** Botones a la derecha de la barra (Nueva tarea, Exportar…). */
   acciones?: ReactNode;
   enVuelo?: ReadonlySet<string>;
@@ -113,7 +119,7 @@ export function VistaTareas<T>({
   // Se busca la tarea abierta en la lista VIVA, no se guarda una copia: si el
   // consumidor la mueve, el panel muestra el estado nuevo sin pedirlo.
   const abierta = abiertaId ? (tareas.find((t) => t.id === abiertaId) ?? null) : null;
-  const abrir = detalle ? (t: TareaVista<T>) => setAbiertaId(t.id) : undefined;
+  const abrir = alAbrirTarea ?? (detalle ? (t: TareaVista<T>) => setAbiertaId(t.id) : undefined);
   const extra = abierta && detalle ? detalle(abierta) : undefined;
   const hayFiltro = busqueda.trim() !== "" || prioridad !== "todas";
 
@@ -131,6 +137,8 @@ export function VistaTareas<T>({
             className="pl-9"
           />
         </div>
+        {/* El filtro solo aparece si alguna tarea trae prioridad: Licitaciones no la tiene. */}
+        {tareas.some((t) => t.prioridad) ? (
         <Desplegable
           aria-label="Filtrar por prioridad"
           value={prioridad}
@@ -144,6 +152,7 @@ export function VistaTareas<T>({
             </option>
           ))}
         </Desplegable>
+        ) : null}
 
         <div className="ml-auto flex items-center gap-3">
           <FiltroChips<Vista>
@@ -188,7 +197,7 @@ export function VistaTareas<T>({
         <ListaTareas tareas={visibles} columnas={columnas} alAbrir={abrir} cargando={cargando} etiquetaElemento={nombreElemento} />
       )}
 
-      {detalle ? (
+      {detalle && !alAbrirTarea ? (
         <PanelTarea
           tarea={abierta}
           columnas={columnas}
