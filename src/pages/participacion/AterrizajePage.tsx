@@ -7,6 +7,7 @@
 // El nombre de **su** empresa va arriba y grande. Es lo único que hace creíble
 // un enlace que llegó por un chat, y sin eso la pantalla parece un fraude.
 
+import { EsqueletoAterrizaje } from "@/shared/ui/EsqueletoPantalla";
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Award, Building2, CheckCircle2, Clock, FileText, Lock, Save, Smartphone } from "lucide-react";
@@ -98,7 +99,7 @@ export default function AterrizajePage() {
   if (consulta.fase === "cargando") {
     return (
       <ParticipanteLayout>
-        <Cargando etiqueta="Abriendo tu capacitación…" />
+        <Cargando etiqueta="Abriendo tu capacitación…" esqueleto={<EsqueletoAterrizaje />} />
       </ParticipanteLayout>
     );
   }

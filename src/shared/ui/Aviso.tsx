@@ -30,17 +30,17 @@
 //     el tono, y dejarlo a la pantalla es volver a tener cinco criterios.
 
 import type { ReactNode } from "react";
-import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 export type TonoAviso = "peligro" | "atencion" | "info" | "exito";
 
-const TONO: Record<TonoAviso, { caja: string; icono: typeof Info }> = {
-  peligro: { caja: "border-danger/30 bg-danger-subtle text-danger", icono: XCircle },
-  atencion: { caja: "border-warning/30 bg-warning-subtle text-warning", icono: AlertTriangle },
-  info: { caja: "border-info/30 bg-info-subtle text-info", icono: Info },
-  exito: { caja: "border-success/30 bg-success-subtle text-success", icono: CheckCircle2 },
+const TONO: Record<TonoAviso, { caja: string; ficha: string; icono: typeof Info }> = {
+  peligro: { caja: "border-danger/20 bg-danger-subtle/70", ficha: "text-danger ring-danger/25", icono: XCircle },
+  atencion: { caja: "border-warning/25 bg-warning-subtle/70", ficha: "text-warning ring-warning/30", icono: AlertTriangle },
+  info: { caja: "border-info/20 bg-info-subtle/70", ficha: "text-info ring-info/25", icono: Info },
+  exito: { caja: "border-success/20 bg-success-subtle/70", ficha: "text-success ring-success/25", icono: CheckCircle2 },
 };
 
 export function Aviso({
@@ -48,6 +48,7 @@ export function Aviso({
   titulo,
   children,
   acciones,
+  alCerrar,
   className,
 }: {
   tono?: TonoAviso;
@@ -56,27 +57,50 @@ export function Aviso({
   children?: ReactNode;
   /** Qué puede hacer el usuario al respecto: reintentar, volver, revisar. */
   acciones?: ReactNode;
+  /** Si se da, aparece una X para descartarlo. Un error no debería ser descartable. */
+  alCerrar?: () => void;
   className?: string;
 }) {
-  const { caja, icono: Icono } = TONO[tono];
+  const { caja, ficha, icono: Icono } = TONO[tono];
   return (
     <div
       // `alert` y no `status`: estos mensajes interrumpen a propósito. Un
       // `aria-live` suave aquí es lo mismo que no decir nada.
       role="alert"
-      className={cn("flex items-start gap-3 rounded-xl border p-4 text-sm", caja, className)}
+      className={cn(
+        "relative flex items-start gap-3.5 rounded-rel-card border p-4 text-sm",
+        "animate-in fade-in slide-in-from-top-[0.5rem] duration-enter ease-rel-out motion-reduce:animate-none",
+        caja,
+        className
+      )}
     >
-      <Icono className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-      <div className="min-w-0 flex-1">
-        {titulo ? <p className="font-heading font-semibold">{titulo}</p> : null}
+      {/* El icono en una ficha blanca con anillo del tono: el color queda en un
+          punto y no en toda la caja, y se lee como parte de un sistema. */}
+      <span
+        aria-hidden="true"
+        className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface shadow-rel-soft ring-1", ficha)}
+      >
+        <Icono className="h-5 w-5" />
+      </span>
+      <div className={cn("min-w-0 flex-1 pt-0.5", alCerrar && "pr-8")}>
+        {titulo ? <p className="font-heading text-[0.95rem] font-semibold text-foreground">{titulo}</p> : null}
         {/* El cuerpo en color de texto normal y no en el del tono: un párrafo
-            entero en rojo se lee peor, y lo que tiene que resaltar es que la
-            caja es roja, no cada palabra. */}
+            entero en rojo se lee peor. */}
         {children ? (
-          <div className={cn("text-foreground/90", titulo && "mt-1")}>{children}</div>
+          <div className={cn("leading-relaxed text-foreground/80", titulo && "mt-0.5")}>{children}</div>
         ) : null}
         {acciones ? <div className="mt-3 flex flex-wrap gap-2">{acciones}</div> : null}
       </div>
+      {alCerrar ? (
+        <button
+          type="button"
+          onClick={alCerrar}
+          aria-label="Cerrar aviso"
+          className="absolute right-2.5 top-2.5 grid h-8 w-8 place-items-center rounded-rel-control text-foreground/60 transition-colors duration-exit hover:bg-surface hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   );
 }

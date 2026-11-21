@@ -155,7 +155,7 @@ export default function CapacitacionesEstadoPage() {
         descripcion="Capacitaciones exige tres condiciones independientes. Se comprueban por separado para que un bloqueo se pueda atribuir en vez de adivinarse."
       />
 
-      {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Consultando el estado…" /> : null}
+      {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Consultando el estado…" forma="detalle" /> : null}
 
       {consulta.fase === "error" && consulta.error ? (
         // Aquí NO se traduce un 403 a la pantalla de permisos: esta ES la

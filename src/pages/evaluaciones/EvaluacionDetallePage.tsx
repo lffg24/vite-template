@@ -140,7 +140,7 @@ export default function EvaluacionDetallePage() {
       <BotonVolver a="/evaluaciones">Volver al banco</BotonVolver>
 
       {consulta.fase === "cargando" ? (
-        <CargandoPanel etiqueta="Abriendo la evaluación…" />
+        <CargandoPanel etiqueta="Abriendo la evaluación…" forma="detalle" />
       ) : null}
 
       {consulta.fase === "error" && consulta.error ? (

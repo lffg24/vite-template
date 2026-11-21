@@ -48,7 +48,7 @@ export default function CapacitacionesCursoDetallePage() {
     <div className="space-y-6">
       <BotonVolver a="/capacitaciones/cursos">Volver al catálogo</BotonVolver>
 
-      {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Abriendo el curso…" /> : null}
+      {consulta.fase === "cargando" ? <CargandoPanel etiqueta="Abriendo el curso…" forma="detalle" /> : null}
 
       {consulta.fase === "error" && consulta.error ? (
         consulta.error.status === 404 ? (

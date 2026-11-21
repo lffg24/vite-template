@@ -19,6 +19,7 @@
 // enmascarado del servidor, no recortado aquí: recortarlo en la pantalla
 // significaría que el dato completo viajó por la red.
 
+import { EsqueletoAterrizaje } from "@/shared/ui/EsqueletoPantalla";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CalendarClock, CheckCircle2, ShieldCheck } from "lucide-react";
@@ -91,7 +92,7 @@ export default function InvitacionPage() {
   if (consulta.fase === "cargando") {
     return (
       <ParticipanteLayout>
-        <Cargando etiqueta="Abriendo tu invitación…" />
+        <Cargando etiqueta="Abriendo tu invitación…" esqueleto={<EsqueletoAterrizaje />} />
       </ParticipanteLayout>
     );
   }

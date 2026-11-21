@@ -54,7 +54,7 @@ export const Desplegable = forwardRef<HTMLSelectElement, PropsDesplegable>(funct
   referencia,
 ) {
   return (
-    <div className={cn("relative w-full", className)}>
+    <div className={cn("desplegable-casa relative w-full", className)}>
       <select
         ref={referencia}
         className={cn(CLASE_CONTROL, ALTO_CONTROL.normal, "flex cursor-pointer appearance-none pr-9")}

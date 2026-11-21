@@ -866,3 +866,84 @@
     width: 100%;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Desplegable nativo con el aspecto de la casa (`appearance: base-select`).
+
+   El `<select>` nativo abre una lista del sistema que no se puede estilar: azul
+   de Windows, esquinas rectas, sin relieve. Con `base-select` (Chrome/Edge 135+)
+   la lista pasa a ser contenido de la página y se viste con los tokens del kit.
+   Donde el navegador no lo admite (Firefox, Safari) queda la lista nativa: la
+   API y el comportamiento no cambian, solo el aspecto.
+
+   La flecha la dibuja el componente (`ChevronDown`), así que se oculta la nativa.
+   --------------------------------------------------------------------------- */
+@supports (appearance: base-select) {
+  .desplegable-casa select,
+  .desplegable-casa select::picker(select) {
+    appearance: base-select;
+  }
+  .desplegable-casa select::picker-icon {
+    display: none;
+  }
+  .desplegable-casa select::picker(select) {
+    margin-top: 0.375rem;
+    padding: 0.375rem;
+    border: 1px solid var(--color-rel-border);
+    border-radius: var(--radius-rel-card);
+    background: var(--color-rel-surface);
+    color: var(--color-rel-dark);
+    box-shadow: var(--shadow-rel-floating);
+    max-height: 18rem;
+    /* Entra desde un poco más arriba y se asienta; sale más rápido. */
+    opacity: 0;
+    translate: 0 -0.375rem;
+    transition:
+      opacity var(--motion-exit) var(--rel-ease-out),
+      translate var(--motion-exit) var(--rel-ease-out),
+      display var(--motion-exit) allow-discrete,
+      overlay var(--motion-exit) allow-discrete;
+  }
+  .desplegable-casa select::picker(select):popover-open {
+    opacity: 1;
+    translate: 0 0;
+    transition-duration: var(--motion-enter);
+  }
+  @starting-style {
+    .desplegable-casa select::picker(select):popover-open {
+      opacity: 0;
+      translate: 0 -0.375rem;
+    }
+  }
+  .desplegable-casa select option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-rel-control);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color var(--motion-exit) var(--rel-ease-out);
+  }
+  .desplegable-casa select option:hover,
+  .desplegable-casa select option:focus-visible {
+    background: var(--color-rel-accent-subtle);
+    outline: none;
+  }
+  .desplegable-casa select option:checked {
+    background: var(--color-rel-accent-subtle);
+    font-weight: 600;
+  }
+  .desplegable-casa select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-rel-primary);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .desplegable-casa select::picker(select),
+  .desplegable-casa select option {
+    transition: none;
+  }
+}

@@ -13,6 +13,7 @@
 // **El servidor guarda el máximo, nunca retrocede.** Por eso volver atrás para
 // releer es gratis: reenviar un número menor no borra avance.
 
+import { EsqueletoLeccion } from "@/shared/ui/EsqueletoPantalla";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
@@ -124,7 +125,7 @@ export default function LeccionPage() {
   if (consulta.fase === "cargando") {
     return (
       <ParticipanteLayout>
-        <Cargando etiqueta="Abriendo la lección…" />
+        <Cargando etiqueta="Abriendo la lección…" esqueleto={<EsqueletoLeccion />} />
       </ParticipanteLayout>
     );
   }

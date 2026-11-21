@@ -36,7 +36,12 @@ Archivo: `src/pages/dev/CatalogoUiKitPage.tsx`.
 | La acción principal de móvil | `BotonAccion` + `BarraAccionesMovil` | `shared/ui/BotonAccion.tsx` |
 | Un dato de una línea | `Campo` + `Input` | `shared/ui/Campo.tsx` |
 | Elegir entre pocas / varias | `OpcionesExcluyentes` / `OpcionesMultiples` | `shared/ui/Opciones*.tsx` |
-| Elegir entre muchas | `Desplegable` | `shared/ui/Desplegable.tsx` |
+| Elegir entre muchas, con búsqueda | `Seleccion` | `shared/ui/Seleccion.tsx` |
+| Avisar sin cortar el trabajo (flotante, arriba a la derecha) | `toast()` | `hooks/use-toast` + `components/ui/toaster.tsx` |
+| Lista + tablero + detalle de tareas | `VistaTareas` (y sus piezas) | `shared/ui/tablero/` |
+| Una decisión que exige datos al mover | `DialogoTransicion` | `shared/ui/tablero/` |
+| Esqueleto con la forma de la pantalla | `EsqueletoCurso`, `…PaginaLista`, `…Detalle`… | `shared/ui/EsqueletoPantalla.tsx` |
+| Elegir entre pocas, sin buscar | `Desplegable` | `shared/ui/Desplegable.tsx` |
 | Una fecha | `DatePicker` | `shared/ui/DatePicker.tsx` |
 | Una contraseña | `EntradaClave` | `shared/ui/EntradaClave.tsx` |
 | Confirmar una afirmación | `Casilla` | `shared/ui/Casilla.tsx` |

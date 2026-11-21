@@ -91,7 +91,7 @@ export default function CapacitacionesInicioPage() {
       />
 
       {consulta.fase === "cargando" ? (
-        <CargandoPanel etiqueta="Cargando el resumen del módulo…" />
+        <CargandoPanel etiqueta="Cargando el resumen del módulo…" forma="detalle" />
       ) : null}
       {consulta.fase === "error" && consulta.error ? (
         <ErrorConsulta error={consulta.error} reintentar={consulta.refrescar} />

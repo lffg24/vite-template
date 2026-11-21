@@ -5,6 +5,7 @@
 // insuficientes. Viven en un solo sitio para que las seis pantallas del módulo
 // no inventen cada una su propio «Ocurrió un error».
 
+import { EsqueletoDetalle, EsqueletoFormulario, EsqueletoPaginaLista } from "@/shared/ui/EsqueletoPantalla";
 import type { ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 
@@ -45,7 +46,28 @@ export function CargandoTabla({ filas = 4 }: { filas?: number }) {
   );
 }
 
-export function CargandoPanel({ etiqueta = "Cargando información…" }: { etiqueta?: string }) {
+/**
+ * La espera de una pantalla del módulo, con la forma de la pantalla.
+ *
+ * `forma` elige el esqueleto: `detalle` (cabecera + rejilla de datos), `lista`
+ * (encabezado, filtros y tabla), `formulario`, o `panel` (tres barras, para lo
+ * que no tiene forma propia). Ver `shared/ui/EsqueletoPantalla`.
+ */
+export function CargandoPanel({
+  etiqueta = "Cargando información…",
+  forma = "panel",
+}: {
+  etiqueta?: string;
+  forma?: "panel" | "detalle" | "lista" | "formulario";
+}) {
+  if (forma !== "panel") {
+    return (
+      <div role="status" aria-live="polite" aria-busy="true">
+        <span className="sr-only">{etiqueta}</span>
+        {forma === "detalle" ? <EsqueletoDetalle /> : forma === "lista" ? <EsqueletoPaginaLista /> : <EsqueletoFormulario />}
+      </div>
+    );
+  }
   return (
     <Caja
       papel="panel" aire="amplio" className="space-y-4"

@@ -7,6 +7,7 @@
 // La identificación por documento vive en el aterrizaje del enlace, nunca en
 // esta ruta sin contexto. Así el cliente no envía empresa ni asignación.
 
+import { EsqueletoCurso } from "@/shared/ui/EsqueletoPantalla";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
 
@@ -47,7 +48,7 @@ export default function CursoPage() {
   if (consulta.fase === "cargando") {
     return (
       <ParticipanteLayout>
-        <Cargando etiqueta="Buscando tu curso…" />
+        <Cargando etiqueta="Buscando tu curso…" esqueleto={<EsqueletoCurso />} />
       </ParticipanteLayout>
     );
   }

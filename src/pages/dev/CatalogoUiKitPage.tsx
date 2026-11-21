@@ -51,6 +51,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
+import { Seleccion } from "@/shared/ui/Seleccion";
+import {
+  EsqueletoAterrizaje,
+  EsqueletoCurso,
+  EsqueletoDetalle,
+  EsqueletoFormulario,
+  EsqueletoLeccion,
+  EsqueletoPaginaLista,
+  EsqueletoTablero,
+} from "@/shared/ui/EsqueletoPantalla";
 import { Ayuda } from "@/shared/ui/Ayuda";
 import { AzulejoIcono, type TonoAzulejo } from "@/shared/ui/AzulejoIcono";
 import { Aviso } from "@/shared/ui/Aviso";
@@ -225,6 +236,22 @@ const SOMBRAS = [
   { clase: "rounded-rel-panel shadow-rel-floating", nombre: "panel · flotante" },
 ] as const;
 
+const ENTIDADES = [
+  "Alcaldía de Soacha", "Alcaldía de Bogotá", "Ecopetrol", "Gobernación de Cundinamarca", "Transmilenio S.A.",
+  "Hospital San Rafael", "Universidad Nacional", "SENA", "ICBF", "Policía Nacional", "Ministerio de Trabajo",
+  "Cámara de Comercio de Bogotá",
+].map((n, i) => ({ valor: `e${i}`, etiqueta: n, descripcion: `NIT 90${i}.123.456` }));
+
+const FORMAS = [
+  ["curso", "Curso del participante", <EsqueletoCurso key="c" />],
+  ["leccion", "Lección", <EsqueletoLeccion key="l" />],
+  ["aterrizaje", "Portada de un enlace", <EsqueletoAterrizaje key="a" />],
+  ["lista", "Pantalla con listado", <EsqueletoPaginaLista key="p" filas={4} />],
+  ["detalle", "Detalle", <EsqueletoDetalle key="d" />],
+  ["formulario", "Formulario", <EsqueletoFormulario key="f" campos={3} />],
+  ["tablero", "Tablero", <EsqueletoTablero key="t" />],
+] as const;
+
 const DURACIONES = ["duration-press", "duration-exit", "duration-enter", "duration-context"] as const;
 
 // ---------------------------------------------------------------------------
@@ -242,6 +269,9 @@ export default function CatalogoUiKitPage() {
   const [lateral, setLateral] = useState(false);
   const [repeticion, setRepeticion] = useState(0);
   const [consulta, setConsulta] = useState("");
+  const [entidad, setEntidad] = useState<string>("");
+  const [forma, setForma] = useState<string>("curso");
+  const [avisoAbierto, setAvisoAbierto] = useState(true);
 
   const escenas = (Object.keys(illustrationRegistry) as IllustrationName[]).filter((n) =>
     n.toLowerCase().includes(consulta.trim().toLowerCase())
@@ -425,6 +455,17 @@ export default function CatalogoUiKitPage() {
               </div>
             </Pieza>
             <Pieza
+              nombre="Seleccion (lista desplegable con búsqueda)"
+              archivo="shared/ui/Seleccion.tsx"
+              cuando="Muchas opciones: escribes y se acota (también por la descripción, p. ej. el NIT). Con más de 7 opciones la búsqueda se enciende sola. El Desplegable de arriba es para pocas opciones y toma el estilo de la casa en Chrome/Edge."
+            >
+              <div className="max-w-sm">
+                <Campo id="k-entidad" etiqueta="Entidad contratante">
+                  <Seleccion opciones={ENTIDADES} valor={entidad} alCambiar={setEntidad} placeholder="Busca una entidad" />
+                </Campo>
+              </div>
+            </Pieza>
+            <Pieza
               nombre="Casilla"
               archivo="shared/ui/Casilla.tsx"
               cuando="Una afirmación que la persona confirma. Etiqueta y descripción son parte del objetivo táctil."
@@ -474,6 +515,34 @@ export default function CatalogoUiKitPage() {
             descripcion="Lo que el sistema le dice a la persona: qué pasó, qué sigue, y cómo se arregla."
           >
             <Pieza
+              nombre="Aviso flotante (toast)"
+              archivo="components/ui/toaster.tsx · hooks/use-toast"
+              cuando="Confirma lo que acaba de pasar sin cortar el trabajo («Guardado»). Arriba a la derecha, se va solo y se puede arrastrar para quitarlo. Pulsa para verlos."
+            >
+              <div className="flex flex-wrap gap-3">
+                <Button variant="relOutline" onClick={() => toast({ variant: "success", title: "Cambios guardados", description: "El curso quedó publicado." })}>Éxito</Button>
+                <Button variant="relOutline" onClick={() => toast({ title: "Enlace copiado", description: "Ya puedes compartirlo por WhatsApp." })}>Información</Button>
+                <Button variant="relOutline" onClick={() => toast({ variant: "warning", title: "Vence en 5 días", description: "Renueva la formación." })}>Atención</Button>
+                <Button variant="relOutline" onClick={() => toast({ variant: "destructive", title: "No pudimos guardar", description: "Revisa tu conexión e inténtalo otra vez." })}>Error</Button>
+              </div>
+            </Pieza>
+            <Pieza
+              nombre="Esqueletos con la forma de la pantalla"
+              archivo="shared/ui/EsqueletoPantalla.tsx"
+              cuando="Mientras carga, se dibuja la rejilla real de la pantalla (titular, tarjetas, filas) para que al llegar el contenido nada se mueva. Elige una forma."
+            >
+              <FiltroChips
+                etiqueta="Forma"
+                valor={forma}
+                alCambiar={setForma}
+                className="mb-5"
+                opciones={FORMAS.map(([valor, etiqueta]) => ({ valor, etiqueta }))}
+              />
+              <div className="rounded-rel-card border border-dashed border-rel-border-strong bg-rel-canvas p-4 sm:p-6">
+                {FORMAS.find(([v]) => v === forma)?.[2]}
+              </div>
+            </Pieza>
+            <Pieza
               nombre="Pill"
               archivo="shared/ui/Pill.tsx"
               cuando="El estado de una fila o tarjeta. Seis tonos: cuatro semánticos, neutro y marca."
@@ -504,6 +573,15 @@ export default function CatalogoUiKitPage() {
                 <Aviso tono="peligro" titulo="No pudimos enviar tus respuestas">
                   Revisa tu conexión e inténtalo otra vez.
                 </Aviso>
+                {avisoAbierto ? (
+                  <Aviso tono="info" titulo="Este aviso se puede descartar" alCerrar={() => setAvisoAbierto(false)}>
+                    Útil para novedades; un error no debería poder cerrarse.
+                  </Aviso>
+                ) : (
+                  <Button variant="relOutline" onClick={() => setAvisoAbierto(true)}>
+                    Mostrar de nuevo
+                  </Button>
+                )}
               </div>
             </Pieza>
             <Pieza
