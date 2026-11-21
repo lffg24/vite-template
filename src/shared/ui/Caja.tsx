@@ -116,7 +116,8 @@ const TONO: Record<TonoCaja, string> = {
  * va en las listas de seleccion densas (roles, opciones), donde 8 px de salto
  * entre filas pegadas es ruido.
  */
-const VIVA =
+/** Exportada para el enlace que ES la caja (una tarjeta `<a>`): misma ley, un solo sitio. */
+export const CLASES_CAJA_VIVA =
   "transition-[translate,box-shadow] duration-enter ease-rel-out motion-reduce:transition-none " +
   "hover:-translate-y-2 hover:shadow-rel-floating motion-reduce:hover:translate-y-0";
 
@@ -149,7 +150,7 @@ export const Caja = forwardRef<HTMLElement, Props>(function Caja(
   return (
     <Elemento
       ref={referencia}
-      className={cn(def.forma, AIRE[aire ?? def.aire], TONO[tono], viva && VIVA, className)}
+      className={cn(def.forma, AIRE[aire ?? def.aire], TONO[tono], viva && CLASES_CAJA_VIVA, className)}
       {...resto}
     >
       {children}

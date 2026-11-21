@@ -6,7 +6,7 @@ export function CabeceraParticipante() {
       <div className="mx-auto flex min-h-19 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:min-h-20 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <Marca className="h-8 shrink-0 sm:h-9" />
-          <p className="min-w-0 truncate border-l border-rel-border pl-3 text-[0.7rem] font-medium text-rel-muted sm:text-xs">
+          <p className="hidden min-w-0 truncate border-l border-rel-border pl-3 text-xs font-medium text-rel-muted sm:block">
             Aprende · Avanza · Impacta
           </p>
         </div>

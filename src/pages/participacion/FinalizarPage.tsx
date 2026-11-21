@@ -194,6 +194,12 @@ export default function FinalizarPage() {
   return (
     <ParticipanteLayout progreso={1} ancho="compacto">
       <Caja papel="panel" className="my-auto w-full sm:p-8">
+      <Illustration
+        name="attendanceRegister"
+        size="sm"
+        decorative
+        className="mx-auto mb-4 max-h-32 w-32"
+      />
       <p className="text-xs font-semibold uppercase tracking-wide text-rel-accent-ink">
         Paso 3 de 3
       </p>

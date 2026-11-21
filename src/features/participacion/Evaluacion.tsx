@@ -25,6 +25,7 @@ import { BotonPrincipal } from "@/features/participacion/ParticipanteLayout";
 import type { EvaluacionPublica, IntentoCalificado } from "@/types/participacion";
 import { Button } from "@/components/ui/button";
 import { Illustration } from "@/shared/ui/illustration";
+import { NumeroQueCuenta } from "@/shared/ui/NumeroQueCuenta";
 
 /** Índice de opción como cadena: `OpcionesExcluyentes` trabaja con claves. */
 const clave = (i: number) => String(i);
@@ -80,7 +81,7 @@ export function Evaluacion({
   // Aprobada en una sesión anterior, o sin intentos: no se vuelve a preguntar.
   if (!evaluacion.puede_intentar) {
     return (
-      <div className="mt-5 flex-1 space-y-4">
+      <div className="mx-auto mt-5 w-full max-w-3xl flex-1 space-y-4">
         <div
           className={`rounded-rel-card border p-5 text-center ${
             evaluacion.aprobado
@@ -106,7 +107,7 @@ export function Evaluacion({
   }
 
   return (
-    <div className="mt-5 flex-1 space-y-5">
+    <div className="mx-auto mt-5 w-full max-w-3xl flex-1 space-y-5">
       <div>
         <div className="flex items-baseline justify-between">
           <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
@@ -237,7 +238,7 @@ function Veredicto({
       : "retryNotAllowed";
 
   return (
-    <div className="mt-5 flex-1 space-y-5" aria-live="polite">
+    <div className="mx-auto mt-5 w-full max-w-3xl flex-1 space-y-5" aria-live="polite">
       <div
         className={`rounded-rel-card border p-6 text-center ${
           resultado.aprobado
@@ -245,9 +246,16 @@ function Veredicto({
             : "border-rel-warning/30 bg-rel-warning-subtle"
         }`}
       >
-        <Illustration name={escena} variant="spot" size="md" className="mx-auto" />
-        <p className="mt-3 font-rel-heading text-2xl font-black tabular-nums">
-          {resultado.puntaje} %
+        {/* Entra con rebote corto: es el momento que decide si se aprobó, y el
+            único del recorrido que merece que la imagen «llegue». */}
+        <Illustration
+          name={escena}
+          variant="spot"
+          size="md"
+          className="mx-auto animate-in zoom-in-75 fade-in duration-context ease-rel-spring motion-reduce:animate-none"
+        />
+        <p className="mt-3 font-rel-heading text-4xl font-black tabular-nums">
+          <NumeroQueCuenta valor={resultado.puntaje} sufijo=" %" />
         </p>
         <p className="mt-1 text-sm text-rel-muted">
           {resultado.aciertos} de {resultado.preguntas} correctas · se aprueba con{" "}

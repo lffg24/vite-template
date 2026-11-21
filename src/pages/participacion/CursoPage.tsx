@@ -26,6 +26,20 @@ import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
 import { BarraAccionesMovil } from "@/shared/ui/BotonAccion";
 import { Caja } from "@/shared/ui/Caja";
 
+/**
+ * Una línea que dice cómo va, en palabras. El anillo dice «25 %»; esto dice qué
+ * significa. Sale de los mismos conteos que el servidor ya mandó: no inventa
+ * metas ni compara con nadie.
+ */
+function mensajeDeAvance(hechas: number, totales: number, puedeFinalizar: boolean): string {
+  if (puedeFinalizar) return "Completaste el recorrido. Solo falta registrar tu asistencia.";
+  if (hechas === 0) return "Empieza cuando quieras: tu avance se guarda solo.";
+  const faltan = totales - hechas;
+  if (faltan === 1) return "Te falta una lección para terminar.";
+  if (hechas / Math.max(1, totales) >= 0.5) return "Ya pasaste la mitad. Sigue así.";
+  return "Buen comienzo. Continúa donde lo dejaste.";
+}
+
 export default function CursoPage() {
   const navegar = useNavigate();
   const consulta = useConsulta<EstadoCurso>(() => miCurso(), []);
@@ -166,9 +180,32 @@ export default function CursoPage() {
               {curso.obligatorias_completas} de {curso.obligatorias_totales}{" "}
               {curso.obligatorias_totales === 1 ? "lección completada" : "lecciones completadas"}
             </p>
+            <p className="mt-1 text-sm font-semibold text-rel-dark">
+              {mensajeDeAvance(
+                curso.obligatorias_completas,
+                curso.obligatorias_totales,
+                curso.puede_finalizar
+              )}
+            </p>
           </div>
         </Caja>
       </section>
+
+      {/* En el teléfono y la tableta no hay columna lateral: el siguiente paso
+          sube aquí, con su escena a un lado. La escena ocupa lo que le da la
+          caja (96 px) y el texto manda; la acción sigue en la barra de abajo. */}
+      <IllustrationSurface tone="lavender" className="mt-5 justify-start gap-4 p-3 sm:p-4 lg:hidden">
+        <Illustration
+          name={curso.puede_finalizar ? "courseApproved" : "learningPath"}
+          size="full"
+          decorative
+          className="h-24 w-24 shrink-0 sm:h-28 sm:w-28"
+        />
+        <div className="min-w-0">
+          <p className="font-rel-heading text-base font-bold">{tituloPaso}</p>
+          <p className="mt-1 text-sm leading-relaxed text-rel-muted">{textoPaso}</p>
+        </div>
+      </IllustrationSurface>
 
       {/* --- ruta y siguiente paso --- */}
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">

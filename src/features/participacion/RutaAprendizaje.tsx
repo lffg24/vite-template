@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { AzulejoIcono } from "@/shared/ui/AzulejoIcono";
 import { Pill } from "@/shared/ui/Pill";
 import type { LeccionEnCurso } from "@/types/participacion";
-import { Caja } from "@/shared/ui/Caja";
+import { Caja, CLASES_CAJA_VIVA } from "@/shared/ui/Caja";
 
 const ICONO_TIPO: Record<string, LucideIcon> = {
   NATIVA: FileText,
@@ -74,20 +74,23 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
 
         const tarjeta = (
           <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-            <AzulejoIcono
-              icono={Icono}
-              tono={l.completada ? "exito" : bloqueada ? "neutro" : "marca"}
-              tamano="md"
-              className="hidden sm:grid"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-rel-muted">
-                Lección {i + 1}
-              </p>
-              <p className="wrap-break-word font-semibold text-rel-dark">{l.titulo}</p>
-              <p className="text-sm text-rel-muted">{detalle(l)}</p>
+            {/* El icono del tipo se ve también en el teléfono: «video»,
+                «lectura», «evaluación» se reconocen antes de leer. */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <AzulejoIcono
+                icono={Icono}
+                tono={l.completada ? "exito" : bloqueada ? "neutro" : "marca"}
+                tamano="md"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-rel-muted">
+                  Lección {i + 1}
+                </p>
+                <p className="wrap-break-word font-semibold text-rel-dark">{l.titulo}</p>
+                <p className="text-sm text-rel-muted">{detalle(l)}</p>
+              </div>
             </div>
-            <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+            <div className="flex shrink-0 flex-row flex-wrap items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
               {l.completada ? (
                 <Pill tono="exito">Completada</Pill>
               ) : enCurso ? (
@@ -110,7 +113,14 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
         );
 
         return (
-          <li key={l.leccion_id} className="relative flex gap-3 sm:gap-4">
+          // Entran en cascada, una tras otra: el camino se despliega en vez de
+          // aparecer entero de golpe. Tope de 6 para que una ruta larga no
+          // haga esperar la última casi un segundo.
+          <li
+            key={l.leccion_id}
+            className="relative flex gap-3 animate-in fade-in slide-in-from-bottom-[0.5rem] fill-mode-backwards duration-enter ease-rel-out motion-reduce:animate-none sm:gap-4"
+            style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}
+          >
             {/* El riel: número o check, y la línea hasta la siguiente. */}
             <div className="flex flex-col items-center" aria-hidden="true">
               <span
@@ -144,7 +154,10 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                 to={`/c/sesion/leccion/${l.leccion_id}`}
                 aria-current={enCurso ? "step" : undefined}
                 className={cn(
-                  "mb-1 flex min-w-0 flex-1 rounded-rel-card border bg-rel-surface p-4 transition-colors duration-rel-micro hover:bg-rel-surface-subtle",
+                  // La tarjeta ES la acción: se levanta al pasar el puntero (solo
+                  // donde hay puntero) y la sombra crece. Ver `Caja viva`.
+                  "mb-1 flex min-w-0 flex-1 rounded-rel-card border bg-rel-surface p-4 hover:bg-rel-surface-subtle",
+                  CLASES_CAJA_VIVA,
                   "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
                   enCurso ? "border-rel-primary bg-rel-accent-subtle/40" : "border-rel-border"
                 )}

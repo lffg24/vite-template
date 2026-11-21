@@ -23,6 +23,7 @@ import { ExternalLink } from "lucide-react";
 
 import type { RecursoPublico } from "@/types/participacion";
 import { Caja } from "@/shared/ui/Caja";
+import { Illustration } from "@/shared/ui/illustration";
 
 /**
  * La dirección que se puede meter en un `iframe`, o `null` si no la hay.
@@ -112,7 +113,15 @@ export function ReproductorRecurso({
           />
         </div>
       ) : (
-        <Caja tono="discontinua" aire="amplio" className="text-center">
+        <Caja tono="discontinua" aire="amplio" className="flex flex-col items-center gap-3 text-center">
+          {/* El material vive en otro sitio: la escena dice «aquí se lee o se
+              mira algo» en vez de dejar un recuadro punteado sin nada. */}
+          <Illustration
+            name={esVideo ? "lessonReplay" : "documentReading"}
+            size="md"
+            decorative
+            className="max-h-40 w-40"
+          />
           <p className="font-rel-body text-sm text-rel-muted">
             Este material se abre en una pestaña aparte.
           </p>

@@ -21,12 +21,16 @@ import {
   enviarIntento,
   guardarProgreso,
   leerLeccion,
+  miCurso,
 } from "@/services/participacionService";
 import type {
   ErrorPublico,
+  EstadoCurso,
   IntentoCalificado,
   LeccionCompleta,
 } from "@/types/participacion";
+import { LeccionesLateral } from "@/features/participacion/LeccionesLateral";
+import { PasosCurso, type EstadoPaso } from "@/shared/ui/PasosCurso";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   BotonPrincipal,
@@ -46,6 +50,10 @@ export default function LeccionPage() {
   // Se pide SOLO esta lección. El índice ya trajo los metadatos; el texto pesa
   // y no hay razón para descargar el curso entero para leer una parte.
   const consulta = useConsulta<LeccionCompleta>(() => leerLeccion(leccionId), [leccionId]);
+
+  // El índice del curso, solo para el lateral de pantallas anchas. Si falla no
+  // pasa nada: la lección se lee igual y el lateral simplemente no aparece.
+  const indice = useConsulta<EstadoCurso>(() => miCurso(), []);
 
   const [bloque, setBloque] = useState(0);
   // La confirmación de haber visto el material. Empieza SIEMPRE en falso,
@@ -196,6 +204,18 @@ export default function LeccionPage() {
         {leccion.titulo}
       </h1>
 
+      {/* Una raya por parte: cuántas son y cuál toca, sin contar. Solo cuando
+          hay más de una; con una sola parte la raya no dice nada. */}
+      {!evaluacion && !recurso && total > 1 ? (
+        <PasosCurso
+          etiqueta="Partes de la lección"
+          className="mt-4 max-w-md"
+          pasos={Array.from({ length: total }, (_, i): EstadoPaso =>
+            i < bloque ? "hecho" : i === bloque ? "actual" : "pendiente"
+          )}
+        />
+      ) : null}
+
       {/* `aria-live` para que un lector de pantalla anuncie el bloque nuevo: sin
           esto, avanzar no produce ningún cambio audible y parece que el botón
           no hizo nada. */}
@@ -243,22 +263,37 @@ export default function LeccionPage() {
           </Caja>
         </div>
       ) : (
-        <Caja
-          aire="amplio" className="mt-5 flex-1 shadow-rel-card"
-          aria-live="polite"
-        >
-          {leccion.bloques[bloque]?.titulo ? (
-            <h2 className="mb-2 font-rel-heading text-base font-bold">
-              {leccion.bloques[bloque].titulo}
-            </h2>
+        <div className="mt-5 grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-start">
+          <Caja aire="amplio" className="min-h-64 shadow-rel-card lg:p-10" aria-live="polite">
+            {/* El bloque nuevo entra con un corrimiento corto: sin él, pulsar
+                «Siguiente» cambia el texto sin que nada diga que pasó algo.
+                `key` hace que cada parte sea un elemento nuevo y la entrada
+                corra de nuevo. */}
+            <div
+              key={bloque}
+              className="mx-auto max-w-[68ch] animate-in fade-in slide-in-from-right-[1rem] duration-enter ease-rel-out motion-reduce:animate-none"
+            >
+              {leccion.bloques[bloque]?.titulo ? (
+                <h2 className="mb-3 font-rel-heading text-lg font-bold">
+                  {leccion.bloques[bloque].titulo}
+                </h2>
+              ) : null}
+              {/* `whitespace-pre-line` respeta los saltos con los que se redactó
+                  el bloque. El contenido es texto plano por decisión del editor:
+                  nada que sanear, nada que pueda inyectar marcado. La medida
+                  (68 caracteres) es la que se lee cómoda: sin ella, en una
+                  pantalla ancha cada línea corría de lado a lado. */}
+              <p className="whitespace-pre-line text-base leading-relaxed lg:text-lg lg:leading-8">
+                {leccion.bloques[bloque]?.contenido ?? ""}
+              </p>
+            </div>
+          </Caja>
+          {indice.datos ? (
+            <aside className="hidden lg:sticky lg:top-6 lg:block">
+              <LeccionesLateral lecciones={indice.datos.lecciones} actualId={leccion.leccion_id} />
+            </aside>
           ) : null}
-          {/* `whitespace-pre-line` respeta los saltos con los que se redactó el
-              bloque. El contenido es texto plano por decisión del editor: nada
-              que sanear, nada que pueda inyectar marcado. */}
-          <p className="whitespace-pre-line text-base leading-relaxed">
-            {leccion.bloques[bloque]?.contenido ?? ""}
-          </p>
-        </Caja>
+        </div>
       )}
 
       {errorGuardado && !evaluacion ? (
