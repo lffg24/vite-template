@@ -35,6 +35,22 @@
 // habría que activar con Enter y no con la flecha, o cada pasada del teclado
 // dispararía tres peticiones.
 //
+// ## La raya que se desliza (solo en el aspecto `subrayado`)
+//
+// El subrayado de la pestaña activa es UN elemento que viaja de una pestaña a
+// otra, no una raya por pestaña que se enciende y se apaga: un indicador que
+// se desliza dice «es la misma selección, que se movió»; uno que salta dice
+// «esto se apagó y aquello se encendió».
+//
+// Se mide con `offsetLeft/offsetWidth` y se mueve con `transform` y `width`.
+// Tres cosas que importan:
+//   - Hasta que hay medida (primer pintado, jsdom, pestaña oculta) cada pestaña
+//     activa dibuja su propia raya, como antes: nunca queda sin indicador.
+//   - Solo viaja cuando CAMBIA la pestaña. Las remediciones por cambio de ancho
+//     o por una fuente que carga tarde se aplican sin viaje.
+//   - Se vuelve a medir con `ResizeObserver` sobre la lista Y sobre cada
+//     pestaña: una fuente tardía ensancha una pestaña sin cambiar la lista.
+
 // ## Un solo panel para todas
 //
 // Todas las pestañas apuntan con `aria-controls` al MISMO panel. La
@@ -45,7 +61,7 @@
 // no está en el documento.
 
 import type { LucideIcon } from "lucide-react";
-import { useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -89,6 +105,51 @@ export function Pestanas<T extends string>({
   const base = useId();
   const idPanel = `${base}-panel`;
   const botones = useRef(new Map<T, HTMLButtonElement>());
+  const lista = useRef<HTMLDivElement>(null);
+
+  /* La raya que se desliza (solo en `subrayado`).
+     `null` = todavia no hay medida (primer pintado, jsdom, pestana oculta). En
+     ese caso cada pestana activa dibuja su propia raya, como antes: la pieza
+     nunca queda sin indicador esperando a medir. */
+  const [raya, setRaya] = useState<{ x: number; y: number; w: number } | null>(null);
+  /* Se anima SOLO cuando cambia la pestana activa y ya habia una medida: la
+     primera medida se pinta sin viaje (deslizar desde (0,0) seria un tic) y
+     las remediciones por cambio de ancho tampoco viajan —la raya acompana a la
+     pestana, no llega tarde a ella—. Es una regla, no un temporizador: un
+     `requestAnimationFrame` no corre en una pestana oculta y dejaba la raya
+     sin animar. */
+  const [animar, setAnimar] = useState(false);
+  const medidoAntes = useRef(false);
+
+  const medir = (conViaje: boolean) => {
+    const el = botones.current.get(valor);
+    if (!el || el.offsetWidth === 0) {
+      medidoAntes.current = false;
+      return setRaya(null);
+    }
+    setAnimar(conViaje && medidoAntes.current);
+    medidoAntes.current = true;
+    setRaya({ x: el.offsetLeft, y: el.offsetTop + el.offsetHeight - 2, w: el.offsetWidth });
+  };
+
+  useLayoutEffect(() => {
+    if (aspecto === "subrayado") medir(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [valor, aspecto, pestanas]);
+
+  useEffect(() => {
+    if (aspecto !== "subrayado") return;
+    // Las pestanas se reordenan al cambiar de ancho o al cargar la fuente: sin
+    // volver a medir, la raya se quedaria donde estaba la pestana antes.
+    const observador =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => medir(false));
+    if (lista.current) observador?.observe(lista.current);
+    // Tambien cada pestana: una fuente que carga tarde ensancha UNA pestana sin
+    // cambiar el tamano de la lista, y entonces la lista no avisa.
+    botones.current.forEach((b) => observador?.observe(b));
+    return () => observador?.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspecto, valor]);
 
   const mover = (desde: number, salto: number | "inicio" | "fin") => {
     const ultima = pestanas.length - 1;
@@ -109,10 +170,11 @@ export function Pestanas<T extends string>({
   return (
     <div className={className}>
       <div
+        ref={lista}
         role="tablist"
         aria-label={etiqueta}
         className={cn(
-          "flex min-w-0",
+          "relative flex min-w-0",
           aspecto === "subrayado"
             ? "flex-col gap-1 border-b border-border/80 sm:flex-row sm:flex-wrap"
             : "flex-wrap gap-2",
@@ -164,7 +226,7 @@ export function Pestanas<T extends string>({
                   ? cn(
                       "border-b-2 px-2 py-3 sm:px-4",
                       activa
-                        ? "border-primary text-primary-ink"
+                        ? cn("text-primary-ink", raya ? "border-transparent" : "border-primary")
                         : "border-transparent text-muted-foreground hover:border-border-strong hover:text-foreground"
                     )
                   : cn(
@@ -191,6 +253,17 @@ export function Pestanas<T extends string>({
             </button>
           );
         })}
+        {aspecto === "subrayado" && raya ? (
+          <span
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute left-0 top-0 h-0.5 rounded-full bg-primary",
+              animar &&
+                "transition-[transform,width] duration-context ease-rel-out motion-reduce:transition-none"
+            )}
+            style={{ transform: `translate(${raya.x}px, ${raya.y}px)`, width: raya.w }}
+          />
+        ) : null}
       </div>
 
       <div

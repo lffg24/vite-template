@@ -109,7 +109,7 @@ export function SeccionPlegable({
         >
           <ChevronDown
             className={cn(
-              "mt-1 h-5 w-5 shrink-0 text-rel-muted transition-transform motion-reduce:transition-none",
+              "mt-1 h-5 w-5 shrink-0 text-rel-muted transition-transform duration-enter ease-rel-out motion-reduce:transition-none",
               !abierta && "-rotate-90"
             )}
             aria-hidden="true"
@@ -130,10 +130,34 @@ export function SeccionPlegable({
         {accion ? <div className="shrink-0">{accion}</div> : null}
       </div>
 
-      {/* `hidden` y no desmontar: desmontar tira el formulario a medio llenar
-          de quien pliega la sección sin querer. */}
-      <div id={idContenido} hidden={!abierta} className="border-t border-rel-border p-6">
-        {children}
+      {/* La altura se anima, no el contenido: una fila de rejilla que pasa de
+          `0fr` a `1fr` —el navegador sabe cuánto mide el contenido aunque no
+          sepamos nosotros—. Es lo que evita el salto de golpe sin medir nada
+          con JavaScript.
+
+          Sigue montado cuando está plegada, y por la misma razon de siempre:
+          desmontar tira el formulario a medio llenar de quien pliega la
+          seccion sin querer. `invisible` la saca del tabulador y de lectores
+          de pantalla, y su transicion es discreta: se aplica al FINAL del
+          cierre y al PRINCIPIO de la apertura, asi que el contenido se ve
+          mientras se pliega y nunca queda focalizable una vez cerrado.
+          `aria-hidden` cubre al lector mientras tanto. */}
+      <div
+        id={idContenido}
+        aria-hidden={abierta ? undefined : true}
+        className={cn(
+          "grid transition-[grid-template-rows] duration-enter ease-rel-out motion-reduce:transition-none",
+          abierta ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div
+          className={cn(
+            "min-h-0 overflow-hidden transition-[visibility] duration-enter motion-reduce:transition-none",
+            abierta ? "visible" : "invisible"
+          )}
+        >
+          <div className="border-t border-rel-border p-6">{children}</div>
+        </div>
       </div>
     </section>
   );

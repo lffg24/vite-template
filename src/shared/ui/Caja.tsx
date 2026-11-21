@@ -96,9 +96,35 @@ const TONO: Record<TonoCaja, string> = {
   peligro: "border-rel-danger bg-rel-danger-subtle",
 };
 
+/**
+ * La caja que RESPONDE al puntero: se levanta, y la sombra crece con ella.
+ *
+ * Son las cuatro reglas del patron, y las cuatro importan:
+ *   - Sube 8 px y la sombra se estira con ella, en 200 ms (`duration-enter`).
+ *   - NUNCA se escala la caja entera: escalar empuja a las vecinas y rompe la
+ *     rejilla. Se mueve, no crece.
+ *   - La propiedad que se anima es `translate`, NO `transform`: en Tailwind 4
+ *     `-translate-y-2` escribe `translate: 0 -8px`. Con `transition-[transform]`
+ *     la sombra se anima y la caja SALTA —lo midio el navegador, no la lectura.
+ *   - Solo en dispositivos con puntero: `hover:` de Tailwind ya va dentro de
+ *     `@media (hover: hover)`, asi que en un telefono no se queda «pegada»
+ *     levantada despues de tocarla.
+ *   - Sin movimiento si la persona lo pidio (`motion-reduce`).
+ *
+ * Una caja viva MIENTE si no hace nada al pulsarla: levantarse dice «soy la
+ * accion». Por eso es opt-in y no un efecto de todas las cajas, y por eso no
+ * va en las listas de seleccion densas (roles, opciones), donde 8 px de salto
+ * entre filas pegadas es ruido.
+ */
+const VIVA =
+  "transition-[translate,box-shadow] duration-enter ease-rel-out motion-reduce:transition-none " +
+  "hover:-translate-y-2 hover:shadow-rel-floating motion-reduce:hover:translate-y-0";
+
 type Props = {
   children?: ReactNode;
   papel?: PapelCaja;
+  /** Solo si la caja ES la accion (un enlace, un boton). Ver `VIVA`. */
+  viva?: boolean;
   /** Solo cuando el papel no acierta. Si lo escribes, di por qué. */
   aire?: AireCaja;
   tono?: TonoCaja;
@@ -115,7 +141,7 @@ type Props = {
 } & Omit<HTMLAttributes<HTMLElement>, "children">;
 
 export const Caja = forwardRef<HTMLElement, Props>(function Caja(
-  { children, papel = "caja", aire, tono = "superficie", como, className, ...resto },
+  { children, papel = "caja", viva = false, aire, tono = "superficie", como, className, ...resto },
   referencia
 ) {
   const Elemento = (como ?? "div") as ElementType;
@@ -123,7 +149,7 @@ export const Caja = forwardRef<HTMLElement, Props>(function Caja(
   return (
     <Elemento
       ref={referencia}
-      className={cn(def.forma, AIRE[aire ?? def.aire], TONO[tono], className)}
+      className={cn(def.forma, AIRE[aire ?? def.aire], TONO[tono], viva && VIVA, className)}
       {...resto}
     >
       {children}

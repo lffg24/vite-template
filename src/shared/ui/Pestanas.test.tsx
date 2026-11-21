@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Pestanas } from "./Pestanas";
 
@@ -76,5 +76,42 @@ describe("Pestanas", () => {
     expect(pestana("Dos, 4")).toBeInTheDocument();
     // Y la cifra no se lee dos veces: la píldora visible está oculta al lector.
     expect(screen.getByText("4")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  describe("la raya que se desliza", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("sin medida, la pestaña activa dibuja su propia raya (nunca queda sin indicador)", () => {
+      // jsdom no tiene maquetación: todo mide 0. Es el caso «todavía no hay medida».
+      const { container } = render(<Ejemplo />);
+      expect(pestana("Uno").className).toContain("border-primary");
+      expect(container.querySelector("[role=tablist] > span[aria-hidden]")).toBeNull();
+    });
+
+    it("con medida hay UNA raya, oculta al lector, y las pestañas ya no dibujan la suya", () => {
+      vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(80);
+      vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(44);
+      vi.spyOn(HTMLElement.prototype, "offsetLeft", "get").mockReturnValue(16);
+      vi.spyOn(HTMLElement.prototype, "offsetTop", "get").mockReturnValue(0);
+
+      const { container } = render(<Ejemplo />);
+      const rayas = container.querySelectorAll("[role=tablist] > span[aria-hidden=true]");
+      expect(rayas).toHaveLength(1);
+      // Se posiciona en el borde inferior de la activa (alto 44 - 2 de raya).
+      expect(rayas[0]).toHaveStyle({ width: "80px", transform: "translate(16px, 42px)" });
+      expect(pestana("Uno").className).toContain("border-transparent");
+      expect(pestana("Uno").className).not.toContain("border-primary");
+    });
+
+    it("las píldoras no llevan raya deslizante", () => {
+      vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(80);
+      const { container } = render(
+        <Pestanas etiqueta="x" valor="a" alCambiar={() => {}} aspecto="pildora"
+          pestanas={[{ id: "a", nombre: "A" }, { id: "b", nombre: "B" }] as const}>
+          <p>c</p>
+        </Pestanas>
+      );
+      expect(container.querySelector("[role=tablist] > span[aria-hidden]")).toBeNull();
+    });
   });
 });

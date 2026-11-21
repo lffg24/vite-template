@@ -53,4 +53,25 @@ describe("Caja", () => {
     );
     expect(screen.getByRole("region", { name: "Matriz de capacidades" })).toBeInTheDocument();
   });
+
+  it("la caja viva se levanta 8 px y NO se escala", () => {
+    render(<Caja viva>x</Caja>);
+    const clases = screen.getByText("x").className;
+    expect(clases).toContain("hover:-translate-y-2");
+    expect(clases).toContain("hover:shadow-rel-floating");
+    // En Tailwind 4 `-translate-y-2` escribe la propiedad `translate`, no
+    // `transform`: si la transición nombra `transform`, la sombra se anima y la
+    // caja salta. Es un error que solo se ve en un navegador, por eso se fija.
+    expect(clases).toContain("transition-[translate,box-shadow]");
+    expect(clases).not.toContain("transition-[transform");
+    // Escalar la caja entera empuja a las vecinas y rompe la rejilla.
+    expect(clases).not.toMatch(/(^|\s)(hover:)?scale-/);
+    // Y respeta a quien pidió menos movimiento.
+    expect(clases).toContain("motion-reduce:hover:translate-y-0");
+  });
+
+  it("la caja NO es viva por defecto: levantarse dice «soy la acción»", () => {
+    render(<Caja>x</Caja>);
+    expect(screen.getByText("x").className).not.toContain("hover:-translate-y-2");
+  });
 });

@@ -1613,6 +1613,40 @@ describe("el núcleo es uno solo", () => {
   });
 
   /**
+   * Una transición no nombra `transform` si la caja se mueve con `translate-*`,
+   * `scale-*` o `rotate-*`.
+   *
+   * En Tailwind 3 esas tres utilidades escribían `transform`. En la 4 escriben
+   * sus propias propiedades —`translate`, `scale`, `rotate`—, y una transición
+   * que nombra `transform` ya no las cubre: la sombra se anima y la caja SALTA.
+   * No falla ninguna prueba ni avisa el compilador; se ve, o no, en un navegador.
+   * Lo atrapó medir la tarjeta viva, no leer su código.
+   *
+   * `transition-transform` a secas sí vale: en la 4 ya incluye las cuatro. El
+   * que no vale es el que lo lista a mano entre corchetes.
+   */
+  it("la transición nombra la propiedad que la utilidad escribe", () => {
+    const TRANSICION_DE_TRANSFORM = /transition-\[[^\]]*\btransform\b[^\]]*\]/;
+    const MUEVE_CON_UTILIDAD = /(?:^|[ "'`:])-?(?:translate|scale|rotate)-/;
+    const culpables: string[] = [];
+    for (const ruta of TODOS) {
+      const r = comoRuta(ruta);
+      if (esPsicosocial(r)) continue;
+      const lineas = contenido(ruta).split("\n");
+      lineas.forEach((l, n) => {
+        if (TRANSICION_DE_TRANSFORM.test(l) && MUEVE_CON_UTILIDAD.test(l)) {
+          culpables.push(`${r}:${n + 1}`);
+        }
+      });
+    }
+    expect(
+      culpables,
+      "Usa `transition-[translate,box-shadow]` (o `scale`, `rotate`) con la " +
+        "propiedad que la utilidad escribe, o `transition-transform` a secas."
+    ).toEqual([]);
+  });
+
+  /**
    * Nadie escribe un valor explicito que la escala ya nombra.
    *
    * Este guardia decia lo contrario, y tenia razon mientras duro: en la 3.3
