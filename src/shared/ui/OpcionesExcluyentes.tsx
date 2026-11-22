@@ -132,7 +132,7 @@ export function OpcionesExcluyentes<T extends string>({
                   <span className="mt-2 block font-rel-body text-xs text-rel-muted">{o.nota}</span>
                 ) : null}
                 {o.deshabilitada && o.motivo ? (
-                  <span className="mt-2 block font-rel-body text-xs text-rel-warning">
+                  <span className="mt-2 block font-rel-body text-xs text-warning-ink">
                     {o.motivo}
                   </span>
                 ) : null}

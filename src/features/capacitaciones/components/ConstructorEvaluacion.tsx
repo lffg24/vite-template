@@ -314,13 +314,13 @@ export function ConstructorEvaluacion({
                 )}
 
                 {multiple && pregunta.correctas.length < 2 ? (
-                  <p role="status" className="text-sm text-rel-warning">
+                  <p role="status" className="text-sm text-warning-ink">
                     Una selección múltiple necesita al menos dos correctas. Si de
                     verdad solo hay una, es de selección única.
                   </p>
                 ) : null}
                 {multiple && pregunta.correctas.length === opciones.length ? (
-                  <p role="status" className="text-sm text-rel-warning">
+                  <p role="status" className="text-sm text-warning-ink">
                     Están todas marcadas: marcarlas todas la acertaría sin saber
                     nada.
                   </p>

@@ -324,7 +324,7 @@ export function CursoDatosForm({
 
           <div className="flex flex-wrap items-center justify-end gap-3">
             {sucio ? (
-              <p className="mr-auto font-rel-body text-sm text-rel-warning" role="status">
+              <p className="mr-auto font-rel-body text-sm text-warning-ink" role="status">
                 Hay cambios sin guardar.
               </p>
             ) : null}

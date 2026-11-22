@@ -32,7 +32,7 @@ type Tono = "neutro" | "aviso" | "peligro" | "exito";
 
 const ANTETITULO: Record<Tono, string> = {
   neutro: "text-rel-primary",
-  aviso: "text-rel-warning",
+  aviso: "text-warning-ink",
   peligro: "text-rel-danger",
   exito: "text-rel-success",
 };

@@ -47,7 +47,7 @@ const SITUACIONES = {
   },
   VENCIDA: {
     Icono: Clock,
-    color: "text-rel-warning",
+    color: "text-warning-ink",
     fondo: "bg-rel-warning-subtle",
     titulo: "Constancia vencida",
     // Dice explícitamente que es auténtica: vencer no es lo mismo que ser falsa,

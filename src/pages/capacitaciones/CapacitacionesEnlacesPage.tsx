@@ -10,6 +10,7 @@
 // «Copiar el vigente», y eso está dicho en la pantalla en vez de dejar al
 // usuario buscando un botón de copiar que no existe.
 
+import { Aviso } from "@/shared/ui/Aviso";
 import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -181,14 +182,10 @@ export default function CapacitacionesEnlacesPage() {
       <AvisoAccesoPublico que="enlaces" />
 
       {asignacion?.estado === "CERRADA" ? (
-        <p
-          role="status"
-          className="rounded-rel-card border border-rel-neutral/30 bg-rel-neutral-subtle p-4 font-rel-body text-sm text-rel-dark"
-        >
-          Esta asignación está cerrada: no admite inscripciones nuevas, así que
-          no tiene sentido generar más enlaces. Los que ya se repartieron siguen
-          listados y se pueden revocar.
-        </p>
+        <Aviso tono="info" titulo="Esta asignación está cerrada">
+          No admite inscripciones nuevas, así que no tiene sentido generar más
+          enlaces. Los que ya se repartieron siguen listados y se pueden revocar.
+        </Aviso>
       ) : null}
 
       {enlaces.fase === "cargando" ? <CargandoTabla filas={3} /> : null}

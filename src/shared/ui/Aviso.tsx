@@ -38,7 +38,7 @@ export type TonoAviso = "peligro" | "atencion" | "info" | "exito";
 
 const TONO: Record<TonoAviso, { caja: string; ficha: string; icono: typeof Info }> = {
   peligro: { caja: "border-danger/20 bg-danger-subtle/70", ficha: "text-danger ring-danger/25", icono: XCircle },
-  atencion: { caja: "border-warning/25 bg-warning-subtle/70", ficha: "text-warning ring-warning/30", icono: AlertTriangle },
+  atencion: { caja: "border-warning/25 bg-warning-subtle/70", ficha: "text-warning-ink ring-warning/30", icono: AlertTriangle },
   info: { caja: "border-info/20 bg-info-subtle/70", ficha: "text-info ring-info/25", icono: Info },
   exito: { caja: "border-success/20 bg-success-subtle/70", ficha: "text-success ring-success/25", icono: CheckCircle2 },
 };

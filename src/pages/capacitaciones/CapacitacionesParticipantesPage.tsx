@@ -13,6 +13,7 @@
 // y un riesgo: una carga a medias sobre cuatrocientas personas no se deshace a
 // mano.
 
+import { Aviso } from "@/shared/ui/Aviso";
 import { useMemo, useRef, useState } from "react";
 import { Pencil, Search, Upload, UserPlus, Users2 } from "lucide-react";
 
@@ -22,7 +23,7 @@ import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
 import { TablaBody, TablaHead, TablaPanel } from "@/shared/ui/Panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/shared/ui/Pill";
 import {
   Sheet,
   SheetContent,
@@ -59,15 +60,15 @@ const TIPOS = ["CC", "CE", "TI", "PA", "PPT"] as const;
 function OrigenBadge({ origen }: { origen: ParticipanteResumen["origen"] }) {
   if (origen === "PUBLICO") {
     return (
-      <Badge
-        variant="outline"
+      <Pill
+        tono="atencion"
         title="Esta persona se identificó sola por el enlace del grupo. Su constancia no acredita verificación de identidad."
       >
         Autodeclarada
-      </Badge>
+      </Pill>
     );
   }
-  return <Badge variant="secondary">{origen === "ADMIN" ? "Alta manual" : "Importada"}</Badge>;
+  return <Pill tono="neutro">{origen === "ADMIN" ? "Alta manual" : "Importada"}</Pill>;
 }
 
 export default function CapacitacionesParticipantesPage() {
@@ -669,12 +670,7 @@ function PanelImportacion({
           </div>
 
           {error ? (
-            <p
-              role="alert"
-              className="rounded-rel-card border border-rel-danger/30 bg-rel-danger-subtle p-3 text-sm leading-relaxed"
-            >
-              {error}
-            </p>
+            <Aviso tono="peligro">{error}</Aviso>
           ) : null}
 
           {previa ? (
@@ -687,11 +683,10 @@ function PanelImportacion({
               </div>
 
               {previa.resumen.duplicadas > 0 ? (
-                <p className="rounded-rel-card bg-rel-warning-subtle p-3 text-sm leading-relaxed">
-                  Hay documentos repetidos <strong>dentro del archivo</strong>.
+                <Aviso tono="atencion" titulo="Documentos repetidos en el archivo">
                   Esas filas no se aplican: elegir una de las dos en silencio
                   sería decidir por ti cuál de los dos nombres vale.
-                </p>
+                </Aviso>
               ) : null}
 
               <TablaPanel>
@@ -751,11 +746,11 @@ function Recuento({ etiqueta, valor }: { etiqueta: string; valor: number }) {
 }
 
 function ResultadoFila({ fila }: { fila: VistaPreviaImportacion["filas"][number] }) {
-  if (fila.resultado === "CREA") return <Badge variant="secondary">Se creará</Badge>;
+  if (fila.resultado === "CREA") return <Pill tono="exito">Se creará</Pill>;
   if (fila.resultado === "ACTUALIZA") {
     return (
       <span className="inline-flex flex-col items-start gap-1">
-        <Badge variant="secondary">Se actualizará</Badge>
+        <Pill tono="info">Se actualizará</Pill>
         {/* QUÉ cambia. Sin esto, «actualiza 120 filas» no distingue tocar un
             teléfono de reescribir 120 nombres. */}
         <span className="text-xs text-rel-muted">
@@ -766,9 +761,9 @@ function ResultadoFila({ fila }: { fila: VistaPreviaImportacion["filas"][number]
   }
   return (
     <span className="inline-flex flex-col items-start gap-1">
-      <Badge variant="destructive">
+      <Pill tono="peligro">
         {fila.resultado === "DUPLICADA" ? "Repetida" : "Con errores"}
-      </Badge>
+      </Pill>
       {fila.errores.map((e) => (
         <span key={e} className="text-xs leading-snug text-rel-muted">
           {e}

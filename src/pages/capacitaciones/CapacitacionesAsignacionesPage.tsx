@@ -166,13 +166,13 @@ export default function CapacitacionesAsignacionesPage() {
                     <>
                       <span
                         className={
-                          detenida(a) ? "font-semibold text-rel-warning" : "text-rel-dark"
+                          detenida(a) ? "font-semibold text-warning-ink" : "text-rel-dark"
                         }
                       >
                         {a.enlaces_activos}
                       </span>
                       {detenida(a) ? (
-                        <span className="ml-1.5 text-xs text-rel-warning">sin acceso</span>
+                        <span className="ml-1.5 text-xs text-warning-ink">sin acceso</span>
                       ) : null}
                     </>
                   ),
@@ -281,7 +281,7 @@ export default function CapacitacionesAsignacionesPage() {
                   <dt className="text-rel-muted">Enlaces activos</dt>
                   <dd
                     className={`text-right tabular-nums ${
-                      detenida(a) ? "font-semibold text-rel-warning" : "text-rel-dark"
+                      detenida(a) ? "font-semibold text-warning-ink" : "text-rel-dark"
                     }`}
                   >
                     {a.enlaces_activos}

@@ -86,6 +86,7 @@
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-primary-ink: hsl(var(--primary-ink));
+  --color-warning-ink: hsl(var(--warning-ink));
   --color-primary-hover: hsl(var(--primary-hover));
   --color-primary-active: hsl(var(--primary-active));
 
@@ -409,6 +410,9 @@
     --success-foreground: 215 42% 13%;
     --warning: 38 92% 50%;
     --warning-foreground: 218 57% 11%;
+    /* El ámbar como TEXTO. `--warning` (2,1:1 sobre blanco) sirve de relleno e
+       icono; escrito como texto no se lee. Esta es la tinta: 6,9:1. */
+    --warning-ink: 30 90% 29%;
     --danger: 0 72% 51%;
     --danger-foreground: 0 0% 100%;
 
@@ -548,6 +552,7 @@
     --success-foreground: 215 42% 13%;
     --warning: 38 92% 58%;
     --warning-foreground: 218 57% 11%;
+    --warning-ink: var(--warning);
     --danger: 0 78% 60%;
     --danger-foreground: 218 57% 11%;
 

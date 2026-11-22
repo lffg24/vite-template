@@ -34,7 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/shared/ui/Pill";
 import { useToast } from "@/hooks/use-toast";
 import {
   generarInvitaciones,
@@ -61,11 +61,11 @@ import { HojaDeInvitaciones } from "@/features/capacitaciones/components/HojaDeI
 import { Caja } from "@/shared/ui/Caja";
 
 function EstadoInvitacion({ inv }: { inv: InvitacionResumen }) {
-  if (inv.estado === "CONSUMIDA") return <Badge variant="secondary">Usada</Badge>;
+  if (inv.estado === "CONSUMIDA") return <Pill tono="neutro">Usada</Pill>;
   if (inv.estado === "REVOCADA") {
     return (
       <span className="inline-flex flex-col items-start gap-1">
-        <Badge variant="destructive">Revocada</Badge>
+        <Pill tono="peligro">Revocada</Pill>
         {inv.revocacion_motivo ? (
           <span className="text-xs leading-snug text-rel-muted">
             {inv.revocacion_motivo}
@@ -77,8 +77,8 @@ function EstadoInvitacion({ inv }: { inv: InvitacionResumen }) {
   // Caducada NO es revocada: una se acabó sola, la otra la retiró alguien, y
   // mostrarlas igual haría pensar que hubo una decisión donde solo pasó el
   // tiempo.
-  if (!inv.utilizable) return <Badge variant="outline">Caducada</Badge>;
-  return <Badge variant="secondary">Pendiente</Badge>;
+  if (!inv.utilizable) return <Pill tono="neutro">Caducada</Pill>;
+  return <Pill tono="info">Pendiente</Pill>;
 }
 
 export default function CapacitacionesInvitacionesPage() {

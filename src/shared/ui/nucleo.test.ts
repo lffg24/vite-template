@@ -430,6 +430,28 @@ describe("el núcleo es uno solo", () => {
     "pages/psicosocial/PsicologoPerfilPage.tsx",
   ];
 
+  /**
+   * Texto sobre el turquesa o el verde de éxito: tinta de la casa, nunca blanco.
+   *
+   * Blanco sobre el turquesa de marca da 2,5:1 y sobre el verde de éxito 3,2:1;
+   * la tinta (`primary-foreground`, `success-foreground`) da 6,6:1. Lo detectó
+   * una auditoría de contraste sobre el catálogo: los chips de filtro
+   * seleccionados y los pasos de la ruta de aprendizaje llevaban `text-white`.
+   * Psicosocial no cuenta: no se migra.
+   */
+  it("el texto sobre turquesa o verde de éxito usa la tinta, no el blanco", () => {
+    const sobreTurquesa =
+      /bg-(?:rel-)?(?:primary|success|accent)(?![-/\w])[^"']*text-white(?![-/\w])|text-white(?![-/\w])[^"']*bg-(?:rel-)?(?:primary|success|accent)(?![-/\w])/;
+    const culpables = TODOS.filter((ruta) => {
+      const r = comoRuta(ruta);
+      return !esPsicosocial(r) && sobreTurquesa.test(contenido(ruta));
+    }).map(comoRuta);
+    expect(
+      culpables,
+      "Usa `text-rel-primary-foreground` o `text-success-foreground`: el blanco no contrasta con estos fondos."
+    ).toEqual([]);
+  });
+
   it("el gris sale de los tokens, y esa deuda tampoco crece", () => {
     const grises = TODOS.filter((ruta) => GRIS_CRUDO.test(contenido(ruta))).map(comoRuta);
 

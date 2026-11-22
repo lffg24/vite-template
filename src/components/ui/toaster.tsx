@@ -20,7 +20,7 @@ import {
 const TONO = {
   default: { clases: "bg-accent text-primary ring-1 ring-border", Icono: Info },
   success: { clases: "bg-success-subtle text-success ring-1 ring-success/20", Icono: CheckCircle2 },
-  warning: { clases: "bg-warning-subtle text-warning ring-1 ring-warning/20", Icono: AlertTriangle },
+  warning: { clases: "bg-warning-subtle text-warning-ink ring-1 ring-warning/20", Icono: AlertTriangle },
   destructive: { clases: "bg-danger-subtle text-danger ring-1 ring-danger/20", Icono: XCircle },
 } as const
 

@@ -16,7 +16,7 @@ export type TonoAzulejo = "marca" | "exito" | "atencion" | "peligro" | "info" | 
 const TONO: Record<TonoAzulejo, string> = {
   marca: "bg-rel-accent-subtle text-rel-primary",
   exito: "bg-rel-success-subtle text-rel-success",
-  atencion: "bg-rel-warning-subtle text-rel-warning",
+  atencion: "bg-rel-warning-subtle text-warning-ink",
   peligro: "bg-rel-danger-subtle text-rel-danger",
   info: "bg-rel-info-subtle text-rel-info",
   neutro: "bg-rel-neutral-subtle text-rel-muted",
