@@ -48,6 +48,7 @@ export function Pill({
   punto = true,
   title,
   className,
+  "aria-describedby": describedby,
 }: {
   tono: TonoPill;
   children: ReactNode;
@@ -55,11 +56,14 @@ export function Pill({
   punto?: boolean;
   title?: string;
   className?: string;
+  /** Para enlazar la etiqueta con el texto que la explica (un motivo). */
+  "aria-describedby"?: string;
 }) {
   return (
     <Badge
       variant={VARIANTE[tono]}
       title={title}
+      aria-describedby={describedby}
       className={cn("px-2.5 py-1", className)}
     >
       {punto ? (

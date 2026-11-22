@@ -37,7 +37,7 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/shared/ui/Pill";
 import { useToast } from "@/hooks/use-toast";
 import { anularConstancia, listarConstancias } from "@/services/capacitacionesService";
 import type { ConstanciaResumen, ErrorApi } from "@/types/capacitaciones";
@@ -96,7 +96,7 @@ function EstadoConstancia({ c, idMotivo }: { c: ConstanciaResumen; idMotivo: str
     if (c.situacion === "VENCIDA") {
       return (
         <span className="inline-flex flex-col items-start gap-1">
-          <Badge variant="destructive">Vencida</Badge>
+          <Pill tono="peligro">Vencida</Pill>
           <span className="text-xs leading-snug text-rel-muted">Pide reinducción</span>
         </span>
       );
@@ -104,20 +104,18 @@ function EstadoConstancia({ c, idMotivo }: { c: ConstanciaResumen; idMotivo: str
     if (c.por_vencer) {
       return (
         <span className="inline-flex flex-col items-start gap-1">
-          <Badge variant="outline" className="border-rel-warning text-rel-warning">
-            Por vencer
-          </Badge>
+          <Pill tono="atencion">Por vencer</Pill>
           <span className="text-xs leading-snug text-rel-muted">{cuentaAtras(c)}</span>
         </span>
       );
     }
-    return <Badge variant="secondary">Vigente</Badge>;
+    return <Pill tono="exito">Vigente</Pill>;
   }
   return (
     <span className="inline-flex flex-col items-start gap-1">
-      <Badge variant="destructive" aria-describedby={c.anulacion_motivo ? idMotivo : undefined}>
+      <Pill tono="peligro" aria-describedby={c.anulacion_motivo ? idMotivo : undefined}>
         Anulada
-      </Badge>
+      </Pill>
       {c.anulacion_motivo ? (
         <span id={idMotivo} className="text-xs leading-snug text-rel-muted">
           {c.anulacion_motivo}

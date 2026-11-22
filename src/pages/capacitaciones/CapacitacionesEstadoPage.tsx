@@ -21,8 +21,9 @@ import {
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/shared/ui/Pill";
+import { Aviso } from "@/shared/ui/Aviso";
+import { Panel } from "@/shared/ui/Panel";
 import { Button } from "@/components/ui/button";
 import { obtenerEstadoModulo } from "@/services/capacitacionesService";
 import type { ModuloEstado } from "@/types/capacitaciones";
@@ -54,19 +55,19 @@ function Condicion({
     si: {
       Icono: CheckCircle2,
       color: "text-rel-success",
-      badge: <Badge variant="relSuccess">Cumple</Badge>,
+      badge: <Pill tono="exito">Cumple</Pill>,
     },
     no: {
       Icono: XCircle,
       color: "text-rel-danger",
-      badge: <Badge variant="relDanger">No cumple</Badge>,
+      badge: <Pill tono="peligro">No cumple</Pill>,
     },
     // Una bandera sin declarar bloquea igual que apagada, pero no es lo mismo:
     // apagada es una decisión, ausente es configuración que falta.
     indefinido: {
       Icono: HelpCircle,
       color: "text-rel-warning",
-      badge: <Badge variant="relWarning">Sin declarar</Badge>,
+      badge: <Pill tono="atencion">Sin declarar</Pill>,
     },
   }[veredicto];
 
@@ -100,38 +101,19 @@ function veredictoBandera(valor: boolean | null): Veredicto {
 function Resumen({ estado }: { estado: ModuloEstado }) {
   if (estado.operable) {
     return (
-      <div className="flex items-start gap-3 rounded-rel-panel border border-rel-success/30 bg-rel-success-subtle p-5">
-        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-rel-success" aria-hidden="true" />
-        <div>
-          <h2 className="font-rel-heading text-lg font-bold text-rel-dark">
-            El módulo está operativo
-          </h2>
-          <p className="mt-1 font-rel-body text-sm text-rel-dark/80">
-            Las tres condiciones se cumplen: contrato vigente, habilitación técnica
-            encendida y tu rol incluye los permisos.
-          </p>
-        </div>
-      </div>
+      <Aviso tono="exito" titulo="El módulo está operativo">
+        Las tres condiciones se cumplen: contrato vigente, habilitación técnica
+        encendida y tu rol incluye los permisos.
+      </Aviso>
     );
   }
 
   return (
-    <div
-      role="alert"
-      className="flex items-start gap-3 rounded-rel-panel border border-rel-warning/30 bg-rel-warning-subtle p-5"
-    >
-      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rel-warning" aria-hidden="true" />
-      <div>
-        <h2 className="font-rel-heading text-lg font-bold text-rel-dark">
-          El módulo no está operativo
-        </h2>
-        <p className="mt-1 font-rel-body text-sm text-rel-dark/80">
-          Al menos una condición no se cumple. Abajo está cuál, y por dónde se
-          resuelve. Las operaciones seguirán devolviendo «no disponible» hasta
-          entonces.
-        </p>
-      </div>
-    </div>
+    <Aviso tono="atencion" titulo="El módulo no está operativo">
+      Al menos una condición no se cumple. Abajo está cuál, y por dónde se
+      resuelve. Las operaciones seguirán devolviendo «no disponible» hasta
+      entonces.
+    </Aviso>
   );
 }
 
@@ -166,33 +148,25 @@ export default function CapacitacionesEstadoPage() {
         // 403 aquí es legítimo y significa «no tienes nada en este módulo». Se
         // muestra tal cual, y la tarjeta de permisos de abajo, que se pinta con
         // el contexto y no con esta consulta, dice cuáles faltan.
-        <div
-          role="alert"
-          className="rounded-rel-panel border border-rel-danger/30 bg-rel-danger-subtle p-6"
+        <Aviso
+          tono="peligro"
+          titulo="No pudimos consultar el estado"
+          acciones={
+            <Button variant="relOutline" size="sm" onClick={consulta.refrescar}>
+              Reintentar
+            </Button>
+          }
         >
-          <h2 className="font-rel-heading text-base font-bold text-rel-dark">
-            No pudimos consultar el estado
-          </h2>
-          <p className="mt-1 font-rel-body text-sm text-rel-dark/80">
-            {consulta.error.message}
-          </p>
-          <Button variant="relOutline" size="sm" className="mt-4" onClick={consulta.refrescar}>
-            Reintentar
-          </Button>
-        </div>
+          {consulta.error.message}
+        </Aviso>
       ) : null}
 
       {consulta.fase === "listo" && consulta.datos ? (
         <>
           <Resumen estado={consulta.datos} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-rel-heading text-lg text-rel-dark">
-                Las tres condiciones
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Panel titulo="Las tres condiciones">
+            <div>
               <ul className="divide-y-0">
                 <Condicion
                   titulo="1 · Contrato del módulo"
@@ -255,24 +229,16 @@ export default function CapacitacionesEstadoPage() {
                   comoSeArregla="Se enciende aparte del catálogo: se puede querer congelar la edición sin dejar de asignar cursos ya publicados."
                 />
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-rel-heading text-lg text-rel-dark">
-                Tus permisos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Panel titulo="Tus permisos">
+            <div>
               {algunPermiso ? null : (
-                <p
-                  role="alert"
-                  className="mb-4 rounded-rel-card bg-rel-warning-subtle p-3 font-rel-body text-sm text-rel-dark"
-                >
+                <Aviso tono="atencion" className="mb-4">
                   Tu rol no incluye ningún permiso de Capacitaciones. Aunque el
                   contrato y las banderas estén bien, no podrás operar el módulo.
-                </p>
+                </Aviso>
               )}
               <ul className="space-y-2 font-rel-body text-sm">
                 {[
@@ -309,8 +275,8 @@ export default function CapacitacionesEstadoPage() {
                 distintos: publicar es editorial sobre el catálogo, asignar es
                 operativo sobre una empresa concreta.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </Panel>
         </>
       ) : null}
     </div>

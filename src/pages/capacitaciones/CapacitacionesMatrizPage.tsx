@@ -32,6 +32,7 @@ import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import {
   CargandoTabla,
   ErrorConsulta,
+  SinResultados,
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 import { obtenerMatriz } from "@/services/capacitacionesService";
@@ -298,15 +299,7 @@ export default function CapacitacionesMatrizPage() {
 function TablaMatriz({ datos, limpiar }: { datos: MatrizCapacitacion; limpiar: () => void }) {
   if (datos.filas.length === 0) {
     return (
-      <div className="rounded-rel-card border border-rel-border px-6 py-10 text-center">
-        <p className="font-rel-heading font-bold text-rel-dark">Nadie coincide con el filtro</p>
-        <p className="mt-1 text-sm text-rel-muted">
-          Prueba con otro nombre o quita el filtro de estado.
-        </p>
-        <Button variant="outline" className="mt-4" onClick={limpiar}>
-          Quitar filtros
-        </Button>
-      </div>
+      <SinResultados elemento="colaborador" limpiar={limpiar} escena="ninguna" />
     );
   }
 
@@ -334,7 +327,7 @@ function ListaMovil({ datos }: { datos: MatrizCapacitacion }) {
   return (
     <ul className="space-y-3 md:hidden">
       {datos.filas.map((f) => (
-        <li key={f.participante_id} className="rounded-rel-card border border-rel-border p-4">
+        <Caja como="li" key={f.participante_id}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="wrap-break-word font-semibold text-rel-dark">{nombreDe(f)}</p>
@@ -366,7 +359,7 @@ function ListaMovil({ datos }: { datos: MatrizCapacitacion }) {
               );
             })}
           </ul>
-        </li>
+        </Caja>
       ))}
     </ul>
   );
