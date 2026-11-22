@@ -13,6 +13,7 @@ describe("aterrizaje por navegación efectiva", () => {
 
   it("incorpora futuros módulos desde el árbol y conserva el primer destino permitido", () => {
     expect(resolveLandingRoute(["/evaluaciones"])).toBe("/evaluaciones");
+    expect(resolveLandingRoute(["/licitaciones"])).toBe("/licitaciones");
     expect(resolveLandingRoute([])).toBe("/sin-acceso");
   });
 
