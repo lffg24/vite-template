@@ -116,7 +116,7 @@ export function PageHeader({
               />
             ) : null}
           </div>
-          {accion ? <div className="flex w-full shrink-0 items-center xl:w-auto">{accion}</div> : null}
+          {accion ? <div className="flex w-full min-w-0 flex-wrap items-center gap-2 xl:w-auto xl:shrink-0">{accion}</div> : null}
         </div>
       </section>
     );
@@ -146,7 +146,7 @@ export function PageHeader({
             ) : null}
           </div>
         </div>
-        {accion ? <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">{accion}</div> : null}
+        {accion ? <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">{accion}</div> : null}
       </div>
     </section>
   );
