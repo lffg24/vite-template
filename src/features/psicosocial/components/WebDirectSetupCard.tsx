@@ -66,6 +66,7 @@ function formatGenerationDate(value: string | null): string {
 
 export function WebDirectSetupCard({
   applicationId,
+  employees,
   disabled = false,
   onParticipantsChanged,
 }: WebDirectSetupCardProps) {
@@ -96,7 +97,7 @@ export function WebDirectSetupCard({
 
   useEffect(() => {
     void loadStatus();
-  }, [loadStatus]);
+  }, [employees, loadStatus]);
 
   const openBulkUpload = () => {
     setMenuOpen(false);

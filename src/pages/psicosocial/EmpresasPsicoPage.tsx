@@ -20,6 +20,7 @@ export default function EmpresasPsicoPage() {
   const [open, setOpen] = useState(false);
   const [empresaToDelete, setEmpresaToDelete] = useState<EmpresaAsignada | null>(null);
   const [deletionPreview, setDeletionPreview] = useState<EmpresaDeletionPreview | null>(null);
+  const [deletionError, setDeletionError] = useState<string | null>(null);
   const [deletionLoading, setDeletionLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -74,7 +75,7 @@ export default function EmpresasPsicoPage() {
           {deletionLoading && <div className="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-semibold text-slate-700"><Loader2 className="h-5 w-5 animate-spin text-brand-sky" aria-hidden="true" /> Validando aplicaciones y registros…</div>}
           {!deletionLoading && deletionPreview?.bloqueada && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><div className="flex gap-3"><TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" /><div><p className="font-heading font-black text-amber-950">La eliminación está bloqueada</p><p className="mt-1 text-sm leading-6 text-amber-900">Hay baterías finalizadas. Conservamos esos resultados y por eso la empresa no puede eliminarse.</p></div></div><ApplicationList title="Baterías finalizadas" items={deletionPreview.aplicaciones_finalizadas} /></div>}
           {!deletionLoading && deletionPreview?.puede_eliminar && <div className="space-y-3 rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm leading-6 text-slate-800"><p className="font-heading font-black text-foreground">Confirmación requerida</p><p>Se eliminarán {deletionPreview.aplicaciones_en_curso.length} aplicación(es) en curso y {deletionPreview.total_colaboradores} colaborador(es) registrado(s).</p><ApplicationList title="Aplicaciones que se eliminarán" items={deletionPreview.aplicaciones_en_curso} /><p className="rounded-xl border border-amber-200 bg-amber-50 p-3 font-semibold text-amber-950">Los {deletionPreview.creditos_consumidos} crédito(s) ya consumido(s) no se restauran.</p></div>}
-          {!deletionLoading && !deletionPreview && <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">No fue posible validar la eliminación. Cierra el modal e inténtalo nuevamente.</div>}
+          {!deletionLoading && !deletionPreview && <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive">{deletionError || "No fue posible validar la eliminación. Cierra el modal e inténtalo nuevamente."}</div>}
           <AlertDialogFooter className="gap-3 sm:gap-3"><AlertDialogCancel disabled={deletionLoading || deleting} className="rounded-2xl">Cancelar</AlertDialogCancel>{deletionPreview?.puede_eliminar && <Button type="button" variant="destructive" disabled={deleting} onClick={() => void confirmDeletion()} className="rounded-2xl">{deleting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Trash2 aria-hidden="true" />} Eliminar empresa</Button>}</AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -84,14 +85,18 @@ export default function EmpresasPsicoPage() {
   function closeDeletionDialog() {
     setEmpresaToDelete(null);
     setDeletionPreview(null);
+    setDeletionError(null);
   }
 
   async function openDeletionDialog(empresa: EmpresaAsignada) {
     setEmpresaToDelete(empresa);
     setDeletionPreview(null);
+    setDeletionError(null);
     setDeletionLoading(true);
     try {
       setDeletionPreview(await psicoAdminService.previewEliminarEmpresa(empresa.empresa_id));
+    } catch (reason) {
+      setDeletionError(reason instanceof Error ? reason.message : "No fue posible validar la eliminación.");
     } finally {
       setDeletionLoading(false);
     }

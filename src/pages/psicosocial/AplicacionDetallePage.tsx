@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ClipboardCheck,
   Coins,
+  Edit3,
   FileArchive,
   FilePenLine,
   FileText,
@@ -139,6 +140,18 @@ function estadoAplicacionLabel(estado?: string | null) {
   );
 }
 const CLOSURE_GUIDE_STORAGE_KEY = "abril360.detalleAplicacion.cierreGuide.v1";
+const WEB_DIRECT_MINIMUM_AGE = 18;
+
+export function webDirectLatestBirthDate(reference = new Date()) {
+  const year = reference.getFullYear() - WEB_DIRECT_MINIMUM_AGE;
+  const month = reference.getMonth();
+  const day = Math.min(reference.getDate(), new Date(year, month + 1, 0).getDate());
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function employeeProfilePath(employeeId: number) {
+  return `/psicosocial/empleados/${employeeId}`;
+}
 
 type EmployeeFormState = {
   nombres: string;
@@ -2015,14 +2028,27 @@ export default function AplicacionDetallePage() {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setEmployeeDetailTarget(null)}
-                className="shrink-0 rounded-2xl border border-slate-200 p-2 hover:bg-slate-50"
-                aria-label="Cerrar datos del colaborador"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const employeeId = employeeDetailTarget.id;
+                    setEmployeeDetailTarget(null);
+                    navigate(employeeProfilePath(employeeId));
+                  }}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Edit3 className="h-4 w-4" aria-hidden="true" /> Editar información
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEmployeeDetailTarget(null)}
+                  className="rounded-2xl border border-slate-200 p-2 hover:bg-slate-50"
+                  aria-label="Cerrar datos del colaborador"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             <section className="rounded-3xl border border-slate-200 bg-white p-4">
@@ -2099,9 +2125,8 @@ export default function AplicacionDetallePage() {
                       setDetailBirthDate(value);
                       setDetailAssignmentError(null);
                     }}
-                    max={new Date(Date.now() - 86_400_000)
-                      .toISOString()
-                      .slice(0, 10)}
+                    min="1900-01-01"
+                    max={webDirectLatestBirthDate()}
                     required={Boolean(detailAssignedForm)}
                     disabled={!webDirectAvailable || savingDetailAssignment}
                   />
@@ -2333,9 +2358,8 @@ export default function AplicacionDetallePage() {
                       onChange={(value) =>
                         updateEmployeeForm("fecha_nacimiento", value)
                       }
-                      max={new Date(Date.now() - 86_400_000)
-                        .toISOString()
-                        .slice(0, 10)}
+                      min="1900-01-01"
+                      max={webDirectLatestBirthDate()}
                       required={Boolean(employeeForm.forma_asignada)}
                       disabled={!employeeForm.forma_asignada}
                       error={employeeFieldErrors.fecha_nacimiento}

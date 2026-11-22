@@ -61,7 +61,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
-  const initial = parseIso(value) ?? parseIso(min) ?? new Date();
+  // Birth-date fields commonly span a century. When no value exists, opening
+  // on the latest permitted day keeps the user near the expected adult range
+  // instead of forcing a jump from the minimum year.
+  const initial = parseIso(value) ?? parseIso(max) ?? parseIso(min) ?? new Date();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState(new Date(initial.getFullYear(), initial.getMonth(), 1));
 

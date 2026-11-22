@@ -61,6 +61,31 @@ describe("WebDirectSetupCard", () => {
     expect(screen.getByText(/Formulario A\/B/i)).toBeInTheDocument();
   });
 
+  it("actualiza el estado del enlace cuando cambian las asignaciones manuales", async () => {
+    const { rerender } = render(<WebDirectSetupCard applicationId={7} employees={employees} />);
+    await screen.findByRole("button", { name: /Opciones de aplicación web/i });
+    expect(getStatus).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <WebDirectSetupCard
+        applicationId={7}
+        employees={[
+          ...employees,
+          {
+            ...employees[0],
+            web_direct_assignment: {
+              forma_asignada: "A",
+              fecha_nacimiento: "1990-04-03",
+              habilitado: true,
+            },
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => expect(getStatus).toHaveBeenCalledTimes(2));
+  });
+
   it("muestra en un modal el enlace persistido y su código QR", async () => {
     getStatus.mockResolvedValue({
       ok: true,
