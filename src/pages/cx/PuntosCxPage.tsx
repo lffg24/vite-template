@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { Link } from "react-router-dom";
 import { MapPin, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Aviso } from "@/shared/ui/Aviso";
 import { Pill } from "@/shared/ui/Pill";
@@ -194,7 +194,16 @@ export default function PuntosCxPage() {
       {errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div>
     </form></SheetContent></Sheet>
-    <AlertDialog open={aCambiar !== null} onOpenChange={(v) => { if (!v && !guardando) setACambiar(null); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>{aCambiar?.activo ? "Desactivar" : "Activar"} punto</AlertDialogTitle><AlertDialogDescription>{aCambiar?.activo ? "Dejará de estar disponible para nuevas calificaciones; su historial permanece." : "Volverá a estar disponible si su sede y servicio siguen activos."}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={guardando}>Cancelar</AlertDialogCancel><Button type="button" variant={aCambiar?.activo ? "relDanger" : "rel"} disabled={guardando} onClick={cambiar}>Confirmar</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={aCambiar !== null}
+      alCerrar={() => setACambiar(null)}
+      tono={aCambiar?.activo ? "peligro" : "neutro"}
+      titulo={`${aCambiar?.activo ? "Desactivar" : "Activar"} punto`}
+      descripcion={aCambiar?.activo ? "Dejará de estar disponible para nuevas calificaciones; su historial permanece." : "Volverá a estar disponible si su sede y servicio siguen activos."}
+      etiquetaOcupado="Actualizando…"
+      ocupado={guardando}
+      alConfirmar={() => void cambiar()}
+    />
   </div>;
 }
 

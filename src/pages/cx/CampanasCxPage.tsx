@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
@@ -146,7 +146,16 @@ export default function CampanasCxPage() {
       })}</ul> : null}
       {!cargando && !error ? <div className="mt-5 flex items-center justify-between gap-2"><Button variant="relOutline" disabled={!historial.length} onClick={() => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); }}>Anterior</Button><span className="text-sm text-rel-muted">Página {historial.length + 1}</span><Button variant="relOutline" disabled={!siguiente} onClick={() => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); }}>Siguiente</Button></div> : null}
     </Panel>
-    <AlertDialog open={aRevocar !== null} onOpenChange={(abierto) => { if (!abierto && !ocupado) setARevocar(null); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>Revocar QR</AlertDialogTitle><AlertDialogDescription>El QR impreso dejará de permitir nuevos accesos. Esta acción no se puede deshacer.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={ocupado}>Cancelar</AlertDialogCancel><Button variant="rel" disabled={ocupado} onClick={() => { if (aRevocar) { void operar(aRevocar, "revocar"); setARevocar(null); } }}>Revocar enlace</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={aRevocar !== null}
+      alCerrar={() => setARevocar(null)}
+      tono="peligro"
+      titulo="Revocar QR"
+      descripcion="El QR impreso dejará de permitir nuevos accesos. Esta acción no se puede deshacer."
+      etiquetaConfirmar="Revocar enlace"
+      ocupado={ocupado}
+      alConfirmar={() => { if (aRevocar) { void operar(aRevocar, "revocar"); setARevocar(null); } }}
+    />
   </div>;
 }
 

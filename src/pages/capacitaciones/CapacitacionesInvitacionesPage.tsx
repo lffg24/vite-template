@@ -15,6 +15,7 @@
 // El QR sería mejor y espera a que se apruebe la librería. La ruta
 // `/c/i/{token}` ya existe para cuando llegue.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Printer, Send, ShieldOff } from "lucide-react";
@@ -34,15 +35,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   generarInvitaciones,
@@ -389,43 +381,29 @@ export default function CapacitacionesInvitacionesPage() {
         />
       ) : null}
 
-      <AlertDialog open={aRevocar !== null} onOpenChange={(o) => !o && setARevocar(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Revocar la invitación de {aRevocar?.nombres} {aRevocar?.apellidos}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Dejará de servir de inmediato. Podrás generarle otra a esta misma
-              persona. Las invitaciones <strong>ya usadas</strong> no se revocan:
-              esa persona ya hizo el curso, y para retirar el documento hay que
-              anular su constancia.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="motivo-rev">Motivo</Label>
-            <Input
-              id="motivo-rev"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              placeholder="Se envió a la persona equivocada"
-              className="border-rel-border"
-            />
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={revocando}>Cancelar</AlertDialogCancel>
-            <Button
-              variant="destructive"
-              disabled={revocando || motivo.trim().length < 5}
-              onClick={() => void confirmarRevocacion()}
-            >
-              {revocando ? "Revocando…" : "Revocar"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={aRevocar !== null}
+        alCerrar={() => setARevocar(null)}
+        tono="peligro"
+        titulo={`Revocar la invitación de ${aRevocar?.nombres ?? ""} ${aRevocar?.apellidos ?? ""}`}
+        descripcion={<>Dejará de servir de inmediato. Podrás generarle otra a esta misma persona. Las invitaciones <strong>ya usadas</strong> no se revocan: esa persona ya hizo el curso, y para retirar el documento hay que anular su constancia.</>}
+        etiquetaConfirmar="Revocar"
+        etiquetaOcupado="Revocando…"
+        ocupado={revocando}
+        confirmarDeshabilitado={motivo.trim().length < 5}
+        alConfirmar={() => void confirmarRevocacion()}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="motivo-rev">Motivo</Label>
+          <Input
+            id="motivo-rev"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Se envió a la persona equivocada"
+            className="border-rel-border"
+          />
+        </div>
+      </DialogoConfirmacion>
     </div>
   );
 }

@@ -8,6 +8,7 @@
 // alguien la creó y nadie puede entrar. Por eso esas filas se marcan y se
 // ordenan primero, y la acción de cada fila lleva a sus enlaces.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Link2, MoreHorizontal, Send, Plus, Users } from "lucide-react";
@@ -16,16 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { CeldaPrincipal, TablaDatos } from "@/shared/ui/TablaDatos";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cerrarAsignacion, listarAsignaciones } from "@/services/capacitacionesService";
 import type { AsignacionResumen, ErrorApi } from "@/types/capacitaciones";
@@ -361,33 +352,17 @@ export default function CapacitacionesAsignacionesPage() {
         }}
       />
 
-      <AlertDialog open={aCerrar !== null} onOpenChange={(v) => !v && setACerrar(null)}>
-        <AlertDialogContent className="rel-scope font-rel-body">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-rel-heading text-rel-dark">
-              ¿Cerrar la asignación de «{aCerrar?.curso_titulo}»?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-rel-muted">
-              Deja de admitir inscripciones nuevas. Quien ya empezó puede
-              terminar, y los enlaces repartidos siguen vivos hasta que se
-              revoquen uno a uno: cerrar no es lo mismo que revocar.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={cerrando}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rel-danger text-rel-danger-foreground hover:bg-rel-danger/90"
-              onClick={(e) => {
-                e.preventDefault();
-                void confirmarCierre();
-              }}
-              disabled={cerrando}
-            >
-              {cerrando ? "Cerrando…" : "Cerrar asignación"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={aCerrar !== null}
+        alCerrar={() => setACerrar(null)}
+        tono="atencion"
+        titulo={`¿Cerrar la asignación de «${aCerrar?.curso_titulo ?? ""}»?`}
+        descripcion="Deja de admitir inscripciones nuevas. Quien ya empezó puede terminar, y los enlaces repartidos siguen vivos hasta que se revoquen uno a uno: cerrar no es lo mismo que revocar."
+        etiquetaConfirmar="Cerrar asignación"
+        etiquetaOcupado="Cerrando…"
+        ocupado={cerrando}
+        alConfirmar={() => void confirmarCierre()}
+      />
     </div>
   );
 }

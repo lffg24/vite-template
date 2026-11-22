@@ -17,6 +17,7 @@
 // pero se nombra igual. Enseñar dos condiciones de tres deja a quien habilita
 // creyendo que terminó, y el 403 que llega después parece una avería.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, CheckCircle2, Circle, Loader2, MessageSquareHeart, ShieldCheck } from "lucide-react";
@@ -26,10 +27,6 @@ import { EsqueletoTexto, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { StandardPagination } from "@/components/common/StandardPagination";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 import { useToast } from "@/hooks/use-toast";
@@ -512,32 +509,21 @@ export default function SuperAdminHabilitacionPage() {
           ) : null}
         </section>
       </div>
-      <AlertDialog open={contratoPorSuspender !== null} onOpenChange={(abierto) => !abierto && setContratoPorSuspender(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Suspender contrato de {configuracion.nombre}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {empresa?.nombre} perderá acceso a este módulo mientras el contrato esté suspendido. Sus datos históricos se conservan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={guardando !== null}>Cancelar</AlertDialogCancel>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={guardando !== null}
-              onClick={() => {
-                if (!empresa || !contratoPorSuspender) return;
-                void conContexto("suspender", () => suspenderContrato(empresa.id, contratoPorSuspender, modulo))
-                  .then((ok) => { if (ok) setContratoPorSuspender(null); });
-              }}
-            >
-              {guardando === "suspender" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-              Suspender contrato
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={contratoPorSuspender !== null}
+        alCerrar={() => setContratoPorSuspender(null)}
+        tono="peligro"
+        titulo={`Suspender contrato de ${configuracion.nombre}`}
+        descripcion={`${empresa?.nombre} perderá acceso a este módulo mientras el contrato esté suspendido. Sus datos históricos se conservan.`}
+        etiquetaConfirmar="Suspender contrato"
+        etiquetaOcupado="Suspendiendo…"
+        ocupado={guardando !== null}
+        alConfirmar={() => {
+          if (!empresa || !contratoPorSuspender) return;
+          void conContexto("suspender", () => suspenderContrato(empresa.id, contratoPorSuspender, modulo))
+            .then((ok) => { if (ok) setContratoPorSuspender(null); });
+        }}
+      />
     </div>
   );
 }

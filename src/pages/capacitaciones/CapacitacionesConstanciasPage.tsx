@@ -28,6 +28,7 @@
 // medias, sería peor que decir dónde está el límite: la constancia ya existe,
 // tiene folio y se puede verificar tecleando el código.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useMemo, useState } from "react";
 import { Copy, FileBadge, Search, ShieldOff } from "lucide-react";
 
@@ -37,15 +38,6 @@ import { TablaDatos } from "@/shared/ui/TablaDatos";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { anularConstancia, listarConstancias } from "@/services/capacitacionesService";
 import type { ConstanciaResumen, ErrorApi } from "@/types/capacitaciones";
@@ -416,55 +408,36 @@ export default function CapacitacionesConstanciasPage() {
         </>
       ) : null}
 
-      <AlertDialog open={aAnular !== null} onOpenChange={(o) => !o && setAAnular(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Anular la constancia N.º {aAnular?.folio}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              No se borra. Seguirá verificándose con su código y dirá que fue
-              anulada, para que quien tenga el documento impreso pueda enterarse
-              de que ya no vale. El folio no se reutiliza, y esta acción no se
-              puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="motivo">Motivo de la anulación</Label>
-            <Input
-              id="motivo"
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
-              placeholder="Se emitió con el curso equivocado"
-              aria-describedby="ayuda-motivo"
-              className="border-rel-border"
-            />
-            {/* Obligatorio, y dicho antes de intentarlo. Una anulación sin
-                explicación deja el expediente con una pregunta abierta que
-                nadie podrá responder después. */}
-            <p id="ayuda-motivo" className="text-xs text-rel-muted">
-              Queda registrado junto a la constancia y se muestra en este
-              listado. Es lo que responderá a la pregunta «¿por qué se anuló?»
-              dentro de dos años.
-            </p>
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={anulando}>Cancelar</AlertDialogCancel>
-            {/* Botón normal y no `AlertDialogAction`: aquel cierra el diálogo al
-                pulsarlo, y aquí hay que poder quedarse abierto si el servidor
-                rechaza el motivo. */}
-            <Button
-              variant="destructive"
-              disabled={anulando || motivo.trim().length < MOTIVO_MINIMO}
-              onClick={() => void confirmarAnulacion()}
-            >
-              {anulando ? "Anulando…" : "Anular la constancia"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={aAnular !== null}
+        alCerrar={() => setAAnular(null)}
+        tono="peligro"
+        titulo={`Anular la constancia N.º ${aAnular?.folio ?? ""}`}
+        descripcion="No se borra. Seguirá verificándose con su código y dirá que fue anulada, para que quien tenga el documento impreso pueda enterarse de que ya no vale. El folio no se reutiliza, y esta acción no se puede deshacer."
+        etiquetaConfirmar="Anular la constancia"
+        etiquetaOcupado="Anulando…"
+        ocupado={anulando}
+        confirmarDeshabilitado={motivo.trim().length < MOTIVO_MINIMO}
+        alConfirmar={() => void confirmarAnulacion()}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="motivo">Motivo de la anulación</Label>
+          <Input
+            id="motivo"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            placeholder="Se emitió con el curso equivocado"
+            aria-describedby="ayuda-motivo"
+            className="border-rel-border"
+          />
+          {/* Obligatorio, y dicho antes de intentarlo: una anulación sin
+              explicación deja una pregunta abierta que nadie podrá responder. */}
+          <p id="ayuda-motivo" className="text-xs text-rel-muted">
+            Queda registrado junto a la constancia y se muestra en este listado.
+            Responde a «¿por qué se anuló?» dentro de dos años.
+          </p>
+        </div>
+      </DialogoConfirmacion>
     </div>
   );
 }

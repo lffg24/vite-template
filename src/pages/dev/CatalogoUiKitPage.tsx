@@ -72,6 +72,7 @@ import { Casilla } from "@/shared/ui/Casilla";
 import { DatePicker } from "@/shared/ui/DatePicker";
 import { Desplegable } from "@/shared/ui/Desplegable";
 import { DialogoCasa } from "@/shared/ui/DialogoCasa";
+import { DialogoConfirmacion, type TonoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { EntradaClave } from "@/shared/ui/EntradaClave";
 import { EstadoVacio } from "@/shared/ui/EstadoVacio";
 import { Esqueleto, EsqueletoTexto } from "@/shared/ui/Esqueleto";
@@ -110,6 +111,7 @@ const SECCIONES = [
   { id: "progreso", nombre: "Progreso" },
   { id: "tareas", nombre: "Tareas y tableros" },
   { id: "superposiciones", nombre: "Superposiciones" },
+  { id: "confirmaciones", nombre: "Confirmaciones" },
   { id: "ilustraciones", nombre: "Ilustraciones" },
   { id: "iconos", nombre: "Iconos" },
 ] as const;
@@ -259,6 +261,7 @@ const DURACIONES = ["duration-press", "duration-exit", "duration-enter", "durati
 // ---------------------------------------------------------------------------
 
 export default function CatalogoUiKitPage() {
+  const [confirmacion, setConfirmacion] = useState<TonoConfirmacion | null>(null);
   const [pestana, setPestana] = useState<string>("uno");
   const [filtro, setFiltro] = useState<string>("todos");
   const [unica, setUnica] = useState("b");
@@ -859,6 +862,33 @@ export default function CatalogoUiKitPage() {
                   <Input />
                 </Campo>
               </PanelLateral>
+            </Pieza>
+          </Seccion>
+
+          <Seccion
+            id="confirmaciones"
+            titulo="Confirmaciones"
+            descripcion="La pregunta «¿seguro?» antes de una acción que cambia algo. El tono dice la gravedad; en móvil sube como hoja, en escritorio es una tarjeta centrada."
+          >
+            <Pieza
+              nombre="DialogoConfirmacion"
+              archivo="shared/ui/DialogoConfirmacion.tsx"
+              cuando="Cerrar, revocar, anular, desactivar, publicar. Peligro si no se puede deshacer; atención si tiene consecuencias; neutro si es reversible."
+            >
+              <div className="flex flex-wrap gap-3">
+                <Button variant="relOutline" onClick={() => setConfirmacion("peligro")}>Peligro</Button>
+                <Button variant="relOutline" onClick={() => setConfirmacion("atencion")}>Atención</Button>
+                <Button variant="relOutline" onClick={() => setConfirmacion("neutro")}>Neutro</Button>
+              </div>
+              <DialogoConfirmacion
+                abierto={confirmacion !== null}
+                alCerrar={() => setConfirmacion(null)}
+                tono={confirmacion ?? "atencion"}
+                titulo={confirmacion === "peligro" ? "¿Revocar este enlace?" : confirmacion === "neutro" ? "Activar punto" : "¿Cerrar la asignación?"}
+                descripcion="Deja de admitir inscripciones nuevas. Quien ya empezó puede terminar, y los enlaces repartidos siguen vivos hasta que se revoquen."
+                etiquetaConfirmar={confirmacion === "peligro" ? "Revocar enlace" : "Confirmar"}
+                alConfirmar={() => setConfirmacion(null)}
+              />
             </Pieza>
           </Seccion>
 

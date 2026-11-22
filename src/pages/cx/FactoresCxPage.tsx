@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { Link } from "react-router-dom";
 import { Layers3, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Casilla } from "@/shared/ui/Casilla";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Aviso } from "@/shared/ui/Aviso";
@@ -135,7 +135,16 @@ export default function FactoresCxPage() {
       }}
     />
     <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>{edicion === "nuevo" ? "Nuevo" : "Editar"} factor</SheetTitle><SheetDescription>El código es estable. Los subfactores y su aplicabilidad se configuran después.</SheetDescription></SheetHeader><form onSubmit={guardar} className="mt-6 space-y-5" noValidate><div><Label htmlFor="factor-codigo">Código *</Label><Input id="factor-codigo" value={codigo} disabled={edicion !== "nuevo" || guardando} maxLength={32} onChange={(e) => setCodigo(e.target.value)} /></div><div><Label htmlFor="factor-nombre">Nombre *</Label><Input id="factor-nombre" value={nombre} disabled={guardando} maxLength={160} onChange={(e) => setNombre(e.target.value)} /></div>{errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}<div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div></form></SheetContent></Sheet>
-    <AlertDialog open={aCambiar !== null} onOpenChange={(v) => { if (!v && !guardando) setACambiar(null); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>{aCambiar?.activo ? "Desactivar" : "Activar"} factor</AlertDialogTitle><AlertDialogDescription>{aCambiar?.activo ? "Sus vínculos vigentes se cerrarán. El historial y las calificaciones existentes permanecen." : "Podrás volver a configurar dónde aplica."}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={guardando}>Cancelar</AlertDialogCancel><Button variant={aCambiar?.activo ? "relDanger" : "rel"} disabled={guardando} onClick={cambiar}>Confirmar</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={aCambiar !== null}
+      alCerrar={() => setACambiar(null)}
+      tono={aCambiar?.activo ? "peligro" : "neutro"}
+      titulo={`${aCambiar?.activo ? "Desactivar" : "Activar"} factor`}
+      descripcion={aCambiar?.activo ? "Sus vínculos vigentes se cerrarán. El historial y las calificaciones existentes permanecen." : "Podrás volver a configurar dónde aplica."}
+      etiquetaOcupado="Actualizando…"
+      ocupado={guardando}
+      alConfirmar={() => void cambiar()}
+    />
     <FactorDetalleSheet factor={detalle} cerrar={() => setDetalle(null)} />
   </div>;
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList, Plus, Trash2 } from "lucide-react";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Casilla } from "@/shared/ui/Casilla";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { EstadoVacio } from "@/shared/ui/EstadoVacio";
@@ -127,6 +127,16 @@ export default function ConstructorEncuestaCxPage() {
       </form>
       <div className="min-w-0 space-y-5"><Panel titulo="Vista previa móvil"><div className="mx-auto max-w-sm rounded-rel-card border border-rel-border bg-rel-canvas p-4"><p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">ABRIL360 · Calificación</p><h2 className="mt-2 wrap-break-word font-rel-heading text-xl font-bold">{titulo || "Título de la encuesta"}</h2>{items[0] ? <div className="mt-5"><p className="font-semibold">{items[0].enunciado || "Escribe la pregunta principal"}</p><p className="mt-2 text-sm text-rel-muted">{nombres[items[0].tipo]}</p><div className="mt-3 flex flex-wrap gap-2">{Array.from({ length: items[0].tipo.startsWith("NPS") ? 11 : items[0].tipo === "CES" ? 7 : 5 }, (_, n) => <span key={n} className="grid h-8 w-8 place-items-center rounded-rel-control border border-rel-border bg-rel-surface text-sm">{n + (items[0].tipo.startsWith("NPS") ? 0 : 1)}</span>)}</div></div> : <p className="mt-5 text-sm text-rel-muted">Aquí verás la primera pregunta.</p>}</div><p className="mt-3 text-xs text-rel-muted">La vista previa muestra el borrador local; el enlace público solo presenta versiones publicadas.</p></Panel><Panel titulo="Historial publicado">{encuesta.versiones.length ? <ul className="space-y-3">{encuesta.versiones.map((v) => <li key={v.id} className="flex items-center justify-between gap-2 border-b border-rel-border pb-3"><span>Versión {v.numero}<small className="block text-rel-muted">{v.items.length} preguntas · {nombres[v.items[0].tipo]}</small></span><Badge variant="relSuccess">Publicada</Badge></li>)}</ul> : <EstadoVacio escena="ninguna" titulo="Sin versiones publicadas" descripcion="La primera publicación fija las preguntas y su escala; el enlace de campaña solo muestra versiones publicadas." />}</Panel></div>
     </div>
-    <AlertDialog open={confirmar} onOpenChange={(v) => { if (!ocupado) setConfirmar(v); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>Publicar versión</AlertDialogTitle><AlertDialogDescription>Las preguntas y escalas quedarán inmutables. Para cambiarlas después crearás una versión nueva; los QR impresos seguirán ligados al enlace de campaña.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={ocupado}>Cancelar</AlertDialogCancel><Button variant="rel" disabled={ocupado} onClick={publicar}>{ocupado ? "Publicando…" : "Publicar"}</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={confirmar}
+      alCerrar={() => setConfirmar(false)}
+      tono="atencion"
+      titulo="Publicar versión"
+      descripcion="Las preguntas y escalas quedarán inmutables. Para cambiarlas después crearás una versión nueva; los QR impresos seguirán ligados al enlace de campaña."
+      etiquetaConfirmar="Publicar"
+      etiquetaOcupado="Publicando…"
+      ocupado={ocupado}
+      alConfirmar={() => void publicar()}
+    />
   </div>;
 }

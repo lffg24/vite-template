@@ -10,6 +10,7 @@
 // «Copiar el vigente», y eso está dicho en la pantalla en vez de dejar al
 // usuario buscando un botón de copiar que no existe.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Link2, Plus } from "lucide-react";
@@ -25,16 +26,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Sheet,
   SheetContent,
@@ -408,33 +399,17 @@ export default function CapacitacionesEnlacesPage() {
       <EnlaceGeneradoDialog enlace={recienCreado} alCerrar={() => setRecienCreado(null)} />
 
       {/* --- revocación --- */}
-      <AlertDialog open={aRevocar !== null} onOpenChange={(v) => !v && setARevocar(null)}>
-        <AlertDialogContent className="rel-scope font-rel-body">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-rel-heading text-rel-dark">
-              ¿Revocar este enlace?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-rel-muted">
-              Deja de servir de inmediato, también para quien lo tenga abierto a
-              medias. No se puede deshacer ni reactivar: habría que generar uno
-              nuevo y repartirlo otra vez.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={revocando}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rel-danger text-rel-danger-foreground hover:bg-rel-danger/90"
-              onClick={(e) => {
-                e.preventDefault();
-                void confirmarRevocacion();
-              }}
-              disabled={revocando}
-            >
-              {revocando ? "Revocando…" : "Revocar enlace"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={aRevocar !== null}
+        alCerrar={() => setARevocar(null)}
+        tono="peligro"
+        titulo="¿Revocar este enlace?"
+        descripcion="Deja de servir de inmediato, también para quien lo tenga abierto a medias. No se puede deshacer ni reactivar: habría que generar uno nuevo y repartirlo otra vez."
+        etiquetaConfirmar="Revocar enlace"
+        etiquetaOcupado="Revocando…"
+        ocupado={revocando}
+        alConfirmar={() => void confirmarRevocacion()}
+      />
     </div>
   );
 }

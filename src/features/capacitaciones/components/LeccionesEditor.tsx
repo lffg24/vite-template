@@ -14,6 +14,7 @@
 //   versión que los use. Ocultarlos haría que la limitación se descubriera al
 //   pulsar «Publicar», con la lección ya redactada.
 
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 
@@ -26,16 +27,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -835,33 +826,17 @@ export function LeccionesEditor({
         </IllustratedFormSheet>
 
       {/* --- confirmación destructiva --- */}
-      <AlertDialog open={aEliminar !== null} onOpenChange={(v) => !v && setAEliminar(null)}>
-        <AlertDialogContent className="rel-scope font-rel-body">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-rel-heading text-rel-dark">
-              ¿Eliminar «{aEliminar?.titulo}»?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-rel-muted">
-              Se elimina del curso vivo y las lecciones siguientes se renumeran.
-              Las versiones ya publicadas conservan su copia congelada: quien esté
-              cursando una de ellas no se ve afectado.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={eliminando}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-rel-danger text-rel-danger-foreground hover:bg-rel-danger/90"
-              onClick={(e) => {
-                e.preventDefault();
-                void confirmarEliminacion();
-              }}
-              disabled={eliminando}
-            >
-              {eliminando ? "Eliminando…" : "Eliminar lección"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DialogoConfirmacion
+        abierto={aEliminar !== null}
+        alCerrar={() => setAEliminar(null)}
+        tono="peligro"
+        titulo={`¿Eliminar «${aEliminar?.titulo ?? ""}»?`}
+        descripcion="Se elimina del curso vivo y las lecciones siguientes se renumeran. Las versiones ya publicadas conservan su copia congelada: quien esté cursando una de ellas no se ve afectado."
+        etiquetaConfirmar="Eliminar lección"
+        etiquetaOcupado="Eliminando…"
+        ocupado={eliminando}
+        alConfirmar={() => void confirmarEliminacion()}
+      />
     </SeccionPlegable>
     </Sheet>
   );

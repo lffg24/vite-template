@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { Link } from "react-router-dom";
 import { Building2, Link2, Pencil, Plus, Search } from "lucide-react";
 
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Aviso } from "@/shared/ui/Aviso";
 import { Pill } from "@/shared/ui/Pill";
@@ -233,11 +233,16 @@ export default function ContextosCxPage() {
       </form></SheetContent>
     </Sheet>
 
-    <AlertDialog open={aCambiar !== null} onOpenChange={(v) => { if (!v && !guardando) setACambiar(null); }}><AlertDialogContent className="rel-scope font-rel-body">
-      <AlertDialogHeader><AlertDialogTitle>{aCambiar?.activo ? "Desactivar" : "Activar"} {etiqueta}</AlertDialogTitle>
-        <AlertDialogDescription>{aCambiar?.activo ? "Dejará de estar disponible para nuevas calificaciones. Sus registros históricos se conservan." : "Volverá a estar disponible para nuevas calificaciones."}</AlertDialogDescription></AlertDialogHeader>
-      <AlertDialogFooter><AlertDialogCancel disabled={guardando}>Cancelar</AlertDialogCancel><Button type="button" variant={aCambiar?.activo ? "relDanger" : "rel"} disabled={guardando} onClick={cambiarEstado}>{guardando ? "Actualizando…" : "Confirmar"}</Button></AlertDialogFooter>
-    </AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={aCambiar !== null}
+      alCerrar={() => setACambiar(null)}
+      tono={aCambiar?.activo ? "peligro" : "neutro"}
+      titulo={`${aCambiar?.activo ? "Desactivar" : "Activar"} ${etiqueta}`}
+      descripcion={aCambiar?.activo ? "Dejará de estar disponible para nuevas calificaciones. Sus registros históricos se conservan." : "Volverá a estar disponible para nuevas calificaciones."}
+      etiquetaOcupado="Actualizando…"
+      ocupado={guardando}
+      alConfirmar={() => void cambiarEstado()}
+    />
 
     <VinculosSheet sede={sedeVinculos} cerrar={() => setSedeVinculos(null)} />
     <ServicioAreasSheet servicio={servicioAreas} cerrar={() => setServicioAreas(null)} />

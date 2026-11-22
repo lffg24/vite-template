@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
 import { Link } from "react-router-dom";
 import { Building2, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Aviso } from "@/shared/ui/Aviso";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Pill } from "@/shared/ui/Pill";
@@ -167,7 +167,16 @@ export default function AreasCxPage() {
       }}
     />
     <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>{edicion === "nuevo" ? "Nueva" : "Editar"} área</SheetTitle><SheetDescription>Esta área también forma parte del catálogo compartido de tu empresa.</SheetDescription></SheetHeader><form onSubmit={guardar} className="mt-6 space-y-5" noValidate><div><Label htmlFor="area-nombre">Nombre *</Label><Input id="area-nombre" value={nombre} disabled={guardando} maxLength={160} onChange={(e) => setNombre(e.target.value)} /></div><div><Label htmlFor="area-descripcion">Descripción</Label><Input id="area-descripcion" value={descripcion} disabled={guardando} maxLength={500} onChange={(e) => setDescripcion(e.target.value)} /></div>{errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}<div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div></form></SheetContent></Sheet>
-    <AlertDialog open={aCambiar !== null} onOpenChange={(v) => { if (!v && !guardando) setACambiar(null); }}><AlertDialogContent className="rel-scope font-rel-body"><AlertDialogHeader><AlertDialogTitle>{aCambiar?.activo ? "Desactivar" : "Activar"} área</AlertDialogTitle><AlertDialogDescription>{aCambiar?.activo ? "Dejará de estar asignada a servicios CX. El historial permanece; otras partes de Abril360 seguirán mostrando el área inactiva según sus reglas." : "Podrás volver a asignarla a servicios CX."}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={guardando}>Cancelar</AlertDialogCancel><Button type="button" variant={aCambiar?.activo ? "relDanger" : "rel"} disabled={guardando} onClick={cambiar}>{guardando ? "Actualizando…" : "Confirmar"}</Button></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoConfirmacion
+      abierto={aCambiar !== null}
+      alCerrar={() => setACambiar(null)}
+      tono={aCambiar?.activo ? "peligro" : "neutro"}
+      titulo={`${aCambiar?.activo ? "Desactivar" : "Activar"} área`}
+      descripcion={aCambiar?.activo ? "Dejará de estar asignada a servicios CX. El historial permanece; otras partes de Abril360 seguirán mostrando el área inactiva según sus reglas." : "Podrás volver a asignarla a servicios CX."}
+      etiquetaOcupado="Actualizando…"
+      ocupado={guardando}
+      alConfirmar={() => void cambiar()}
+    />
   </div>;
 }
 
