@@ -65,7 +65,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
         if ("to" in entry) {
           const Icon = entry.icon;
           const active = activeRoute(location.pathname, entry.to);
-          return <NavLink key={entry.to} to={entry.to} title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-rel-card text-sm font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? "bg-rel-accent text-rel-dark" : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
+          return <NavLink key={entry.to} to={entry.to} viewTransition title={compact ? entry.label : undefined} aria-label={compact ? entry.label : undefined} onClick={() => setMobileOpen(false)} className={`flex w-full items-center rounded-rel-card text-sm font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${compact ? "justify-center px-0 py-3" : "gap-3 px-3 py-2.5"} ${active ? "bg-rel-accent text-rel-dark" : "text-white/85 hover:bg-white/10"}`}><Icon className="h-5 w-5 shrink-0" aria-hidden="true" />{!compact && <span>{entry.label}</span>}</NavLink>;
         }
         const Icon = entry.icon;
         const active = entry.children.some(child => activeRoute(location.pathname, child.to));
@@ -114,7 +114,7 @@ export default function RoleSidebar({ items, storageKey, brandTitle = "ABRIL360"
             <div className={`overflow-hidden transition-[visibility] duration-enter ${expanded ? "visible" : "invisible"}`}>
             <div className="space-y-0.5 pb-2 pl-3 pr-2">{entry.children.map(child => {
             const ChildIcon = child.icon;
-            return <NavLink key={child.to} to={child.to} onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-rel-control px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
+            return <NavLink key={child.to} to={child.to} viewTransition onClick={() => setMobileOpen(false)} className={`flex items-center gap-2.5 rounded-rel-control px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-sky ${activeRoute(location.pathname, child.to) ? "bg-white/15 font-semibold text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}><ChildIcon className="h-4 w-4 shrink-0" aria-hidden="true" /><span>{child.label}</span></NavLink>;
           })}</div>
             </div>
           </div>}

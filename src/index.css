@@ -947,3 +947,24 @@
     transition: none;
   }
 }
+
+
+/*
+  Cambio de página desde el menú: el navegador cruza la pantalla que sale con la
+  que entra (View Transitions). Solo un fundido corto con la curva de la casa:
+  la subida de 8 px la pone `TransicionDePagina`, y sumar un segundo movimiento
+  se sentiría nervioso. Los navegadores sin soporte ignoran esto y la
+  navegación sigue siendo la de siempre.
+*/
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-enter);
+  animation-timing-function: var(--rel-ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
