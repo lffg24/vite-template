@@ -19,6 +19,13 @@
 // El umbral de aviso lo decide el servidor y viaja en la respuesta. Repetir «60
 // días» aquí sería tener dos fuentes para el mismo número, y la de la pantalla
 // se quedaría vieja sin que nadie lo notara.
+//
+// ## Con qué se dibuja
+//
+// Las cifras son `IndicadorKpi` (el tono dice si hay algo que mirar: atención o
+// peligro solo cuando el número es mayor que cero). Cuando no hay atrasadas se
+// dice «Todo al día» con su ilustración: sin eso, «no hay alertas» y «no cargó»
+// se ven igual.
 
 import { Link } from "react-router-dom";
 import {
@@ -26,12 +33,22 @@ import {
   ArrowRight,
   BadgeCheck,
   CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  GraduationCap,
   LayoutDashboard,
+  PlayCircle,
+  UserRoundX,
+  type LucideIcon,
 } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
 import { Ayuda } from "@/shared/ui/Ayuda";
+import { Caja } from "@/shared/ui/Caja";
+import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
+import { Illustration } from "@/shared/ui/illustration";
+import type { TonoAzulejo } from "@/shared/ui/AzulejoIcono";
 import { Button } from "@/components/ui/button";
 import { obtenerTablero } from "@/services/capacitacionesService";
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
@@ -41,41 +58,57 @@ import {
 } from "@/features/capacitaciones/components/EstadoPantalla";
 import { formatearFecha } from "@/features/capacitaciones/formato";
 
+/**
+ * Una cifra del módulo: el indicador de la casa. Solo es enlace lo que lleva a
+ * algún sitio; un recuadro que parece pulsable y no hace nada enseña a no
+ * pulsar los que sí.
+ */
 function Cifra({
   etiqueta,
   valor,
   ayuda,
   a,
+  icono,
+  tono,
 }: {
   etiqueta: string;
   valor: number;
   ayuda?: string;
   a?: string;
+  icono: LucideIcon;
+  tono: TonoAzulejo;
 }) {
-  const cuerpo = (
-    <>
-      <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        {etiqueta}
-        {ayuda ? <Ayuda etiqueta={`Qué cuenta ${etiqueta}`}>{ayuda}</Ayuda> : null}
-      </p>
-      <p className="mt-1 font-rel-heading text-3xl font-black tabular-nums text-rel-dark">
-        {valor}
-      </p>
-    </>
+  const indicador = (
+    <IndicadorKpi
+      etiqueta={etiqueta}
+      valor={valor}
+      icono={icono}
+      tono={tono}
+      className={
+        a
+          ? "transition-colors duration-enter ease-rel-out group-hover:border-rel-primary motion-reduce:transition-none"
+          : undefined
+      }
+    />
   );
-  const clases =
-    "block min-w-0 rounded-rel-card border border-rel-border bg-rel-surface p-5";
-  // Solo es enlace lo que lleva a algún sitio. Un recuadro que parece pulsable y
-  // no hace nada enseña a no pulsar los que sí.
-  return a ? (
-    <Link
-      to={a}
-      className={`${clases} transition-colors hover:border-rel-primary hover:bg-rel-surface-subtle`}
-    >
-      {cuerpo}
-    </Link>
-  ) : (
-    <div className={clases}>{cuerpo}</div>
+  return (
+    <div className="relative min-w-0">
+      {a ? (
+        <Link
+          to={a}
+          className="group block rounded-rel-panel focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary"
+        >
+          {indicador}
+        </Link>
+      ) : (
+        indicador
+      )}
+      {ayuda ? (
+        <span className="absolute right-3 top-3">
+          <Ayuda etiqueta={`Qué cuenta ${etiqueta}`}>{ayuda}</Ayuda>
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -104,26 +137,34 @@ export default function CapacitacionesInicioPage() {
               etiqueta="Asignaciones activas"
               valor={consulta.datos.asignaciones_activas}
               a="/capacitaciones/asignaciones"
+              icono={ClipboardList}
+              tono="marca"
               ayuda="Cursos que se están dictando ahora en esta empresa."
             />
             <Cifra
               etiqueta="Sin empezar"
               valor={consulta.datos.sin_empezar}
+              icono={UserRoundX}
+              tono={consulta.datos.sin_empezar > 0 ? "atencion" : "neutro"}
               ayuda="Gente con invitación que todavía sirve y que nunca entró. Es sobre quien se puede actuar hoy con un recordatorio."
             />
             <Cifra
               etiqueta="En curso"
               valor={consulta.datos.personas_en_curso}
+              icono={PlayCircle}
+              tono="info"
               ayuda="Entraron y les faltan lecciones obligatorias."
             />
             <Cifra
               etiqueta="Completados"
               valor={consulta.datos.personas_completadas}
+              icono={GraduationCap}
+              tono="exito"
               ayuda="Terminaron lo obligatorio de la versión que estaban cursando."
             />
           </div>
 
-          {/* --- vencimientos --- */}
+          {/* --- constancias --- */}
           <Panel className="space-y-4">
             <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
               <h2 className="flex items-center gap-2 font-rel-heading text-lg font-bold text-rel-dark">
@@ -139,47 +180,26 @@ export default function CapacitacionesInicioPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-rel-control border border-rel-border p-4">
-                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-rel-muted">
-                  <BadgeCheck className="h-4 w-4" aria-hidden="true" />
-                  Vigentes
-                </p>
-                <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums text-rel-dark">
-                  {consulta.datos.constancias_vigentes}
-                </p>
-              </div>
-              <div
-                className={`rounded-rel-control border p-4 ${
-                  consulta.datos.constancias_por_vencer > 0
-                    ? "border-rel-warning bg-rel-warning-subtle"
-                    : "border-rel-border"
-                }`}
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-                  Por vencer
-                </p>
-                <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums text-rel-dark">
-                  {consulta.datos.constancias_por_vencer}
-                </p>
-                <p className="mt-1 text-xs text-rel-muted">
-                  En los próximos {consulta.datos.dias_aviso_vencimiento} días
-                </p>
-              </div>
-              <div
-                className={`rounded-rel-control border p-4 ${
-                  consulta.datos.constancias_vencidas > 0
-                    ? "border-rel-danger bg-rel-danger-subtle"
-                    : "border-rel-border"
-                }`}
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">
-                  Vencidas
-                </p>
-                <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums text-rel-dark">
-                  {consulta.datos.constancias_vencidas}
-                </p>
-                <p className="mt-1 text-xs text-rel-muted">Piden reinducción</p>
-              </div>
+              <IndicadorKpi
+                etiqueta="Vigentes"
+                valor={consulta.datos.constancias_vigentes}
+                icono={BadgeCheck}
+                tono="exito"
+              />
+              <IndicadorKpi
+                etiqueta="Por vencer"
+                valor={consulta.datos.constancias_por_vencer}
+                icono={CalendarClock}
+                tono={consulta.datos.constancias_por_vencer > 0 ? "atencion" : "neutro"}
+                contexto={`En los próximos ${consulta.datos.dias_aviso_vencimiento} días`}
+              />
+              <IndicadorKpi
+                etiqueta="Vencidas"
+                valor={consulta.datos.constancias_vencidas}
+                icono={AlertTriangle}
+                tono={consulta.datos.constancias_vencidas > 0 ? "peligro" : "neutro"}
+                contexto="Piden reinducción"
+              />
             </div>
           </Panel>
 
@@ -217,7 +237,20 @@ export default function CapacitacionesInicioPage() {
                 ))}
               </ul>
             </Panel>
-          ) : null}
+          ) : (
+            <Caja papel="caja" className="flex items-center gap-4">
+              <Illustration name="satisfactorio" size="sm" className="shrink-0" />
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 font-rel-heading font-bold text-rel-dark">
+                  <CheckCircle2 className="h-5 w-5 text-rel-success" aria-hidden="true" />
+                  Todo al día
+                </p>
+                <p className="text-sm text-rel-muted">
+                  Ninguna asignación pasó su fecha objetivo con gente pendiente.
+                </p>
+              </div>
+            </Caja>
+          )}
         </>
       ) : null}
     </div>
