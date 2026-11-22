@@ -576,7 +576,7 @@ export default function SuperAdminCreditosPage() {
         {deductTarget ? (
           <div className="space-y-5">
             <div className="rounded-rel-card border border-warning/30 bg-warning-subtle p-4">
-              <p className="font-heading text-xs font-bold uppercase text-warning">
+              <p className="font-heading text-xs font-bold uppercase text-warning-ink">
                 Cuenta seleccionada
               </p>
               <p className="mt-1 font-bold text-foreground">
@@ -585,7 +585,7 @@ export default function SuperAdminCreditosPage() {
               <p className="text-sm text-foreground-soft">
                 {deductTarget.psicologo_email || "Sin correo"}
               </p>
-              <p className="mt-2 text-sm font-bold text-warning">
+              <p className="mt-2 text-sm font-bold text-warning-ink">
                 Saldo disponible: {entero(deductTarget.saldo_actual)}
               </p>
             </div>

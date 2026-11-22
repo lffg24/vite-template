@@ -41,7 +41,7 @@ const TOAST_THEME: Record<ToastType, { wrapper: string; accent: string; Icon: an
   },
   warning: {
     wrapper: "border-warning/30 bg-warning-subtle text-foreground",
-    accent: "bg-warning/15 text-warning ring-1 ring-warning/20",
+    accent: "bg-warning/15 text-warning-ink ring-1 ring-warning/20",
     Icon: AlertTriangle,
   },
   error: {

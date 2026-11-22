@@ -138,7 +138,7 @@ export function ConstanciaDocumento({
             {constancia.vence_el ? ` Vigente hasta ${formatearFecha(constancia.vence_el)}.` : ""}
           </p>
           {s.identidad?.aviso ? (
-            <p className="mt-1 max-w-xl text-xs leading-5 text-rel-warning">{s.identidad.aviso}</p>
+            <p className="mt-1 max-w-xl text-xs leading-5 text-warning-ink">{s.identidad.aviso}</p>
           ) : null}
 
           {/* --- quién emite --- */}

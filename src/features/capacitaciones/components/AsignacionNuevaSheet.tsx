@@ -190,7 +190,7 @@ export function AsignacionNuevaSheet({
                 </SelectContent>
               </Select>
               {disponibles.length === 0 ? (
-                <p role="status" className="text-sm text-rel-warning">
+                <p role="status" className="text-sm text-warning-ink">
                   Todas las versiones publicadas ya están asignadas a esta empresa.
                   Publica una versión nueva para volver a asignar el mismo curso.
                 </p>

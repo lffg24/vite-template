@@ -13,7 +13,7 @@ import type { PersonaTarea } from "./modelo";
 const COLORES = [
   "bg-rel-accent-subtle text-rel-primary",
   "bg-rel-info-subtle text-rel-info",
-  "bg-rel-warning-subtle text-rel-warning",
+  "bg-rel-warning-subtle text-warning-ink",
   "bg-rel-success-subtle text-rel-success",
   "bg-rel-neutral-subtle text-rel-dark",
 ] as const;

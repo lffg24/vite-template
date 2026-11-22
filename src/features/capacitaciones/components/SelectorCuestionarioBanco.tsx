@@ -123,7 +123,7 @@ export function SelectorCuestionarioBanco({
         </SelectContent>
       </Select>
       {elegida && !elegida.vigente ? (
-        <p className="text-sm text-rel-warning">
+        <p className="text-sm text-warning-ink">
           Esta lección apunta a la <strong>versión {elegida.numero}</strong>, y ya
           hay una más reciente publicada. Sigue siendo válida —quien la responda
           verá estas preguntas— pero si querías la última, elígela aquí.

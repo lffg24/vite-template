@@ -64,7 +64,7 @@ export function Pill({
       variant={VARIANTE[tono]}
       title={title}
       aria-describedby={describedby}
-      className={cn("px-2.5 py-1", className)}
+      className={cn("px-2.5 py-1", tono === "atencion" && "text-warning-ink", className)}
     >
       {punto ? (
         <span aria-hidden="true" className={cn("h-2 w-2 shrink-0 rounded-full", PUNTO[tono])} />

@@ -133,7 +133,7 @@ function Columna<T>({
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
-            pasado ? "bg-rel-warning-subtle text-rel-warning" : "bg-rel-surface text-rel-muted"
+            pasado ? "bg-rel-warning-subtle text-warning-ink" : "bg-rel-surface text-rel-muted"
           )}
           title={pasado ? `Pasa el límite de ${columna.limite}` : undefined}
         >

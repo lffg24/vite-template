@@ -66,7 +66,7 @@ function Condicion({
     // apagada es una decisión, ausente es configuración que falta.
     indefinido: {
       Icono: HelpCircle,
-      color: "text-rel-warning",
+      color: "text-warning-ink",
       badge: <Pill tono="atencion">Sin declarar</Pill>,
     },
   }[veredicto];

@@ -44,7 +44,7 @@ export type TonoConfirmacion = "peligro" | "atencion" | "neutro";
 
 const TONO: Record<TonoConfirmacion, { ficha: string; icono: LucideIcon; boton: "relDanger" | "rel" }> = {
   peligro: { ficha: "bg-danger-subtle text-danger ring-danger/25", icono: Trash2, boton: "relDanger" },
-  atencion: { ficha: "bg-warning-subtle text-warning ring-warning/30", icono: AlertTriangle, boton: "rel" },
+  atencion: { ficha: "bg-warning-subtle text-warning-ink ring-warning/30", icono: AlertTriangle, boton: "rel" },
   neutro: { ficha: "bg-accent text-rel-primary ring-rel-primary/20", icono: HelpCircle, boton: "rel" },
 };
 
