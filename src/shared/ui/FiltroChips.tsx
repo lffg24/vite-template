@@ -57,7 +57,7 @@ export function FiltroChips<T extends string>({
               "inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors duration-rel-micro",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2",
               activo
-                ? "border-rel-primary bg-rel-primary text-white"
+                ? "border-rel-primary bg-rel-primary text-rel-primary-foreground"
                 : "border-rel-border bg-rel-surface text-rel-dark hover:bg-rel-surface-subtle"
             )}
           >
@@ -69,7 +69,7 @@ export function FiltroChips<T extends string>({
               <span
                 className={cn(
                   "min-w-6 rounded-full px-1.5 text-xs tabular-nums",
-                  activo ? "bg-white/20 text-white" : "bg-rel-neutral-subtle text-rel-muted"
+                  activo ? "bg-rel-dark/15 text-rel-primary-foreground" : "bg-rel-neutral-subtle text-rel-muted"
                 )}
               >
                 {o.cuenta}

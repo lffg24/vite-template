@@ -127,9 +127,9 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                 className={cn(
                   "grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold",
                   l.completada
-                    ? "bg-rel-success text-white"
+                    ? "bg-rel-success text-success-foreground"
                     : enCurso
-                      ? "bg-rel-primary text-white"
+                      ? "bg-rel-primary text-rel-primary-foreground"
                       : "bg-rel-neutral-subtle text-rel-muted"
                 )}
               >

@@ -36,9 +36,9 @@ export function LeccionesLateral({
                 className={cn(
                   "grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold",
                   l.completada
-                    ? "bg-rel-success text-white"
+                    ? "bg-rel-success text-success-foreground"
                     : esta
-                      ? "bg-rel-primary text-white"
+                      ? "bg-rel-primary text-rel-primary-foreground"
                       : "bg-rel-neutral-subtle text-rel-muted"
                 )}
               >
