@@ -10,7 +10,7 @@
 
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertTriangle, Link2, MoreHorizontal, Send, Plus, Users } from "lucide-react";
+import { Link2, MoreHorizontal, Send, Plus, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -39,6 +39,7 @@ import { EstadoAsignacionBadge, ModoIdentidadBadge } from "@/features/capacitaci
 import { AsignacionNuevaSheet } from "@/features/capacitaciones/components/AsignacionNuevaSheet";
 import { formatearFecha, formatearVigenciaMeses } from "@/features/capacitaciones/formato";
 import { Caja } from "@/shared/ui/Caja";
+import { Aviso } from "@/shared/ui/Aviso";
 
 /** Activa y sin enlaces = trabajo detenido. Esas van primero. */
 function detenida(a: AsignacionResumen) {
@@ -105,17 +106,11 @@ export default function CapacitacionesAsignacionesPage() {
       />
 
       {detenidas > 0 ? (
-        <div
-          role="status"
-          className="flex items-start gap-3 rounded-rel-card border border-rel-warning/30 bg-rel-warning-subtle p-4"
-        >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rel-warning" aria-hidden="true" />
-          <p className="font-rel-body text-sm text-rel-dark">
-            {detenidas === 1
-              ? "Hay 1 asignación activa sin ningún enlace vigente: nadie puede entrar a ella."
-              : `Hay ${detenidas} asignaciones activas sin ningún enlace vigente: nadie puede entrar a ellas.`}
-          </p>
-        </div>
+        <Aviso tono="atencion" titulo="Asignaciones sin acceso">
+          {detenidas === 1
+            ? "Hay 1 asignación activa sin ningún enlace vigente: nadie puede entrar a ella."
+            : `Hay ${detenidas} asignaciones activas sin ningún enlace vigente: nadie puede entrar a ellas.`}
+        </Aviso>
       ) : null}
 
       {consulta.fase === "cargando" ? <CargandoTabla /> : null}

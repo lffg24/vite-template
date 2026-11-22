@@ -25,15 +25,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Download, Users } from "lucide-react";
+import { Download, PlayCircle, UserRoundX, GraduationCap, MailX, Users, type LucideIcon } from "lucide-react";
 
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
 import { TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
+import { Aviso } from "@/shared/ui/Aviso";
 import { BotonVolver } from "@/shared/ui/BotonVolver";
 import { Ayuda } from "@/shared/ui/Ayuda";
-
-import { Badge } from "@/components/ui/badge";
+import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
+import { BarraProgreso } from "@/shared/ui/Progreso";
+import { Pill, type TonoPill } from "@/shared/ui/Pill";
+import type { TonoAzulejo } from "@/shared/ui/AzulejoIcono";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { obtenerAvance } from "@/services/capacitacionesService";
@@ -52,27 +55,27 @@ import { descargarCSV } from "@/shared/csv";
 /** Cómo se nombra y se pinta cada situación, en un solo sitio. */
 const SITUACION: Record<
   SituacionParticipante,
-  { etiqueta: string; variante: "secondary" | "outline" | "destructive" | "default"; ayuda: string }
+  { etiqueta: string; tono: TonoPill; ayuda: string }
 > = {
   SIN_EMPEZAR: {
     etiqueta: "Sin empezar",
-    variante: "outline",
+    tono: "atencion",
     ayuda: "Tiene invitación y todavía sirve. Lo que falta es que entre.",
   },
   INVITACION_VENCIDA: {
     etiqueta: "Invitación vencida",
-    variante: "destructive",
+    tono: "peligro",
     ayuda:
       "Se le invitó, nunca entró y su invitación ya no sirve. Hay que emitirle una nueva.",
   },
   EN_CURSO: {
     etiqueta: "En curso",
-    variante: "secondary",
+    tono: "info",
     ayuda: "Entró y le faltan lecciones obligatorias.",
   },
   COMPLETADO: {
     etiqueta: "Completado",
-    variante: "default",
+    tono: "exito",
     ayuda: "Terminó todo lo obligatorio de la versión que está cursando.",
   },
 };
@@ -81,20 +84,23 @@ function Contador({
   etiqueta,
   valor,
   ayuda,
+  icono,
+  tono,
 }: {
   etiqueta: string;
   valor: number;
   ayuda?: string;
+  icono: LucideIcon;
+  tono: TonoAzulejo;
 }) {
   return (
-    <div className="min-w-0 rounded-rel-control border border-rel-border bg-rel-surface p-4">
-      <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-rel-muted">
-        {etiqueta}
-        {ayuda ? <Ayuda etiqueta={`Qué significa ${etiqueta}`}>{ayuda}</Ayuda> : null}
-      </p>
-      <p className="mt-1 font-rel-heading text-2xl font-black tabular-nums text-rel-dark">
-        {valor}
-      </p>
+    <div className="relative min-w-0">
+      <IndicadorKpi etiqueta={etiqueta} valor={valor} icono={icono} tono={tono} />
+      {ayuda ? (
+        <span className="absolute right-3 top-3">
+          <Ayuda etiqueta={`Qué significa ${etiqueta}`}>{ayuda}</Ayuda>
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -108,19 +114,14 @@ function Contador({
  */
 function Avance({ hechas, totales }: { hechas: number; totales: number }) {
   if (totales === 0) return <span className="text-sm text-rel-muted">—</span>;
-  const porcentaje = Math.floor((hechas * 100) / totales);
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <div
-        className="h-2 w-20 shrink-0 overflow-hidden rounded-full bg-rel-surface-subtle"
-        role="img"
-        aria-label={`${hechas} de ${totales} lecciones obligatorias`}
-      >
-        <div
-          className="h-full rounded-full bg-rel-primary"
-          style={{ width: `${porcentaje}%` }}
-        />
-      </div>
+      <BarraProgreso
+        valor={hechas / totales}
+        etiqueta={`${hechas} de ${totales} lecciones obligatorias`}
+        tamano="sm"
+        className="w-20 shrink-0"
+      />
       <span className="whitespace-nowrap text-sm tabular-nums text-rel-dark">
         {hechas}/{totales}
       </span>
@@ -243,9 +244,7 @@ export default function CapacitacionesAvancePage() {
       titulo: "Situación",
       valor: (p) => SITUACION[p.situacion].etiqueta,
       celda: (p) => (
-        <Badge variant={SITUACION[p.situacion].variante}>
-          {SITUACION[p.situacion].etiqueta}
-        </Badge>
+        <Pill tono={SITUACION[p.situacion].tono}>{SITUACION[p.situacion].etiqueta}</Pill>
       ),
     },
     {
@@ -318,21 +317,29 @@ export default function CapacitacionesAvancePage() {
               etiqueta="Sin empezar"
               valor={consulta.datos.resumen.sin_empezar}
               ayuda={SITUACION.SIN_EMPEZAR.ayuda}
+              icono={UserRoundX}
+              tono={consulta.datos.resumen.sin_empezar > 0 ? "atencion" : "neutro"}
             />
             <Contador
               etiqueta="En curso"
               valor={consulta.datos.resumen.en_curso}
               ayuda={SITUACION.EN_CURSO.ayuda}
+              icono={PlayCircle}
+              tono="info"
             />
             <Contador
               etiqueta="Completados"
               valor={consulta.datos.resumen.completados}
               ayuda={SITUACION.COMPLETADO.ayuda}
+              icono={GraduationCap}
+              tono="exito"
             />
             <Contador
               etiqueta="Invitación vencida"
               valor={consulta.datos.resumen.invitacion_vencida}
               ayuda={SITUACION.INVITACION_VENCIDA.ayuda}
+              icono={MailX}
+              tono={consulta.datos.resumen.invitacion_vencida > 0 ? "peligro" : "neutro"}
             />
           </div>
 
@@ -359,13 +366,11 @@ export default function CapacitacionesAvancePage() {
           ) : null}
 
           {!consulta.datos.version_medible ? (
-            <Panel>
-              <p className="font-rel-body text-sm text-rel-warning">
-                Esta versión se publicó antes de una corrección del sistema y no
-                registra avance. Publica una versión nueva del curso y vuelve a
-                asignarla; las personas que ya tengan constancia la conservan.
-              </p>
-            </Panel>
+            <Aviso tono="atencion" titulo="Esta versión no registra avance">
+              Se publicó antes de una corrección del sistema. Publica una versión
+              nueva del curso y vuelve a asignarla; las personas que ya tengan
+              constancia la conservan.
+            </Aviso>
           ) : null}
 
           {consulta.datos.participantes.length === 0 && consultado === "" ? (
