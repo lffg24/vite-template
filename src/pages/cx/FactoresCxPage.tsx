@@ -103,7 +103,7 @@ export default function FactoresCxPage() {
   return <div className="space-y-6"><PageHeader antetitulo="Configuración CX" titulo="Factores de experiencia" icono={Layers3}
     descripcion="Define qué aspectos del servicio se califican y en qué sedes o servicios aplican."
     accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nuevo factor</Button>} />
-    <Link to="/cx/configuracion/contextos" className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline">← Sedes y servicios</Link>
+    <Link viewTransition to="/cx/configuracion/contextos" className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline">← Sedes y servicios</Link>
     {error ? <Aviso titulo="No pudimos cargar los factores" acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button>}>{error}</Aviso> : null}
     <TablaDatos
       filas={error ? [] : filas}

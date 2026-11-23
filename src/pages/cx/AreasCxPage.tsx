@@ -118,7 +118,7 @@ export default function AreasCxPage() {
     <PageHeader antetitulo="Configuración CX" titulo="Áreas responsables" icono={Building2}
       descripcion="Usa las áreas de tu empresa para asignar responsables a cada servicio."
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nueva área</Button>} />
-    <Link className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
+    <Link viewTransition className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
     {error ? <Aviso titulo="No pudimos cargar las áreas" acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button>}>{error}</Aviso> : null}
     <TablaDatos
       filas={error ? [] : filas}

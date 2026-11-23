@@ -213,7 +213,7 @@ export default function Login() {
                         pantalla de entrada por debajo de los 24 px que exige
                         la norma, y no es un enlace dentro de una frase, que
                         es el caso que la norma exceptua. */}
-                    <Link
+                    <Link viewTransition
                       to="/recuperar-clave"
                       className="-my-2 py-2 text-sm font-semibold text-brand-primary hover:text-brand-turquoise"
                     >

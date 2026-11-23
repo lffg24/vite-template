@@ -59,7 +59,7 @@ export function LeccionesLateral({
               {bloqueada ? (
                 <div className={cn(base, "text-rel-muted")}>{contenido}</div>
               ) : (
-                <Link
+                <Link viewTransition
                   to={`/c/sesion/leccion/${l.leccion_id}`}
                   aria-current={esta ? "step" : undefined}
                   className={cn(

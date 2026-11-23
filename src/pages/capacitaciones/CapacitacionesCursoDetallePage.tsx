@@ -65,7 +65,7 @@ export default function CapacitacionesCursoDetallePage() {
               O fue eliminado, o el enlace apunta a un curso de otra empresa.
             </p>
             <Button variant="relOutline" size="sm" className="mt-4" asChild>
-              <Link to="/capacitaciones/cursos">Ir al catálogo</Link>
+              <Link viewTransition to="/capacitaciones/cursos">Ir al catálogo</Link>
             </Button>
           </Caja>
         ) : (

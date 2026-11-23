@@ -174,9 +174,9 @@ export default function ContextosCxPage() {
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrirFormulario("nuevo")}><Plus aria-hidden="true" /> Nuevo {etiqueta}</Button>} />
 
     <nav aria-label="Configuración CX" className="mb-5 flex flex-wrap gap-2">
-      <Button asChild variant="relOutline"><Link to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
-      <Button asChild variant="relOutline"><Link to="/cx/configuracion/factores">Factores</Link></Button>
-      <Button asChild variant="relOutline"><Link to="/cx/configuracion/areas">Áreas</Link></Button>
+      <Button asChild variant="relOutline"><Link viewTransition to="/cx/configuracion/puntos">Puntos de contacto</Link></Button>
+      <Button asChild variant="relOutline"><Link viewTransition to="/cx/configuracion/factores">Factores</Link></Button>
+      <Button asChild variant="relOutline"><Link viewTransition to="/cx/configuracion/areas">Áreas</Link></Button>
     </nav>
     {error ? <Aviso titulo={`No pudimos cargar ${tipo === "sedes" ? "las sedes" : "los servicios"}`} acciones={<Button type="button" variant="relOutline" size="sm" onClick={recargar}>Reintentar</Button>}>{error}</Aviso> : null}
     <TablaDatos

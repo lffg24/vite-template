@@ -264,7 +264,7 @@ export default function CapacitacionesAsignacionesPage() {
                     en seis lineas. */}
                 <div className="flex flex-col-reverse items-start gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                   <h2 className="font-rel-heading text-base font-bold">
-                    <Link
+                    <Link viewTransition
                       to={`/capacitaciones/asignaciones/${a.id}/invitaciones`}
                       className="text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline"
                     >

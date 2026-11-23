@@ -966,6 +966,14 @@
   animation-duration: var(--motion-enter);
   animation-timing-function: var(--rel-ease-out);
 }
+/* La pantalla nueva sube unos píxeles mientras aparece: el cambio se siente como
+   avanzar, no como un parpadeo. La vieja solo se desvanece. */
+@keyframes rel-vt-entra {
+  from { opacity: 0; transform: translateY(6px); }
+}
+::view-transition-new(root) {
+  animation-name: rel-vt-entra;
+}
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),

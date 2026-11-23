@@ -188,7 +188,7 @@ export default function SuperAdminRolesPermisosPage() {
       icon={ShieldCheck}
       action={seccion === "personas" ? (
         <Button variant="rel" asChild className="w-full sm:w-auto">
-          <Link to="/superadmin/usuarios"><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Invitar usuario</Link>
+          <Link viewTransition to="/superadmin/usuarios"><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Invitar usuario</Link>
         </Button>
       ) : seccion === "roles" ? (
         <Button variant="rel" onClick={() => abrirRol()} disabled={cargando} className="w-full sm:w-auto">

@@ -1,8 +1,10 @@
 // src/App.tsx
 import { lazy, Suspense } from "react";
 import {
-  BrowserRouter as Router,
-  Routes,
+  createBrowserRouter,
+  createRoutesFromElements,
+  Outlet,
+  RouterProvider,
   Route,
   Navigate,
 } from "react-router-dom";
@@ -106,11 +108,31 @@ function RouteFallback() {
   );
 }
 
-function App() {
+/**
+ * La raíz de todas las rutas: la espera de los módulos y los avisos.
+ *
+ * Por qué hay un enrutador de datos y no `<BrowserRouter>`: la API de
+ * transiciones de vista (`<Link viewTransition>`) solo la implementa el
+ * enrutador de datos, y solo para rutas que son SUYAS. Un `<Routes>`
+ * descendiente de una ruta comodín no sirve: `useNavigate` cae al camino
+ * declarativo y descarta la opción sin avisar (medido: la propiedad llegaba al
+ * enlace y la navegación salía sin ella). Por eso el árbol se declara aquí con
+ * JSX, que `createRoutesFromElements` convierte en rutas de datos.
+ */
+function Raiz() {
   return (
-    <Router>
+    <>
       <Suspense fallback={<RouteFallback />}>
-        <Routes>
+        <Outlet />
+      </Suspense>
+      <Toaster />
+    </>
+  );
+}
+
+const enrutador = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<Raiz />}>
           {/* Públicas */}
           {import.meta.env.DEV || import.meta.env.VITE_UI_KIT === "1" ? (
             <Route path="/ui-kit" element={<CatalogoUiKitPage />} />
@@ -356,12 +378,12 @@ function App() {
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Suspense>
+    </Route>
+  )
+);
 
-      <Toaster />
-    </Router>
-  );
+function App() {
+  return <RouterProvider router={enrutador} />;
 }
 
 export default App;

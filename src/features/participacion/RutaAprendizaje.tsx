@@ -150,7 +150,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                 {tarjeta}
               </Caja>
             ) : (
-              <Link
+              <Link viewTransition
                 to={`/c/sesion/leccion/${l.leccion_id}`}
                 aria-current={enCurso ? "step" : undefined}
                 className={cn(

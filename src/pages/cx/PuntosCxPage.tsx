@@ -153,7 +153,7 @@ export default function PuntosCxPage() {
     <PageHeader antetitulo="Configuración CX" titulo="Puntos de contacto" icono={MapPin}
       descripcion="Ubica la experiencia que el cliente calificará dentro de una sede y, si corresponde, un servicio."
       accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nuevo punto</Button>} />
-    <Link className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
+    <Link viewTransition className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
     {error ? <Aviso titulo="No pudimos cargar los puntos de contacto" acciones={<Button type="button" variant="relOutline" size="sm" onClick={recargar}>Reintentar</Button>}>{error}</Aviso> : null}
     <TablaDatos
       filas={error ? [] : filas}

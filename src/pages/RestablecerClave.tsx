@@ -51,7 +51,7 @@ export default function RestablecerClave() {
   };
 
   if (!token) {
-    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible." escena="link-fallido"><Link to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
+    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible." escena="link-fallido"><Link viewTransition to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
   }
 
   return (
@@ -62,7 +62,7 @@ export default function RestablecerClave() {
           titulo="Contraseña actualizada"
           acciones={
             <Button asChild variant="outline" size="sm">
-              <Link to="/login">Ir al login</Link>
+              <Link viewTransition to="/login">Ir al login</Link>
             </Button>
           }
         >
