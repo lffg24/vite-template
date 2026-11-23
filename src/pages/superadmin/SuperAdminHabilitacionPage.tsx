@@ -24,6 +24,8 @@ import { BookOpen, CheckCircle2, Circle, Loader2, MessageSquareHeart, ShieldChec
 
 import { Button } from "@/components/ui/button";
 import { EsqueletoTexto, ZonaCargando } from "@/shared/ui/Esqueleto";
+import { Aviso } from "@/shared/ui/Aviso";
+import { SinResultados } from "@/shared/ui/EstadoVacio";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -44,6 +46,7 @@ import {
 import { useConsulta } from "@/features/capacitaciones/useConsulta";
 import type { ErrorApi } from "@/types/capacitaciones";
 import { Caja } from "@/shared/ui/Caja";
+import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 
 const MODULOS = [
   {
@@ -111,6 +114,9 @@ export default function SuperAdminHabilitacionPage() {
   const [guardando, setGuardando] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
   const [contratoPorSuspender, setContratoPorSuspender] = useState<string | null>(null);
+  const [fechaInicio, setFechaInicio] = useState(hoyISO);
+  const [fechaFin, setFechaFin] = useState("");
+  const [referencia, setReferencia] = useState("");
   const configuracion = MODULOS.find((item) => item.codigo === modulo)!;
 
   const empresas = useConsulta(
@@ -163,7 +169,9 @@ export default function SuperAdminHabilitacionPage() {
     ? plataforma.datos.banderas : [];
   const banderas = datos?.banderas ?? [];
   const participacion = banderas.find((b) => b.clave === configuracion.accesoPublico);
+  const asignacion = banderas.find((b) => b.clave === "capacitaciones.asignacion");
   const contratoActivo = datos?.contratos.find((c) => c.estado === "ACTIVO");
+  const fechaInvalida = Boolean(fechaFin && fechaFin < fechaInicio);
 
   return (
     <div className="rel-scope font-rel-body text-rel-dark">
@@ -205,15 +213,21 @@ export default function SuperAdminHabilitacionPage() {
       </Caja>
 
       {modulo === "CAPACITACIONES" ? (
-        <Caja como="section" aire="normal" className="mt-6">
+        <SeccionPlegable
+          titulo="Configuración global del catálogo"
+          descripcion="Control de plataforma compartido por las empresas; no habilita acceso ni permisos de una empresa."
+          abiertaPorDefecto={false}
+          claveMemoria="superadmin-catalogo-global"
+          className="mt-6"
+        >
           <div className="flex min-w-0 items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-rel-control bg-rel-accent-subtle text-rel-primary">
               <BookOpen className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="font-rel-heading font-bold">Catálogo global de Capacitación</h2>
+              <h2 className="font-rel-heading font-bold">Catálogo global de Capacitaciones</h2>
               <p className="mt-1 text-sm text-rel-muted">
-                Pertenece a la plataforma y lo comparten todas las empresas. Este control no depende del contrato de una empresa.
+                Pertenece a la plataforma y lo comparten todas las empresas. Este control no habilita el acceso de una empresa ni los permisos de una persona.
               </p>
             </div>
           </div>
@@ -223,9 +237,11 @@ export default function SuperAdminHabilitacionPage() {
             </ZonaCargando>
           ) : null}
           {plataforma.fase === "error" ? (
-            <div role="alert" className="mt-4 text-sm text-destructive">
-              No pudimos consultar el estado global. <Button variant="link" onClick={() => void plataforma.refrescar()}>Reintentar</Button>
-            </div>
+            <Aviso
+              titulo="No pudimos consultar el estado global"
+              className="mt-4"
+              acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => void plataforma.refrescar()}>Reintentar</Button>}
+            />
           ) : null}
           <ul className="mt-4 space-y-3">
             {globales.map((bandera) => (
@@ -254,12 +270,13 @@ export default function SuperAdminHabilitacionPage() {
               </li>
             ))}
           </ul>
-        </Caja>
+        </SeccionPlegable>
       ) : null}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[320px_1fr]">
         <Caja como="aside" aire="ninguno" className="overflow-hidden">
           <div className="space-y-3 p-4">
+          <h2 className="font-rel-heading text-lg font-bold">1. Selecciona una empresa</h2>
           <Label htmlFor="buscar-empresa" className="text-rel-dark">
             Buscar empresa
           </Label>
@@ -274,9 +291,10 @@ export default function SuperAdminHabilitacionPage() {
             placeholder="Buscar por nombre o NIT"
           />
           {empresas.fase === "error" ? (
-            <div role="alert" className="text-sm text-destructive">
-              No pudimos consultar las empresas. <Button variant="link" onClick={() => void empresas.refrescar()}>Reintentar</Button>
-            </div>
+            <Aviso
+              titulo="No pudimos consultar las empresas"
+              acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => void empresas.refrescar()}>Reintentar</Button>}
+            />
           ) : null}
           </div>
           <ul className="max-h-108 space-y-1 overflow-y-auto border-t border-rel-border p-2">
@@ -288,13 +306,27 @@ export default function SuperAdminHabilitacionPage() {
               </li>
             ) : null}
             {empresas.fase === "listo" && empresas.datos?.items.length === 0 ? (
-              <li className="p-3 text-sm text-rel-muted">No encontramos empresas con esa búsqueda.</li>
+              <li>
+                <SinResultados
+                  elemento="empresa"
+                  escena="ninguna"
+                  limpiar={() => {
+                    setBusqueda("");
+                    setPagina(1);
+                  }}
+                />
+              </li>
             ) : null}
             {(empresas.fase === "listo" ? empresas.datos?.items ?? [] : []).map((e) => (
               <li key={e.id}>
                 <button
                   type="button"
-                  onClick={() => setEmpresa(e)}
+                  onClick={() => {
+                    setEmpresa(e);
+                    setFechaInicio(hoyISO());
+                    setFechaFin("");
+                    setReferencia("");
+                  }}
                   aria-current={empresa?.id === e.id ? "true" : undefined}
                   className={`w-full rounded-rel-control px-3 py-2 text-left text-sm transition-colors focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary ${
                     empresa?.id === e.id
@@ -346,23 +378,32 @@ export default function SuperAdminHabilitacionPage() {
             </ZonaCargando>
           ) : null}
           {empresa && estado.fase === "error" ? (
-            <Caja role="alert" tono="peligro" aire="normal" className="text-sm text-destructive">
-              No pudimos consultar la habilitación de {empresa.nombre}. <Button variant="link" onClick={() => void estado.refrescar()}>Reintentar</Button>
-            </Caja>
+            <Aviso
+              titulo={`No pudimos consultar la habilitación de ${empresa.nombre}`}
+              acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => void estado.refrescar()}>Reintentar</Button>}
+            />
           ) : null}
 
           {empresa && datos ? (
             <>
               <Caja aire="normal">
                 <h2 className="font-rel-heading text-lg font-bold">
-                  Qué le falta a {empresa.nombre}
+                  2. Estado de acceso
                 </h2>
+                <p className="mt-1 text-sm text-rel-muted">Para operar se combinan la vigencia, las funciones activadas y los permisos de cada persona.</p>
                 <ul className="mt-4 space-y-3">
                   <Condicion cumplida={datos.contratado} titulo="Contrato vigente">
                     {datos.contratado
-                      ? "Tiene un contrato activo y dentro de fechas."
-                      : "Sin contrato no se abre nada, aunque las funcionalidades estén encendidas."}
+                      ? "Tiene acceso técnico durante la vigencia registrada; esto no acredita pagos ni facturación."
+                      : "Falta registrar una vigencia técnica para este módulo; las funciones por sí solas no habilitan el acceso."}
                   </Condicion>
+                  {modulo === "CAPACITACIONES" ? (
+                    <Condicion cumplida={Boolean(asignacion?.efectiva)} titulo="Asignaciones encendidas">
+                      {asignacion?.efectiva
+                        ? "Se pueden asignar cursos a esta empresa."
+                        : "Activa Asignaciones abajo para repartir cursos y consultar avances."}
+                    </Condicion>
+                  ) : null}
                   <Condicion
                     cumplida={Boolean(participacion?.efectiva)}
                     titulo="Acceso público encendido"
@@ -389,7 +430,7 @@ export default function SuperAdminHabilitacionPage() {
                           : "Faltan credenciales, límites de captura o la verificación operativa del gateway. Los enlaces permanecen cerrados."}
                     </Condicion>
                   ) : null}
-                  <Condicion titulo="Permiso de quien opera">
+                  <Condicion titulo="Permisos de las personas">
                     No se administra aquí porque no depende de la empresa, sino de
                     quién pregunta. Se concede en{" "}
                     <Link viewTransition
@@ -405,10 +446,16 @@ export default function SuperAdminHabilitacionPage() {
 
               {/* --- contrato --- */}
               <Caja aire="normal">
-                <h3 className="font-rel-heading font-bold">Contrato</h3>
+                <h3 className="font-rel-heading text-lg font-bold">3. Vigencia técnica del módulo</h3>
+                <p className="mt-1 text-sm text-rel-muted">
+                  Registra las fechas y la referencia del acuerdo externo. La vigencia determina el acceso técnico; esta pantalla no registra compras, pagos ni facturas.
+                </p>
+                <Aviso tono="info" titulo="La vigencia no confirma pagos" className="mt-4">
+                  La facturación y los pagos se gestionan fuera de ABRIL360.
+                </Aviso>
                 {datos.contratos.length === 0 ? (
                   <p className="mt-1 text-sm text-rel-muted">
-                    Esta empresa nunca ha tenido {configuracion.nombre}.
+                    No hay una vigencia registrada de {configuracion.nombre} para esta empresa.
                   </p>
                 ) : (
                   <ul className="mt-3 space-y-2 text-sm">
@@ -427,6 +474,7 @@ export default function SuperAdminHabilitacionPage() {
                           Desde {c.vigencia_desde}
                           {c.vigencia_hasta ? ` hasta ${c.vigencia_hasta}` : " · sin fecha de fin"}
                         </span>
+                        {c.notas ? <span className="w-full break-words text-sm text-rel-muted">Referencia: {c.notas}</span> : null}
                         {c.id === contratoActivo?.id ? (
                           <Button
                             type="button"
@@ -444,31 +492,55 @@ export default function SuperAdminHabilitacionPage() {
                   </ul>
                 )}
                 {!contratoActivo ? (
-                  <Button
-                    className="mt-4 min-h-11 w-full sm:w-auto"
-                    variant="rel"
-                    disabled={guardando !== null}
-                    onClick={() =>
-                      conContexto("contrato", () =>
-                        crearContrato(empresa.id, {
-                          modulo,
-                          vigencia_desde: hoyISO(),
-                          vigencia_hasta: null,
-                        })
-                      )
-                    }
+                  <form
+                    className="mt-4 space-y-3 border-t border-rel-border pt-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      if (fechaInvalida || !fechaInicio) return;
+                      void conContexto("contrato", () => crearContrato(empresa.id, {
+                        modulo,
+                        vigencia_desde: fechaInicio,
+                        vigencia_hasta: fechaFin || null,
+                        notas: referencia.trim() || null,
+                      }));
+                    }}
                   >
-                    {guardando === "contrato" ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contrato-desde">Vigente desde</Label>
+                        <Input id="contrato-desde" type="date" required value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} disabled={guardando !== null} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contrato-hasta">Vigente hasta (opcional)</Label>
+                        <Input id="contrato-hasta" type="date" min={fechaInicio} value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} aria-invalid={fechaInvalida} aria-describedby={fechaInvalida ? "contrato-fecha-error" : undefined} disabled={guardando !== null} />
+                      </div>
+                    </div>
+                    {fechaInvalida ? (
+                      <div id="contrato-fecha-error">
+                        <Aviso tono="peligro" titulo="Revisa las fechas" className="py-3">
+                          La fecha de fin debe ser igual o posterior a la de inicio.
+                        </Aviso>
+                      </div>
                     ) : null}
-                    Activar desde hoy, sin fecha de fin
-                  </Button>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="contrato-referencia">Referencia del acuerdo (opcional)</Label>
+                      <Input id="contrato-referencia" maxLength={300} value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Ej. número de contrato o nota interna" disabled={guardando !== null} />
+                    </div>
+                    <Button type="submit" variant="rel" size="lg" className="w-full sm:w-auto" disabled={guardando !== null || fechaInvalida || !fechaInicio}>
+                      {guardando === "contrato" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                      Registrar vigencia de {configuracion.nombre}
+                    </Button>
+                  </form>
+                ) : !datos.contratado ? (
+                  <Aviso tono="atencion" titulo="La vigencia actual no habilita el acceso" className="mt-4">
+                    Existe un contrato activo fuera de vigencia. Gestiona su estado antes de registrar otra vigencia.
+                  </Aviso>
                 ) : null}
               </Caja>
 
               {/* --- funcionalidades --- */}
               <Caja aire="normal">
-                <h3 className="font-rel-heading font-bold">Funcionalidades</h3>
+                <h3 className="font-rel-heading text-lg font-bold">4. Funciones para esta empresa</h3>
                 <p className="mt-1 text-sm text-rel-muted">
                   {modulo === "CX"
                     ? "La captura pública se enciende empresa por empresa. El contrato y la protección del gateway siguen siendo necesarios."
@@ -497,9 +569,7 @@ export default function SuperAdminHabilitacionPage() {
                             )
                           }
                         />
-                        <span className="text-rel-muted">
-                          {b.efectiva ? "Encendida" : "Apagada"}
-                        </span>
+                        <span className="text-rel-muted">{b.efectiva ? "Activada" : "Desactivada"}</span>
                       </div>
                     </li>
                   ))}

@@ -75,6 +75,7 @@ async function elegirEmpresa() {
     </MemoryRouter>
   );
   fireEvent.click(await screen.findByText("Constructora del Norte"));
+  await screen.findByText("Contrato vigente");
 }
 
 beforeEach(() => {
@@ -109,42 +110,94 @@ beforeEach(() => {
  * para esta empresa». Habilitarla era SQL a mano.
  */
 describe("Habilitar módulos", () => {
-  it("nombra las TRES condiciones, incluida la que no administra", async () => {
-    // Enseñar dos de tres deja a quien habilita creyendo que terminó, y el 403
-    // que llega después parece una avería del sistema.
+  it("separa acceso de empresa, plataforma y permisos personales", async () => {
     await elegirEmpresa();
 
     expect(await screen.findByText("Contrato vigente")).toBeInTheDocument();
+    expect(screen.getByText("Asignaciones")).toBeInTheDocument();
     expect(screen.getByText("Acceso público encendido")).toBeInTheDocument();
-    expect(screen.getByText("Permiso de quien opera")).toBeInTheDocument();
+    expect(screen.getByText("Permisos de las personas")).toBeInTheDocument();
+    expect(screen.getByText(/La facturación y los pagos se gestionan fuera de ABRIL360/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Roles y permisos" })
     ).toHaveAttribute("href", "/superadmin/roles-permisos");
   });
 
-  it("explica QUÉ se rompe sin el acceso público", async () => {
-    // Es exactamente el mensaje que recibió quien repartió el enlace.
+  it("explica cómo habilitar el acceso público", async () => {
     await elegirEmpresa();
 
     expect(
-      await screen.findByText(/responde que no está habilitado para esta empresa/i)
+      await screen.findByText(/al abrirlo responde que no está habilitado para esta empresa/i)
     ).toBeInTheDocument();
   });
 
-  it("activa el contrato de hoy en adelante", async () => {
+  it("registra las fechas y la referencia del contrato acordado externamente", async () => {
     await elegirEmpresa();
-
+    fireEvent.change(screen.getByLabelText("Vigente desde"), { target: { value: "2026-11-12" } });
+    fireEvent.change(screen.getByLabelText("Vigente hasta (opcional)"), { target: { value: "2027-11-11" } });
+    fireEvent.change(screen.getByLabelText("Referencia del acuerdo (opcional)"), { target: { value: "Acuerdo 123" } });
     fireEvent.click(
-      await screen.findByRole("button", { name: /activar desde hoy/i })
+      await screen.findByRole("button", { name: /registrar vigencia de capacitaciones/i })
     );
 
     await vi.waitFor(() => expect(crearContrato).toHaveBeenCalled());
     const [empresaId, datos] = vi.mocked(crearContrato).mock.calls[0];
     expect(empresaId).toBe("e1");
     expect(datos.modulo).toBe("CAPACITACIONES");
-    // Sin fecha de fin: es lo normal en un contrato vigente, y obligar a
-    // inventarse un año produce vencimientos que nadie decidió.
-    expect(datos.vigencia_hasta).toBeNull();
+    expect(datos).toEqual({
+      modulo: "CAPACITACIONES",
+      vigencia_desde: "2026-11-12",
+      vigencia_hasta: "2027-11-11",
+      notas: "Acuerdo 123",
+    });
+  });
+
+  it("rechaza una fecha de fin anterior al inicio", async () => {
+    await elegirEmpresa();
+    fireEvent.change(screen.getByLabelText("Vigente desde"), { target: { value: "2026-11-12" } });
+    fireEvent.change(screen.getByLabelText("Vigente hasta (opcional)"), { target: { value: "2026-11-11" } });
+
+    expect(screen.getByText(/fecha de fin debe ser igual o posterior/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /registrar vigencia de capacitaciones/i })).toBeDisabled();
+    expect(crearContrato).not.toHaveBeenCalled();
+  });
+
+  it("muestra una función activada como pendiente si aún no existe contrato vigente", async () => {
+    vi.mocked(obtenerHabilitacion).mockResolvedValue(estado({
+      banderas: [
+        { clave: "capacitaciones.asignacion", nombre: "Asignaciones", para_que: "Asignar cursos", efectiva: true },
+        { clave: "capacitaciones.participacion", nombre: "Acceso público", para_que: "Entrar por enlace", efectiva: true },
+      ],
+    }));
+    await elegirEmpresa();
+    expect(screen.getByLabelText("Asignaciones para Constructora del Norte")).toBeChecked();
+    expect(screen.getByLabelText("Acceso público para Constructora del Norte")).toBeChecked();
+    expect(screen.getByText(/las funciones por sí solas no habilitan el acceso/i)).toBeInTheDocument();
+  });
+
+  it("no muestra ni opera datos de otra empresa mientras carga la selección", async () => {
+    vi.mocked(superadminService.empresas).mockResolvedValue({
+      ok: true,
+      items: [
+        { id: "e1", nombre: "Constructora del Norte", nit: "900123456" },
+        { id: "e2", nombre: "Empresa del Sur", nit: "900999999" },
+      ],
+      total: 2,
+      page: 1,
+      page_size: 20,
+    });
+    let resolverSegunda: (valor: EstadoDeHabilitacion) => void = () => undefined;
+    vi.mocked(obtenerHabilitacion).mockImplementation((empresaId) => empresaId === "e1"
+      ? Promise.resolve(estado())
+      : new Promise((resolve) => { resolverSegunda = resolve; }));
+
+    await elegirEmpresa();
+    fireEvent.click(screen.getByText("Empresa del Sur"));
+    expect(screen.queryByText("Contrato y vigencia del módulo")).toBeNull();
+    expect(screen.queryByRole("button", { name: /registrar vigencia de capacitaciones/i })).toBeNull();
+
+    resolverSegunda(estado());
+    expect(await screen.findByText("3. Vigencia técnica del módulo")).toBeInTheDocument();
   });
 
   it("con contrato vigente NO ofrece crear otro", async () => {
@@ -168,7 +221,20 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
 
     await screen.findByText("Contrato vigente");
-    expect(screen.queryByRole("button", { name: /activar desde hoy/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /registrar vigencia de capacitaciones/i })).toBeNull();
+  });
+
+  it("no ofrece duplicar un contrato activo aunque sus fechas ya no estén vigentes", async () => {
+    vi.mocked(obtenerHabilitacion).mockResolvedValue(estado({
+      contratado: false,
+      contratos: [{
+        id: "c1", estado: "ACTIVO", vigencia_desde: "2020-01-01",
+        vigencia_hasta: "2020-12-31", notas: null, vigente: false,
+      }],
+    }));
+    await elegirEmpresa();
+    expect(screen.queryByRole("button", { name: /registrar vigencia de capacitaciones/i })).toBeNull();
+    expect(screen.getByText(/Existe un contrato activo fuera de vigencia/i)).toBeInTheDocument();
   });
 
   it("enciende una funcionalidad para ESA empresa", async () => {
@@ -189,6 +255,7 @@ describe("Habilitar módulos", () => {
   it("administra el catálogo con el control GLOBAL", async () => {
     await elegirEmpresa();
 
+    fireEvent.click(screen.getByText("Configuración global del catálogo"));
     fireEvent.click(await screen.findByLabelText("Catálogo global"));
 
     await vi.waitFor(() => expect(cambiarBanderaGlobal).toHaveBeenCalledWith({
@@ -206,14 +273,15 @@ describe("Habilitar módulos", () => {
     await elegirEmpresa();
     fireEvent.click(screen.getByRole("button", { name: /satisfacción del cliente/i }));
 
-    expect(await screen.findByText("Esta empresa nunca ha tenido Satisfacción del cliente.")).toBeInTheDocument();
+    expect(await screen.findByLabelText("Calificación pública para Constructora del Norte")).toBeInTheDocument();
     expect(obtenerHabilitacion).toHaveBeenCalledWith("e1", "CX");
     expect(obtenerHabilitacionPlataforma).toHaveBeenCalledWith("CX");
     expect(screen.getByLabelText("Calificación pública para Constructora del Norte")).toBeInTheDocument();
     expect(screen.getByText("Protección pública configurada")).toBeInTheDocument();
     expect(screen.getByText(/Los enlaces permanecen cerrados/)).toBeInTheDocument();
     expect(screen.queryByText("Catálogo global de Capacitación")).toBeNull();
-    expect(screen.getByRole("button", { name: /satisfacción del cliente/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getAllByRole("button", { name: /satisfacción del cliente/i })
+      .some((button) => button.getAttribute("aria-pressed") === "true")).toBe(true);
   });
 
   it("expone la protección configurada sin afirmar que el contrato está vigente", async () => {
@@ -222,13 +290,15 @@ describe("Habilitar módulos", () => {
     fireEvent.click(screen.getByRole("button", { name: /satisfacción del cliente/i }));
 
     expect(await screen.findByText(/El servidor confirma los límites de captura/)).toBeInTheDocument();
-    expect(screen.getByText(/Sin contrato no se abre nada/)).toBeInTheDocument();
+    expect(screen.getByText(/Falta registrar una vigencia técnica para este módulo/i)).toBeInTheDocument();
   });
 
   it("crea contrato y cambia bandera de CX sin enviar claves de Capacitaciones", async () => {
     await elegirEmpresa();
     fireEvent.click(screen.getByRole("button", { name: /satisfacción del cliente/i }));
-    fireEvent.click(await screen.findByRole("button", { name: /activar desde hoy/i }));
+    await screen.findByLabelText("Calificación pública para Constructora del Norte");
+    fireEvent.change(screen.getByLabelText("Vigente desde"), { target: { value: "2026-11-23" } });
+    fireEvent.click(await screen.findByRole("button", { name: /registrar vigencia de satisfacción del cliente/i }));
     await vi.waitFor(() => expect(crearContrato).toHaveBeenCalledWith("e1", expect.objectContaining({ modulo: "CX" })));
 
     const bandera = screen.getByLabelText("Calificación pública para Constructora del Norte");
