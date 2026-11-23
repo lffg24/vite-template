@@ -42,14 +42,33 @@ export function dinero(valor: Opportunity["budget_amount"], moneda?: string | nu
   return new Intl.NumberFormat("es-CO", { style: "currency", currency: moneda || "COP", maximumFractionDigits: 0 }).format(n);
 }
 
+export function etiquetaClasificacion(o: Opportunity): { texto: string; tono: "info" | "neutro" | "atencion" } | null {
+  const metadata = o.metadata_json;
+  if (!metadata) return null;
+  const nested = metadata.extra;
+  const values = nested && typeof nested === "object" && !Array.isArray(nested)
+    ? nested as Record<string, unknown>
+    : metadata;
+  if (values.group === "CONTROL") return {
+    texto: values.affinity === "RUIDO_PROBABLE" ? "Control · ruido probable" : "Caso de control",
+    tono: values.affinity === "RUIDO_PROBABLE" ? "atencion" : "neutro",
+  };
+  if (values.affinity === "NUCLEO_PROBABLE") return { texto: "Núcleo probable", tono: "info" };
+  if (values.affinity === "RUIDO_PROBABLE") return { texto: "Ruido probable", tono: "atencion" };
+  if (values.affinity === "AMBIGUO") return { texto: "Afinidad por confirmar", tono: "atencion" };
+  return null;
+}
+
 export function aTarea(o: Opportunity): TareaVista<Opportunity> {
   const presupuesto = dinero(o.budget_amount, o.budget_currency);
+  const clasificacion = etiquetaClasificacion(o);
   return {
     id: o.id,
     clave: o.external_process_id,
     titulo: `${o.buyer_name}: ${o.object_original}`,
     columna: columnaDe(o),
     etiquetas: [
+      ...(clasificacion ? [clasificacion] : []),
       ...(o.service_category ? [{ texto: o.service_category }] : []),
       ...(presupuesto ? [{ texto: presupuesto, tono: "info" as const }] : []),
     ],

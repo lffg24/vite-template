@@ -245,7 +245,7 @@ export function Tablero<T>({
       <div
         role="region"
         aria-label={etiqueta}
-        className="relative -mx-4 flex snap-x snap-mandatory items-stretch gap-3 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0"
+        className="relative -mx-3 flex snap-x snap-mandatory items-stretch gap-3 overflow-x-auto px-3 pb-4 sm:mx-0 sm:px-0"
       >
         {columnas.map((c) => (
           <Columna

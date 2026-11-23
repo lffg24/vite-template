@@ -21,6 +21,7 @@ import { parseReviewValue } from "@/features/licitaciones/reviewValue";
 import {
   COLUMNAS_LICITACION,
   aTarea,
+  etiquetaClasificacion,
   reglaDeMovimiento,
 } from "@/features/licitaciones/adaptador";
 import { toast } from "@/hooks/use-toast";
@@ -71,6 +72,71 @@ function statusVariant(value: string | null) {
   return "relWarning" as const;
 }
 
+function statusLabel(value: string) {
+  if (value === "PENDIENTE") return "Por validar por el equipo";
+  if (value === "INFERIDO") return "Hallazgo inferido";
+  if (value === "VERIFICADO") return "Validado por una persona";
+  if (value === "CORREGIDO") return "Corregido por una persona";
+  if (value === "CONFLICTO") return "Fuentes en conflicto";
+  if (value === "NO_APLICA") return "No aplica";
+  return value;
+}
+
+const FIELD_LABELS: Record<string, string> = {
+  admision_empresarial: "Admisión empresarial",
+  apertura: "Apertura oficial",
+  cantidad_volumen: "Cantidad / volumen",
+  capacidad_organizacional: "Capacidad organizacional",
+  causales_rechazo: "Causales de rechazo",
+  cierre_ofertas: "Fecha y hora de cierre",
+  desempate: "Criterios de desempate",
+  documentos_oferta: "Documentos requeridos para ofertar",
+  experiencia: "Experiencia requerida",
+  factores_evaluacion: "Factores de evaluación",
+  forma_pago: "Forma de pago",
+  formulas_escalas: "Fórmulas y escalas de evaluación",
+  garantias: "Garantías exigidas",
+  indicadores_financieros: "Indicadores financieros",
+  lugar_ejecucion: "Lugar de ejecución",
+  modalidad: "Modalidad de selección",
+  personal_minimo: "Personal mínimo requerido",
+  plazo_ejecucion: "Plazo de ejecución",
+  ponderacion_economica: "Ponderación económica",
+  presupuesto_oficial: "Presupuesto oficial",
+  puntaje_maximo: "Puntaje máximo",
+  puntajes_ley: "Puntajes legales",
+  riesgos_multas: "Riesgos y multas",
+  rup: "Registro Único de Proponentes (RUP)",
+  subsanabilidad: "Reglas de subsanación",
+  tecnico_regulatorio: "Requisitos técnicos y regulatorios",
+  tipo_proponente: "Tipo de proponente",
+};
+
+function fieldLabel(key: string) {
+  return FIELD_LABELS[key] || key.replaceAll("_", " ").replace(/\b\p{L}/gu, (letter) => letter.toLocaleUpperCase("es-CO"));
+}
+
+function previewValue(value: unknown, documentsRead: number) {
+  if (value == null) return documentsRead === 0 ? "Sin documentos leídos" : "Sin dato extraído";
+  if (typeof value === "boolean") return value ? "Sí" : "No";
+  const text = typeof value === "string"
+    ? value
+    : Array.isArray(value)
+      ? value.map((item) => typeof item === "string" ? item : JSON.stringify(item)).join("; ")
+      : JSON.stringify(value);
+  if (!text) return documentsRead === 0 ? "Sin documentos leídos" : "Sin dato extraído";
+  return text.length > 180 ? `${text.slice(0, 177)}…` : text;
+}
+
+function numericQuality(quality: Record<string, unknown>, key: string) {
+  const value = Number(quality[key] ?? 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function todayInBogota() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
+}
+
 export default function LicitacionesPage() {
   const { permissions } = useAuth();
   const admin = permissions.includes(ADMIN);
@@ -78,6 +144,7 @@ export default function LicitacionesPage() {
   const canReview = admin || permissions.includes(MANAGE_REVIEWS);
   const canDecide = admin || permissions.includes(CLOSE_DECISION);
   const [items, setItems] = useState<Opportunity[]>([]);
+  const [showExpired, setShowExpired] = useState(false);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [selected, setSelected] = useState<OpportunityDetail | null>(null);
   // Movimiento pedido arrastrando una tarjeta a una columna de decisión.
@@ -119,7 +186,13 @@ export default function LicitacionesPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const tareas = useMemo(() => items.map(aTarea), [items]);
+  const today = todayInBogota();
+  const expiredCount = items.filter((item) => item.next_deadline && item.next_deadline.slice(0, 10) < today).length;
+  const visibleItems = useMemo(
+    () => showExpired ? items : items.filter((item) => !item.next_deadline || item.next_deadline.slice(0, 10) >= today),
+    [items, showExpired, today],
+  );
+  const tareas = useMemo(() => visibleItems.map(aTarea), [visibleItems]);
 
   function solicitarMovimiento(tarea: TareaVista<Opportunity>, destino: ColumnaTablero) {
     const regla = reglaDeMovimiento(tarea, destino.id, canDecide);
@@ -237,10 +310,10 @@ export default function LicitacionesPage() {
 
       {totals ? (
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Resumen de licitaciones">
-          <IndicadorKpi etiqueta="Oportunidades" valor={totals.total} />
+          <IndicadorKpi etiqueta="Oportunidades visibles" valor={visibleItems.length} />
           <IndicadorKpi etiqueta="Decisiones cerradas" valor={totals.closed} />
           <IndicadorKpi etiqueta="GO / con aliado" valor={totals.go_count} tono="exito" />
-          <IndicadorKpi etiqueta="Completitud promedio" valor={`${Math.round(Number(totals.average_completeness || 0) * 100)} %`} />
+          <IndicadorKpi etiqueta="Completitud promedio" valor={`${Math.round((visibleItems.reduce((sum, item) => sum + Number(item.completeness || 0), 0) / Math.max(visibleItems.length, 1)) * 100)} %`} />
         </section>
       ) : null}
 
@@ -255,11 +328,21 @@ export default function LicitacionesPage() {
         claveMemoria="licitaciones-vista"
         nombreElemento="oportunidades"
         acciones={
-          <Button type="button" variant="relOutline" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className={loading ? "animate-spin" : ""} aria-hidden="true" /> Actualizar
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {expiredCount > 0 && <Button type="button" variant="relOutline" aria-pressed={showExpired} onClick={() => setShowExpired((value) => !value)}>
+              {showExpired ? `Ocultar vencidas (${expiredCount})` : `Incluir vencidas (${expiredCount})`}
+            </Button>}
+            <Button type="button" variant="relOutline" onClick={() => void load()} disabled={loading}>
+              <RefreshCw className={loading ? "animate-spin" : ""} aria-hidden="true" /> Actualizar
+            </Button>
+          </div>
         }
       />
+      {expiredCount > 0 && <p className="-mt-3 text-sm text-rel-muted" role="status">
+        {showExpired
+          ? `Mostrando ${visibleItems.length} oportunidades; ${expiredCount} tienen fecha de cierre vencida. La fecha vigente no confirma por sí sola que el proceso siga abierto en SECOP.`
+          : `Mostrando ${visibleItems.length} oportunidades con fecha vigente; ${expiredCount} vencidas se ocultan por defecto. Confirma la apertura oficial en SECOP antes de decidir.`}
+      </p>}
 
       <DialogoTransicion
         abierto={pendiente !== null}
@@ -280,9 +363,28 @@ export default function LicitacionesPage() {
 
       <Sheet open={Boolean(selected) || detailLoading} onOpenChange={(openState) => { if (!openState) setSelected(null); }}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-3xl"><SheetHeader><SheetTitle>{selected?.opportunity.buyer_name || "Cargando expediente…"}</SheetTitle></SheetHeader>
-          {selected && <div className="mt-5 space-y-5 text-sm text-rel-dark"><div><p className="font-semibold text-rel-info">{selected.opportunity.external_process_id}</p><p className="mt-2 text-rel-muted">{selected.opportunity.object_original}</p></div>
-            <div className="grid gap-2 sm:grid-cols-2"><Fact label="Presupuesto" value={money(selected.opportunity.budget_amount, selected.opportunity.budget_currency)} /><Fact label="Próximo cierre" value={date(selected.opportunity.next_deadline)} /><Fact label="Categoría" value={selected.opportunity.service_category || "Sin clasificar"} /><Fact label="Completitud" value={`${Math.round(Number(selected.opportunity.completeness || 0) * 100)} %`} /></div>
-            <section><h2 className="mb-2 font-bold">Campos y evidencia</h2><div className="space-y-2">{selected.fields.map((field) => <Caja como="details" key={field.field_key} aire="ninguno"><summary className="flex cursor-pointer items-center justify-between gap-3 p-3 font-semibold"><span>{field.field_key}</span><Badge variant={statusVariant(field.evidence_status)}>{field.evidence_status}</Badge></summary><div className="border-t border-rel-border p-3"><pre className="whitespace-pre-wrap break-words rounded-rel-control bg-rel-canvas p-3 text-xs">{JSON.stringify(field.value_json, null, 2)}</pre>{(field.evidence_json || []).map((evidence, index) => <blockquote key={`${evidence.document_id}-${index}`} className="mt-2 border-l-2 border-rel-info bg-rel-info-subtle p-3 text-xs"><p>“{evidence.quote || "Sin cita literal"}”</p><footer className="mt-1 text-rel-muted">{evidence.document_id || "Documento"}{evidence.page ? ` · página ${evidence.page}` : ""}</footer></blockquote>)}</div></Caja>)}</div></section>
+          {selected && <div className="mt-5 space-y-5 text-sm text-rel-dark"><div><p className="font-semibold text-rel-info">{selected.opportunity.external_process_id}</p>{etiquetaClasificacion(selected.opportunity) && <p className="mt-1 font-semibold text-rel-warning-ink">Clasificación del agente: {etiquetaClasificacion(selected.opportunity)?.texto}</p>}<p className="mt-2 text-rel-muted">{selected.opportunity.object_original}</p></div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"><Fact label="Presupuesto" value={money(selected.opportunity.budget_amount, selected.opportunity.budget_currency)} /><Fact label="Próximo cierre" value={date(selected.opportunity.next_deadline)} /><Fact label="Estado oficial" value={selected.opportunity.official_status === "POR_VERIFICAR" ? "Por confirmar en SECOP" : selected.opportunity.official_status} /><Fact label="Categoría" value={selected.opportunity.service_category || "Sin clasificar"} /><Fact label="Volumen detectado" value={selected.opportunity.volume_amount == null ? (selected.fields.some((field) => field.field_key === "cantidad_volumen" && field.value_json != null) ? "Referencias por validar abajo" : "Sin dato extraído") : `${selected.opportunity.volume_amount} ${selected.opportunity.volume_unit || "unidades"}`} /><Fact label="Ciudades / sedes" value={[...(selected.opportunity.municipalities_json || []), selected.opportunity.department].filter(Boolean).join(", ") || "Sin dato confirmado"} /><Fact label="Completitud" value={`${Math.round(Number(selected.opportunity.completeness || 0) * 100)} %`} /></div>
+            {selected.opportunity.official_url && <a className="inline-flex text-rel-info underline underline-offset-2" href={selected.opportunity.official_url} target="_blank" rel="noreferrer">Abrir proceso oficial en SECOP</a>}
+            {(() => {
+              const quality = selected.opportunity.quality_json || {};
+              const published = numericQuality(quality, "published_documents");
+              const read = numericQuality(quality, "read_documents");
+              const blockers = Array.isArray(quality.blockers) ? quality.blockers.filter((item): item is string => typeof item === "string") : [];
+              return <div role="status" className="rounded-rel-control border border-rel-warning bg-rel-warning-subtle p-3">
+                <p className="font-semibold">Lectura del expediente: {read} de {published} documentos disponibles leídos</p>
+                <p className="mt-1 text-sm">{published === 0
+                  ? "No se descargaron documentos para analizar. Los campos vacíos no significan que el pliego no los exija."
+                  : read < published
+                    ? "La lectura es parcial. «Por validar por el equipo» indica que aún falta revisión humana; un valor vacío indica que no se extrajo un dato en esta lectura."
+                    : "Los documentos se leyeron; los hallazgos siguen pendientes hasta la validación humana."}</p>
+                {blockers.length > 0 && <p className="mt-1 text-xs text-rel-muted">Pendientes de fuente: {blockers.join(", ")}</p>}
+              </div>;
+            })()}
+            <section><h2 className="mb-1 font-bold">Campos y evidencia</h2><p className="mb-2 text-xs text-rel-muted">El estado muestra la revisión humana; abre cada campo para ver el valor y su cita.</p><div className="space-y-2">{selected.fields.map((field) => {
+              const read = numericQuality(selected.opportunity.quality_json || {}, "read_documents");
+              return <Caja como="details" key={field.field_key} aire="ninguno"><summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 p-3 font-semibold"><span className="min-w-0 flex-1">{fieldLabel(field.field_key)}<span className="mt-1 block break-words text-sm font-normal text-rel-muted">{previewValue(field.value_json, read)}</span></span><Badge variant={statusVariant(field.evidence_status)}>{statusLabel(field.evidence_status)}</Badge></summary><div className="border-t border-rel-border p-3"><pre className="whitespace-pre-wrap break-words rounded-rel-control bg-rel-canvas p-3 text-xs">{field.value_json == null ? previewValue(null, read) : JSON.stringify(field.value_json, null, 2)}</pre>{(field.evidence_json || []).map((evidence, index) => <blockquote key={`${evidence.document_id}-${index}`} className="mt-2 border-l-2 border-rel-info bg-rel-info-subtle p-3 text-xs"><p>“{evidence.quote || "Sin cita literal"}”</p><footer className="mt-1 text-rel-muted">{evidence.document_id || "Documento"}{evidence.page ? ` · página ${evidence.page}` : ""}</footer></blockquote>)}</div></Caja>;
+            })}</div></section>
             {canReview && <Caja como="form" onSubmit={submitReview} tono="hundida" aire="ajustado" className="space-y-3"><div><h2 className="font-bold">Revisión humana</h2><p className="mt-1 text-xs text-rel-muted">Apertura y admisión empresarial deben quedar verificadas antes de cerrar una decisión GO.</p></div><Label htmlFor="review-field">Control o campo</Label><Desplegable id="review-field" value={reviewField} onChange={(event) => { setReviewField(event.target.value); setReviewValue(""); }}><optgroup label="Controles para decisión GO">{REQUIRED_GO_REVIEWS.map((field) => <option key={field.field_key} value={field.field_key}>{field.label}</option>)}</optgroup>{selected.fields.length > 0 && <optgroup label="Campos extraídos">{selected.fields.map((field) => <option key={field.field_key} value={field.field_key}>{field.field_key}</option>)}</optgroup>}</Desplegable><Label htmlFor="review-status">Resultado</Label><Desplegable id="review-status" value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)}><option>PENDIENTE</option><option>VERIFICADO</option><option>CORREGIDO</option><option>NO_APLICA</option></Desplegable>{!reviewControl && <><Label htmlFor="review-value">Valor revisado</Label><Input id="review-value" value={reviewValue} onChange={(event) => setReviewValue(event.target.value)} placeholder={reviewUsesJson ? "JSON válido" : "Valor confirmado"} /></>}<Label htmlFor="review-rationale">Fundamento</Label><Textarea id="review-rationale" value={reviewRationale} onChange={(event) => setReviewRationale(event.target.value)} maxLength={2000} /><Button variant="rel" disabled={saving || !reviewField}>Guardar revisión</Button></Caja>}
             {canDecide && <Caja como="form" onSubmit={submitDecision} tono="hundida" aire="ajustado" className="space-y-3"><h2 className="font-bold">Decisión comercial</h2><Label htmlFor="decision">Decisión</Label><Desplegable id="decision" value={decision} onChange={(event) => setDecision(event.target.value)}><option>GO</option><option>GO_CON_ALIADO</option><option>NO_GO</option><option>DESCARTADA</option></Desplegable><Label htmlFor="reason-code">Código de motivo</Label><Input id="reason-code" value={reasonCode} onChange={(event) => setReasonCode(event.target.value)} placeholder="CAPACIDAD_TECNICA" pattern="[A-Za-z0-9_]{3,80}" required /><Label htmlFor="decision-rationale">Justificación</Label><Textarea id="decision-rationale" value={decisionRationale} onChange={(event) => setDecisionRationale(event.target.value)} minLength={5} maxLength={3000} required /><Button variant="rel" disabled={saving}>Cerrar decisión</Button></Caja>}
             {formNotice && <p role="status" className="rounded-rel-control bg-rel-success-subtle p-3 text-rel-success">{formNotice}</p>}

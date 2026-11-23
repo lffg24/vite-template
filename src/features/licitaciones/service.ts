@@ -9,6 +9,7 @@ export type Opportunity = {
   external_process_id: string;
   buyer_name: string;
   object_original: string;
+  official_url?: string | null;
   official_status: string;
   budget_amount: string | number | null;
   budget_currency: string | null;
@@ -24,6 +25,7 @@ export type Opportunity = {
   volume_evidence_status: string | null;
   completeness: number | null;
   decision: string | null;
+  metadata_json?: Record<string, unknown> | null;
 };
 
 export type EvidenceField = {
