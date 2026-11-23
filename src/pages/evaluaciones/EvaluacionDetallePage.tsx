@@ -197,7 +197,7 @@ export default function EvaluacionDetallePage() {
                 <p className="text-rel-muted">
                   Ya está disponible. En el editor de un curso agrega una lección de tipo
                   Evaluación y elige “Del banco de evaluaciones”.{" "}
-                  <Link className="font-semibold text-rel-primary underline-offset-2 hover:underline" to="/capacitaciones/cursos">
+                  <Link viewTransition className="font-semibold text-rel-primary underline-offset-2 hover:underline" to="/capacitaciones/cursos">
                     Ir al catálogo
                   </Link>
                 </p>

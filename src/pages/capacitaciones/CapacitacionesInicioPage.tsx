@@ -94,7 +94,7 @@ function Cifra({
   return (
     <div className="relative min-w-0">
       {a ? (
-        <Link
+        <Link viewTransition
           to={a}
           className="group block rounded-rel-panel focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary"
         >
@@ -172,7 +172,7 @@ export default function CapacitacionesInicioPage() {
                 Constancias
               </h2>
               <Button variant="relGhost" size="sm" asChild>
-                <Link to="/capacitaciones/constancias">
+                <Link viewTransition to="/capacitaciones/constancias">
                   Ver todas
                   <ArrowRight aria-hidden="true" />
                 </Link>
@@ -229,7 +229,7 @@ export default function CapacitacionesInicioPage() {
                       </p>
                     </div>
                     <Button variant="relOutline" size="sm" asChild>
-                      <Link to={`/capacitaciones/asignaciones/${a.id}/avance`}>
+                      <Link viewTransition to={`/capacitaciones/asignaciones/${a.id}/avance`}>
                         Ver quién falta
                       </Link>
                     </Button>

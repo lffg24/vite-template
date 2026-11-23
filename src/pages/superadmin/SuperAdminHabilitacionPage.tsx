@@ -392,7 +392,7 @@ export default function SuperAdminHabilitacionPage() {
                   <Condicion titulo="Permiso de quien opera">
                     No se administra aquí porque no depende de la empresa, sino de
                     quién pregunta. Se concede en{" "}
-                    <Link
+                    <Link viewTransition
                       to="/superadmin/roles-permisos"
                       className="font-semibold text-rel-primary underline-offset-2 hover:underline"
                     >

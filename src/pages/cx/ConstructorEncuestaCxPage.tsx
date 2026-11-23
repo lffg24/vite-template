@@ -111,7 +111,7 @@ export default function ConstructorEncuestaCxPage() {
   const ultima = encuesta.versiones[0];
 
   return <div className="space-y-5">
-    <Link to="/cx/encuestas" className="inline-flex items-center gap-2 text-sm font-medium text-rel-primary underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a encuestas</Link>
+    <Link viewTransition to="/cx/encuestas" className="inline-flex items-center gap-2 text-sm font-medium text-rel-primary underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a encuestas</Link>
     <PageHeader antetitulo={`Encuesta · ${encuesta.codigo}`} titulo="Constructor de encuesta" descripcion="Define una medición corta, guarda el borrador y publica una versión verificable." icono={ClipboardList} />
     {mensaje ? <Caja role="status" como="p" tono="hundida" className="text-rel-dark">{mensaje}</Caja> : null}
     {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}

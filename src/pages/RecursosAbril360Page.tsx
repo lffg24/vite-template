@@ -320,7 +320,7 @@ function ResourceLink({
   }
 
   return (
-    <Link to={href} className={styles}>
+    <Link viewTransition to={href} className={styles}>
       <span>
         <span className="block">{label}</span>
         {note ? <span className="mt-1 block text-xs font-medium text-muted-foreground">{note}</span> : null}
@@ -856,7 +856,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
       <section className="border-b border-border/70 bg-card/80 backdrop-blur-sm">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <div>
-            <Link to="/login" className="inline-flex hover:opacity-90">
+            <Link viewTransition to="/login" className="inline-flex hover:opacity-90">
               <Marca className="h-9" />
             </Link>
             <Caja papel="panel" className="mt-3">
@@ -941,7 +941,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
             const ItemIcon = item.icon;
             const active = item.key === current.key;
             return (
-              <Link
+              <Link viewTransition
                 key={item.key}
                 to={`/recursos/${item.key}`}
                 className={`flex items-start gap-3 rounded-rel-panel px-3 py-3 transition ${

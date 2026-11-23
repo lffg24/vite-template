@@ -81,7 +81,7 @@ export default function CapacitacionesCursosPage() {
             Crear o modificar cursos requiere el permiso editorial de plataforma.
           </p>
           <Button asChild variant="rel" className="mt-5">
-            <Link to="/capacitaciones/asignaciones">Ir a asignaciones</Link>
+            <Link viewTransition to="/capacitaciones/asignaciones">Ir a asignaciones</Link>
           </Button>
         </Caja>
       </div>
@@ -306,7 +306,7 @@ function CatalogoAutorizado() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <h2 className="font-rel-heading text-base font-bold">
-                        <Link
+                        <Link viewTransition
                           to={`/capacitaciones/cursos/${c.id}`}
                           className="text-rel-dark underline-offset-2 hover:text-rel-primary hover:underline"
                         >

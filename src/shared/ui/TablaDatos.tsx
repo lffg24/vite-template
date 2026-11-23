@@ -560,7 +560,7 @@ export function CeldaPrincipal({ a, alAbrir, titulo, apoyo }: CeldaPrincipalProp
   return (
     <>
       {a ? (
-        <Link to={a} className={CLASES_PRINCIPAL}>
+        <Link viewTransition to={a} className={CLASES_PRINCIPAL}>
           {titulo}
         </Link>
       ) : alAbrir ? (
