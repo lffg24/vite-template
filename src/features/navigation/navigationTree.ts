@@ -51,6 +51,7 @@ const groups: NavigationGroup[] = [
   { label: "Satisfacción del cliente", icon: ClipboardList, landing: "/cx/encuestas", children: [
     { label: "Encuestas", to: "/cx/encuestas", icon: ClipboardList },
     { label: "Campañas y QR", to: "/cx/campanas", icon: Link2 },
+    { label: "Resultados", to: "/cx/resultados", icon: BarChart3 },
     { label: "Sedes y servicios", to: "/cx/configuracion/contextos", icon: Building2 },
     { label: "Puntos de contacto", to: "/cx/configuracion/puntos", icon: Link2 },
     { label: "Factores", to: "/cx/configuracion/factores", icon: BarChart3 },

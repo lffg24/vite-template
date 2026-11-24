@@ -89,6 +89,7 @@ import { Pill, type TonoPill } from "@/shared/ui/Pill";
 import { AnilloProgreso, BarraProgreso } from "@/shared/ui/Progreso";
 import { SeccionPlegable } from "@/shared/ui/SeccionPlegable";
 import { TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
+import { GraficaBarrasFactores, GraficaComposicionNps, GraficaEvolucionMensual, GraficaHistogramaNps, GraficaPalancasFactores } from "@/shared/ui/GraficasCx";
 import DemoTablero from "@/pages/dev/DemoTablero";
 import { Illustration, IllustrationSurface } from "@/shared/ui/illustration";
 import {
@@ -108,6 +109,7 @@ const SECCIONES = [
   { id: "contenedores", nombre: "Contenedores" },
   { id: "navegacion", nombre: "Navegación" },
   { id: "datos", nombre: "Datos" },
+  { id: "graficas", nombre: "Gráficas" },
   { id: "progreso", nombre: "Progreso" },
   { id: "tareas", nombre: "Tareas y tableros" },
   { id: "superposiciones", nombre: "Superposiciones" },
@@ -757,6 +759,18 @@ export default function CatalogoUiKitPage() {
                 etiquetaElemento="cursos"
                 ordenInicial={{ clave: "curso" }}
               />
+            </Pieza>
+          </Seccion>
+
+          <Seccion id="graficas" titulo="Gráficas" descripcion="La visualización resume datos; la pantalla conserva una tabla accesible para examinarlos.">
+            <Pieza nombre="Resultados CX" archivo="shared/ui/GraficasCx.tsx" cuando="Composición, distribución, tendencia y comparación de factores con muestra visible.">
+              <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+                <GraficaComposicionNps distribucion={{ promotores: 34, pasivos: 14, detractores: 20 }} />
+                <GraficaHistogramaNps valores={{ "0": 2, "1": 1, "2": 2, "3": 2, "4": 2, "5": 3, "6": 8, "7": 6, "8": 8, "9": 14, "10": 20 }} />
+                <GraficaEvolucionMensual puntos={[{ mes: "2026-09", valor: 18 }, { mes: "2026-10", valor: null }, { mes: "2026-11", valor: 22 }]} />
+                <GraficaBarrasFactores filas={[{ nombre: "Atención", media: 4.2, n: 48 }, { nombre: "Oportunidad", media: 3.7, n: 41 }]} />
+                <GraficaPalancasFactores filas={[{ nombre: "Atención", promotores: { media: 4.2, n: 26 }, detractores: { media: 3.1, n: 14 } }]} />
+              </div>
             </Pieza>
           </Seccion>
 

@@ -32,6 +32,7 @@ const AreasCxPage = lazy(() => import("@/pages/cx/AreasCxPage"));
 const EncuestasCxPage = lazy(() => import("@/pages/cx/EncuestasCxPage"));
 const ConstructorEncuestaCxPage = lazy(() => import("@/pages/cx/ConstructorEncuestaCxPage"));
 const CampanasCxPage = lazy(() => import("@/pages/cx/CampanasCxPage"));
+const ResultadosCxPage = lazy(() => import("@/pages/cx/ResultadosCxPage"));
 
 const PsicologoLayout = lazy(() => import("@/layout/PsicologoLayout"));
 const PsicologoDashboardPage = lazy(() => import("@/pages/psicosocial/PsicologoDashboardPage"));
@@ -232,6 +233,9 @@ const enrutador = createBrowserRouter(
             <Route path="/cx/campanas" element={<CxLayout />}>
               <Route index element={<CampanasCxPage />} />
             </Route>
+            <Route path="/cx/resultados" element={<CxLayout />}>
+              <Route index element={<ResultadosCxPage />} />
+            </Route>
             <Route path="/cx/configuracion" element={<CxLayout />}>
               <Route path="contextos" element={<ContextosCxPage />} />
               <Route path="puntos" element={<PuntosCxPage />} />
@@ -283,7 +287,6 @@ const enrutador = createBrowserRouter(
               <Route path=":cuestionarioId" element={<EvaluacionDetallePage />} />
             </Route>
           </Route>
-
           {/* Privadas con layout nuevo de psicólogo */}
           <Route
             element={
