@@ -1,4 +1,5 @@
 import { api } from "@/lib/apiClient";
+import { API_URL } from "@/lib/config";
 
 export type Opportunity = {
   id: string;
@@ -30,13 +31,33 @@ export type Opportunity = {
   metadata_json?: Record<string, unknown> | null;
 };
 
+export type EvidenceReference = {
+  document_id?: string;
+  document_name?: string | null;
+  document_url?: string | null;
+  page?: number | null;
+  quote?: string | null;
+  kind?: "CITA" | "UBICACION" | "REFERENCIA";
+  pdf_available?: boolean;
+};
+
+export function evidenceDocumentUrl(item: Opportunity, ref: EvidenceReference) {
+  if (!ref.pdf_available || !ref.document_id) return null;
+  const base = API_URL + "/licitaciones/opportunities/" + encodeURIComponent(item.id);
+  const revision = encodeURIComponent(item.current_revision);
+  const page = ref.page && ref.page > 0 ? "#page=" + ref.page : "";
+  return base + "/documents/" + encodeURIComponent(ref.document_id) + "?revision=" + revision + page;
+}
+
 export type EvidenceField = {
   field_key: string;
   value_json: unknown;
   data_type: string;
   evidence_status: string;
   confidence: number | null;
-  evidence_json: Array<{ document_id?: string; page?: number; quote?: string }> | null;
+  evidence_json: EvidenceReference[] | null;
+  commercial_summary?: string;
+  document_finding_status?: string;
   extractor_version: string;
 };
 

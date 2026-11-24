@@ -10,6 +10,7 @@ import {
   closeDecision,
   createReview,
   getOpportunity,
+  evidenceDocumentUrl,
   listOpportunities,
   type Opportunity,
   type OpportunityDetail,
@@ -115,8 +116,19 @@ const BLOQUES = [
 
 const DECISIONES = { GO: "Ir", GO_CON_ALIADO: "Ir con aliado", NO_GO: "No ir", DESCARTADA: "Descartar" };
 
+const SIGUIENTE_REVISION: Record<string, string> = {
+  tipo_proponente: "Comprueba qué tipos de proponente admite el pliego y qué restricciones pueden excluir a REL.",
+  experiencia: "Comprueba número de contratos, objeto, monto mínimo y soportes aceptados.",
+  personal_minimo: "Confirma los perfiles, cantidades y soportes que el pliego exige para el equipo.",
+  documentos_oferta: "Confirma qué anexos, formatos y certificados deben enviarse con la oferta.",
+  factores_evaluacion: "Localiza la tabla de criterios y confirma los puntos y los soportes de cada factor.",
+  cantidad_volumen: "Confirma cantidad, unidad y población atendida antes de cotizar.",
+  lugar_ejecucion: "Identifica las ciudades, sedes y condiciones de presencialidad antes de estimar costos.",
+  cierre_ofertas: "Contrasta la hora de cierre con el cronograma y las adendas vigentes.",
+};
+
 function campoTieneDatos(field: EvidenceField) {
-  return textoHallazgo(field.value_json).length > 0 || Boolean(field.evidence_json?.length)
+  return Boolean(field.commercial_summary) || textoHallazgo(field.value_json).length > 0 || Boolean(field.evidence_json?.length)
     || ["VERIFICADO", "CORREGIDO", "NO_APLICA", "CONFLICTO"].includes(field.evidence_status);
 }
 
@@ -491,20 +503,37 @@ export default function LicitacionesPage() {
                   <div className="grid gap-3">
                     {withData.map((field) => {
                       const review = currentReviews.find((item) => item.field_key === field.field_key);
-                      const values = textoHallazgo(review?.status === "CORREGIDO" ? review.value_json : field.value_json);
+                      const revisedValue = review && ["VERIFICADO", "CORREGIDO"].includes(review.status);
+                      const values = review?.status === "NO_APLICA" ? [] : textoHallazgo(revisedValue ? review.value_json : field.value_json);
+                      const hasSummary = !revisedValue && review?.status !== "NO_APLICA" && Boolean(field.commercial_summary);
                       const state = review?.status ?? field.evidence_status;
+                      const refs = field.evidence_json ?? [];
+                      const details = [...new Set(values)].filter((text) => text !== field.commercial_summary);
+                      const noFinding = !hasSummary && !details.length && state !== "NO_APLICA";
                       return <Caja key={field.field_key} className="grid min-w-0 gap-2 break-words">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <h3 className="font-semibold">{fieldLabel(field.field_key)}</h3>
                           <Pill tono={["VERIFICADO", "CORREGIDO"].includes(state) ? "exito" : state === "CONFLICTO" ? "peligro" : "neutro"}>{statusLabel(state)}</Pill>
                         </div>
-                        {values.length > 0 && <ul className="space-y-1">{[...new Set(values)].map((value) => <li key={value}>{value}</li>)}</ul>}
-                        {!values.length && Boolean(field.evidence_json?.length) && <p className="text-rel-muted">Referencia documental para revisar.</p>}
-                        {Boolean(field.evidence_json?.length) && <details><summary className="cursor-pointer text-rel-info">Ver referencias ({field.evidence_json?.length})</summary>
-                          {field.evidence_json?.map((ref, n) => <blockquote key={n} className="mt-2 border-l-2 border-rel-info bg-rel-info-subtle p-3 text-sm">
-                            {ref.quote && <p>{ref.quote}</p>}
-                            <footer className="text-rel-muted">{ref.document_id ? `Documento ${ref.document_id}` : "Documento"}{ref.page ? ` · página ${ref.page}` : ""}</footer>
-                          </blockquote>)}
+                        {hasSummary && <p>{field.commercial_summary}</p>}
+                        {details.length > 0 && <ul className="list-inside list-disc space-y-1">{details.map((value) => <li key={value}>{value}</li>)}</ul>}
+                        {noFinding && <p className="text-rel-muted">{refs.length ? "Hay páginas de referencia. El requisito específico sigue por determinar." : "Pendiente de confirmar en el expediente."} {SIGUIENTE_REVISION[field.field_key]}</p>}
+                        {refs.length > 0 && <details><summary className="cursor-pointer text-rel-info">Ver evidencia y documentos ({refs.length})</summary>
+                          {refs.map((ref, n) => {
+                            const documentLink = evidenceDocumentUrl(selected.opportunity, ref);
+                            const sourceLabel = ref.document_name || (ref.document_id ? "Documento " + ref.document_id : "Documento");
+                            return <blockquote key={n} className="mt-2 space-y-2 border-l-2 border-rel-info bg-rel-info-subtle p-3 text-sm">
+                              <p className="font-semibold">{sourceLabel}{ref.page ? " · página " + ref.page : ""}</p>
+                              {ref.kind === "UBICACION" && <p className="text-rel-muted">Vista parcial para ubicar el tema en el PDF.</p>}
+                              {ref.quote && <p className="whitespace-pre-line">{ref.quote}</p>}
+                              <footer className="flex flex-wrap gap-x-4 gap-y-2">
+                                {documentLink && <a className="text-rel-info underline" href={documentLink} target="_blank" rel="noopener noreferrer">
+                                  {ref.page ? "Abrir PDF en página " + ref.page : "Abrir PDF"}
+                                </a>}
+                                {ref.document_url && <a className="text-rel-info underline" href={ref.document_url} target="_blank" rel="noopener noreferrer">Original en SECOP</a>}
+                              </footer>
+                            </blockquote>;
+                          })}
                         </details>}
                       </Caja>;
                     })}
