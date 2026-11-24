@@ -15,6 +15,7 @@
 // backend no hace, y una decisión cerrada no se reabre (el servicio lo impide
 // con `row_version`); la pantalla lo dice antes de intentarlo.
 
+import { carril, categoria, diaCierre, etiquetaCarril } from "./gestion";
 import type { Opportunity } from "@/features/licitaciones/service";
 import type { ColumnaTablero, TareaVista } from "@/shared/ui/tablero";
 
@@ -69,10 +70,11 @@ export function aTarea(o: Opportunity): TareaVista<Opportunity> {
     columna: columnaDe(o),
     etiquetas: [
       ...(clasificacion ? [clasificacion] : []),
-      ...(o.service_category ? [{ texto: o.service_category }] : []),
+      ...(o.service_category ? [{ texto: categoria(o.service_category) }] : []),
+      { texto: etiquetaCarril(carril(o)) },
       ...(presupuesto ? [{ texto: presupuesto, tono: "info" as const }] : []),
     ],
-    vence: o.next_deadline ? o.next_deadline.slice(0, 10) : undefined,
+    vence: diaCierre(o) ?? undefined,
     origen: o,
   };
 }

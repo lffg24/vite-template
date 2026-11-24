@@ -24,6 +24,8 @@ export type Opportunity = {
   volume_unit: string | null;
   volume_evidence_status: string | null;
   completeness: number | null;
+  published_documents?: number;
+  read_documents?: number;
   decision: string | null;
   metadata_json?: Record<string, unknown> | null;
 };
@@ -46,6 +48,12 @@ export type OpportunityDetail = {
   };
   fields: EvidenceField[];
   decisions: Array<Record<string, unknown>>;
+  reviews?: Array<{
+    field_key: string;
+    revision: string;
+    status: string;
+    value_json: unknown;
+  }>;
 };
 
 export type Summary = {
