@@ -7,12 +7,15 @@ import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel, TablaPanel } from "@/shared/ui/Panel";
 import { Pill } from "@/shared/ui/Pill";
+import { Desplegable } from "@/shared/ui/Desplegable";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
 import { obtenerResultadosCx } from "@/services/cxResultadosService";
 import type { FiltrosResultadoCx, IndicadorCx, ResumenResultadosCx } from "@/types/cxResultados";
 
 const filtrosVacios: FiltrosResultadoCx = { n_minimo: 5 };
-const selectClase = "min-h-[2.75rem] w-full min-w-0 rounded-rel-control border border-rel-border bg-rel-surface px-3 text-sm text-rel-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary";
 function formatear(indicador: IndicadorCx | null) {
   if (!indicador || indicador.valor === null) return "Sin datos";
   const signo = indicador.valor > 0 && indicador.tipo.startsWith("NPS") ? "+" : "";
@@ -23,9 +26,9 @@ function SelectFiltro({ id, etiqueta, valor, opciones, alCambiar }: {
   id: string; etiqueta: string; valor?: string; opciones: [string, string][]; alCambiar: (valor: string) => void;
 }) {
   return <label className="block min-w-0 space-y-1 text-xs font-semibold text-rel-muted" htmlFor={id}>{etiqueta}
-    <select id={id} className={selectClase} value={valor ?? ""} onChange={(evento) => alCambiar(evento.target.value)}>
+    <Desplegable id={id} value={valor ?? ""} onChange={(evento) => alCambiar(evento.target.value)}>
       <option value="">Todas</option>{opciones.map(([idOpcion, nombre]) => <option key={idOpcion} value={idOpcion}>{nombre}</option>)}
-    </select>
+    </Desplegable>
   </label>;
 }
 
@@ -99,19 +102,19 @@ export default function ResultadosCxPage() {
         <DatePicker label="Desde" value={filtros.desde} onChange={(v) => cambiar("desde", v)} />
         <DatePicker label="Hasta" value={filtros.hasta} onChange={(v) => cambiar("hasta", v)} />
         <label htmlFor="f-n" className="space-y-1 text-xs font-semibold text-rel-muted">Muestra mínima
-          <input id="f-n" type="number" min={1} max={1000} value={filtros.n_minimo ?? 5} onChange={(e) => setFiltros((a) => ({ ...a, n_minimo: Math.min(1000, Math.max(1, Number(e.target.value) || 1)) }))} className={selectClase} />
+          <Input id="f-n" type="number" min={1} max={1000} value={filtros.n_minimo ?? 5} onChange={(e) => setFiltros((a) => ({ ...a, n_minimo: Math.min(1000, Math.max(1, Number(e.target.value) || 1)) }))} />
         </label>
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <FiltroChips etiqueta="Indicador principal" valor={filtros.tipo_indicador ?? "TODOS"} alCambiar={(tipo) => setFiltros((f) => ({ ...f, tipo_indicador: tipo === "TODOS" ? undefined : tipo }))} opciones={[
           { valor: "TODOS", etiqueta: "Todos" }, { valor: "NPS_RELACIONAL", etiqueta: "NPS relacional" }, { valor: "NPS_EXPERIENCIA", etiqueta: "NPS experiencia" }, { valor: "CSAT", etiqueta: "CSAT" }, { valor: "CES", etiqueta: "CES" },
         ]} />
-        <button type="button" onClick={() => setFiltros(filtrosVacios)} className="inline-flex min-h-[2.75rem] items-center gap-2 rounded-rel-control px-3 text-sm font-semibold text-rel-primary hover:bg-rel-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rel-primary"><RefreshCw aria-hidden="true" className="h-4 w-4" />Quitar filtros</button>
+        <Button type="button" variant="relGhost" onClick={() => setFiltros(filtrosVacios)}><RefreshCw aria-hidden="true" className="h-4 w-4" />Quitar filtros</Button>
       </div>
     </Panel>
-    {error ? <div role="alert" className="rounded-rel-card border border-rel-danger/30 bg-rel-danger/5 p-4 text-rel-dark"><p className="font-semibold">{error.includes("permiso") || error.includes("contratado") || error.includes("habilitada") ? "Sin permiso para ver resultados" : "No se pudieron cargar los resultados"}</p><p className="mt-1 text-sm">{error}</p><button type="button" onClick={() => void cargar()} className="mt-3 rounded-rel-control border border-rel-border px-3 py-2 text-sm font-semibold">Reintentar</button></div> : null}
+    {error ? <div role="alert" className="rounded-rel-card border border-rel-danger/30 bg-rel-danger/5 p-4 text-rel-dark"><p className="font-semibold">{error.includes("permiso") || error.includes("contratado") || error.includes("habilitada") ? "Sin permiso para ver resultados" : "No se pudieron cargar los resultados"}</p><p className="mt-1 text-sm">{error}</p><Button type="button" variant="relOutline" className="mt-3" onClick={() => void cargar()}>Reintentar</Button></div> : null}
     {cargando && !datos ? <Panel><p role="status" className="animate-pulse text-sm text-rel-muted">Cargando resultados CX…</p></Panel> : null}
-    {!cargando && !error && datos && datos.total_envios === 0 ? <Panel titulo="Aún no hay respuestas"><p className="text-sm text-rel-muted">Prueba con otro periodo o revisa las campañas que capturan información.</p></Panel> : null}
+    {!cargando && !error && datos && datos.total_envios === 0 ? <EstadoVacio escena="ninguna" titulo="Aún no hay respuestas" descripcion="Prueba con otro periodo o revisa las campañas que capturan información." /> : null}
     {datos && !error ? <>
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <IndicadorKpi etiqueta={principal?.tipo.replaceAll("_", " ") ?? "Indicador principal"} valor={formatear(principal)} contexto={`n=${principal?.n ?? 0} · mínimo ${datos.n_minimo}`} icono={Activity} />

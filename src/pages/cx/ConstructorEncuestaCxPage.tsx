@@ -127,16 +127,10 @@ export default function ConstructorEncuestaCxPage() {
         </Panel>
         <Panel titulo="Datos de contacto del encuestado">
           <p className="text-sm text-rel-muted">Por omisión la encuesta es anónima y no pide ningún dato personal. Activarlo convierte la medición en tratamiento de datos personales (Ley 1581 de 2012).</p>
-          <label className="mt-4 flex items-start gap-3 text-sm">
-            <input type="checkbox" checked={contacto !== null} disabled={ocupado} onChange={(e) => { setContacto(e.target.checked ? { pide_telefono: false } : null); setSucio(true); setMensaje(""); }} className="mt-0.5 h-4 w-4 shrink-0 accent-rel-primary" />
-            <span><strong className="font-semibold text-rel-dark">Pedir datos de contacto al final de la encuesta</strong><small className="mt-1 block text-rel-muted">Nombre y correo serán obligatorios para quien decida dejarlos. Nadie queda obligado a identificarse: sin autorización, la calificación se envía igual y de forma anónima.</small></span>
-          </label>
+          <Casilla className="mt-4" marcada={contacto !== null} deshabilitada={ocupado} alCambiar={(marcada) => { setContacto(marcada ? { pide_telefono: false } : null); setSucio(true); setMensaje(""); }} etiqueta="Pedir datos de contacto al final de la encuesta" descripcion="Nombre y correo serán obligatorios para quien decida dejarlos. Nadie queda obligado a identificarse: sin autorización, la calificación se envía igual y de forma anónima." />
           {contacto !== null ? <div className="mt-4 border-t border-rel-border pt-4">
-            <label className="flex items-start gap-3 text-sm">
-              <input type="checkbox" checked={contacto.pide_telefono} disabled={ocupado} onChange={(e) => { setContacto({ pide_telefono: e.target.checked }); setSucio(true); setMensaje(""); }} className="mt-0.5 h-4 w-4 shrink-0 accent-rel-primary" />
-              <span>Pedir también el teléfono<small className="mt-1 block text-rel-muted">Opcional para quien responde; es el único campo que puede quedar en blanco.</small></span>
-            </label>
-            <p className="mt-4 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-3 text-sm text-rel-dark">Para publicar esta versión hace falta un texto vigente de autorización de tratamiento de datos. Si no existe, la publicación se rechaza.</p>
+            <Casilla marcada={contacto.pide_telefono} deshabilitada={ocupado} alCambiar={(marcada) => { setContacto({ pide_telefono: marcada }); setSucio(true); setMensaje(""); }} etiqueta="Pedir también el teléfono" descripcion="Opcional para quien responde; es el único campo que puede quedar en blanco." />
+            <Caja como="p" tono="hundida" className="mt-4 text-sm text-rel-dark">Para publicar esta versión hace falta un texto vigente de autorización de tratamiento de datos. Si no existe, la publicación se rechaza.</Caja>
           </div> : null}
         </Panel>
         <Panel><div className="flex flex-col gap-3 sm:flex-row"><Button type="submit" variant="rel" disabled={ocupado || !sucio} className="w-full sm:w-auto">{ocupado ? "Guardando…" : "Guardar borrador"}</Button><Button type="button" variant="relOutline" disabled={!publicable} onClick={() => setConfirmar(true)} className="w-full sm:w-auto">Publicar versión</Button>{items.length === 0 && ultima ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={clonar} className="w-full sm:w-auto">Crear v{ultima.numero + 1} desde la última</Button> : null}</div><p className="mt-3 text-sm text-rel-muted">{sucio ? "Guarda los cambios antes de publicar." : !principalValido ? "Añade un indicador principal obligatorio para publicar." : "La publicación fija las preguntas y su escala. Una edición posterior crea otra versión."}</p></Panel>

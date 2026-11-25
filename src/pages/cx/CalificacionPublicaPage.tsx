@@ -8,6 +8,9 @@ import { Cargando } from "@/features/participacion/Estados";
 import { Illustration } from "@/shared/ui/illustration/Illustration";
 import { IllustrationSurface } from "@/shared/ui/illustration/IllustrationSurface";
 import { Caja } from "@/shared/ui/Caja";
+import { Casilla } from "@/shared/ui/Casilla";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   abrirCalificacion,
   enviarCalificacion,
@@ -280,45 +283,42 @@ export default function CalificacionPublicaPage() {
             <div className="grid gap-4">
               <div>
                 <label htmlFor="cx-contacto-nombre" className="block text-sm font-bold text-rel-dark">Nombre <span className="text-rel-danger" aria-label="obligatorio">*</span></label>
-                <input id="cx-contacto-nombre" type="text" autoComplete="name" maxLength={160} value={datos.nombre}
+                <Input id="cx-contacto-nombre" type="text" autoComplete="name" maxLength={160} value={datos.nombre}
                   onChange={(e) => { setDatos((a) => ({ ...a, nombre: e.target.value })); setErrorContacto(""); }}
                   disabled={fase === "enviando"}
-                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+                  className="mt-2 min-h-12" />
               </div>
               <div>
                 <label htmlFor="cx-contacto-correo" className="block text-sm font-bold text-rel-dark">Correo electrónico <span className="text-rel-danger" aria-label="obligatorio">*</span></label>
-                <input id="cx-contacto-correo" type="email" inputMode="email" autoComplete="email" maxLength={200} value={datos.correo}
+                <Input id="cx-contacto-correo" type="email" inputMode="email" autoComplete="email" maxLength={200} value={datos.correo}
                   onChange={(e) => { setDatos((a) => ({ ...a, correo: e.target.value })); setErrorContacto(""); }}
                   disabled={fase === "enviando"}
-                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+                  className="mt-2 min-h-12" />
               </div>
               {pideTelefono ? <div>
                 <label htmlFor="cx-contacto-telefono" className="block text-sm font-bold text-rel-dark">Teléfono <small className="font-normal text-rel-muted">(opcional)</small></label>
-                <input id="cx-contacto-telefono" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} value={datos.telefono}
+                <Input id="cx-contacto-telefono" type="tel" inputMode="tel" autoComplete="tel" maxLength={40} value={datos.telefono}
                   onChange={(e) => { setDatos((a) => ({ ...a, telefono: e.target.value })); setErrorContacto(""); }}
                   disabled={fase === "enviando"}
-                  className="mt-2 flex min-h-[3rem] w-full rounded-rel-control border border-rel-border-strong bg-rel-surface px-3 text-base text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary" />
+                  className="mt-2 min-h-12" />
               </div> : null}
             </div>
 
             <div className="mt-6 border-t border-rel-border pt-6">
               {autorizacion.finalidad ? <p className="text-sm text-rel-dark"><strong className="font-bold">Para qué los usamos:</strong> {autorizacion.finalidad}</p> : null}
-              <label className="mt-4 flex items-start gap-3 text-sm">
-                <input type="checkbox" checked={consiente} disabled={fase === "enviando"}
-                  onChange={(e) => { setConsiente(e.target.checked); setErrorContacto(""); }}
-                  className="mt-0.5 h-5 w-5 shrink-0 accent-rel-primary" />
-                <span className="leading-relaxed text-rel-dark">Autorizo el tratamiento de mis datos personales según la política de tratamiento de datos. <span className="text-rel-danger" aria-label="obligatorio">*</span></span>
-              </label>
-              <details className="mt-3 rounded-rel-card border border-rel-border bg-rel-surface-subtle p-3">
+              <Casilla className="mt-4" marcada={consiente} deshabilitada={fase === "enviando"}
+                alCambiar={(marcada) => { setConsiente(marcada); setErrorContacto(""); }}
+                etiqueta={<>Autorizo el tratamiento de mis datos personales según la política de tratamiento de datos. <span className="text-rel-danger" aria-label="obligatorio">*</span></>} />
+              <Caja como="details" tono="hundida" className="mt-3">
                 <summary className="cursor-pointer text-sm font-semibold text-rel-primary">Leer la política de tratamiento de datos</summary>
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-rel-muted">{autorizacion.contenido}</p>
-              </details>
+              </Caja>
             </div>
 
             {errorContacto ? <p className="mt-5 text-sm font-semibold text-rel-danger" role="alert">{errorContacto}</p> : null}
           </Panel>
 
-          {errorEnvio && <p className="mt-4 rounded-rel-card border border-rel-danger bg-rel-surface p-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</p>}
+          {errorEnvio && <Caja como="p" tono="peligro" className="mt-4 text-sm text-rel-danger" role="alert">No pudimos guardar tu calificación. Inténtalo otra vez; tus respuestas siguen aquí.</Caja>}
 
           <BarraAccionesMovil className="mt-auto lg:mt-6">
             <div className="flex flex-col gap-3">
@@ -327,10 +327,10 @@ export default function CalificacionPublicaPage() {
                 {fase !== "enviando" && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
               </BotonPrincipal>
               <BotonSecundario onClick={() => void enviar(null)} disabled={fase === "enviando"}>Enviar sin dejar mis datos</BotonSecundario>
-              <button type="button" onClick={() => { setEnContacto(false); setErrorContacto(""); }} disabled={fase === "enviando"}
-                className="inline-flex items-center justify-center gap-2 self-center text-sm font-semibold text-rel-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rel-primary disabled:opacity-50">
+              <Button type="button" variant="relGhost" onClick={() => { setEnContacto(false); setErrorContacto(""); }} disabled={fase === "enviando"}
+                className="self-center">
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a mis respuestas
-              </button>
+              </Button>
             </div>
           </BarraAccionesMovil>
         </div>
@@ -356,7 +356,7 @@ export default function CalificacionPublicaPage() {
           </IllustrationSurface>
         </div>
 
-        <Panel className={`p-5 transition-[opacity,transform] duration-rel-panel sm:p-8 ${transicionPregunta ? "translate-x-2 opacity-0" : "translate-x-0 opacity-100"}`}>
+        <Panel className={`p-5 transition-[opacity,translate] duration-rel-panel sm:p-8 ${transicionPregunta ? "translate-x-2 opacity-0" : "translate-x-0 opacity-100"}`}>
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="font-bold text-rel-dark">Pregunta {indice + 1} de {total}</span>
             <span className="text-rel-muted">{Math.round(((indice + 1) / total) * 100)} %</span>
