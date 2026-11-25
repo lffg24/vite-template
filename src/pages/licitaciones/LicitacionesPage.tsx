@@ -559,7 +559,7 @@ export default function LicitacionesPage() {
                         </div>
                         <p className="break-words text-xs text-rel-muted">Valor revisado: {review.value_json === null ? "Sin valor" : JSON.stringify(review.value_json)}</p>
                         {review.rationale && <p>{review.rationale}</p>}
-                        <time className="block text-xs text-rel-muted" dateTime={review.created_at}>{date(review.created_at)}</time>
+                        <time className="block text-xs text-rel-muted" dateTime={review.created_at}>{new Date(review.created_at).toLocaleString("es-CO")}</time>
                       </Caja>
                     </li>
                   ))}
