@@ -1513,7 +1513,7 @@ function SegmentacionChart({ title, items }: { title: string; items?: Segmentaci
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, left: 80, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" tickFormatter={(v) => `${v}%`} />
+              <XAxis type="number" tickFormatter={(v) => `${Number(v).toFixed(0)}%`} />
               <YAxis type="category" dataKey="nombre" width={130} />
               <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, "Scores Alto/Muy alto"]} />
               <Bar dataKey="pct_alto_muy_alto" fill="#7c3aed" radius={[0, 8, 8, 0]} />
@@ -1626,7 +1626,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="nombre" interval={0} angle={-25} textAnchor="end" height={70} tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => String(v) + "%"} domain={[0, 100]} />
+              <YAxis tickFormatter={(v) => `${Number(v).toFixed(0)}%`} domain={[0, 100]} />
               <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
               <Bar dataKey="porcentaje" fill="#7c3aed" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -1635,7 +1635,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, left: 110, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => String(v) + "%"} />
+              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${Number(v).toFixed(0)}%`} />
               <YAxis type="category" dataKey="nombre" width={160} tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
               <Bar dataKey="porcentaje" fill="#7c3aed" radius={[0, 8, 8, 0]} />
