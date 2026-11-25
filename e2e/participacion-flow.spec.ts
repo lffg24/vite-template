@@ -180,8 +180,8 @@ test.describe("Participante · recorrido en el teléfono", () => {
 
     // --- D-02 · identificación ---
     await page.getByLabel("Número *").fill("1018442907");
-    await page.getByLabel("Nombres *").fill("María Fernanda");
-    await page.getByLabel("Apellidos *").fill("Ospina Ruiz");
+    await page.getByLabel("Nombres").fill("María Fernanda");
+    await page.getByLabel("Apellidos").fill("Ospina Ruiz");
 
     // Sin marcar las dos autorizaciones no se pasa.
     await page.getByRole("button", { name: "Ingresar" }).click();
@@ -338,8 +338,8 @@ test.describe("Participante · recorrido en el teléfono", () => {
     await page.goto(`/c/${TOKEN}`);
     await page.getByRole("button", { name: "Comenzar" }).click();
     await page.getByLabel("Número *").fill("1");
-    await page.getByLabel("Nombres *").fill("A");
-    await page.getByLabel("Apellidos *").fill("B");
+    await page.getByLabel("Nombres").fill("A");
+    await page.getByLabel("Apellidos").fill("B");
     await page.getByRole("checkbox").first().check();
     await page.getByRole("checkbox").nth(1).check();
     await page.getByRole("button", { name: "Ingresar" }).click();

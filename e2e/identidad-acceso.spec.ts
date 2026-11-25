@@ -84,7 +84,7 @@ test("diagnóstico, escritorio y móvil sin desbordamiento", async ({ page }, te
     await mkdir("../outputs/playwright", { recursive: true });
     await page.screenshot({ path: "../outputs/playwright/iam-escritorio.png", fullPage: true });
   }
-  await page.getByRole("button", { name: "Personas y acceso" }).click();
+  await page.getByRole("tab", { name: "Personas y acceso" }).click();
   await page.getByRole("combobox", { name: "Persona", exact: true }).click();
   await page.getByRole("option", { name: /Laura Martínez/ }).click();
   await expect(page.getByRole("heading", { name: "Qué puede hacer esta persona", exact: true })).toBeVisible();
