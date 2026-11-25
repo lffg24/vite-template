@@ -17,6 +17,7 @@
 // que no cumple. La lección bloqueada es texto, y dice qué hacer para abrirla.
 
 import { Link } from "react-router-dom";
+import { transicionVistaSegura } from "@/shared/ui/transicionVista";
 import {
   Check,
   FileText,
@@ -150,7 +151,7 @@ export function RutaAprendizaje({ lecciones }: { lecciones: LeccionEnCurso[] }) 
                 {tarjeta}
               </Caja>
             ) : (
-              <Link viewTransition
+              <Link viewTransition={transicionVistaSegura()}
                 to={`/c/sesion/leccion/${l.leccion_id}`}
                 aria-current={enCurso ? "step" : undefined}
                 className={cn(

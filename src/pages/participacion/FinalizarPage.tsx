@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Copy, Download, Loader2, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { transicionVistaSegura } from "@/shared/ui/transicionVista";
 
 import { finalizar, miConstancia, miCurso } from "@/services/participacionService";
 import type {
@@ -320,7 +321,7 @@ function DocumentoDeLaConstancia({ emitida }: { emitida: ConstanciaEmitida }) {
             {descargando ? "Preparando PDF…" : "Descargar PDF"}
           </span>
         </BotonPrincipal>
-        <Link viewTransition
+        <Link viewTransition={transicionVistaSegura()}
           to={`/c/verificar/${encodeURIComponent(emitida.codigo_verificacion)}`}
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-rel-control border border-rel-primary bg-rel-surface px-5 text-base font-semibold text-rel-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary focus-visible:ring-offset-2"
         >

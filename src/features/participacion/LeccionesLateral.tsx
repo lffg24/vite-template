@@ -10,6 +10,7 @@
 // recalcula.
 
 import { Link } from "react-router-dom";
+import { transicionVistaSegura } from "@/shared/ui/transicionVista";
 import { Check, Lock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -59,7 +60,7 @@ export function LeccionesLateral({
               {bloqueada ? (
                 <div className={cn(base, "text-rel-muted")}>{contenido}</div>
               ) : (
-                <Link viewTransition
+                <Link viewTransition={transicionVistaSegura()}
                   to={`/c/sesion/leccion/${l.leccion_id}`}
                   aria-current={esta ? "step" : undefined}
                   className={cn(
