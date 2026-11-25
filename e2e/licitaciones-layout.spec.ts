@@ -28,7 +28,7 @@ const opportunity = {
   decision: null,
 };
 
-test("licitaciones y su historial caben en móvil y escritorio", async ({ page }) => {
+test("licitaciones y su historial caben en móvil y escritorio", async ({ page }, testInfo) => {
   await page.route("http://127.0.0.1:8000/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     let body: unknown = {};
@@ -54,8 +54,10 @@ test("licitaciones y su historial caben en móvil y escritorio", async ({ page }
     await page.goto("/licitaciones");
     await expect(page.getByText("Entidad de prueba")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`licitaciones-${width}-bandeja.png`), fullPage: true });
     await page.getByRole("button", { name: /Entidad de prueba/ }).click();
     await expect(page.getByText("Historial de revisiones")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: testInfo.outputPath(`licitaciones-${width}-historial.png`), fullPage: true });
   }
 });
