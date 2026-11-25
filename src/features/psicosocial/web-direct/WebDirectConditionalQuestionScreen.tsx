@@ -13,7 +13,7 @@ type WebDirectConditionalQuestionScreenProps = {
   value: boolean | null;
   onChange: (ruleCode: string, value: boolean) => void;
   onBack: () => void;
-  onContinue: () => void;
+  onContinue: (selectedValue?: boolean) => void;
 };
 
 export function WebDirectConditionalQuestionScreen({
@@ -37,7 +37,7 @@ export function WebDirectConditionalQuestionScreen({
 
   return (
     <WebDirectParticipantShell stepLabel={`${instrumentLabel} · Pregunta de contexto`} className="max-w-4xl">
-      <Card className="rounded-[1.5rem] border-border bg-surface p-5 shadow-soft sm:rounded-[2rem] sm:p-9 lg:p-11">
+      <Card className="rounded-3xl border-border bg-surface p-5 shadow-soft sm:rounded-4xl sm:p-9 lg:p-11">
         <div className="flex items-center gap-3 text-primary">
           <span className="grid h-10 w-10 place-items-center rounded-full bg-info/10"><HelpCircle className="h-5 w-5" aria-hidden="true" /></span>
           <p className="text-xs font-extrabold uppercase tracking-[0.16em]">Antes de continuar</p>
@@ -64,7 +64,10 @@ export function WebDirectConditionalQuestionScreen({
                     type="radio"
                     name={`conditional-${rule.code}`}
                     checked={selected}
-                    onChange={() => onChange(rule.code, option.selectedValue)}
+                    onChange={() => {
+                      onChange(rule.code, option.selectedValue);
+                      onContinue(option.selectedValue);
+                    }}
                     className="h-5 w-5 accent-[hsl(var(--accent-foreground))]"
                   />
                   {option.label}
@@ -76,7 +79,7 @@ export function WebDirectConditionalQuestionScreen({
 
         <div className="mt-8 flex items-center justify-between gap-3">
           <Button type="button" variant="outline" size="lg" onClick={onBack}><ArrowLeft aria-hidden="true" /> Anterior</Button>
-          <Button type="button" size="lg" disabled={value === null} onClick={onContinue}>Continuar <ArrowRight aria-hidden="true" /></Button>
+          <Button type="button" size="lg" disabled={value === null} onClick={() => onContinue()}>Continuar <ArrowRight aria-hidden="true" /></Button>
         </div>
       </Card>
     </WebDirectParticipantShell>

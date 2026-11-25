@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Eye, EyeOff, LockKeyhole } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { PasswordRecoveryShell } from "@/components/auth/PasswordRecoveryShell";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Aviso } from "@/shared/ui/Aviso";
+import { EntradaClave } from "@/shared/ui/EntradaClave";
 import { confirmPasswordReset } from "@/features/auth/passwordResetService";
+import { ALTO_CONTROL } from "@/shared/ui/controles";
 
 function validPassword(value: string) {
   return value.length >= 12 && value.length <= 128;
@@ -49,18 +51,23 @@ export default function RestablecerClave() {
   };
 
   if (!token) {
-    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible."><Link to="/recuperar-clave" className="block rounded-2xl bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
+    return <PasswordRecoveryShell title="Enlace no válido" description="El enlace de recuperación está incompleto o ya no está disponible." escena="link-fallido"><Link viewTransition to="/recuperar-clave" className="block rounded-rel-panel bg-primary px-5 py-4 text-center font-bold text-primary-foreground">Solicitar un nuevo enlace</Link></PasswordRecoveryShell>;
   }
 
   return (
-    <PasswordRecoveryShell title="Crea una nueva contraseña" description="El enlace es de un solo uso. Al completar el cambio, las sesiones anteriores quedarán cerradas.">
+    <PasswordRecoveryShell title="Crea una nueva contraseña" description="El enlace es de un solo uso. Al completar el cambio, las sesiones anteriores quedarán cerradas." escena="cambio-contrasena">
       {completed ? (
-        <div role="status" className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 text-emerald-900">
-          <CheckCircle2 className="mb-3 h-7 w-7" />
-          <p className="font-black">Contraseña actualizada</p>
-          <p className="mt-2 text-sm leading-6">Ya puedes iniciar sesión con tu nueva contraseña.</p>
-          <Link to="/login" className="mt-4 block rounded-2xl bg-emerald-700 px-4 py-3 text-center font-bold text-white">Ir al login</Link>
-        </div>
+        <Aviso
+          tono="exito"
+          titulo="Contraseña actualizada"
+          acciones={
+            <Button asChild variant="outline" size="sm">
+              <Link viewTransition to="/login">Ir al login</Link>
+            </Button>
+          }
+        >
+          Ya puedes iniciar sesión con tu nueva contraseña.
+        </Aviso>
       ) : (
         <form onSubmit={submit} className="space-y-4" noValidate>
           {[
@@ -69,16 +76,26 @@ export default function RestablecerClave() {
           ].map((field) => (
             <div key={field.id} className="space-y-2">
               <Label htmlFor={field.id} className="font-bold">{field.label}</Label>
-              <div className="relative">
-                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <Input id={field.id} type={visible ? "text" : "password"} autoComplete={field.autocomplete} value={field.value} onChange={(event) => field.setter(event.target.value)} className="h-14 rounded-2xl pl-12 pr-12 text-base" />
-                <button type="button" onClick={() => setVisible((current) => !current)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" aria-label={visible ? "Ocultar contraseñas" : "Mostrar contraseñas"}>{visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
-              </div>
+              {/* La visibilidad es UNA para los dos campos, y a propósito: son la
+                  contraseña y su confirmación, y verlas juntas es lo que permite
+                  cotejarlas. Antes salía así por compartir una variable; ahora
+                  se dice con `visible` / `alAlternar`, que es lo que hace que
+                  el botón se anuncie en plural. */}
+              <EntradaClave
+                id={field.id}
+                icono={LockKeyhole}
+                autoComplete={field.autocomplete}
+                value={field.value}
+                visible={visible}
+                alAlternar={() => setVisible((current) => !current)}
+                onChange={(event) => field.setter(event.target.value)}
+                className={`${ALTO_CONTROL.entrada} rounded-rel-control text-base`}
+              />
             </div>
           ))}
-          <p className="text-xs leading-5 text-slate-500">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
-          {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
-          <Button type="submit" disabled={loading} className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary to-brand-dark text-base font-bold text-primary-foreground">{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
+          <p className="text-xs leading-5 text-muted-foreground">Usa entre 12 y 128 caracteres. Puedes utilizar espacios y una frase larga fácil de recordar.</p>
+          {error ? <p role="alert" className="text-sm font-semibold text-danger">{error}</p> : null}
+          <Button type="submit" disabled={loading} className={`${ALTO_CONTROL.entrada} w-full rounded-rel-control bg-marca text-base font-bold text-primary-foreground`}>{loading ? "Actualizando..." : "Actualizar contraseña"}</Button>
         </form>
       )}
     </PasswordRecoveryShell>

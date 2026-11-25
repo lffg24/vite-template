@@ -32,7 +32,7 @@ export function WebDirectContentFrame({
   return (
     <WebDirectParticipantShell stepLabel={stepLabel}>
       <WebDirectStepProgress {...progress} />
-      <Card className="overflow-hidden rounded-[1.5rem] border-border bg-surface shadow-soft sm:rounded-[2rem]">
+      <Card className="overflow-hidden rounded-3xl border-border bg-surface shadow-soft sm:rounded-4xl">
         <div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.75fr)]">
           <section className="p-6 sm:p-9 lg:p-12">
             <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-primary">{eyebrow}</p>
@@ -55,7 +55,7 @@ export function WebDirectContentFrame({
               variant="hero"
               size="full"
               priority
-              className="mx-auto hidden max-h-[21rem] max-w-lg lg:block"
+              className="mx-auto hidden max-h-84 max-w-lg lg:block"
             />
             {aside ? <div className="mt-5">{aside}</div> : null}
           </aside>

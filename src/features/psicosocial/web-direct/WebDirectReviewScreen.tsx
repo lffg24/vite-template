@@ -26,7 +26,7 @@ export function WebDirectReviewScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Revisión final"
-      progress={{ current: 5, total: 6, label: "Revisión final" }}
+      progress={{ current: 5, total: 5, label: "Revisión final" }}
       eyebrow="Revisión final"
       title="Resumen de tu batería"
       description="Comprueba que todos los componentes estén completos antes de continuar con la declaración final."
@@ -81,7 +81,7 @@ export function WebDirectReviewScreen({
                 "grid h-9 w-9 shrink-0 place-items-center rounded-full",
                 isComplete ? "bg-success/10 text-success" : "bg-warning/10 text-warning-foreground",
               )} aria-hidden="true">
-                {isComplete ? <Check className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+                {isComplete ? <Check className="h-5 w-5" aria-hidden="true" /> : <AlertCircle className="h-5 w-5" aria-hidden="true" />}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-heading text-sm font-bold sm:text-base">{stage.title}</span>

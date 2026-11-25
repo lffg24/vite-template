@@ -14,7 +14,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      "pointer-events-none fixed right-0 top-0 z-rel-aviso flex max-h-screen w-full flex-col gap-3 p-4 sm:max-w-[440px]",
       className
     )}
     {...props}
@@ -23,13 +23,28 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+  "group pointer-events-auto relative flex w-full items-start gap-4 overflow-hidden rounded-2xl border p-5 pr-10 backdrop-blur-sm transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-(--radix-toast-swipe-end-x) data-[swipe=move]:translate-x-(--radix-toast-swipe-move-x) data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-right-full",
   {
     variants: {
+      // Los cuatro tonos que ya usaba Psicosocial en `ToastCard`, traidos aqui
+      // para que TODOS los modulos avisen igual. El aviso era una caja plana con
+      // borde gris y no se parecia en nada al resto de la casa.
+      //
+      // Fondo claro con sombra de color, no fondo de color: un panel rojo entero
+      // se lee como una alarma del sistema, y la mayoria de estos avisos son
+      // «se guardo».
       variant: {
-        default: "border bg-background text-foreground",
+        default:
+          "border-border bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--foreground)/0.14)]",
+        success:
+          "border-success/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--success)/0.18)]",
+        warning:
+          "border-warning/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--warning)/0.18)]",
+        // Se llama `destructive` y no `error` porque es el nombre que ya usan
+        // las llamadas repartidas por el producto. Cambiarlo obligaria a tocar
+        // cada una para ganar una palabra.
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+          "destructive group border-danger/40 bg-card/95 text-foreground shadow-[0_18px_48px_hsl(var(--danger)/0.18)]",
       },
     },
     defaultVariants: {
@@ -60,7 +75,8 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
+      // Mismo foco y misma curva que el resto de los controles pulsables.
+      "inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-border bg-transparent px-3 font-heading text-sm font-semibold transition-colors duration-rel-micro ease-rel-out hover:bg-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none hover:group-[.destructive]:border-danger/40 hover:group-[.destructive]:bg-danger hover:group-[.destructive]:text-danger-foreground focus-visible:group-[.destructive]:ring-danger",
       className
     )}
     {...props}
@@ -75,13 +91,15 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+      // Visible SIEMPRE, no solo al pasar el raton: con `opacity-0` no habia
+      // forma de cerrarlo desde un telefono, donde no hay hover.
+      "absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground transition-colors duration-rel-micro ease-rel-out hover:bg-surface-subtle hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
       className
     )}
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <X className="h-4 w-4" aria-hidden="true" />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName
@@ -92,7 +110,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold [&+div]:text-xs", className)}
+    className={cn("font-rel-heading text-base font-black tracking-tight", className)}
     {...props}
   />
 ))
@@ -104,7 +122,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("mt-1 text-sm leading-6 text-foreground-soft", className)}
     {...props}
   />
 ))

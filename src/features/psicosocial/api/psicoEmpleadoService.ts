@@ -46,6 +46,7 @@ export type PsicoEmpleadoPerfil = {
   nombre_completo?: string | null;
   nombres?: string | null;
   apellidos?: string | null;
+  fecha_nacimiento?: string | null;
   correo?: string | null;
   telefono?: string | null;
   empresa?: string | null;
@@ -119,6 +120,7 @@ export type ActualizarPerfilBaseEmpleadoPayload = {
   nombres?: string | null;
   apellidos?: string | null;
   cedula?: string | null;
+  fecha_nacimiento?: string | null;
   identificador_externo?: string | null;
   email?: string | null;
   telefono?: string | null;

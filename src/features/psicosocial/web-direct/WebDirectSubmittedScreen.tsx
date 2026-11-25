@@ -18,7 +18,7 @@ export function WebDirectSubmittedScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Presentación recibida"
-      progress={{ current: 6, total: 6, label: "Proceso completado" }}
+      progress={{ current: 5, total: 5, label: "Proceso completado" }}
       eyebrow="Proceso completado"
       title="Tu presentación fue recibida"
       description="Gracias por completar la batería. Tu participación contribuye a construir entornos laborales más saludables."

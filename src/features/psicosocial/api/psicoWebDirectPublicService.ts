@@ -6,9 +6,11 @@ import type {
   WebDirectDemographicValues,
   WebDirectForm,
   WebDirectInstrumentCode,
+  WebDirectMunicipality,
   WebDirectQuestion,
 } from "../web-direct";
 import type { WebDirectAttemptState } from "../web-direct/webDirectAttempt";
+import { getWebDirectQuestionNote } from "../web-direct/webDirectQuestionNotes";
 
 type ApiQuestion = {
   pregunta_id: number;
@@ -36,6 +38,16 @@ export type WebDirectWelcome = {
   aplicacion_id: number;
   aplicacion_nombre: string;
   empresa_nombre: string;
+  responsable?: {
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
+  empresa_contacto?: {
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
 };
 
 export type WebDirectIdentityResult = {
@@ -58,6 +70,7 @@ export type WebDirectSessionContent = {
   evaluations: WebDirectAssignedEvaluation[];
   instruments: Record<WebDirectInstrumentCode, WebDirectInstrumentContent | undefined>;
   demographics: WebDirectDemographicValues;
+  areaOptions: string[];
 };
 
 function parseParameters(value: ApiQuestion["parametros"]): Record<string, unknown> {
@@ -94,6 +107,7 @@ function normalizeQuestion(question: ApiQuestion, instrumentCode: WebDirectInstr
     questionId: Number(question.pregunta_id),
     order: Number(question.orden),
     text: String(question.texto ?? ""),
+    helpText: getWebDirectQuestionNote(instrumentCode, Number(question.orden)),
     required: true,
     options: fallback.map((option) => ({ label: option, value: option })),
     dimensionCode: parameters.dimension_code ? String(parameters.dimension_code) : null,
@@ -143,6 +157,7 @@ export async function getWebDirectSessionContent(sessionToken: string): Promise<
     aplicacion_nombre: string;
     forma_asignada: WebDirectForm;
     datos_generales: Record<string, unknown>;
+    areas_disponibles?: string[];
     instrumentos: ApiInstrument[];
   }>("/public/psychosocial/session/content", {
     headers: { Authorization: `Bearer ${sessionToken}` },
@@ -171,7 +186,20 @@ export async function getWebDirectSessionContent(sessionToken: string): Promise<
     evaluations: entries.map(([, item]) => item.evaluation),
     instruments: Object.fromEntries(entries) as WebDirectSessionContent["instruments"],
     demographics: normalizeDemographics(response.datos_generales ?? {}),
+    areaOptions: (response.areas_disponibles ?? []).map(String).filter(Boolean),
   };
+}
+
+export async function searchWebDirectMunicipalities(
+  sessionToken: string,
+  query: string,
+): Promise<WebDirectMunicipality[]> {
+  const params = new URLSearchParams({ q: query });
+  const response = await requestPublicJson<{ ok: boolean; items: WebDirectMunicipality[] }>(
+    `/public/psychosocial/session/municipios?${params.toString()}`,
+    { headers: { Authorization: `Bearer ${sessionToken}` } },
+  );
+  return response.items ?? [];
 }
 
 export async function submitWebDirectAttempt(

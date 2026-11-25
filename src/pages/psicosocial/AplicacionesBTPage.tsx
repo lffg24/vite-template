@@ -221,7 +221,7 @@ export default function AplicacionesBTPage() {
         <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-[0.22em] text-brand-primary">
-              <Layers3 className="h-4 w-4" /> Aplicaciones BT
+              <Layers3 className="h-4 w-4" aria-hidden="true" /> Aplicaciones BT
             </div>
             <h1 className="text-4xl font-black tracking-tight text-slate-950">Aplicaciones BT</h1>
             <p className="mt-2 max-w-3xl text-base text-slate-600">
@@ -231,8 +231,8 @@ export default function AplicacionesBTPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Select value={empresaFilter} onValueChange={(v) => { setEmpresaFilter(v); setPage(1); }}>
-              <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-sm">
-                <Building2 className="mr-2 h-4 w-4 text-brand-primary" />
+              <SelectTrigger className="h-11 min-w-[230px] rounded-xl bg-white shadow-xs">
+                <Building2 className="mr-2 h-4 w-4 text-brand-primary" aria-hidden="true" />
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
               <SelectContent>
@@ -240,11 +240,11 @@ export default function AplicacionesBTPage() {
                 {empresas.map((empresa) => <SelectItem key={empresa.id} value={empresa.id}>{empresa.nombre}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button variant="outline" className="h-11 rounded-xl bg-white shadow-sm" onClick={load} disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TimerReset className="mr-2 h-4 w-4" />} Actualizar
+            <Button variant="outline" className="h-11 rounded-xl bg-white shadow-xs" onClick={load} disabled={loading}>
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <TimerReset className="mr-2 h-4 w-4" aria-hidden="true" />} Actualizar
             </Button>
             <Button asChild className="h-11 rounded-xl bg-primary px-5 font-bold shadow-card hover:bg-primary-hover">
-              <Link to="/psicosocial/empresas"><Plus className="mr-2 h-4 w-4" /> Nueva aplicación</Link>
+              <Link to="/psicosocial/empresas"><Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Nueva aplicación</Link>
             </Button>
           </div>
         </header>
@@ -258,22 +258,22 @@ export default function AplicacionesBTPage() {
           <MetricCard icon={WalletCards} label="Créditos" value={summary.creditos} note="consumidos" accent="from-brand-primary to-brand-dark" progress={100} />
         </section>
 
-        <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-sm">
+        <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-xs">
           <CardContent className="p-0">
             <div className="grid gap-4 border-b border-slate-100 p-5 lg:grid-cols-[1.45fr_0.95fr_0.95fr_0.95fr_auto]">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-sm" placeholder="Buscar aplicación, empresa o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                <Input className="h-12 rounded-xl border-slate-200 bg-white pl-11 shadow-xs" placeholder="Buscar aplicación, empresa o ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
               </div>
               <Select value={instrumentFilter} onValueChange={(v) => { setInstrumentFilter(v); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Formulario" /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Formulario" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TODOS">Todos los formularios</SelectItem>
                   {instruments.map((code) => <SelectItem key={code} value={code}>{instrumentLabels[code] ?? code}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Estado" /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Estado" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TODOS">Todos los estados</SelectItem>
                   <SelectItem value="BORRADOR">Borrador</SelectItem>
@@ -285,11 +285,11 @@ export default function AplicacionesBTPage() {
                 </SelectContent>
               </Select>
               <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
-                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{PAGE_SIZES.map((size) => <SelectItem key={size} value={String(size)}>{size} filas</SelectItem>)}</SelectContent>
               </Select>
-              <Button variant="outline" className="h-12 rounded-xl bg-white shadow-sm" type="button">
-                <Download className="mr-2 h-4 w-4" /> Exportar
+              <Button variant="outline" className="h-12 rounded-xl bg-white shadow-xs" type="button">
+                <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Exportar
               </Button>
             </div>
 
@@ -309,7 +309,7 @@ export default function AplicacionesBTPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {loading ? (
-                    <tr><td colSpan={8} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-brand-primary" />Cargando aplicaciones BT...</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-16 text-center text-slate-500"><Loader2 className="mx-auto mb-3 h-7 w-7 animate-spin text-brand-primary" aria-hidden="true" />Cargando aplicaciones BT...</td></tr>
                   ) : error ? (
                     <tr><td colSpan={8} className="px-5 py-12 text-center text-red-700">{error}</td></tr>
                   ) : rows.length === 0 ? (
@@ -318,7 +318,7 @@ export default function AplicacionesBTPage() {
                     <tr key={`${row.empresaId}-${row.id}`} className="transition hover:bg-accent/35">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-brand-primary ring-1 ring-accent"><FileText className="h-5 w-5" /></div>
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent text-brand-primary ring-1 ring-accent"><FileText className="h-5 w-5" aria-hidden="true" /></div>
                           <div>
                             <Link to={`/psicosocial/empresas/${row.empresaId}/aplicaciones/${row.id}`} className="font-black text-slate-900 underline decoration-accent underline-offset-4 transition hover:text-brand-primary hover:decoration-brand-primary">
                               {row.nombre}
@@ -335,7 +335,7 @@ export default function AplicacionesBTPage() {
                         <div className="h-1.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, row.avance))}%` }} /></div>
                       </td>
                       <td className="px-5 py-4"><span className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-black ring-1 ${stateClass(row.estado)}`}>{row.estadoLabel}</span></td>
-                      <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" /> {formatDate(row.fechaInicio)}</td>
+                      <td className="px-5 py-4 text-slate-600"><CalendarDays className="mb-1 inline h-4 w-4 text-slate-400" aria-hidden="true" /> {formatDate(row.fechaInicio)}</td>
                       <td className="px-5 py-4"><strong>{row.creditos}</strong><div className="text-xs text-slate-500">créditos</div></td>
                     </tr>
                   ))}
@@ -346,14 +346,14 @@ export default function AplicacionesBTPage() {
             <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/80 px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="text-sm text-slate-600">Mostrando <strong>{first}</strong> a <strong>{last}</strong> de <strong>{serverTotal}</strong> aplicaciones</div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}><ArrowLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}><ArrowLeft className="h-4 w-4" aria-hidden="true" /></Button>
                 {pageNumbers.map((p, index) => (
                   <div key={p} className="flex items-center gap-2">
                     {index > 0 && p - pageNumbers[index - 1] > 1 ? <span className="px-1 text-slate-400">...</span> : null}
                     <Button variant={p === currentPage ? "default" : "outline"} size="sm" className={`h-10 w-10 rounded-xl ${p === currentPage ? "bg-primary hover:bg-primary-hover" : "bg-white"}`} onClick={() => setPage(p)}>{p}</Button>
                   </div>
                 ))}
-                <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ArrowRight className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="rounded-xl bg-white" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}><ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>
               </div>
             </div>
           </CardContent>
@@ -379,10 +379,10 @@ type MetricCardProps = {
 
 function MetricCard({ icon: Icon, label, value, note, accent, progress }: MetricCardProps) {
   return (
-    <Card className="rounded-[1.5rem] border-slate-200 bg-white shadow-sm">
+    <Card className="rounded-3xl border-slate-200 bg-white shadow-xs">
       <CardContent className="p-5">
         <div className="flex items-center gap-4">
-          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${accent} text-white shadow-card`}><Icon className="h-6 w-6" /></div>
+          <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-linear-to-br ${accent} text-white shadow-card`}><Icon className="h-6 w-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-bold text-slate-500">{label}</p>
             <p className="mt-1 text-3xl font-black tracking-tight text-slate-950">{value}</p>
@@ -390,7 +390,7 @@ function MetricCard({ icon: Icon, label, value, note, accent, progress }: Metric
         </div>
         <p className="mt-4 text-xs font-medium text-slate-500">{note}</p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
-          <div className={`h-full rounded-full bg-gradient-to-r ${accent}`} style={{ width: `${Math.max(4, Math.min(100, progress))}%` }} />
+          <div className={`h-full rounded-full bg-linear-to-r ${accent}`} style={{ width: `${Math.max(4, Math.min(100, progress))}%` }} />
         </div>
       </CardContent>
     </Card>

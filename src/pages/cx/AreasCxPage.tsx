@@ -1,0 +1,185 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
+import { Link } from "react-router-dom";
+import { Building2, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Aviso } from "@/shared/ui/Aviso";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { Pill } from "@/shared/ui/Pill";
+import { CeldaPrincipal, TablaDatos, type ColumnaTabla } from "@/shared/ui/TablaDatos";
+import { useToast } from "@/hooks/use-toast";
+import { cambiarEstadoAreaCx, crearAreaCx, editarAreaCx, listarAreasCx } from "@/services/cxAreasService";
+import type { AreaCx } from "@/types/cxAreas";
+import { Desplegable } from "@/shared/ui/Desplegable";
+
+/**
+ * Las columnas, una sola vez para la tabla y para la tarjeta de movil.
+ *
+ * Antes eran dos marcados distintos, y ya habian empezado a separarse: la
+ * tarjeta decia "Sin descripcion" donde la tabla ponia una raya, y el orden de
+ * los botones de accion no era el mismo en las dos.
+ */
+function columnasArea(
+  editar: (a: AreaCx) => void,
+  cambiarEstado: (a: AreaCx) => void,
+): ColumnaTabla<AreaCx>[] {
+  return [
+    {
+      clave: "nombre",
+      titulo: "\u00c1rea",
+      celda: (a) => <CeldaPrincipal titulo={a.nombre} alAbrir={() => editar(a)} />,
+      valor: (a) => a.nombre,
+    },
+    {
+      clave: "descripcion",
+      titulo: "Descripci\u00f3n",
+      celda: (a) => a.descripcion || "\u2014",
+    },
+    {
+      clave: "estado",
+      titulo: "Estado",
+      celda: (a) => (
+        <Pill tono={a.activo ? "exito" : "neutro"}>{a.activo ? "Activa" : "Inactiva"}</Pill>
+      ),
+      valor: (a) => (a.activo ? "Activa" : "Inactiva"),
+    },
+    {
+      clave: "acciones",
+      titulo: "Acciones",
+      soloAcciones: true,
+      alineacion: "derecha",
+      celda: (a) => <Acciones area={a} editar={editar} estado={cambiarEstado} />,
+    },
+  ];
+}
+
+export default function AreasCxPage() {
+  const { toast } = useToast();
+  const [filas, setFilas] = useState<AreaCx[]>([]);
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [historial, setHistorial] = useState<(number | null)[]>([]);
+  const [siguiente, setSiguiente] = useState<number | null>(null);
+  const [buscar, setBuscar] = useState("");
+  const [consulta, setConsulta] = useState("");
+  const [estado, setEstado] = useState<"activos" | "todos">("activos");
+  const [revision, setRevision] = useState(0);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [edicion, setEdicion] = useState<AreaCx | "nuevo" | null>(null);
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [errorFormulario, setErrorFormulario] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [aCambiar, setACambiar] = useState<AreaCx | null>(null);
+
+  useEffect(() => {
+    let vigente = true;
+    setCargando(true); setError("");
+    listarAreasCx({ buscar: consulta, activo: estado === "activos" ? true : null, cursor, limite: 20 })
+      .then((pagina) => { if (vigente) { setFilas(pagina.items); setSiguiente(pagina.siguiente_cursor); } })
+      .catch((e: Error) => { if (vigente) setError(e.message); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
+  }, [consulta, estado, cursor, revision]);
+
+  function abrir(fila: AreaCx | "nuevo") {
+    setEdicion(fila); setErrorFormulario("");
+    setNombre(fila === "nuevo" ? "" : fila.nombre);
+    setDescripcion(fila === "nuevo" ? "" : fila.descripcion || "");
+  }
+
+  async function guardar(e: FormEvent) {
+    e.preventDefault();
+    if (!nombre.trim()) { setErrorFormulario("Escribe el nombre del área."); return; }
+    setGuardando(true); setErrorFormulario("");
+    try {
+      const datos = { nombre: nombre.trim(), descripcion: descripcion.trim() || null };
+      if (edicion === "nuevo") await crearAreaCx(datos);
+      else if (edicion) await editarAreaCx(edicion.id, datos);
+      setEdicion(null); setRevision((n) => n + 1); toast({ title: "Área guardada" });
+    } catch (e) { setErrorFormulario((e as Error).message); }
+    finally { setGuardando(false); }
+  }
+
+  async function cambiar() {
+    if (!aCambiar) return;
+    setGuardando(true); setError("");
+    try {
+      await cambiarEstadoAreaCx(aCambiar.id, !aCambiar.activo);
+      setACambiar(null); setRevision((n) => n + 1); toast({ title: "Estado actualizado" });
+    } catch (e) { setError((e as Error).message); setACambiar(null); }
+    finally { setGuardando(false); }
+  }
+
+  return <div className="space-y-6">
+    <PageHeader antetitulo="Configuración CX" titulo="Áreas responsables" icono={Building2}
+      descripcion="Usa las áreas de tu empresa para asignar responsables a cada servicio."
+      accion={<Button variant="rel" className="w-full sm:w-auto" onClick={() => abrir("nuevo")}><Plus aria-hidden="true" /> Nueva área</Button>} />
+    <Link viewTransition className="inline-block text-sm font-semibold text-primary underline-offset-2 hover:underline" to="/cx/configuracion/contextos">← Sedes y servicios</Link>
+    {error ? <Aviso titulo="No pudimos cargar las áreas" acciones={<Button type="button" variant="relOutline" size="sm" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button>}>{error}</Aviso> : null}
+    <TablaDatos
+      filas={error ? [] : filas}
+      columnas={columnasArea(abrir, setACambiar)}
+      claveFila={(a) => String(a.id)}
+      etiquetaTabla="Áreas de la empresa"
+      etiquetaElemento="áreas"
+      cargando={cargando}
+      vacio="No hay áreas para este filtro."
+      escenaVacio="companyManagement"
+      cabecera={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); setConsulta(buscar.trim()); setCursor(null); setHistorial([]); }}>
+            <div className="min-w-0 flex-1">
+              <Label htmlFor="buscar-area">Buscar área</Label>
+              <Input id="buscar-area" type="search" value={buscar} maxLength={80} onChange={(e) => setBuscar(e.target.value)} />
+            </div>
+            <Button type="submit" variant="relOutline" className="self-end" aria-label="Buscar"><Search aria-hidden="true" /></Button>
+          </form>
+          <div>
+            <Label htmlFor="estado-area">Estado</Label>
+            {/* La frase que estaba aqui --«la lista tiene dos opciones y el nativo
+                se opera mejor en movil; lo que se homologa es el tratamiento,
+                no el elemento»-- era correcta, y es exactamente lo que hace
+                `Desplegable`: un `select` nativo con el aspecto de la casa.
+                Estaba cumplida copiando clases a mano, en cinco variantes. */}
+            <Desplegable
+              id="estado-area"
+              value={estado}
+              onChange={(e) => { setEstado(e.target.value as typeof estado); setCursor(null); setHistorial([]); }}
+              className="sm:w-40"
+            >
+              <option value="activos">Activas</option>
+              <option value="todos">Todas</option>
+            </Desplegable>
+          </div>
+        </div>
+      }
+      control={{
+        modo: "cursor",
+        pagina: historial.length + 1,
+        hayAnterior: historial.length > 0,
+        haySiguiente: Boolean(siguiente),
+        onAnterior: () => { setCursor(historial[historial.length - 1]); setHistorial((h) => h.slice(0, -1)); },
+        onSiguiente: () => { setHistorial((h) => [...h, cursor]); setCursor(siguiente); },
+      }}
+    />
+    <Sheet open={edicion !== null} onOpenChange={(v) => { if (!v && !guardando) setEdicion(null); }}><SheetContent className="rel-scope w-full overflow-y-auto bg-rel-surface font-rel-body sm:max-w-lg"><SheetHeader><SheetTitle>{edicion === "nuevo" ? "Nueva" : "Editar"} área</SheetTitle><SheetDescription>Esta área también forma parte del catálogo compartido de tu empresa.</SheetDescription></SheetHeader><form onSubmit={guardar} className="mt-6 space-y-5" noValidate><div><Label htmlFor="area-nombre">Nombre *</Label><Input id="area-nombre" value={nombre} disabled={guardando} maxLength={160} onChange={(e) => setNombre(e.target.value)} /></div><div><Label htmlFor="area-descripcion">Descripción</Label><Input id="area-descripcion" value={descripcion} disabled={guardando} maxLength={500} onChange={(e) => setDescripcion(e.target.value)} /></div>{errorFormulario ? <p role="alert" className="text-sm text-rel-danger">{errorFormulario}</p> : null}<div className="flex flex-col gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="relOutline" disabled={guardando} onClick={() => setEdicion(null)}>Cancelar</Button><Button type="submit" variant="rel" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button></div></form></SheetContent></Sheet>
+    <DialogoConfirmacion
+      abierto={aCambiar !== null}
+      alCerrar={() => setACambiar(null)}
+      tono={aCambiar?.activo ? "peligro" : "neutro"}
+      titulo={`${aCambiar?.activo ? "Desactivar" : "Activar"} área`}
+      descripcion={aCambiar?.activo ? "Dejará de estar asignada a servicios CX. El historial permanece; otras partes de Abril360 seguirán mostrando el área inactiva según sus reglas." : "Podrás volver a asignarla a servicios CX."}
+      etiquetaOcupado="Actualizando…"
+      ocupado={guardando}
+      alConfirmar={() => void cambiar()}
+    />
+  </div>;
+}
+
+function Acciones({ area, editar, estado }: { area: AreaCx; editar: (a: AreaCx) => void; estado: (a: AreaCx) => void }) {
+  return <div className="mt-3 flex flex-wrap gap-2 md:mt-0"><Button size="sm" variant="relOutline" onClick={() => editar(area)}>Editar</Button><Button size="sm" variant="relGhost" onClick={() => estado(area)}>{area.activo ? "Desactivar" : "Activar"}</Button></div>;
+}

@@ -1,18 +1,331 @@
-@import "@fontsource/open-sans/400.css";
-@import "@fontsource/open-sans/600.css";
-@import "@fontsource/open-sans/700.css";
-@import "@fontsource/open-sans/800.css";
+@import '@fontsource/open-sans/400.css' layer(base);
+@import '@fontsource/open-sans/600.css' layer(base);
+@import '@fontsource/open-sans/700.css' layer(base);
+@import '@fontsource/open-sans/800.css' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme {
+  --font-rel-heading: var(--rel-font-heading);
+  --font-rel-body: var(--rel-font-body);
+  --font-sans: var(--rel-font-body);
+  --font-body: var(--rel-font-body);
+  --font-heading: var(--rel-font-heading);
+
+  --color-rel-primary: hsl(var(--rel-primary));
+  --color-rel-primary-foreground: hsl(var(--rel-primary-foreground));
+
+  --color-rel-accent: hsl(var(--rel-accent));
+  --color-rel-accent-ink: hsl(var(--rel-accent-ink));
+  --color-rel-accent-subtle: hsl(var(--rel-accent-subtle));
+
+  --color-rel-turquoise: hsl(var(--rel-turquoise));
+  --color-rel-turquoise-foreground: hsl(var(--rel-turquoise-foreground));
+
+  --color-rel-sky: hsl(var(--rel-sky));
+  --color-rel-sky-foreground: hsl(var(--rel-sky-foreground));
+
+  --color-rel-dark: hsl(var(--rel-dark));
+  --color-rel-canvas: hsl(var(--rel-canvas));
+
+  --color-rel-surface: hsl(var(--rel-surface));
+  --color-rel-surface-subtle: hsl(var(--rel-surface-subtle));
+
+  --color-rel-border: hsl(var(--rel-border));
+  --color-rel-border-strong: hsl(var(--rel-border-strong));
+
+  --color-rel-muted: hsl(var(--rel-muted-foreground));
+
+  --color-rel-success: hsl(var(--rel-success));
+  --color-rel-success-foreground: hsl(var(--rel-success-foreground));
+  --color-rel-success-subtle: hsl(var(--rel-success-subtle));
+
+  --color-rel-info: hsl(var(--rel-info));
+  --color-rel-info-foreground: hsl(var(--rel-info-foreground));
+  --color-rel-info-subtle: hsl(var(--rel-info-subtle));
+
+  --color-rel-warning: hsl(var(--rel-warning));
+  --color-rel-warning-foreground: hsl(var(--rel-warning-foreground));
+  --color-rel-warning-subtle: hsl(var(--rel-warning-subtle));
+
+  --color-rel-danger: hsl(var(--rel-danger));
+  --color-rel-danger-foreground: hsl(var(--rel-danger-foreground));
+  --color-rel-danger-subtle: hsl(var(--rel-danger-subtle));
+
+  --color-rel-neutral: hsl(var(--rel-neutral));
+  --color-rel-neutral-subtle: hsl(var(--rel-neutral-subtle));
+
+  --color-border: hsl(var(--border));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-input: hsl(var(--input));
+  --color-input-focus: hsl(var(--input-focus));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-foreground-soft: hsl(var(--foreground-soft));
+  --color-surface: hsl(var(--surface));
+  --color-surface-subtle: hsl(var(--surface-subtle));
+  --color-surface-elevated: hsl(var(--surface-elevated));
+  --color-overlay: hsl(var(--overlay));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-ink: hsl(var(--primary-ink));
+  --color-warning-ink: hsl(var(--warning-ink));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-primary-active: hsl(var(--primary-active));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-hover: hsl(var(--accent-hover));
+
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-subtle: hsl(var(--info-subtle));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-subtle: hsl(var(--success-subtle));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-subtle: hsl(var(--warning-subtle));
+
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-danger-subtle: hsl(var(--danger-subtle));
+
+  --color-risk-none: hsl(var(--risk-none));
+  --color-risk-low: hsl(var(--risk-low));
+  --color-risk-medium: hsl(var(--risk-medium));
+  --color-risk-high: hsl(var(--risk-high));
+  --color-risk-very-high: hsl(var(--risk-very-high));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-brand-primary: hsl(var(--brand-primary));
+  --color-brand-turquoise: hsl(var(--brand-turquoise));
+  --color-brand-sky: hsl(var(--brand-sky));
+  --color-brand-dark: hsl(var(--brand-dark));
+  --color-brand-canvas: hsl(var(--brand-canvas));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-muted: hsl(var(--sidebar-muted));
+  --color-sidebar-hover: hsl(var(--sidebar-hover));
+  --color-sidebar-active: hsl(var(--sidebar-active));
+  --color-sidebar-active-foreground: hsl(var(--sidebar-active-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-rel-control: var(--rel-radius-control);
+  --radius-rel-card: var(--rel-radius-card);
+  --radius-rel-panel: var(--rel-radius-panel);
+  /* Los nombres `--radius-*`, `--shadow-*` y `--font-*` son el espacio de
+     nombres del tema en la v4, y esta casa los usaba desde antes como
+     variables propias. Al subir quedaron declarados dos veces, y uno de los
+     dos lados ganaba por orden de aparicion: `rounded-lg` pasaba de 14 a
+     16 px y `rounded-xl` de 16 a 20 en TODO el producto, Psicosocial
+     incluido, sin que nada fallara.
+
+     Se arregla en el origen: la capa `rel-*` pasa a tener el valor y el tema
+     la referencia. Un nombre, un valor, y ninguna colision. */
+  --radius-xs: var(--rel-radius-xs);
+  --radius-sm: calc(var(--rel-radius-control) - 4px);
+  --radius-md: calc(var(--rel-radius-control) - 2px);
+  --radius-lg: var(--rel-radius-control);
+  --radius-xl: var(--rel-radius-card);
+  --radius-2xl: var(--rel-radius-panel);
+
+  --z-index-rel-modal: 100;
+  --z-index-rel-aviso: 120;
+
+  --shadow-soft: var(--rel-shadow-soft);
+  --shadow-card: var(--rel-shadow-card);
+  --shadow-floating: var(--rel-shadow-floating);
+  --shadow-rel-card: var(--rel-shadow-card);
+  --shadow-rel-soft: var(--rel-shadow-soft);
+  --shadow-rel-floating: var(--rel-shadow-floating);
+
+  --background-image-marca: linear-gradient(
+    90deg,
+    hsl(var(--primary-hover)) 0%,
+    hsl(var(--primary)) 55%,
+    hsl(var(--brand-sky)) 100%
+  );
+
+  --default-transition-duration: var(--motion-enter);
+  --transition-duration-press: var(--motion-press);
+  --transition-duration-exit: var(--motion-exit);
+  --transition-duration-enter: var(--motion-enter);
+  --transition-duration-context: var(--motion-context);
+  --transition-duration-attention: var(--motion-attention);
+  --transition-duration-fast: var(--motion-fast);
+  --transition-duration-standard: var(--motion-standard);
+  --transition-duration-slow: var(--motion-slow);
+  --transition-duration-rel-micro: var(--rel-motion-micro);
+  --transition-duration-rel-panel: var(--rel-motion-panel);
+  --transition-duration-rel-context: var(--rel-motion-context);
+
+  --default-transition-timing-function: var(--rel-ease-out);
+  --ease-rel-out: var(--rel-ease-out);
+  --ease-rel-inout: var(--rel-ease-inout);
+  --ease-rel-spring: var(--rel-ease-spring);
+
+  --animate-entrada: entrada var(--motion-enter) var(--rel-ease-out) both;
+  --animate-barrido: barrido 1.6s var(--rel-ease-inout) infinite;
+  --animate-accordion-down: accordion-down var(--motion-enter)
+    var(--rel-ease-out);
+  --animate-accordion-up: accordion-up var(--motion-exit) var(--rel-ease-out);
+
+  @keyframes entrada {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes barrido {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  En la v4 el color de borde por defecto pasa a ser `currentcolor`, y hay 584
+  sitios en el producto que escriben `border` sin decir de que color. El
+  codemod deja aqui una compatibilidad que apunta a `gray-200`, que es el
+  valor por defecto de Tailwind, y ESTE PRODUCTO NUNCA USO ESE: su borde por
+  defecto sale del token de la casa, porque mas abajo hay un `* { @apply
+  border-border }` heredado de la plantilla de componentes.
+
+  Dejarlo como vino tenia dos problemas. Uno, que `gray-200` ni siquiera esta
+  declarado aqui, asi que la regla caia en `currentcolor`. Y otro, que la
+  regla de abajo la pisa para `*` pero NO para los pseudoelementos, que en la
+  v3 si tomaban el color por defecto.
+
+  Asi que apunta al token de la casa, que es lo que estos 584 bordes han
+  estado pintando siempre.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: hsl(var(--border));
+  }
+
+  /* Duracion por defecto de toda animacion de entrada y salida (animate-in,
+     animate-out). El plugin de animaciones usa 150 ms si nadie dice nada; la
+     casa dice 220 ms, la misma que la del resto de entradas. Si un elemento
+     trae su propia duracion (duration-enter, data-[state=closed]:duration-exit)
+     esa manda: --tw-duration es lo que escribe la utilidad de duracion. */
+  *,
+  ::after,
+  ::before {
+    --tw-animation-duration: var(--tw-duration, var(--motion-enter));
+  }
+}
+
+@utility surface-elevated {
+  @apply bg-surface shadow-card;
+}
+
+@utility soft-institutional-glass {
+  background-color: hsl(var(--surface) / 0.86);
+  backdrop-filter: blur(18px);
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility marker-highlight {
+  display: inline;
+  padding: 0.02em 0.2em 0.16em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: 1.08;
+  background-image: linear-gradient(
+    180deg,
+    transparent 6%,
+    hsl(var(--marker)) 6%,
+    hsl(var(--marker)) 96%,
+    transparent 96%
+  );
+}
 
 @layer base {
   :root {
-    --font-heading: "Open Sans";
-    --font-body: "Open Sans";
+    /* El valor vive en la capa `rel-*`, mas abajo: aqui chocaria con el
+       espacio de nombres del tema. */
 
-    --brand-primary: 173 100% 23%;
+    /* Era un literal igual a `--primary-active`, o sea un segundo nombre
+       para lo mismo. En los 36 archivos que la usan hace de TEXTO, asi que
+       hoy es la tinta y no un color aparte. */
+    --brand-primary: var(--primary-ink);
     --brand-turquoise: 172 100% 36%;
     --brand-sky: 172 100% 41%;
     --brand-dark: 215 42% 13%;
@@ -41,10 +354,48 @@
     --input: 168 18% 85%;
     --input-focus: 172 100% 36%;
 
+    /* ===== La marca, y sus dos papeles ================================
+       Decision del 2026-11-17. El turquesa de ABRIL es el de la casa y no se
+       toca: `--primary` sigue valiendo exactamente lo que valia. Lo que
+       cambia es lo que lo rodea, y cambia por una razon medible.
+
+       ## El relleno lleva texto OSCURO
+
+       `--primary-foreground` valia blanco. Blanco sobre este turquesa da
+       **2,5:1** y el minimo para texto es 4,5:1 — no es «se lee peor», es que
+       no se lee: ni con poca vision ni con el movil al sol. El azul de marca
+       encima da **6,6:1**.
+
+       Es el boton primario del producto, asi que el cambio se ve en todas
+       partes, Psicosocial incluida. Se hizo a peticion expresa del dueño del
+       producto.
+
+       ## La rampa oscura tuvo que SUBIR
+
+       Con texto oscuro encima, cada escalon del relleno tiene que seguir
+       siendo lo bastante claro para que ese texto se lea. El estado pulsado
+       estaba en 23 % de luminosidad: con texto oscuro daba 3,0:1. Hoy la
+       rampa es 36 % → 33 % → 31 %, y los tres pasan (6,6:1 · 5,6:1 · 4,8:1).
+
+       Parece poco recorrido para un estado pulsado, y lo es a proposito: en un
+       relleno claro el hundido lo cuenta `active:scale`, no el color. Bajar
+       mas obligaria a cambiar el texto a mitad de gesto.
+
+       ## La tinta es OTRO token, no el estado pulsado
+
+       `--primary-ink` es la marca cuando hace de TEXTO sobre superficie clara.
+       Tiene que ser bastante mas oscura (5,9:1 sobre blanco) y por eso no
+       puede ser el mismo valor que el pulsado. Antes lo era, y de ahi venia
+       la sensacion de que habia «dos primarios».
+
+       Y baja de 100 % a 85 % de saturacion al oscurecerse: un tono oscuro a
+       saturacion plena se lee acido, como de plantilla. Desaturar un poco al
+       bajar la luminosidad es lo que hace que una rampa parezca elegida. */
     --primary: 172 100% 36%;
-    --primary-hover: 172 100% 32%;
-    --primary-active: 173 100% 23%;
-    --primary-foreground: 0 0% 100%;
+    --primary-hover: 173 100% 33%;
+    --primary-active: 173 95% 31%;
+    --primary-foreground: var(--brand-dark);
+    --primary-ink: 174 85% 24%;
 
     --secondary: 180 24% 98%;
     --secondary-foreground: 218 57% 11%;
@@ -59,8 +410,22 @@
     --success-foreground: 215 42% 13%;
     --warning: 38 92% 50%;
     --warning-foreground: 218 57% 11%;
+    /* El ámbar como TEXTO. `--warning` (2,1:1 sobre blanco) sirve de relleno e
+       icono; escrito como texto no se lee. Esta es la tinta: 6,9:1. */
+    --warning-ink: 30 90% 29%;
     --danger: 0 72% 51%;
     --danger-foreground: 0 0% 100%;
+
+    /* Tinte claro de cada familia semantica: el fondo de una pildora de
+       estado, de un panel de aviso o de una fila resaltada. Vivian SOLO en la
+       capa `rel-*`, asi que una pantalla de la casa que necesitara un fondo de
+       error tenia que inventarselo — de ahi los `bg-emerald-50`, `bg-amber-50`
+       y `bg-rose-50` repartidos por el producto, que son color crudo de
+       Tailwind y por tanto no cambian en modo oscuro. */
+    --success-subtle: 158 60% 94%;
+    --info-subtle: 172 60% 94%;
+    --warning-subtle: 38 92% 95%;
+    --danger-subtle: 0 72% 96%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -74,24 +439,52 @@
     --ring: 172 100% 36%;
     --overlay: 215 42% 13% / 0.58;
 
-    --radius: 0.875rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.25rem;
+    /* Los cuatro radios viven en la capa `rel-*`, mas abajo. */
 
     --illustration-size-xs: 5rem;
     --illustration-size-sm: 8rem;
     --illustration-size-md: 12rem;
     --illustration-size-lg: clamp(14rem, 24vw, 20rem);
     --illustration-size-xl: clamp(18rem, 32vw, 26rem);
-    --illustration-radius: var(--radius-lg);
+    --illustration-radius: var(--rel-radius-card);
 
-    --motion-fast: 160ms;
-    --motion-standard: 220ms;
-    --motion-slow: 300ms;
+    /* ===== Movimiento ==================================================
+       Habia DOS escalas casi iguales —`--motion-*` en 160/220/300 y
+       `--rel-motion-*` en 150/220/280— y la de la casa practicamente no se
+       usaba. Hoy es una sola, y los nombres dicen la INTENCION, no el tamaño:
+       «rapido» no explica por que algo dura lo que dura.
 
-    --shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
-    --shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
-    --shadow-floating: 0 28px 60px rgba(12, 22, 44, 0.14);
+       Las cifras no son de gusto. Son las que separan una interfaz que se
+       siente cara de una que se siente rota:
+
+         - **press (90 ms)** · la respuesta al dedo. Por encima de 100 ms el
+           gesto se percibe como retardo aunque la accion sea instantanea.
+         - **exit (130 ms)** · salir SIEMPRE mas rapido que entrar, en torno a
+           un 40 % menos. Una salida que dura lo mismo que la entrada se
+           siente como si la interfaz se resistiera a irse.
+         - **enter (220 ms)** · entradas y cambios de estado. Por debajo de
+           200 ms no da tiempo a leer el movimiento; por encima de 300 ms
+           estorba.
+         - **context (280 ms)** · algo que recorre distancia y debe leerse
+           entero: un panel que se abre, una pagina que cambia.
+         - **attention (600 ms)** · solo para lo que debe robar la mirada, y
+           solo con la curva de muelle.
+         - **stagger (50 ms)** · el desfase entre elementos de una lista al
+           entrar. Con 30 ms se funden en un bloque; con 100 ms la lista se
+           arrastra. */
+    --motion-press: 90ms;
+    --motion-exit: 130ms;
+    --motion-enter: 220ms;
+    --motion-context: 280ms;
+    --motion-attention: 600ms;
+    --motion-stagger: 50ms;
+
+    /* Los nombres anteriores siguen resolviendo, para no romper lo escrito. */
+    --motion-fast: var(--motion-press);
+    --motion-standard: var(--motion-enter);
+    --motion-slow: var(--motion-context);
+
+    /* Las tres elevaciones viven en la capa `rel-*`, mas abajo. */
 
     --chart-1: 172 100% 36%;
     --chart-2: 173 100% 23%;
@@ -138,8 +531,12 @@
 
     --primary: 172 100% 36%;
     --primary-hover: 172 100% 41%;
-    --primary-active: 173 100% 23%;
+    --primary-active: 173 100% 31%;
     --primary-foreground: 215 42% 13%;
+    /* Sobre fondo oscuro la tinta no puede ser la del tema claro: seria verde
+       oscuro sobre casi negro. Aqui la marca como texto es el propio relleno,
+       que sobre el fondo oscuro da de sobra. */
+    --primary-ink: var(--primary);
 
     --secondary: 218 24% 18%;
     --secondary-foreground: 180 17% 92%;
@@ -155,6 +552,7 @@
     --success-foreground: 215 42% 13%;
     --warning: 38 92% 58%;
     --warning-foreground: 218 57% 11%;
+    --warning-ink: var(--warning);
     --danger: 0 78% 60%;
     --danger-foreground: 218 57% 11%;
 
@@ -182,6 +580,18 @@
     --sidebar-accent-foreground: 180 17% 92%;
     --sidebar-border: 217 31% 20%;
     --sidebar-ring: 172 100% 36%;
+
+    /* Tintes semanticos en oscuro. Se mantiene el tono de cada familia y se
+       baja la luminosidad, para que el texto solido de la misma familia
+       —`--danger` y companeros— siga leyendose encima. Sin esto, un panel de
+       error quedaba casi blanco dentro de una pantalla oscura.
+
+       La capa `rel-*` ya no necesita nada mas aqui: referencia estos tokens y
+       cambia con ellos. */
+    --success-subtle: 158 42% 15%;
+    --info-subtle: 172 42% 15%;
+    --warning-subtle: 38 46% 17%;
+    --danger-subtle: 0 42% 17%;
   }
 }
 
@@ -211,14 +621,14 @@
 
   button,
   [role="button"] {
-    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--rel-font-heading);
   }
 
   input,
   textarea,
   select,
   table {
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--rel-font-body);
   }
 
   ::selection {
@@ -227,26 +637,347 @@
   }
 }
 
-@layer utilities {
-  .surface-elevated {
-    @apply bg-surface shadow-card;
-  }
+/* ============================================================================
+   REL Calm Intelligence · capa semantica ADITIVA
+   ----------------------------------------------------------------------------
+   Ver `docs/design/ABRIL360_UI_UX_CONSTITUTION.md` en el repositorio del
+   backend. Estos tokens se AGREGAN; no se redefine ninguno de los de arriba.
 
-  .soft-institutional-glass {
-    background-color: hsl(var(--surface) / 0.86);
-    backdrop-filter: blur(18px);
-  }
+   Por que aditiva y no una migracion:
+   la constitucion §24 pide "minimizar impacto en modulos existentes" y §29
+   prohibe "rediseniar todo el producto al resolver una pantalla". Redefinir
+   `--primary` cambiaria de color cada boton de Psicosocial en el mismo commit
+   que agrega Capacitaciones, y esa regresion no seria atribuible.
 
-  .text-balance {
-    text-wrap: balance;
-  }
+   Consecuencia: las pantallas de Capacitaciones usan `rel-*`; las existentes
+   siguen exactamente igual. La migracion del resto es un trabajo aparte.
+   ========================================================================== */
 
-  .marker-highlight {
-    display: inline;
-    padding: 0.02em 0.2em 0.16em;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
-    line-height: 1.08;
-    background-image: linear-gradient(180deg, transparent 6%, hsl(var(--marker)) 6%, hsl(var(--marker)) 96%, transparent 96%);
+@layer base {
+  :root {
+    /* --- paleta de la casa -------------------------------------------------
+       Cada valor es el token equivalente de `origin/preprod`, anotado al lado.
+       Ese es el punto: `rel-*` no propone ningun color, REPITE el sistema de la
+       casa en un espacio de nombres aditivo, para que Capacitaciones pueda
+       consumirlo sin tocar las clases que ya usan las pantallas existentes.
+
+       Aqui hubo antes violeta, y estuvo mal. Se leyo del marcado de
+       Psicosocial en ESTE checkout —que arrastra `violet-700` escrito a mano— y
+       se dio por bueno sin comprobarlo contra `preprod`, donde la identidad REL
+       Calm Intelligence ya esta fusionada en turquesa. El violeta no era "el
+       color de la casa": era el color viejo de una pantalla sin migrar. La
+       leccion es concreta: el sistema de diseno se lee de los tokens de la rama
+       integrada, no del marcado de la pantalla que uno tenga delante.
+
+       ESTA RAMA VA POR DETRAS DE `preprod` (25 commits). Mientras no se
+       sincronice, la casa que rodea a estos tokens sigue con el tema anterior y
+       solo Capacitaciones se ve en marca. Tambien por eso la tipografia sigue
+       siendo la pila del sistema: `@fontsource/open-sans` llega con esa
+       sincronizacion y declararla antes seria otra vez una fuente que el codigo
+       afirma y el navegador no tiene. */
+    /* Cada token REFERENCIA el de la casa; ya no copia su valor.
+       La copia tuvo sentido mientras esta rama iba por detras de `preprod` y
+       los tokens de la casa no existian aqui. Ya existen —`--primary`,
+       `--surface`, `--radius` y `@fontsource/open-sans` se declaran arriba, en
+       este mismo archivo—, asi que el literal dejo de ser una precaucion y
+       paso a ser una segunda fuente de verdad: cambiar la marca obligaba a
+       editar dos sitios, y el segundo se olvida.
+
+       Referenciar arregla ademas el modo oscuro sin escribir una paleta nueva.
+       `.dark` redefine los tokens de la casa y estos resuelven en el momento de
+       uso, asi que las pantallas `rel-*` acompanan al resto. Antes no lo
+       hacian: `.dark` no redefinia ni un solo `--rel-*`, de modo que CX y
+       Capacitaciones se quedaban en superficies blancas mientras el texto de
+       la casa se aclaraba. No se habia notado porque todavia no hay
+       interruptor de tema. */
+    --rel-primary: var(--primary);
+    /* Texto oscuro, no blanco: el turquesa claro no alcanza AA con blanco en
+       texto normal. Es una decision de contraste, no de marca, y por eso NO
+       sigue a `--primary-foreground`, que en claro es blanco. */
+    --rel-primary-foreground: var(--brand-dark);
+    /* ===== UNA marca, DOS papeles =====================================
+       Decision del 2026-11-17: el turquesa de ABRIL es el de la casa,
+       `--primary`. No hay un segundo primario.
+
+       Lo que si hay es el mismo turquesa en dos lugares distintos, y no
+       pueden ser el mismo valor porque el contraste no lo permite:
+
+         - RELLENO (`--rel-accent`): el turquesa de la casa, y encima va
+           texto OSCURO. Blanco sobre este turquesa da 2,5:1, por debajo de
+           cualquier minimo; el azul de marca encima da 6,6:1.
+         - TINTA (`--rel-accent-ink`): el mismo tono, mas oscuro, para TEXTO
+           sobre superficie clara. El turquesa de relleno como texto sobre
+           blanco da 2,5:1; este da 5,6:1.
+
+       No son dos marcas: son el mismo tono a dos luminosidades, que es lo
+       que cualquier paleta necesita para poder escribirse encima. Lo que
+       habia antes era un solo token haciendo los dos trabajos, y por eso
+       media pantalla lo usaba como fondo con texto blanco y la otra mitad
+       como color de letra. */
+    --rel-accent: var(--primary);
+    --rel-accent-ink: var(--primary-ink);
+    --rel-accent-subtle: var(--accent);
+    --rel-turquoise: var(--brand-turquoise);
+    --rel-turquoise-foreground: 0 0% 100%;
+    --rel-sky: var(--brand-sky);
+    --rel-sky-foreground: var(--brand-dark);
+    /* `--foreground`, no `--brand-dark`: `text-rel-dark` es el color del TEXTO
+       principal. Anclarlo al azul de marca lo dejaba negro sobre negro en
+       cuanto el tema se invierte. */
+    --rel-dark: var(--foreground);
+    --rel-canvas: var(--background);
+    --rel-surface: var(--surface);
+    --rel-surface-subtle: var(--surface-subtle);
+    --rel-border: var(--border);
+    --rel-border-strong: var(--border-strong);
+    --rel-muted-foreground: var(--muted-foreground);
+
+    /* --- semantica de estado, INDEPENDIENTE de la marca (constitucion §5) ---
+       El turquesa de marca NO significa "exito". Colapsarlos dejaria un boton
+       primario indistinguible de una confirmacion. Los valores son los de la
+       casa, los `-subtle` incluidos: desde la homologacion son tokens de la
+       casa y no valores propios de esta capa. */
+    --rel-success: var(--success);
+    --rel-success-foreground: var(--success-foreground);
+    --rel-success-subtle: var(--success-subtle);
+    --rel-info: var(--info);
+    --rel-info-foreground: var(--info-foreground);
+    --rel-info-subtle: var(--info-subtle);
+    --rel-warning: var(--warning);
+    --rel-warning-foreground: var(--warning-foreground);
+    --rel-warning-subtle: var(--warning-subtle);
+    --rel-danger: var(--danger);
+    --rel-danger-foreground: var(--danger-foreground);
+    --rel-danger-subtle: var(--danger-subtle);
+    --rel-neutral: var(--muted-foreground);
+    --rel-neutral-subtle: var(--muted);
+
+    --rel-focus-ring: var(--ring);
+
+    /* --- radios ------------------------------------------------------------
+       Antes eran literales, con una nota que decia que los de la casa
+       «llegan con la sincronizacion» y que apuntar a una variable inexistente
+       dejaria la esquina sin redondear. Ya llegaron: `--radius`, `--radius-lg`
+       y `--radius-xl` estan declarados al principio de este archivo, asi que
+       toca la referencia que esa misma nota pedia. */
+    --rel-radius-xs: 0.3125rem;
+    --rel-radius-control: 0.875rem;
+    --rel-radius-card: 1rem;
+    --rel-radius-panel: 1.25rem;
+
+    /* --- tipografia -------------------------------------------------------
+       La nota anterior era correcta y ya caduco. Decia que declarar Open Sans
+       sin instalarla produciria un fallback silencioso, y por eso dejaba aqui
+       la pila del sistema. Pero `@fontsource/open-sans` SI esta instalada: se
+       importa en las cuatro primeras lineas de este archivo y la casa la usa
+       via `--font-heading`.
+
+       El efecto de no haberlo actualizado era el sintoma contrario y visible:
+       Psicosocial y las pantallas antiguas se renderizaban en Open Sans y las
+       nuevas —CX y Capacitaciones, que son las que usan `font-rel-*`— en la
+       fuente del sistema. Dos tipografias en un mismo producto, en pantallas
+       contiguas. */
+    --rel-font-heading: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+    --rel-font-body: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+
+    /* --- movimiento (constitucion §15) --- */
+    /* Referencian la escala unica; ya no son una segunda tabla de valores. */
+    --rel-motion-micro: var(--motion-press);
+    --rel-motion-panel: var(--motion-enter);
+    --rel-motion-context: var(--motion-context);
+
+    /* Curvas. Faltaban, y su ausencia es la razon de que las transiciones se
+       sientan planas: sin `transition-timing-function` el navegador aplica
+       `ease`, que arranca y frena igual. Una interfaz se percibe rapida cuando
+       sale deprisa y aterriza despacio, que es lo que hace `ease-out`.
+       - `out`    entradas y cambios de estado corrientes.
+       - `inout`  algo que se mueve de un sitio a otro y debe leerse completo.
+       - `spring` solo para confirmar una accion del usuario; sobrepasa un poco
+                  y vuelve. Nunca en algo que se repita en bucle. */
+    --rel-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --rel-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+    --rel-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Elevacion. Tres niveles y ningun valor suelto en las pantallas: una
+       sombra escrita a mano en un componente es como se desalinea un sistema.
+       Heredan de la casa para no abrir una segunda escala. */
+    --rel-shadow-card: 0 10px 24px rgba(12, 22, 44, 0.08);
+    --rel-shadow-soft: 0 18px 40px rgba(12, 22, 44, 0.08);
+    --rel-shadow-floating: 0 28px 60px rgba(12, 22, 44, 0.14);
+
+    /* Illustration System · medidas compartidas, nunca por pantalla. */
+    --illustration-size-xs: 5rem;
+    --illustration-size-sm: 8rem;
+    --illustration-size-md: 12rem;
+    --illustration-size-lg: clamp(14rem, 24vw, 20rem);
+    --illustration-size-xl: clamp(18rem, 32vw, 26rem);
+    --illustration-radius: var(--rel-radius-panel);
+    /* Superficie de marca para ilustraciones («lavender» en la API).
+       El nombre es lo unico que queda del lila: la marca se cerro en TURQUESA
+       el 2026-11-17, por decision del dueno del producto, asi que esto ya no
+       es «el tono vigente» a la espera de una decision, es el tono. Con el
+       lila las escenas quedaban sobre un fondo de otra familia y no
+       armonizaban; las 75 ilustraciones producidas son verde azulado y se
+       quedan como estan, que es la otra mitad de la misma decision. */
+    --illustration-surface-lavender: 168 45% 96%;
+    --illustration-surface-lavender-border: 168 35% 88%;
+  }
+}
+
+@layer base {
+  /* §21: foco visible siempre, y §15: respetar reduced-motion. */
+  /* Esta regla vivia dentro de `.rel-scope`, asi que quien pide menos
+     movimiento lo obtenia en CX y Capacitaciones y en ningun otro sitio: el
+     resto del producto —Psicosocial incluida— seguia animando igual. No era
+     una decision, era el alcance de un selector. Hoy es global.
+
+     `scroll-behavior` entra aqui tambien: un salto de ancla animado es de las
+     cosas que peor sientan a quien tiene sensibilidad al movimiento. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}
+
+/* Impresión de la constancia: en la hoja queda solo el documento.
+   `visibility` y no `display: none` porque el documento vive dentro del
+   layout; ocultar a los padres con `display` lo ocultaría también a él. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  body:has(.hoja-constancia) * {
+    visibility: hidden;
+  }
+  .hoja-constancia,
+  .hoja-constancia * {
+    visibility: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .hoja-constancia {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Desplegable nativo con el aspecto de la casa (`appearance: base-select`).
+
+   El `<select>` nativo abre una lista del sistema que no se puede estilar: azul
+   de Windows, esquinas rectas, sin relieve. Con `base-select` (Chrome/Edge 135+)
+   la lista pasa a ser contenido de la página y se viste con los tokens del kit.
+   Donde el navegador no lo admite (Firefox, Safari) queda la lista nativa: la
+   API y el comportamiento no cambian, solo el aspecto.
+
+   La flecha la dibuja el componente (`ChevronDown`), así que se oculta la nativa.
+   --------------------------------------------------------------------------- */
+@supports (appearance: base-select) {
+  .desplegable-casa select,
+  .desplegable-casa select::picker(select) {
+    appearance: base-select;
+  }
+  .desplegable-casa select::picker-icon {
+    display: none;
+  }
+  .desplegable-casa select::picker(select) {
+    margin-top: 0.375rem;
+    padding: 0.375rem;
+    border: 1px solid var(--color-rel-border);
+    border-radius: var(--radius-rel-card);
+    background: var(--color-rel-surface);
+    color: var(--color-rel-dark);
+    box-shadow: var(--shadow-rel-floating);
+    max-height: 18rem;
+    /* Entra desde un poco más arriba y se asienta; sale más rápido. */
+    opacity: 0;
+    translate: 0 -0.375rem;
+    transition:
+      opacity var(--motion-exit) var(--rel-ease-out),
+      translate var(--motion-exit) var(--rel-ease-out),
+      display var(--motion-exit) allow-discrete,
+      overlay var(--motion-exit) allow-discrete;
+  }
+  .desplegable-casa select::picker(select):popover-open {
+    opacity: 1;
+    translate: 0 0;
+    transition-duration: var(--motion-enter);
+  }
+  @starting-style {
+    .desplegable-casa select::picker(select):popover-open {
+      opacity: 0;
+      translate: 0 -0.375rem;
+    }
+  }
+  .desplegable-casa select option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-rel-control);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color var(--motion-exit) var(--rel-ease-out);
+  }
+  .desplegable-casa select option:hover,
+  .desplegable-casa select option:focus-visible {
+    background: var(--color-rel-accent-subtle);
+    outline: none;
+  }
+  .desplegable-casa select option:checked {
+    background: var(--color-rel-accent-subtle);
+    font-weight: 600;
+  }
+  .desplegable-casa select option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-rel-primary);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .desplegable-casa select::picker(select),
+  .desplegable-casa select option {
+    transition: none;
+  }
+}
+
+
+/*
+  Cambio de página desde el menú: el navegador cruza la pantalla que sale con la
+  que entra (View Transitions). Solo un fundido corto con la curva de la casa:
+  la subida de 8 px la pone `TransicionDePagina`, y sumar un segundo movimiento
+  se sentiría nervioso. Los navegadores sin soporte ignoran esto y la
+  navegación sigue siendo la de siempre.
+*/
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-enter);
+  animation-timing-function: var(--rel-ease-out);
+}
+/* La pantalla nueva sube unos píxeles mientras aparece: el cambio se siente como
+   avanzar, no como un parpadeo. La vieja solo se desvanece. */
+@keyframes rel-vt-entra {
+  from { opacity: 0; transform: translateY(6px); }
+}
+::view-transition-new(root) {
+  animation-name: rel-vt-entra;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

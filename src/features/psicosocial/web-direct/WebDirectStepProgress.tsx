@@ -12,7 +12,7 @@ export function WebDirectStepProgress({ current, total, label }: WebDirectStepPr
   const percentage = Math.round((safeCurrent / safeTotal) * 100);
 
   return (
-    <div className="mb-5 rounded-2xl border border-border bg-surface px-4 py-3 shadow-sm sm:mb-6 sm:px-5">
+    <div className="mb-5 rounded-2xl border border-border bg-surface px-4 py-3 shadow-xs sm:mb-6 sm:px-5">
       <div className="mb-2 flex items-center justify-between gap-4 text-xs font-bold sm:text-sm">
         <span>{label ?? `Paso ${safeCurrent} de ${safeTotal}`}</span>
         <span className="text-primary">{percentage}%</span>

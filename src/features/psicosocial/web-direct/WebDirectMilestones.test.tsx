@@ -65,6 +65,8 @@ describe("hitos del recorrido WEB_DIRECT", () => {
     expect(screen.getByRole("button", { name: "Continuar" })).toBeDisabled();
     fireEvent.click(screen.getByRole("radio", { name: "Sí" }));
     expect(onChange).toHaveBeenCalledWith("jefe_personas", true);
+    expect(onContinue).toHaveBeenCalledWith(true);
+    onContinue.mockClear();
 
     rerender(
       <WebDirectConditionalQuestionScreen

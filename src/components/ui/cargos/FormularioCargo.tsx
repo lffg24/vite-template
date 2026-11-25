@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   crearCargo,
   obtenerCargos,
@@ -112,23 +113,21 @@ export default function FormularioCargo({
             onChange={(e) => setNivel(e.target.value)}
           />
           <div>
-            <label className="block text-sm font-medium mb-1">Reporta a</label>
-            <select
-              value={reportaA ?? ""}
-              onChange={(e) =>
-                setReportaA(
-                  e.target.value === "" ? null : parseInt(e.target.value)
-                )
-              }
-              className="border border-gray-300 rounded-lg p-2 w-full"
+            <label htmlFor="cargo-reporta-a" className="mb-1 block text-sm font-medium">Reporta a</label>
+            <Select
+              value={reportaA === null ? "ninguno" : String(reportaA)}
+              onValueChange={(value) => setReportaA(value === "ninguno" ? null : Number(value))}
             >
-              <option value="">-- Ninguno --</option>
-              {cargos.map((cargo) => (
-                <option key={cargo.id} value={cargo.id}>
-                  {cargo.nombre}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="cargo-reporta-a" className="w-full"><SelectValue placeholder="Ninguno" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ninguno">Ninguno</SelectItem>
+                {cargos.map((cargo) => (
+                  <SelectItem key={cargo.id} value={String(cargo.id)}>
+                    {cargo.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

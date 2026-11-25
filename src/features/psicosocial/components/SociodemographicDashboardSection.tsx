@@ -26,7 +26,7 @@ function KpiCard({ title, value, tone = "violet" }: { title: string; value: stri
   const Icon = tone === "violet" ? Users : CircleCheck;
 
   return (
-    <div className="min-h-[124px] rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="min-h-[124px] rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="flex min-w-0 items-start gap-3">
         <div className={`rounded-2xl border p-3 ${toneClasses}`}><Icon className="h-5 w-5" /></div>
         <div className="min-w-0">
@@ -49,7 +49,7 @@ export function SociodemographicDashboardSection({
 }: SociodemographicDashboardSectionProps) {
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
         <h2 className="text-lg font-semibold text-slate-950">Perfil sociodemográfico</h2>
         <p className="mt-1 text-sm text-slate-500">
           Caracterización descriptiva de los participantes según la ficha de datos generales.

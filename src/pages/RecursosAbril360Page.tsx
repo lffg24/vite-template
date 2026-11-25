@@ -1,3 +1,27 @@
+// src/pages/RecursosAbril360Page.tsx
+//
+// El centro de recursos publico de ABRIL360.
+//
+// ## Que cambio en la homologacion (2026-11-16)
+//
+// Esta pagina tenia un sistema visual entero propio, no unas clases sueltas:
+// cian como acento (el de la casa es el primario turquesa), ambar y verde por
+// su cuenta para avisar, grises escritos a mano y cinco radios inventados
+// —`rounded-rel-card`, `[20px]`, `[28px]`, `[30px]`— que no existen en la escala
+// del producto. Sumaba 105 clases de color crudo: era el archivo mas desviado
+// de todo el frontend fuera de Psicosocial.
+//
+// Ahora todo sale de los tokens. Tres decisiones que conviene no revertir:
+//
+//   - **El acento es `primary`, no cian.** Si manana se resuelve la decision
+//     abierta del primario duplicado, esta pagina la sigue sola.
+//   - **Sobre el panel oscuro, el texto es blanco con opacidad** (`/85`,
+//     `/70`), no un gris de la paleta. Un gris fijo sobre fondo oscuro deja de
+//     leerse en cuanto el fondo cambia de tono.
+//   - **El degradado de la cabecera se expresa con `hsl(var(--primary))`.**
+//     Antes llevaba `rgba(8,145,178,…)` escrito a mano, que es cian: la marca
+//     no aparecia ni en su propia portada.
+//
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -19,7 +43,8 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import AbrilBrandLockup from "@/components/brand/AbrilBrandLockup";
+import { Marca } from "@/components/brand/Marca";
+import { Caja } from "@/shared/ui/Caja";
 
 type ResourcePageKey = "manual-uso" | "ficha-tecnica" | "seguridad-cumplimiento" | "certificacion";
 
@@ -280,27 +305,27 @@ function ResourceLink({
 }: ResourceReference & { className?: string }) {
   const styles =
     className ||
-    "inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-slate-950";
+    "inline-flex items-center justify-between gap-3 rounded-rel-panel border border-border bg-card px-4 py-3 text-sm font-bold text-foreground-soft transition hover:border-primary/30 hover:bg-accent hover:text-foreground";
 
   if (isExternal(href)) {
     return (
       <a href={href} target="_blank" rel="noreferrer" className={styles}>
         <span>
           <span className="block">{label}</span>
-          {note ? <span className="mt-1 block text-xs font-medium text-slate-500">{note}</span> : null}
+          {note ? <span className="mt-1 block text-xs font-medium text-muted-foreground">{note}</span> : null}
         </span>
-        <ExternalLink className="h-4 w-4 shrink-0" />
+        <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
       </a>
     );
   }
 
   return (
-    <Link to={href} className={styles}>
+    <Link viewTransition to={href} className={styles}>
       <span>
         <span className="block">{label}</span>
-        {note ? <span className="mt-1 block text-xs font-medium text-slate-500">{note}</span> : null}
+        {note ? <span className="mt-1 block text-xs font-medium text-muted-foreground">{note}</span> : null}
       </span>
-      <ArrowRight className="h-4 w-4 shrink-0" />
+      <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
     </Link>
   );
 }
@@ -317,27 +342,27 @@ function Surface({
   children: ReactNode;
 }) {
   return (
-    <article className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <Caja como="article" papel="panel" aire="amplio">
       <div className="flex items-start gap-3">
         {icon ? (
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-cyan-50 text-cyan-700">{icon}</span>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-rel-panel bg-accent text-primary">{icon}</span>
         ) : null}
         <div>
-          <h2 className="text-xl font-black tracking-tight text-slate-950">{title}</h2>
-          {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">{subtitle}</p> : null}
+          <h2 className="text-xl font-black tracking-tight text-foreground">{title}</h2>
+          {subtitle ? <p className="mt-2 max-w-3xl text-sm leading-7 text-foreground-soft">{subtitle}</p> : null}
         </div>
       </div>
       <div className="mt-5">{children}</div>
-    </article>
+    </Caja>
   );
 }
 
 function SectionList({ items }: { items: string[] }) {
   return (
-    <ul className="grid gap-3 text-sm text-slate-700">
+    <ul className="grid gap-3 text-sm text-foreground-soft">
       {items.map((item) => (
-        <li key={item} className="flex gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+        <li key={item} className="flex gap-3 rounded-rel-panel bg-surface-subtle px-4 py-3">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
           <span>{item}</span>
         </li>
       ))}
@@ -351,21 +376,21 @@ function ManualPage() {
       <Surface
         title="Ruta operativa recomendada"
         subtitle="ABRIL360 está diseñado para trabajar por empresa y por aplicación. La mejor práctica es cerrar cada ciclo con revisión profesional, no solo con captura terminada."
-        icon={<Network className="h-5 w-5" />}
+        icon={<Network className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {workflowSteps.map((step) => {
             const Icon = step.icon;
             return (
-              <article key={step.title} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+              <Caja key={step.title} como="article" tono="hundida" aire="normal">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-cyan-700 shadow-sm">
-                    <Icon className="h-5 w-5" />
+                  <span className="grid h-11 w-11 place-items-center rounded-rel-panel bg-card text-primary shadow-rel-card">
+                    <Icon aria-hidden="true" className="h-5 w-5" />
                   </span>
-                  <h3 className="text-base font-black text-slate-950">{step.title}</h3>
+                  <h3 className="text-base font-black text-foreground">{step.title}</h3>
                 </div>
-                <p className="mt-4 text-sm leading-7 text-slate-600">{step.body}</p>
-              </article>
+                <p className="mt-4 text-sm leading-7 text-foreground-soft">{step.body}</p>
+              </Caja>
             );
           })}
         </div>
@@ -374,14 +399,14 @@ function ManualPage() {
       <Surface
         title="Mapa de navegación real del módulo"
         subtitle="Estas rutas existen hoy en el producto y sirven para orientar inducción, soporte y acompañamiento comercial sin prometer pantallas ficticias."
-        icon={<LayoutDashboard className="h-5 w-5" />}
+        icon={<LayoutDashboard className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {navigationMap.map((item) => (
-            <article key={item.route} className="rounded-3xl border border-slate-200 p-5">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">{item.title}</p>
-              <p className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 font-mono text-xs text-slate-600">{item.route}</p>
-              <p className="mt-4 text-sm leading-7 text-slate-600">{item.body}</p>
+            <article key={item.route} className="rounded-rel-panel border border-border p-5">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">{item.title}</p>
+              <p className="mt-3 rounded-rel-panel bg-surface-subtle px-3 py-2 font-mono text-xs text-foreground-soft">{item.route}</p>
+              <p className="mt-4 text-sm leading-7 text-foreground-soft">{item.body}</p>
             </article>
           ))}
         </div>
@@ -391,7 +416,7 @@ function ManualPage() {
         <Surface
           title="Ciclo recomendado para psicólogo y empresa"
           subtitle="La confianza comercial no viene solo del cálculo: también depende de una operación ordenada, con cierres claros, evidencias de captura y revisión final responsable."
-          icon={<Stethoscope className="h-5 w-5" />}
+          icon={<Stethoscope className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -406,7 +431,7 @@ function ManualPage() {
         <Surface
           title="Entregables que suele esperar el comprador"
           subtitle="ABRIL360 acompaña el ciclo documental de captura y reporte, pero la firma, interpretación final y plan de intervención siguen bajo responsabilidad profesional."
-          icon={<FileText className="h-5 w-5" />}
+          icon={<FileText className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -422,7 +447,7 @@ function ManualPage() {
       <Surface
         title="Controles previos al cierre"
         subtitle="Antes de usar resultados con fines profesionales o comerciales, conviene completar esta verificación mínima de calidad."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2">
           <SectionList
@@ -451,7 +476,7 @@ function TechnicalPage() {
       <Surface
         title="Cobertura instrumental de ABRIL360"
         subtitle="La plataforma soporta la batería de riesgo psicosocial con diferencias reales entre formularios, reglas de segmentación y persistencia de resultados."
-        icon={<ClipboardCheck className="h-5 w-5" />}
+        icon={<ClipboardCheck className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -472,10 +497,10 @@ function TechnicalPage() {
               body: "Usa 31 ítems y una fórmula ponderada por bloques antes de clasificar el total con baremo oficial.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h3 className="text-base font-black text-slate-950">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
-            </article>
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
+              <h3 className="text-base font-black text-foreground">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -483,7 +508,7 @@ function TechnicalPage() {
       <Surface
         title="Cadena de cálculo y trazabilidad"
         subtitle="ABRIL360 no presenta niveles improvisados. La lectura oficial depende de una secuencia de transformación y clasificación que puede auditarse."
-        icon={<Network className="h-5 w-5" />}
+        icon={<Network className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {[
@@ -496,9 +521,9 @@ function TechnicalPage() {
             "Revisión final por profesional competente antes de emitir lectura e intervención.",
             "Trazabilidad conservada para recálculo, auditoría y soporte técnico.",
           ].map((item, index) => (
-            <article key={item} className="rounded-3xl border border-slate-200 p-5">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">Paso {index + 1}</p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item}</p>
+            <article key={item} className="rounded-rel-panel border border-border p-5">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">Paso {index + 1}</p>
+              <p className="mt-3 text-sm leading-7 text-foreground-soft">{item}</p>
             </article>
           ))}
         </div>
@@ -508,7 +533,7 @@ function TechnicalPage() {
         <Surface
           title="Reglas de negocio que impactan el resultado"
           subtitle="Estas reglas son críticas para entender por qué un resultado puede variar entre forma A, forma B, extralaboral y estrés."
-          icon={<Scale className="h-5 w-5" />}
+          icon={<Scale className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -523,7 +548,7 @@ function TechnicalPage() {
         <Surface
           title="Totales, forma y segmentación"
           subtitle="La plataforma separa captura, scoring y presentación para mantener fidelidad normativa sin duplicar preguntas."
-          icon={<LineChart className="h-5 w-5" />}
+          icon={<LineChart className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -539,29 +564,29 @@ function TechnicalPage() {
       <Surface
         title="Trazabilidad persistida y límites de interpretación"
         subtitle="La plataforma conserva resultados calculados para poder consultar, auditar y reportar sin recalcular cada vez; aun así, el significado profesional no se automatiza por completo."
-        icon={<Fingerprint className="h-5 w-5" />}
+        icon={<Fingerprint className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-3xl border border-slate-200 p-5">
-            <p className="text-sm font-black text-slate-950">`psico_score_dimension`</p>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
+          <article className="rounded-rel-panel border border-border p-5">
+            <p className="text-sm font-black text-foreground">`psico_score_dimension`</p>
+            <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Conserva puntaje transformado, nivel y validez por dimensión. Es la base de lectura detallada y reportes analíticos.
             </p>
           </article>
-          <article className="rounded-3xl border border-slate-200 p-5">
-            <p className="text-sm font-black text-slate-950">`psico_score_dominio`</p>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
+          <article className="rounded-rel-panel border border-border p-5">
+            <p className="text-sm font-black text-foreground">`psico_score_dominio`</p>
+            <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Resume resultados normativos por dominio intralaboral, útil para informes ejecutivos y priorización de intervención.
             </p>
           </article>
-          <article className="rounded-3xl border border-slate-200 p-5">
-            <p className="text-sm font-black text-slate-950">`psico_score_total`</p>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
+          <article className="rounded-rel-panel border border-border p-5">
+            <p className="text-sm font-black text-foreground">`psico_score_total`</p>
+            <p className="mt-3 text-sm leading-7 text-foreground-soft">
               Guarda totales instrumentales y Total General. Sirve como base de dashboards, reportes oficiales y verificaciones de completitud.
             </p>
           </article>
         </div>
-        <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-900">
+        <div className="mt-5 rounded-rel-panel border border-warning/30 bg-warning-subtle p-5 text-sm leading-7 text-warning">
           ABRIL360 automatiza captura, tabulación, transformación, clasificación y reporte. No reemplaza la validación clínica, ocupacional o legal del profesional competente, ni convierte por sí mismo un resultado en diagnóstico.
         </div>
       </Surface>
@@ -575,7 +600,7 @@ function SecurityPage() {
       <Surface
         title="Capas de protección de la información"
         subtitle="La confianza en ABRIL360 se apoya en controles técnicos, operativos y de gobierno del dato, especialmente por tratar información sensible de salud ocupacional."
-        icon={<LockKeyhole className="h-5 w-5" />}
+        icon={<LockKeyhole className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[
@@ -604,10 +629,10 @@ function SecurityPage() {
               body: "Las credenciales e integraciones deben administrarse por variables de entorno y canales seguros, nunca embebidas en código o documentos.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <h3 className="text-base font-black text-slate-950">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
-            </article>
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
+              <h3 className="text-base font-black text-foreground">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -616,7 +641,7 @@ function SecurityPage() {
         <Surface
           title="Tratamiento de datos sensibles"
           subtitle="Los resultados psicosociales, datos de salud ocupacional y variables personales requieren un uso restringido, finalidades claras y soporte documental de autorización."
-          icon={<ShieldCheck className="h-5 w-5" />}
+          icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -631,7 +656,7 @@ function SecurityPage() {
         <Surface
           title="Operación en nube y responsabilidades compartidas"
           subtitle="ABRIL360 opera sobre servicios administrados. La confianza depende tanto del software como de la disciplina operativa del equipo que lo administra."
-          icon={<Network className="h-5 w-5" />}
+          icon={<Network className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -647,7 +672,7 @@ function SecurityPage() {
       <Surface
         title="Alineación con marcos reconocidos"
         subtitle="ABRIL360 puede comunicarse como alineado con buenas prácticas de seguridad y privacidad; eso no equivale a afirmar una certificación formal si esta no existe."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -668,13 +693,13 @@ function SecurityPage() {
               body: "Entrega referencias prácticas para verificación de seguridad web, autenticación, control de acceso, validación y reducción de exposición de aplicaciones.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-slate-200 p-5">
-              <h3 className="text-base font-black text-slate-950">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
+            <article key={item.title} className="rounded-rel-panel border border-border p-5">
+              <h3 className="text-base font-black text-foreground">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
             </article>
           ))}
         </div>
-        <div className="mt-5 rounded-3xl border border-cyan-200 bg-cyan-50 p-5 text-sm leading-7 text-slate-700">
+        <div className="mt-5 rounded-rel-panel border border-primary/20 bg-accent p-5 text-sm leading-7 text-foreground-soft">
           Mensaje prudente recomendado: “ABRIL360 se diseña y opera con referencia a buenas prácticas de seguridad de la información, privacidad y desarrollo seguro. Esta declaración no debe interpretarse como certificación ISO, SOC o sanitaria salvo que exista soporte formal y vigente”.
         </div>
       </Surface>
@@ -689,7 +714,7 @@ function CertificationPage() {
         <Surface
           title="Lo que ABRIL360 sí es"
           subtitle="El alcance comercial gana fuerza cuando se explica de forma concreta, verificable y útil para el comprador."
-          icon={<CheckCircle2 className="h-5 w-5" />}
+          icon={<CheckCircle2 className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -703,7 +728,7 @@ function CertificationPage() {
         <Surface
           title="Lo que ABRIL360 no debe prometer"
           subtitle="La confianza profesional también depende de límites honestos y visibles."
-          icon={<ShieldCheck className="h-5 w-5" />}
+          icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -718,7 +743,7 @@ function CertificationPage() {
       <Surface
         title="Marco normativo colombiano de referencia"
         subtitle="ABRIL360 se comunica mejor cuando ubica con claridad el marco legal aplicable y evita ambigüedades sobre alcance técnico o sanitario."
-        icon={<Scale className="h-5 w-5" />}
+        icon={<Scale className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {[
@@ -743,11 +768,11 @@ function CertificationPage() {
               body: "Actualiza la adopción de la batería y la guía técnica en el marco del Ministerio del Trabajo.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-700">{item.year}</p>
-              <h3 className="mt-3 text-base font-black text-slate-950">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
-            </article>
+            <Caja key={item.title} como="article" tono="hundida" aire="normal">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-primary">{item.year}</p>
+              <h3 className="mt-3 text-base font-black text-foreground">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-foreground-soft">{item.body}</p>
+            </Caja>
           ))}
         </div>
       </Surface>
@@ -756,7 +781,7 @@ function CertificationPage() {
         <Surface
           title="Cadena de responsabilidad profesional"
           subtitle="La plataforma apoya el proceso, pero la validez final descansa en la actuación del profesional responsable y del marco organizacional del cliente."
-          icon={<Stethoscope className="h-5 w-5" />}
+          icon={<Stethoscope className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -771,7 +796,7 @@ function CertificationPage() {
         <Surface
           title="Psicología de confianza aplicada a la presentación"
           subtitle="Para compradores y psicólogos, la confianza aumenta cuando la información reduce incertidumbre sin maquillar límites."
-          icon={<FileCheck2 className="h-5 w-5" />}
+          icon={<FileCheck2 className="h-5 w-5" aria-hidden="true" />}
         >
           <SectionList
             items={[
@@ -787,18 +812,18 @@ function CertificationPage() {
       <Surface
         title="Usos apropiados y límites de uso"
         subtitle="Este marco ayuda a equipos comerciales y profesionales a sostener una conversación seria con compradores, sin sobreventa ni vacíos."
-        icon={<BriefcaseBusiness className="h-5 w-5" />}
+        icon={<BriefcaseBusiness className="h-5 w-5" aria-hidden="true" />}
       >
         <div className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-            <h3 className="text-base font-black text-emerald-900">Uso apropiado</h3>
-            <p className="mt-3 text-sm leading-7 text-emerald-900">
+          <article className="rounded-rel-panel border border-success/30 bg-success-subtle p-5">
+            <h3 className="text-base font-black text-success">Uso apropiado</h3>
+            <p className="mt-3 text-sm leading-7 text-success">
               Aplicaciones formales de batería psicosocial, consolidación de resultados, soporte de informes, control documental y priorización de intervención con revisión profesional.
             </p>
           </article>
-          <article className="rounded-3xl border border-amber-200 bg-amber-50 p-5">
-            <h3 className="text-base font-black text-amber-900">Límite de uso</h3>
-            <p className="mt-3 text-sm leading-7 text-amber-900">
+          <article className="rounded-rel-panel border border-warning/30 bg-warning-subtle p-5">
+            <h3 className="text-base font-black text-warning">Límite de uso</h3>
+            <p className="mt-3 text-sm leading-7 text-warning">
               No debe usarse como criterio único para diagnóstico, sanción, exclusión laboral o sustitución del juicio clínico y ocupacional del profesional habilitado.
             </p>
           </article>
@@ -827,56 +852,50 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
   const Icon = current.icon;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(8,145,178,0.12),_transparent_28%),linear-gradient(180deg,#f8fbff_0%,#f8fafc_45%,#eef2f7_100%)] text-slate-950">
-      <section className="border-b border-slate-200/70 bg-white/80 backdrop-blur">
+    <main className="min-h-screen bg-background bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.12),transparent_28%)] text-foreground">
+      <section className="border-b border-border/70 bg-card/80 backdrop-blur-sm">
         <div className="mx-auto grid max-w-7xl gap-4 px-5 py-4 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
           <div>
-            <Link to="/login" className="inline-flex hover:opacity-90">
-              <AbrilBrandLockup
-                className="items-center"
-                iconWrapperClassName="grid h-11 w-11 place-items-center rounded-[20px] bg-[#0b1730] p-2 shadow-md"
-                wordmarkClassName="text-2xl font-black tracking-tight text-slate-950"
-                accentClassName="text-cyan-500"
-                subtitleClassName="text-[11px] uppercase tracking-[0.3em] text-slate-500"
-              />
+            <Link viewTransition to="/login" className="inline-flex hover:opacity-90">
+              <Marca className="h-9" />
             </Link>
-            <div className="mt-3 rounded-[30px] border border-slate-200/80 bg-white/92 p-5 shadow-sm">
+            <Caja papel="panel" className="mt-3">
               <div className="grid gap-5 xl:grid-cols-[minmax(0,1.12fr)_minmax(280px,0.88fr)]">
                 <div className="min-w-0">
                   <div className="flex items-start gap-4">
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-cyan-50 text-cyan-700 shadow-sm">
-                      <Icon className="h-6 w-6" />
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-rel-card bg-accent text-primary shadow-rel-card">
+                      <Icon aria-hidden="true" className="h-6 w-6" />
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-black text-cyan-800">
+                        <span className="rounded-full bg-accent px-3 py-1 text-xs font-black text-primary">
                           {current.eyebrow}
                         </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
+                        <span className="rounded-full bg-surface-subtle px-3 py-1 text-xs font-black text-foreground-soft">
                           {current.audience}
                         </span>
                       </div>
-                      <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-[3.15rem] md:leading-[0.95]">
+                      <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground md:text-[3.15rem] md:leading-[0.95]">
                         {current.title}
                       </h1>
                     </div>
                   </div>
 
-                  <p className="mt-4 max-w-4xl text-base leading-8 text-slate-600">{current.description}</p>
+                  <p className="mt-4 max-w-4xl text-base leading-8 text-foreground-soft">{current.description}</p>
 
-                  <div className="mt-4 rounded-3xl bg-slate-50 px-4 py-3 text-sm font-bold leading-7 text-slate-700 ring-1 ring-slate-200/80">
+                  <div className="mt-4 rounded-rel-panel bg-surface-subtle px-4 py-3 text-sm font-bold leading-7 text-foreground-soft ring-1 ring-border/80">
                     {current.promise}
                   </div>
                 </div>
 
                 <div className="grid gap-3 content-start">
                   {current.highlights.map((highlight) => (
-                    <article key={highlight} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <Caja key={highlight} como="article" tono="hundida">
                       <div className="flex gap-3">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-600" />
-                        <p className="text-sm leading-7 text-slate-700">{highlight}</p>
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        <p className="text-sm leading-7 text-foreground-soft">{highlight}</p>
                       </div>
-                    </article>
+                    </Caja>
                   ))}
 
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -886,26 +905,26 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
                   </div>
                 </div>
               </div>
-            </div>
+            </Caja>
           </div>
 
-          <aside className="rounded-[30px] border border-slate-900/5 bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/10">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Señales de confianza</p>
+          <aside className="rounded-rel-panel border border-white/10 bg-rel-dark p-4 text-white shadow-rel-floating">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-white/70">Señales de confianza</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
               {current.stats.map((stat) => (
-                <article key={stat.label} className="rounded-3xl border border-white/10 bg-white/5 p-3.5">
+                <article key={stat.label} className="rounded-rel-panel border border-white/10 bg-card/5 p-3.5">
                   <p className="text-3xl font-black leading-none text-white">{stat.value}</p>
-                  <p className="mt-1.5 text-sm font-bold leading-6 text-cyan-100">{stat.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-300">{stat.hint}</p>
+                  <p className="mt-1.5 text-sm font-bold leading-6 text-white">{stat.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-white/70">{stat.hint}</p>
                 </article>
               ))}
             </div>
-            <div className="mt-3 rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-4">
-              <p className="text-sm font-black text-cyan-100">Qué encontrarás en esta página</p>
-              <ul className="mt-3 grid gap-2 text-sm leading-7 text-slate-200">
+            <div className="mt-3 rounded-rel-panel border border-rel-turquoise/30 bg-rel-turquoise/15 p-4">
+              <p className="text-sm font-black text-white">Qué encontrarás en esta página</p>
+              <ul className="mt-3 grid gap-2 text-sm leading-7 text-white/85">
                 {current.highlights.map((highlight) => (
                   <li key={highlight} className="flex gap-3">
-                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-cyan-300" />
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-rel-turquoise" aria-hidden="true" />
                     <span>{highlight}</span>
                   </li>
                 ))}
@@ -916,36 +935,36 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
       </section>
 
       <div className="mx-auto grid max-w-7xl gap-5 px-5 py-5 lg:grid-cols-[270px_minmax(0,1fr)]">
-        <nav className="h-fit rounded-[28px] border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-6" aria-label="Recursos ABRIL360">
-          <p className="px-3 pb-2 text-xs font-black uppercase tracking-[0.22em] text-slate-500">Centro de recursos</p>
+        <Caja como="nav" papel="panel" aire="ajustado" className="h-fit lg:sticky lg:top-6" aria-label="Recursos ABRIL360">
+          <p className="px-3 pb-2 text-xs font-black uppercase tracking-[0.22em] text-muted-foreground">Centro de recursos</p>
           {resourcePages.map((item) => {
             const ItemIcon = item.icon;
             const active = item.key === current.key;
             return (
-              <Link
+              <Link viewTransition
                 key={item.key}
                 to={`/recursos/${item.key}`}
-                className={`flex items-start gap-3 rounded-2xl px-3 py-3 transition ${
-                  active ? "bg-slate-950 text-white" : "text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                className={`flex items-start gap-3 rounded-rel-panel px-3 py-3 transition ${
+                  active ? "bg-rel-dark text-white" : "text-foreground-soft hover:bg-surface-subtle hover:text-foreground"
                 }`}
               >
                 <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
-                    active ? "bg-white/10 text-cyan-200" : "bg-cyan-50 text-cyan-700"
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-rel-panel ${
+                    active ? "bg-card/10 text-white" : "bg-accent text-primary"
                   }`}
                 >
-                  <ItemIcon className="h-4 w-4" />
+                  <ItemIcon aria-hidden="true" className="h-4 w-4" />
                 </span>
                 <span>
                   <span className="block text-sm font-black">{item.title}</span>
-                  <span className={`mt-1 block text-xs leading-6 ${active ? "text-slate-300" : "text-slate-500"}`}>
+                  <span className={`mt-1 block text-xs leading-6 ${active ? "text-white/70" : "text-muted-foreground"}`}>
                     {item.eyebrow}
                   </span>
                 </span>
               </Link>
             );
           })}
-        </nav>
+        </Caja>
 
         <section className="space-y-6">
           {renderBody(current.key)}
@@ -953,7 +972,7 @@ export default function RecursosAbril360Page({ page }: { page?: ResourcePageKey 
           <Surface
             title="Referencias y recursos relacionados"
             subtitle="Se priorizan fuentes oficiales o de amplia aceptación técnica para que esta información pueda sostener conversaciones profesionales y comerciales con más confianza."
-            icon={<FileText className="h-5 w-5" />}
+            icon={<FileText className="h-5 w-5" aria-hidden="true" />}
           >
             <div className="grid gap-3 md:grid-cols-2">
               {current.references.map((reference) => (

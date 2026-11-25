@@ -1,14 +1,103 @@
 // src/pages/superadmin/SuperAdminDashboardPage.tsx
+//
+// Estaba escrita en UNA línea de 2.000 caracteres, y eso tenía consecuencias
+// visibles: dentro de ella convivían tres radios distintos (`rounded-rel-panel`,
+// `rounded-rel-panel`, el de los `SuperAdminCard`), el error en rojo crudo, el aviso
+// en ámbar crudo, `bg-white` en vez de la superficie de la casa y un botón
+// dibujado a mano. Es la primera pantalla que ve un superadministrador.
+
 import { useEffect, useState } from "react";
 import { Building2, ClipboardList, CreditCard, UsersRound } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Aviso } from "@/shared/ui/Aviso";
+import { IndicadorKpi } from "@/shared/ui/IndicadorKpi";
+import { Panel } from "@/shared/ui/Panel";
 import { superadminService, type SuperAdminDashboard } from "@/features/superadmin/api/superadminService";
-import SuperAdminCard from "@/features/superadmin/components/SuperAdminCard";
 import SuperAdminPageHeader from "./SuperAdminPageHeader";
 
 export default function SuperAdminDashboardPage() {
   const [data, setData] = useState<SuperAdminDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { superadminService.dashboard().then(setData).catch((e) => setError(e.message)); }, []);
+
+  useEffect(() => {
+    superadminService.dashboard().then(setData).catch((e) => setError(e.message));
+  }, []);
+
   const k = data?.kpis || {};
-  return <div><SuperAdminPageHeader title="Dashboard Super Usuario" subtitle="Resumen general de la plataforma ABRIL360." action={<button className="rounded-2xl border bg-white px-5 py-3 font-black text-brand-primary">Exportar reporte</button>} />{error && <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}<section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4"><SuperAdminCard title="Empresas registradas" value={k.empresas ?? "—"} hint="Total plataforma" icon={Building2} /><SuperAdminCard title="Usuarios registrados" value={k.usuarios ?? "—"} hint="Incluye psicólogos y admins" icon={UsersRound} /><SuperAdminCard title="Aplicaciones totales" value={k.aplicaciones ?? "—"} hint="Baterías psicosociales" icon={ClipboardList} /><SuperAdminCard title="Créditos disponibles" value={k.saldo_total ?? "—"} hint={`Asignados: ${k.asignados_total ?? 0}`} icon={CreditCard} /></section><section className="mt-6 grid gap-5 xl:grid-cols-2"><div className="rounded-3xl border bg-white p-6 shadow-sm"><h2 className="text-xl font-black">Consumo de créditos</h2><div className="mt-6 grid place-items-center rounded-3xl bg-slate-50 p-10 text-center"><div className="text-5xl font-black text-brand-primary">{k.consumidos_total ?? 0}</div><div className="mt-2 font-bold text-slate-500">Créditos consumidos</div></div></div><div className="rounded-3xl border bg-white p-6 shadow-sm"><h2 className="text-xl font-black">Alertas y notificaciones</h2><div className="mt-5 grid gap-3"><div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 font-bold text-amber-700">Revisar cuentas con saldo bajo</div><div className="rounded-2xl border border-accent bg-accent p-4 font-bold text-brand-primary">Auditoría activa para acciones SuperAdmin</div></div></div></section></div>;
+
+  return (
+    <div>
+      <SuperAdminPageHeader
+        title="Dashboard Super Usuario"
+        subtitle="Resumen general de la plataforma ABRIL360."
+        action={
+          /* Sigue sin manejador, igual que antes: la exportación no existe
+             todavía. Queda `disabled` con el motivo a la vista en vez de
+             aceptar el clic y no hacer nada, que es lo que hacía. */
+          <Button type="button" variant="outline" disabled title="La exportación todavía no está disponible.">
+            Exportar reporte
+          </Button>
+        }
+      />
+
+      {error && (
+        <Aviso className="mb-5" titulo="No fue posible cargar el resumen">
+          {error}
+        </Aviso>
+      )}
+
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {/* Era `SuperAdminCard`, una copia de `IndicadorKpi` con tres
+            desviaciones: otro radio de esquina, `bg-white` escrito a mano —que
+            deja de ser el fondo en cuanto la superficie cambie— y el pie en
+            verde esmeralda. El verde era el peor de los tres: «Total
+            plataforma» no es una buena noticia, es contexto, y pintarlo del
+            color del acierto gasta una señal que debe quedar para cuando algo
+            de verdad va bien. */}
+        <IndicadorKpi
+          etiqueta="Empresas registradas"
+          valor={k.empresas ?? "—"}
+          contexto="Total plataforma"
+          icono={Building2}
+        />
+        <IndicadorKpi
+          etiqueta="Usuarios registrados"
+          valor={k.usuarios ?? "—"}
+          contexto="Incluye psicólogos y admins"
+          icono={UsersRound}
+        />
+        <IndicadorKpi
+          etiqueta="Aplicaciones totales"
+          valor={k.aplicaciones ?? "—"}
+          contexto="Baterías psicosociales"
+          icono={ClipboardList}
+        />
+        <IndicadorKpi
+          etiqueta="Créditos disponibles"
+          valor={k.saldo_total ?? "—"}
+          contexto={`Asignados: ${k.asignados_total ?? 0}`}
+          icono={CreditCard}
+        />
+      </section>
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-2">
+        <Panel titulo="Consumo de créditos" icono={CreditCard}>
+          <div className="grid place-items-center rounded-rel-card bg-surface-subtle p-10 text-center">
+            <p className="text-5xl font-bold tabular-nums text-primary">
+              {Number(k.consumidos_total ?? 0).toLocaleString("es-CO")}
+            </p>
+            <p className="mt-2 font-semibold text-muted-foreground">Créditos consumidos</p>
+          </div>
+        </Panel>
+
+        <Panel titulo="Alertas y notificaciones">
+          <div className="grid gap-3">
+            <Aviso tono="atencion">Revisar cuentas con saldo bajo</Aviso>
+            <Aviso tono="info">Auditoría activa para acciones SuperAdmin</Aviso>
+          </div>
+        </Panel>
+      </section>
+    </div>
+  );
 }

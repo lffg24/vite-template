@@ -1,19 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useParams } from "react-router-dom";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   FALLBACK_SOCIO_CATALOGOS,
-  SOCIO_CURRENT_YEAR,
   SOCIO_ESTRATO_OPTIONS,
   SOCIO_SEXO_OPTIONS,
+  getSocioBirthYearOptions,
 } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 import {
   getWebDirectSessionContent,
   getWebDirectWelcome,
   identifyWebDirectParticipant,
+  searchWebDirectMunicipalities,
   submitWebDirectAttempt,
   type WebDirectSessionContent,
   type WebDirectWelcome,
@@ -32,9 +34,9 @@ import {
   WebDirectQuestionScreen,
   WebDirectReviewScreen,
   WebDirectSubmittedScreen,
-  WebDirectTrainingScreen,
   WebDirectWelcomeScreen,
   getApplicableWebDirectQuestions,
+  getNextPendingWebDirectConditional,
   useWebDirectAttempt,
   type WebDirectConditionalRule,
   type WebDirectDemographicOption,
@@ -42,8 +44,9 @@ import {
   type WebDirectIdentification,
   type WebDirectInstrumentCode,
 } from "@/features/psicosocial/web-direct";
+import { WebDirectSupportProvider } from "@/features/psicosocial/web-direct/WebDirectSupportContext";
 
-type PreparationStep = "welcome" | "identification" | "training" | "instructions" | "consent" | "attempt";
+type PreparationStep = "welcome" | "identification" | "instructions" | "consent" | "attempt";
 
 const INSTRUMENT_GUIDANCE = [
   "Responde todas las preguntas de acuerdo con tu experiencia habitual.",
@@ -55,13 +58,24 @@ function options(values: string[]): WebDirectDemographicOption[] {
   return values.map((value) => ({ label: value, value }));
 }
 
-const DEMOGRAPHIC_SECTIONS: WebDirectDemographicSection[] = [
+const DEFAULT_AREA_OPTIONS = ["Administrativa", "Operativa"];
+
+function demographicSections(areaOptions: string[], currentArea = ""): WebDirectDemographicSection[] {
+  const sourceAreas = areaOptions.length > 0 ? areaOptions : DEFAULT_AREA_OPTIONS;
+  const normalizedAreas = Array.from(new Set([...sourceAreas, currentArea].map((value) => value.trim()).filter(Boolean)));
+  return [
   {
     id: "personal",
     title: "Información personal",
     fields: [
       { id: "sexo", label: "Sexo", type: "select", required: true, options: options(SOCIO_SEXO_OPTIONS) },
-      { id: "anio_nacimiento", label: "Año de nacimiento", type: "number", required: true, min: 1900, max: SOCIO_CURRENT_YEAR },
+      {
+        id: "anio_nacimiento",
+        label: "Año de nacimiento",
+        type: "select",
+        required: true,
+        options: options(getSocioBirthYearOptions()),
+      },
       { id: "estado_civil", label: "Estado civil", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.estado_civil) },
       { id: "nivel_estudios", label: "Nivel de estudios", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.nivel_estudios) },
       { id: "ocupacion_profesion", label: "Ocupación / profesión", type: "text", required: true, autoComplete: "organization-title" },
@@ -71,8 +85,8 @@ const DEMOGRAPHIC_SECTIONS: WebDirectDemographicSection[] = [
     id: "residencia",
     title: "Residencia",
     fields: [
-      { id: "ciudad_residencia", label: "Ciudad / municipio de residencia", type: "text", required: true, autoComplete: "address-level2" },
-      { id: "departamento_residencia", label: "Departamento de residencia", type: "text", autoComplete: "address-level1" },
+      { id: "ciudad_residencia", label: "Ciudad / municipio de residencia", type: "municipality", required: true, autoComplete: "address-level2", departmentFieldId: "departamento_residencia" },
+      { id: "departamento_residencia", label: "Departamento de residencia", type: "text", autoComplete: "address-level1", readOnly: true },
       { id: "estrato", label: "Estrato", type: "select", required: true, options: options(SOCIO_ESTRATO_OPTIONS) },
       { id: "tipo_vivienda", label: "Tipo de vivienda", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.tipo_vivienda) },
       { id: "personas_dependen", label: "Personas que dependen económicamente", type: "number", required: true, min: 0, max: 99 },
@@ -83,10 +97,10 @@ const DEMOGRAPHIC_SECTIONS: WebDirectDemographicSection[] = [
     title: "Información laboral",
     description: "La profesión y el cargo son datos independientes. Ambos pueden ajustarse para esta aplicación.",
     fields: [
-      { id: "ciudad_trabajo", label: "Ciudad / municipio donde trabaja", type: "text", required: true },
-      { id: "departamento_trabajo", label: "Departamento donde trabaja", type: "text" },
+      { id: "ciudad_trabajo", label: "Ciudad / municipio donde trabaja", type: "municipality", required: true, departmentFieldId: "departamento_trabajo" },
+      { id: "departamento_trabajo", label: "Departamento donde trabaja", type: "text", readOnly: true },
       { id: "cargo", label: "Nombre del cargo", type: "text", placeholder: "Ej. Coordinador de operaciones" },
-      { id: "area", label: "Área", type: "text" },
+      { id: "area", label: "Departamento, área o sección", type: "select", options: options(normalizedAreas) },
       { id: "tipo_cargo", label: "Tipo de cargo", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.tipo_cargo) },
       { id: "antiguedad_empresa", label: "Antigüedad en la empresa (años)", type: "number", required: true, min: 0, max: 80 },
       { id: "antiguedad_cargo", label: "Antigüedad en el cargo (años)", type: "number", required: true, min: 0, max: 80 },
@@ -95,10 +109,15 @@ const DEMOGRAPHIC_SECTIONS: WebDirectDemographicSection[] = [
       { id: "tipo_salario", label: "Tipo de salario", type: "select", required: true, options: options(FALLBACK_SOCIO_CATALOGOS.tipo_salario) },
     ],
   },
-];
+  ];
+}
 
 function messageFrom(error: unknown, fallback: string) {
-  return error instanceof Error && error.message ? error.message : fallback;
+  if (!(error instanceof Error) || !error.message) return fallback;
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(error.message)) {
+    return "No pudimos conectarnos con el servicio. Verifica tu conexión e intenta nuevamente.";
+  }
+  return error.message;
 }
 
 function LoadingState() {
@@ -137,7 +156,15 @@ function WebDirectAttemptController({
 }) {
   const [state, dispatch] = useWebDirectAttempt(content.form, content.evaluations, content.demographics);
   const [currentQuestionByInstrument, setCurrentQuestionByInstrument] = useState<Partial<Record<WebDirectInstrumentCode, number>>>({});
-  const [conditionalDrafts, setConditionalDrafts] = useState<Partial<Record<WebDirectInstrumentCode, Record<string, boolean>>>>({});
+  const [activeConditionalByInstrument, setActiveConditionalByInstrument] = useState<Partial<Record<WebDirectInstrumentCode, string>>>({});
+  const [isQuestionTransitioning, setIsQuestionTransitioning] = useState(false);
+  const questionTransitionTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (questionTransitionTimer.current !== null) {
+      window.clearTimeout(questionTransitionTimer.current);
+    }
+  }, []);
 
   const activeCode = state.activeStageCode && state.activeStageCode !== "DATOS_GENERALES"
     ? state.activeStageCode as WebDirectInstrumentCode
@@ -147,9 +174,9 @@ function WebDirectAttemptController({
     ...rule,
     answer: state.conditionalAnswersByInstrument[activeCode as WebDirectInstrumentCode]?.[rule.code] ?? null,
   })), [activeCode, activeContent?.conditionalRules, state.conditionalAnswersByInstrument]);
-  const unansweredConditional = activeCode
-    ? conditionalRules.find((rule) => rule.answer === null || rule.answer === undefined)
-    : undefined;
+  const orderedConditionalRules = useMemo(() => [...conditionalRules].sort((left, right) => (
+    Math.min(...left.questionOrders) - Math.min(...right.questionOrders)
+  )), [conditionalRules]);
 
   if (state.phase === "journey") {
     return (
@@ -179,31 +206,68 @@ function WebDirectAttemptController({
   }
 
   if (state.phase === "instrument" && activeCode && activeContent) {
-    if (unansweredConditional) {
-      const draft = conditionalDrafts[activeCode]?.[unansweredConditional.code];
+    const activeConditionalCode = activeConditionalByInstrument[activeCode];
+    const activeConditional = orderedConditionalRules.find((rule) => rule.code === activeConditionalCode);
+    const questions = getApplicableWebDirectQuestions(activeContent.questions, conditionalRules);
+    const currentQuestionId = currentQuestionByInstrument[activeCode] ?? questions[0]?.questionId;
+
+    const advanceAfterConditional = (rule: WebDirectConditionalRule, value: boolean) => {
+      dispatch({ type: "set_conditional", instrumentCode: activeCode, ruleCode: rule.code, value });
+      const updatedRules = conditionalRules.map((item) => item.code === rule.code ? { ...item, answer: value } : item);
+      const updatedQuestions = getApplicableWebDirectQuestions(activeContent.questions, updatedRules);
+      const firstControlled = Math.min(...rule.questionOrders);
+      const lastControlled = Math.max(...rule.questionOrders);
+      const nextQuestion = value
+        ? updatedQuestions.find((question) => question.order >= firstControlled)
+        : updatedQuestions.find((question) => question.order > lastControlled);
+      const nextRule = getNextPendingWebDirectConditional(updatedRules, lastControlled, nextQuestion?.order);
+      setActiveConditionalByInstrument((current) => ({ ...current, [activeCode]: nextRule?.code }));
+      if (nextRule) return;
+      if (nextQuestion) {
+        setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: nextQuestion.questionId }));
+        return;
+      }
+      dispatch({ type: "complete_active_stage" });
+    };
+
+    if (activeConditional) {
       return (
-        <WebDirectConditionalQuestionScreen
+      <WebDirectConditionalQuestionScreen
+          key={`conditional-${activeCode}-${activeConditional.code}`}
           instrumentLabel={activeContent.evaluation.name}
-          rule={unansweredConditional}
-          value={typeof draft === "boolean" ? draft : null}
-          onChange={(ruleCode, value) => setConditionalDrafts((current) => ({
-            ...current,
-            [activeCode]: { ...current[activeCode], [ruleCode]: value },
-          }))}
-          onBack={() => dispatch({ type: "back_to_instrument_intro" })}
-          onContinue={() => {
-            if (typeof draft === "boolean") {
-              dispatch({ type: "set_conditional", instrumentCode: activeCode, ruleCode: unansweredConditional.code, value: draft });
-            }
+          rule={activeConditional}
+          value={activeConditional.answer ?? null}
+          onChange={() => undefined}
+          onBack={() => setActiveConditionalByInstrument((current) => ({ ...current, [activeCode]: undefined }))}
+          onContinue={(selectedValue) => {
+            if (typeof selectedValue === "boolean") advanceAfterConditional(activeConditional, selectedValue);
           }}
         />
       );
     }
 
-    const questions = getApplicableWebDirectQuestions(activeContent.questions, conditionalRules);
-    const currentQuestionId = currentQuestionByInstrument[activeCode] ?? questions[0]?.questionId;
+    const advanceToNextQuestion = (question: typeof questions[number]) => {
+      if (isQuestionTransitioning) return;
+      setIsQuestionTransitioning(true);
+      questionTransitionTimer.current = window.setTimeout(() => {
+        const index = questions.findIndex((item) => item.questionId === question.questionId);
+        const nextQuestion = questions[index + 1];
+        const nextRule = getNextPendingWebDirectConditional(orderedConditionalRules, question.order, nextQuestion?.order);
+        if (nextRule) {
+          setActiveConditionalByInstrument((current) => ({ ...current, [activeCode]: nextRule.code }));
+        } else if (nextQuestion) {
+          setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: nextQuestion.questionId }));
+        } else {
+          dispatch({ type: "complete_active_stage" });
+        }
+        questionTransitionTimer.current = null;
+        setIsQuestionTransitioning(false);
+      }, 340);
+    };
+
     return (
       <WebDirectQuestionScreen
+        key={`question-${activeCode}-${currentQuestionId}`}
         form={state.form}
         instrumentCode={activeCode}
         instrumentLabel={activeContent.evaluation.name}
@@ -213,15 +277,13 @@ function WebDirectAttemptController({
         answers={Object.fromEntries(Object.entries(state.answersByInstrument[activeCode] ?? {}).map(([id, answer]) => [id, answer.value]))}
         onAnswer={(answer) => dispatch({ type: "answer", answer })}
         onPrevious={(question) => {
+          if (isQuestionTransitioning) return;
           const index = questions.findIndex((item) => item.questionId === question.questionId);
           if (index > 0) setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: questions[index - 1].questionId }));
         }}
-        onNext={(question) => {
-          const index = questions.findIndex((item) => item.questionId === question.questionId);
-          if (index >= questions.length - 1) dispatch({ type: "complete_active_stage" });
-          else setCurrentQuestionByInstrument((current) => ({ ...current, [activeCode]: questions[index + 1].questionId }));
-        }}
+        onNext={advanceToNextQuestion}
         answerState={state.answersByInstrument[activeCode]?.[currentQuestionId] ? "selected" : "idle"}
+        isTransitioning={isQuestionTransitioning}
       />
     );
   }
@@ -241,10 +303,12 @@ function WebDirectAttemptController({
   }
 
   if (state.phase === "demographics") {
+    const sections = demographicSections(content.areaOptions, state.demographics.area);
     return (
       <WebDirectDemographicsScreen
-        sections={DEMOGRAPHIC_SECTIONS}
+        sections={sections}
         values={state.demographics}
+        onMunicipalitySearch={(query) => searchWebDirectMunicipalities(sessionToken, query)}
         onValuesChange={(values) => dispatch({ type: "set_demographics", values })}
         onBack={() => dispatch({ type: "back_to_journey" })}
         onContinue={(values) => {
@@ -301,7 +365,6 @@ export default function WebDirectPublicPage() {
   const [identifying, setIdentifying] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [content, setContent] = useState<WebDirectSessionContent | null>(null);
-  const [trainingCompleted, setTrainingCompleted] = useState(false);
   const [acceptedDocuments, setAcceptedDocuments] = useState<string[]>([]);
 
   const loadWelcome = async () => {
@@ -321,10 +384,17 @@ export default function WebDirectPublicPage() {
   if (loading) return <LoadingState />;
   if (loadError || !welcome) return <AccessError message={loadError ?? "Acceso no disponible."} onRetry={() => void loadWelcome()} />;
 
-  const context = { companyName: welcome.empresa_nombre, applicationName: welcome.aplicacion_nombre };
-  if (step === "welcome") return <WebDirectWelcomeScreen context={context} onStart={() => setStep("identification")} />;
+  const context = {
+    applicationName: welcome.aplicacion_nombre,
+    responsible: welcome.responsable,
+    company: welcome.empresa_contacto,
+  };
+  const withSupport = (screen: ReactNode) => (
+    <WebDirectSupportProvider value={context}>{screen}</WebDirectSupportProvider>
+  );
+  if (step === "welcome") return withSupport(<WebDirectWelcomeScreen context={context} onStart={() => setStep("identification")} />);
   if (step === "identification") {
-    return (
+    return withSupport(
       <WebDirectIdentificationScreen
         context={context}
         isSubmitting={identifying}
@@ -338,7 +408,7 @@ export default function WebDirectPublicPage() {
             const sessionContent = await getWebDirectSessionContent(identity.session_token);
             setSessionToken(identity.session_token);
             setContent(sessionContent);
-            setStep("training");
+            setStep("instructions");
           } catch (error) {
             setIdentityError(messageFrom(error, "No fue posible validar la información suministrada."));
           } finally {
@@ -349,32 +419,19 @@ export default function WebDirectPublicPage() {
     );
   }
 
-  if (!content || !sessionToken) return <AccessError message="La sesión no pudo prepararse." onRetry={() => setStep("identification")} />;
-  if (step === "training") {
-    return (
-      <WebDirectTrainingScreen
-        formLabel={`Forma ${content.form}`}
-        topics={["Propósito de la batería", "Cómo responder", "Confidencialidad del proceso"]}
-        transcript={<p>La batería reúne preguntas intralaborales, extralaborales y de estrés. Responde desde tu experiencia, sin ayuda de terceros y en un lugar tranquilo. Los datos generales se completan al final.</p>}
-        completed={trainingCompleted}
-        onComplete={() => setTrainingCompleted(true)}
-        onBack={() => setStep("identification")}
-        onContinue={() => setStep("instructions")}
-      />
-    );
-  }
+  if (!content || !sessionToken) return withSupport(<AccessError message="La sesión no pudo prepararse." onRetry={() => setStep("identification")} />);
   if (step === "instructions") {
-    return (
+    return withSupport(
       <WebDirectInstructionsScreen
         formLabel={`Forma ${content.form}`}
         instructions={<><p>Lee cada afirmación completa y selecciona la opción que mejor represente la frecuencia con la que ocurre en tu experiencia.</p><p>Completa la batería en este intento. Si cierras la página antes del envío final, deberás comenzar nuevamente.</p></>}
-        onBack={() => setStep("training")}
+        onBack={() => setStep("identification")}
         onContinue={() => setStep("consent")}
       />
     );
   }
   if (step === "consent") {
-    return (
+    return withSupport(
       <WebDirectConsentScreen
         documents={[{
           id: "privacidad",
@@ -390,5 +447,5 @@ export default function WebDirectPublicPage() {
       />
     );
   }
-  return <WebDirectAttemptController sessionToken={sessionToken} content={content} onBackToConsent={() => setStep("consent")} />;
+  return withSupport(<WebDirectAttemptController sessionToken={sessionToken} content={content} onBackToConsent={() => setStep("consent")} />);
 }

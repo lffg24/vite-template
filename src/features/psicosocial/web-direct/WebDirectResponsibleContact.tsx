@@ -15,12 +15,12 @@ export function WebDirectResponsibleContact({ responsible }: { responsible?: Web
       </p>
       <div className="mt-2 flex flex-col gap-1.5 text-sm text-muted-foreground">
         {responsible.email ? (
-          <a className="inline-flex w-fit items-center gap-2 rounded-sm hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={`mailto:${responsible.email}`}>
+          <a className="inline-flex w-fit items-center gap-2 rounded-sm hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring" href={`mailto:${responsible.email}`}>
             <Mail className="h-4 w-4" aria-hidden="true" /> {responsible.email}
           </a>
         ) : null}
         {responsible.phone ? (
-          <a className="inline-flex w-fit items-center gap-2 rounded-sm hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" href={`tel:${responsible.phone}`}>
+          <a className="inline-flex w-fit items-center gap-2 rounded-sm hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring" href={`tel:${responsible.phone}`}>
             <Phone className="h-4 w-4" aria-hidden="true" /> {responsible.phone}
           </a>
         ) : null}

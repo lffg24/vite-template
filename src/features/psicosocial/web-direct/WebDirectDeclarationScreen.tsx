@@ -29,7 +29,7 @@ export function WebDirectDeclarationScreen({
   return (
     <WebDirectContentFrame
       stepLabel="Declaración final"
-      progress={{ current: 6, total: 6, label: "Último paso" }}
+      progress={{ current: 5, total: 5, label: "Último paso" }}
       eyebrow="Último paso"
       title="Declaración final"
       description="Antes de enviar definitivamente tu presentación, necesitamos registrar tu confirmación."

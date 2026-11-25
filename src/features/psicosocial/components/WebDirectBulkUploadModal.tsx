@@ -112,7 +112,7 @@ export function WebDirectBulkUploadModal({
             Carga masiva para aplicación virtual
           </DialogTitle>
           <DialogDescription className="leading-6">
-            Esta plantilla es exclusiva para el acceso del colaborador. Todos los datos son obligatorios.
+            Esta plantilla es exclusiva para el acceso del colaborador. Área y cargo son opcionales y se diligencian juntos.
           </DialogDescription>
         </DialogHeader>
 
@@ -137,7 +137,7 @@ export function WebDirectBulkUploadModal({
             <div className="rounded-2xl border border-border bg-surface-subtle p-5">
               <FileSpreadsheet className="h-8 w-8 text-success" aria-hidden="true" />
               <p className="mt-3 font-heading font-black text-foreground">Plantilla exclusiva</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">Nombres, apellidos, tipo y número de documento, fecha de nacimiento y Formulario A/B.</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Nombres, apellidos, tipo y número de documento, fecha de nacimiento y Formulario A/B. Área y cargo son opcionales.</p>
               <Button asChild variant="outline" className="mt-4 w-full">
                 <a href="/templates/plantilla_carga_virtual_psicosocial.xlsx" download>
                   <Download aria-hidden="true" /> Descargar plantilla
@@ -170,8 +170,9 @@ export function WebDirectBulkUploadModal({
                 {rows.map((row) => (
                   <article key={`${row.tipo_documento}-${row.numero_documento}`} className="grid gap-3 rounded-2xl border border-border bg-surface-subtle p-4 sm:grid-cols-[minmax(14rem,1fr)_auto] sm:items-center">
                     <div className="min-w-0">
-                      <strong className="block break-words text-sm text-foreground">{row.nombres} {row.apellidos}</strong>
+                      <strong className="block wrap-break-word text-sm text-foreground">{row.nombres} {row.apellidos}</strong>
                       <span className="mt-1 block text-xs text-muted-foreground">{row.tipo_documento} {row.numero_documento} · {row.fecha_nacimiento}</span>
+                      {row.area && row.cargo ? <span className="mt-1 block text-xs text-muted-foreground">{row.area} · {row.cargo}</span> : null}
                     </div>
                     <div className="flex items-center gap-3 sm:justify-end">
                       <span className="text-xs text-muted-foreground">Fila {row.row} validada</span>
@@ -185,7 +186,7 @@ export function WebDirectBulkUploadModal({
                 <Checkbox checked={certified} onCheckedChange={(value) => setCertified(value === true)} aria-label="Certifico que los datos de acceso son correctos" />
                 <span className="text-sm leading-6 text-foreground">
                   <strong className="block">Certifico que los datos son correctos.</strong>
-                  Confirmo que nombres, apellidos, documento, fecha de nacimiento y formulario corresponden a cada colaborador y autorizo su uso para habilitar el acceso.
+                  Confirmo que nombres, apellidos, documento, fecha de nacimiento, formulario y los datos opcionales informados corresponden a cada colaborador y autorizo su uso para habilitar el acceso.
                 </span>
               </label>
             </section>

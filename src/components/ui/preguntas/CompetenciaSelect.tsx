@@ -59,10 +59,10 @@ export default function CompetenciaSelect({
           disabled={disabled}
         >
           {selected ? selected.nombre : "Selecciona una competencia (opcional)"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
         <Command>
           <CommandInput placeholder="Buscar competencia..." />
           <CommandEmpty>Sin resultados</CommandEmpty>
@@ -77,8 +77,7 @@ export default function CompetenciaSelect({
                 className={cn(
                   "mr-2 h-4 w-4",
                   !value ? "opacity-100" : "opacity-0"
-                )}
-              />
+                )} aria-hidden="true" />
               (Sin competencia)
             </CommandItem>
             {items.map((c) => (
@@ -93,8 +92,7 @@ export default function CompetenciaSelect({
                   className={cn(
                     "mr-2 h-4 w-4",
                     value === c.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
+                  )} aria-hidden="true" />
                 {c.nombre}
               </CommandItem>
             ))}

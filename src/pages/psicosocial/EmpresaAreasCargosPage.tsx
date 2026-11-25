@@ -141,11 +141,11 @@ export default function EmpresaAreasCargosPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-6 pb-6 pt-2 lg:px-8 lg:pb-8 lg:pt-3">
       <div className="mx-auto max-w-7xl space-y-6">
-        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-sm hover:bg-slate-50">
-          <ArrowLeft className="h-4 w-4" /> Volver a empresa
+        <button onClick={() => navigate(`/psicosocial/empresas/${empresaId}`)} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2 text-sm font-bold shadow-xs hover:bg-slate-50">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver a empresa
         </button>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-black uppercase tracking-widest text-brand-primary">Configuración de colaboradores</p>
@@ -153,24 +153,24 @@ export default function EmpresaAreasCargosPage() {
               <p className="mt-1 text-sm text-slate-500">Gestiona la estructura base usada al crear colaboradores y aplicaciones.</p>
             </div>
             <button onClick={() => void load()} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold hover:bg-slate-50">
-              <RefreshCw className="h-4 w-4" /> Actualizar
+              <RefreshCw className="h-4 w-4" aria-hidden="true" /> Actualizar
             </button>
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xs">
           <div className="flex flex-col gap-4 border-b border-slate-100 p-5 lg:flex-row lg:items-center lg:justify-between">
             <div role="tablist" aria-label="Gestión de áreas y cargos" className="flex flex-wrap gap-2">
               <CatalogTabButton
                 active={activeTab === "areas"}
-                icon={<Building2 className="h-4 w-4" />}
+                icon={<Building2 className="h-4 w-4" aria-hidden="true" />}
                 label="Áreas"
                 count={areas.length}
                 onClick={() => setActiveTab("areas")}
               />
               <CatalogTabButton
                 active={activeTab === "cargos"}
-                icon={<BriefcaseBusiness className="h-4 w-4" />}
+                icon={<BriefcaseBusiness className="h-4 w-4" aria-hidden="true" />}
                 label="Cargos"
                 count={cargos.length}
                 onClick={() => setActiveTab("cargos")}
@@ -180,7 +180,7 @@ export default function EmpresaAreasCargosPage() {
               onClick={() => setDrawer(activeTab === "areas" ? { type: "area", mode: "create" } : { type: "cargo", mode: "create" })}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary-hover"
             >
-              <Plus className="h-4 w-4" /> {activeTab === "areas" ? "Nueva área" : "Nuevo cargo"}
+              <Plus className="h-4 w-4" aria-hidden="true" /> {activeTab === "areas" ? "Nueva área" : "Nuevo cargo"}
             </button>
           </div>
 
@@ -262,7 +262,7 @@ function CatalogTabButton({ active, icon, label, count, onClick }: { active: boo
       aria-selected={active}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-black transition ${
-        active ? "bg-primary text-primary-foreground shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-accent hover:text-brand-primary"
+        active ? "bg-primary text-primary-foreground shadow-xs" : "bg-slate-100 text-slate-600 hover:bg-accent hover:text-brand-primary"
       }`}
     >
       {icon}
@@ -283,9 +283,9 @@ function StatusPill({ active }: { active: boolean }) {
 function RowActions({ active, onEdit, onToggle, onDelete }: { active: boolean; onEdit: () => void; onToggle: () => void; onDelete: () => void }) {
   return (
     <div className="flex justify-end gap-2">
-      <button onClick={onEdit} className="rounded-xl border p-2 text-slate-600 hover:bg-slate-50" title="Editar"><Edit3 className="h-4 w-4" /></button>
-      <button onClick={onToggle} className="rounded-xl border border-accent p-2 text-brand-primary hover:bg-accent" title={active ? "Deshabilitar" : "Habilitar"}><Power className="h-4 w-4" /></button>
-      <button onClick={onDelete} className="rounded-xl border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100" title="Eliminar"><Trash2 className="h-4 w-4" /></button>
+      <button onClick={onEdit} className="rounded-xl border p-2 text-slate-600 hover:bg-slate-50" title="Editar"><Edit3 className="h-4 w-4" aria-hidden="true" /></button>
+      <button onClick={onToggle} className="rounded-xl border border-accent p-2 text-brand-primary hover:bg-accent" title={active ? "Deshabilitar" : "Habilitar"}><Power className="h-4 w-4" aria-hidden="true" /></button>
+      <button onClick={onDelete} className="rounded-xl border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100" title="Eliminar"><Trash2 className="h-4 w-4" aria-hidden="true" /></button>
     </div>
   );
 }
@@ -330,14 +330,14 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
       <aside className="h-full w-full max-w-xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-brand-primary">{drawer.mode === "create" ? "Nuevo registro" : "Editar registro"}</p>
             <h2 className="text-2xl font-black text-slate-950">{isArea ? "Área" : "Cargo"}</h2>
           </div>
-          <button onClick={onClose} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="rounded-2xl border p-2 hover:bg-slate-50"><X className="h-5 w-5" aria-hidden="true" /></button>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <Field label={isArea ? "Nombre del área *" : "Nombre del cargo *"}><Input value={nombre} onChange={setNombre} /></Field>
@@ -346,7 +346,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
           ) : (
             <>
               <Field label="Área *">
-                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20">
+                <select value={areaId} onChange={(event) => setAreaId(event.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20">
                   <option value="">Selecciona área</option>
                   {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
                 </select>
@@ -357,7 +357,7 @@ function CatalogDrawer({ drawer, areas, saving, setSaving, onClose, onSaved, not
           <div className="flex justify-end gap-3 pt-4">
             <button type="button" onClick={onClose} className="rounded-2xl border px-5 py-3 font-bold">Cancelar</button>
             <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground disabled:opacity-60">
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />} Guardar
+              {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />} Guardar
             </button>
           </div>
         </form>
@@ -371,5 +371,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Input({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" />;
+  return <input value={value} onChange={(event) => onChange(event.target.value)} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-hidden focus:border-input-focus focus:ring-4 focus:ring-input-focus/20" />;
 }

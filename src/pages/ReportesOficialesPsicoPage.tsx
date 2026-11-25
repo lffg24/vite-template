@@ -232,7 +232,7 @@ export default function ReportesOficialesPsicoPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-black uppercase tracking-[0.18em] text-brand-primary">
-            <ShieldCheck className="h-4 w-4" /> Reportes oficiales
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Reportes oficiales
           </div>
           <h1 className="text-4xl font-black tracking-tight text-foreground">Generador de <span className="marker-highlight">informes BRP</span></h1>
           <p className="mt-2 max-w-4xl text-muted-foreground">
@@ -242,16 +242,16 @@ export default function ReportesOficialesPsicoPage() {
         </div>
       </section>
 
-      <Card className="rounded-2xl border-slate-200 shadow-sm">
+      <Card className="rounded-2xl border-slate-200 shadow-xs">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><FileText className="h-5 w-5 text-brand-primary" /> Parámetros del informe</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><FileText className="h-5 w-5 text-brand-primary" aria-hidden="true" /> Parámetros del informe</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid gap-4 lg:grid-cols-[minmax(260px,1.15fr)_minmax(260px,0.9fr)_auto] lg:items-start">
             <div className="space-y-2">
               <label className="text-sm font-black text-slate-700">Aplicación</label>
               <Select value={aplicacionId} onValueChange={setAplicacionId} disabled={loadingApps || !aplicaciones.length}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder={loadingApps ? "Cargando aplicaciones..." : "Selecciona aplicación"} /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder={loadingApps ? "Cargando aplicaciones..." : "Selecciona aplicación"} /></SelectTrigger>
                 <SelectContent>{aplicaciones.map((app) => <SelectItem key={app.id} value={String(app.id)}>{app.nombre || `Aplicación ${app.id}`} · #{app.id}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -266,13 +266,13 @@ export default function ReportesOficialesPsicoPage() {
                       className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-accent bg-accent text-brand-primary transition hover:bg-accent-hover"
                       aria-label="Ver información del informe seleccionado"
                     >
-                      <Info className="h-4 w-4" />
+                      <Info className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </DialogTrigger>
                   <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto rounded-[28px] border-slate-200">
                     <DialogHeader>
                       <DialogTitle className="flex items-center gap-2 text-xl font-black text-slate-950">
-                        <Sparkles className="h-5 w-5 text-brand-primary" /> Información del entregable
+                        <Sparkles className="h-5 w-5 text-brand-primary" aria-hidden="true" /> Información del entregable
                       </DialogTitle>
                       <DialogDescription className="text-left leading-relaxed text-slate-600">
                         Consulta el contenido y alcance de cada tipo de informe. Seleccionaste: <strong>{currentOption?.label}</strong>.
@@ -308,7 +308,7 @@ export default function ReportesOficialesPsicoPage() {
                 </Dialog>
               </div>
               <Select value={tipoReporte} onValueChange={(v) => setTipoReporte(v as TipoReportePsicoOficial)}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white shadow-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {reportGroups.map((group, index) => (
                     <div key={group.label}>
@@ -326,12 +326,12 @@ export default function ReportesOficialesPsicoPage() {
             <div className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end lg:pt-7">
               {isExcelReport ? (
                 <Button className="h-12 rounded-2xl bg-primary whitespace-nowrap hover:bg-primary-hover" onClick={downloadXlsx} disabled={!aplicacionId || downloadingXlsx}>
-                  {downloadingXlsx ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}Descargar XLSX
+                  {downloadingXlsx ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <FileSpreadsheet className="mr-2 h-4 w-4" aria-hidden="true" />}Descargar XLSX
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable</Button>
-                  <Button className="h-12 rounded-2xl bg-primary whitespace-nowrap hover:bg-primary-hover" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo</Button>
+                  <Button variant="outline" className="h-12 rounded-2xl whitespace-nowrap" onClick={downloadDoc} disabled={!aplicacionId || downloadingDoc}>{downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <FileType2 className="mr-2 h-4 w-4" aria-hidden="true" />}DOC editable</Button>
+                  <Button className="h-12 rounded-2xl bg-primary whitespace-nowrap hover:bg-primary-hover" onClick={downloadPdf} disabled={!aplicacionId || downloadingPdf}>{downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Printer className="mr-2 h-4 w-4" aria-hidden="true" />}PDF directo</Button>
                 </>
               )}
             </div>
@@ -341,7 +341,7 @@ export default function ReportesOficialesPsicoPage() {
 
       {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div> : null}
 
-      <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+      <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-xs">
         <CardHeader className="border-b bg-slate-50/80">
           <CardTitle className="text-base">Vista <span className="marker-highlight">previa</span></CardTitle>
           {selectedApp ? <p className="text-sm text-slate-500">{selectedApp.nombre}</p> : null}
@@ -352,7 +352,7 @@ export default function ReportesOficialesPsicoPage() {
               El reporte detallado se descarga en Excel con hojas de resumen, totales, dominios, dimensiones y respuestas registradas.
             </div>
           ) : loadingHtml ? (
-            <div className="flex h-[620px] items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generando informe...</div>
+            <div className="flex h-[620px] items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" /> Generando informe...</div>
           ) : html ? (
             <iframe title="Vista previa de informe" srcDoc={html} className="h-[760px] w-full bg-white" />
           ) : (

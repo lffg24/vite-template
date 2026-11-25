@@ -76,7 +76,7 @@ export default function MultiSelectEvaluaciones({
               onClick={() => clear(s.id)}
               title="Quitar"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -105,9 +105,9 @@ export default function MultiSelectEvaluaciones({
               ? `${selected.length} evaluación(es) seleccionadas`
               : placeholder ?? "Selecciona evaluaciones..."}
             {loading ? (
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+              <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" aria-hidden="true" />
             )}
           </Button>
         </PopoverTrigger>

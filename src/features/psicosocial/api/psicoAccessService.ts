@@ -44,10 +44,6 @@ export type CrearEmpresaPsicoResponse = {
   message?: string | null;
 };
 
-export type PsicoFeatureFlags = {
-  web_direct: boolean;
-};
-
 export type WebDirectParticipantConfiguration = {
   empleado_id: number;
   fecha_nacimiento: string;
@@ -61,6 +57,13 @@ export type WebDirectConfigurationResponse = {
   public_url: string;
 };
 
+export type WebDirectParticipantAssignmentResponse = {
+  ok: boolean;
+  aplicacion_id: number;
+  empleado_id: number;
+  forma_asignada: "A" | "B";
+};
+
 export type WebDirectStatusResponse = {
   ok: boolean;
   configurado: boolean;
@@ -68,6 +71,7 @@ export type WebDirectStatusResponse = {
   enlace_generado_en: string | null;
   datos_certificados_en: string | null;
   participantes_habilitados: number;
+  public_url?: string | null;
 };
 
 export type WebDirectBulkPreviewRow = {
@@ -78,6 +82,8 @@ export type WebDirectBulkPreviewRow = {
   numero_documento: string;
   fecha_nacimiento: string;
   forma_asignada: "A" | "B";
+  area?: string;
+  cargo?: string;
 };
 
 export type WebDirectBulkError = {
@@ -99,10 +105,6 @@ export type WebDirectBulkParticipant = WebDirectBulkPreviewRow;
 export type WebDirectBulkImportResponse = WebDirectConfigurationResponse & {
   creados: number;
   actualizados: number;
-};
-
-export const DISABLED_PSICO_FEATURE_FLAGS: PsicoFeatureFlags = {
-  web_direct: false,
 };
 
 export function getToken(): string | null {
@@ -134,30 +136,6 @@ function jsonHeaders(): HeadersInit {
   };
 }
 
-export function normalizePsicoFeatureFlags(data: unknown): PsicoFeatureFlags {
-  if (!data || typeof data !== "object") return DISABLED_PSICO_FEATURE_FLAGS;
-  return {
-    web_direct: (data as { web_direct?: unknown }).web_direct === true,
-  };
-}
-
-export async function getPsicoFeatureFlags(): Promise<PsicoFeatureFlags> {
-  const res = await fetch(`${API_URL}/psicosocial/access/features`, {
-    method: "GET",
-    credentials: "include",
-    headers: jsonHeaders(),
-  });
-
-  if (!res.ok) {
-    const detail = await parseApiError(res, `No fue posible cargar funcionalidades habilitadas (${res.status})`);
-    const err = new Error(detail) as Error & { status?: number };
-    err.status = res.status;
-    throw err;
-  }
-
-  return normalizePsicoFeatureFlags(await res.json());
-}
-
 export async function configureWebDirectAccess(
   applicationId: number,
   participants: WebDirectParticipantConfiguration[],
@@ -173,6 +151,29 @@ export async function configureWebDirectAccess(
     const err = new Error(detail) as Error & { status?: number };
     err.status = res.status;
     throw err;
+  }
+  return res.json();
+}
+
+export async function assignWebDirectParticipant(
+  applicationId: number,
+  participant: WebDirectParticipantConfiguration,
+): Promise<WebDirectParticipantAssignmentResponse> {
+  const res = await fetch(
+    `${API_URL}/psicosocial/access/aplicaciones/${applicationId}/web-direct/participants`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: jsonHeaders(),
+      body: JSON.stringify(participant),
+    },
+  );
+  if (!res.ok) {
+    const detail = await parseApiError(
+      res,
+      `No fue posible asignar el formulario web (${res.status})`,
+    );
+    throw new Error(detail);
   }
   return res.json();
 }

@@ -141,8 +141,8 @@ export default function PsicoEmpleadoInformesPage() {
   if (loadingSummary) {
     return (
       <main className="min-h-screen bg-slate-50 p-6">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
+        <div className="mx-auto flex max-w-7xl items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 shadow-xs">
+          <Loader2 className="h-5 w-5 animate-spin text-brand-primary" aria-hidden="true" />
           <span className="font-bold text-slate-700">Cargando informes individuales...</span>
         </div>
       </main>
@@ -155,7 +155,7 @@ export default function PsicoEmpleadoInformesPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-brand-primary">
-              <ShieldCheck className="h-4 w-4" /> Informes individuales
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Informes individuales
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-950">{empleadoNombre}</h1>
             <p className="mt-1 max-w-3xl text-sm text-slate-600">
@@ -164,19 +164,19 @@ export default function PsicoEmpleadoInformesPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="rounded-2xl" onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" /> Volver
             </Button>
             <Button variant="outline" className="rounded-2xl" onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/respuestas`)}>
-              <UserRound className="mr-2 h-4 w-4" /> Respuestas
+              <UserRound className="mr-2 h-4 w-4" aria-hidden="true" /> Respuestas
             </Button>
           </div>
         </div>
 
-        <Card className="rounded-2xl border-accent bg-gradient-to-r from-accent to-brand-canvas shadow-sm">
+        <Card className="rounded-2xl border-accent bg-linear-to-r from-accent to-brand-canvas shadow-xs">
           <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-brand-primary">
-                <FileText className="h-4 w-4" /> Formato individual BRP
+                <FileText className="h-4 w-4" aria-hidden="true" /> Formato individual BRP
               </div>
               <p className="mt-1 max-w-4xl text-sm text-slate-700">
                 Vista previa y descargas por instrumento usando los puntajes oficiales persistidos para el colaborador.
@@ -186,17 +186,17 @@ export default function PsicoEmpleadoInformesPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-slate-200 shadow-sm">
+        <Card className="rounded-2xl border-slate-200 shadow-xs">
           <CardContent className="p-3">
             <div className="grid gap-3 2xl:grid-cols-[auto_minmax(260px,1fr)_minmax(180px,0.45fr)] 2xl:items-center">
               <CardTitle className="flex min-h-10 items-center gap-2 px-1 text-sm">
-                <FileText className="h-4 w-4 text-brand-primary" /> Parámetros del informe
+                <FileText className="h-4 w-4 text-brand-primary" aria-hidden="true" /> Parámetros del informe
               </CardTitle>
 
               <div className="min-w-0">
                 <label className="sr-only">Instrumento</label>
                 <Select value={instrumentCode} onValueChange={setInstrumentCode} disabled={!data?.informes.length}>
-                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white shadow-sm"><SelectValue placeholder="Selecciona instrumento" /></SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-white shadow-xs"><SelectValue placeholder="Selecciona instrumento" /></SelectTrigger>
                   <SelectContent>
                     {(data?.informes || []).map((item) => (
                       <SelectItem key={item.instrument_code} value={item.instrument_code}>
@@ -209,7 +209,7 @@ export default function PsicoEmpleadoInformesPage() {
 
               <div className="min-w-0">
                 <label className="sr-only">Estado</label>
-                <div className="flex h-10 items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm">
+                <div className="flex h-10 items-center gap-2 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-xs">
                   <span className={`font-black ${selectedReport?.available ? "text-emerald-700" : "text-amber-700"}`}>{statusLabel(selectedReport)}</span>
                   {selectedReport?.reason ? <span className="min-w-0 truncate text-xs text-slate-500">{selectedReport.reason}</span> : null}
                 </div>
@@ -217,13 +217,13 @@ export default function PsicoEmpleadoInformesPage() {
 
               <div className="grid gap-2 sm:grid-cols-3 2xl:col-span-3">
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={loadPreview} disabled={!selectedReport?.available || loadingHtml}>
-                  {loadingHtml ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}Actualizar
+                  {loadingHtml ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCcw className="mr-2 h-4 w-4" aria-hidden="true" />}Actualizar
                 </Button>
                 <Button variant="outline" className="h-10 rounded-xl whitespace-nowrap px-3" onClick={downloadDoc} disabled={!selectedReport?.available || downloadingDoc}>
-                  {downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileType2 className="mr-2 h-4 w-4" />}DOC editable
+                  {downloadingDoc ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <FileType2 className="mr-2 h-4 w-4" aria-hidden="true" />}DOC editable
                 </Button>
                 <Button className="h-10 rounded-xl bg-primary whitespace-nowrap px-3 hover:bg-primary-hover" onClick={downloadPdf} disabled={!selectedReport?.available || downloadingPdf}>
-                  {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer className="mr-2 h-4 w-4" />}PDF directo
+                  {downloadingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Printer className="mr-2 h-4 w-4" aria-hidden="true" />}PDF directo
                 </Button>
               </div>
             </div>
@@ -232,19 +232,19 @@ export default function PsicoEmpleadoInformesPage() {
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            <div className="flex items-center gap-2 font-black"><AlertTriangle className="h-4 w-4" /> Atención</div>
+            <div className="flex items-center gap-2 font-black"><AlertTriangle className="h-4 w-4" aria-hidden="true" /> Atención</div>
             <p className="mt-1">{error}</p>
           </div>
         ) : null}
 
-        <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-sm">
+        <Card className="overflow-hidden rounded-2xl border-slate-200 shadow-xs">
           <CardHeader className="border-b bg-slate-50/80">
             <CardTitle className="text-base">Vista previa</CardTitle>
             <p className="text-sm text-slate-500">{selectedReport?.titulo || "Selecciona un instrumento"}</p>
           </CardHeader>
           <CardContent className="p-0">
             {loadingHtml ? (
-              <div className="flex h-[calc(100vh-220px)] min-h-[820px] items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Generando informe...</div>
+              <div className="flex h-[calc(100vh-220px)] min-h-[820px] items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" /> Generando informe...</div>
             ) : html ? (
               <iframe title="Vista previa de informe individual" srcDoc={html} className="h-[calc(100vh-220px)] min-h-[820px] w-full bg-white" />
             ) : (

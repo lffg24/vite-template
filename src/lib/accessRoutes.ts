@@ -1,6 +1,20 @@
 const SUPERADMIN_ROLES = ["SUPER_ADMIN", "SUPERADMIN"];
 const PSICO_ROLES = ["PSICOLOGO_EVALUADOR"];
 
+// Permisos de Capacitaciones. Se declaran aqui y no se importan desde
+// `features/capacitaciones` a proposito: este archivo lo usa `ProtectedRoute`,
+// que carga en el arranque, y una flecha hacia un modulo de negocio metria el
+// modulo entero en el bundle inicial.
+const CAPACITACIONES_PERMISOS = [
+  "hseq.capacitacion.catalogo.editar",
+  "hseq.capacitacion.catalogo.publicar",
+  "hseq.capacitacion.asignar",
+];
+const LICITACIONES_PERMISOS = [
+  "licitaciones.opportunities.view",
+  "licitaciones.admin",
+];
+
 export const NO_ACCESS_ROUTE = "/sin-acceso";
 
 export const LEGACY_APP_ROUTES = [
@@ -47,11 +61,38 @@ export function routeByAccess(roles: string[] = [], permissions: string[] = []) 
     return "/psicosocial/resultados";
   }
 
+  // Ultimo, y es deliberado: colocado antes cambiaria el destino de quien tiene
+  // los dos modulos, que hoy aterriza en Psicosocial. Anadir Capacitaciones no
+  // puede mover a nadie de sitio.
+  if (CAPACITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))) {
+    return "/capacitaciones/cursos";
+  }
+
+  if (LICITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))) {
+    return "/licitaciones";
+  }
+
   return NO_ACCESS_ROUTE;
 }
 
 export function isLegacyAppRoute(path: string) {
   return LEGACY_APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
+}
+
+export function safeEffectiveRedirectPath(path: unknown, destinations: string[]) {
+  const fallback = (() => {
+    // Importar el árbol aquí crearía una dependencia circular. El servidor ya
+    // devuelve los destinos en el orden canónico del producto; la resolución
+    // del landing se hace en el componente que llama esta función.
+    return destinations[0] ?? NO_ACCESS_ROUTE;
+  })();
+  if (typeof path !== "string" || !path.startsWith("/")) return fallback;
+  if (path === "/" || path === "/login" || path === "/logout") return fallback;
+  if (isLegacyAppRoute(path)) return fallback;
+  const allowed = destinations.some(
+    (destination) => path === destination || path.startsWith(`${destination}/`)
+  );
+  return allowed ? path : fallback;
 }
 
 export function safeRedirectPath(path: unknown, roles: string[] = [], permissions: string[] = []) {
@@ -69,11 +110,25 @@ export function safeRedirectPath(path: unknown, roles: string[] = [], permission
   }
 
   if (
+    path.startsWith("/capacitaciones") &&
+    !CAPACITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))
+  ) {
+    return fallback;
+  }
+
+  if (
     path.startsWith("/psicosocial") &&
     !hasAnyRole(roles, PSICO_ROLES) &&
     !hasPermission(permissions, "psico.dashboard.view") &&
     !hasPermission(permissions, "psico.aplicaciones.view") &&
     !hasPermission(permissions, "psico.resultados.global.view")
+  ) {
+    return fallback;
+  }
+
+  if (
+    path.startsWith("/licitaciones") &&
+    !LICITACIONES_PERMISOS.some((p) => hasPermission(permissions, p))
   ) {
     return fallback;
   }

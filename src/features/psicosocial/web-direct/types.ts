@@ -4,10 +4,16 @@ export type WebDirectResponsible = {
   phone?: string | null;
 };
 
+export type WebDirectCompanyContact = {
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+};
+
 export type WebDirectApplicationContext = {
-  companyName: string;
   applicationName?: string | null;
   responsible?: WebDirectResponsible | null;
+  company?: WebDirectCompanyContact | null;
 };
 
 export type WebDirectIdentification = {
@@ -62,6 +68,7 @@ export type WebDirectQuestion = {
   questionId: number;
   order: number;
   text: string;
+  helpText?: string | null;
   options: WebDirectQuestionOption[];
   required?: boolean;
   dimensionCode?: string | null;
@@ -94,13 +101,21 @@ export type WebDirectDemographicOption = {
 export type WebDirectDemographicField = {
   id: string;
   label: string;
-  type: "text" | "number" | "date" | "select";
+  type: "text" | "number" | "date" | "select" | "municipality";
   required?: boolean;
   placeholder?: string;
   options?: WebDirectDemographicOption[];
   autoComplete?: string;
   min?: number;
   max?: number;
+  readOnly?: boolean;
+  departmentFieldId?: string;
+};
+
+export type WebDirectMunicipality = {
+  id: number;
+  municipio: string;
+  departamento?: string | null;
 };
 
 export type WebDirectDemographicSection = {

@@ -51,11 +51,52 @@ export type EmpleadoEmpresa = {
   id: number;
   cedula: string;
   nombre: string;
+  nombres?: string;
+  apellidos?: string;
+  identificador_externo?: string;
+  fecha_nacimiento?: string | null;
+  sexo?: string | null;
   cargo: string;
   area: string;
   email?: string;
   telefono?: string;
   activo?: boolean;
+};
+
+export type EmpleadoDeletionRecord = {
+  tipo: string;
+  label: string;
+  cantidad: number;
+};
+
+export type EmpleadoDeletionPreview = {
+  ok: boolean;
+  empleado: Pick<EmpleadoEmpresa, "id"> & { nombre: string; documento?: string | null };
+  bloqueada: boolean;
+  puede_eliminar: boolean;
+  registros: EmpleadoDeletionRecord[];
+  total_registros: number;
+};
+
+export type EmpresaDeletionApplication = {
+  id: number;
+  nombre: string;
+  estado: string;
+  estado_label: string;
+  colaboradores_registrados: number;
+};
+
+export type EmpresaDeletionPreview = {
+  ok: boolean;
+  empresa: { id: string; nombre: string; nit?: string | null };
+  bloqueada: boolean;
+  puede_eliminar: boolean;
+  aplicaciones_finalizadas: EmpresaDeletionApplication[];
+  aplicaciones_en_curso: EmpresaDeletionApplication[];
+  total_colaboradores: number;
+  colaboradores_registrados: Array<{ id: number; nombre: string; documento?: string | null }>;
+  creditos_consumidos: number;
+  creditos_no_restituidos: boolean;
 };
 
 export type CrearEmpleadoPayload = {
@@ -69,6 +110,7 @@ export type CrearEmpleadoPayload = {
   email?: string;
   telefono?: string;
   identificador_externo?: string;
+  fecha_nacimiento?: string;
 };
 
 export type EmpleadoImportError = {
@@ -149,6 +191,12 @@ export type PsicoApplicationCreditSummary = {
 };
 
 export type AplicacionDetalleEmpleado = EmpleadoEmpresa & {
+  web_direct_assignment?: {
+    forma_asignada?: "A" | "B" | null;
+    fecha_nacimiento?: string | null;
+    habilitado: boolean;
+    respondio_por_enlace?: boolean;
+  } | null;
   registrado: boolean;
   completo?: boolean;
   instrumentos_registrados: string[];
@@ -202,6 +250,17 @@ export const psicoAdminService = {
         headers: { "X-Empresa-Id": empresaId },
         body: JSON.stringify(payload),
       },
+    ),
+
+  previewEliminarEmpresa: (empresaId: string) =>
+    requestJson<EmpresaDeletionPreview>(`/psicosocial/admin/empresas/${empresaId}/eliminacion-preview`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  eliminarEmpresa: (empresaId: string) =>
+    requestJson<{ ok: boolean; deleted_empresa_id: string; message: string; creditos_consumidos_no_restituidos: number }>(
+      `/psicosocial/admin/empresas/${empresaId}?confirm=true`,
+      { method: "DELETE", headers: { "X-Empresa-Id": empresaId } },
     ),
 
   listarAreas: (empresaId: string, includeInactive = false) =>
@@ -270,6 +329,17 @@ export const psicoAdminService = {
       method: "POST",
       headers: { "X-Empresa-Id": empresaId },
       body: JSON.stringify(payload),
+    }),
+
+  previewEliminarEmpleado: (empresaId: string, empleadoId: number) =>
+    requestJson<EmpleadoDeletionPreview>(`/psicosocial/admin/empresas/${empresaId}/empleados/${empleadoId}/eliminacion-preview`, {
+      headers: { "X-Empresa-Id": empresaId },
+    }),
+
+  eliminarEmpleado: (empresaId: string, empleadoId: number) =>
+    requestJson<{ ok: boolean; deleted_id: number; message: string }>(`/psicosocial/admin/empresas/${empresaId}/empleados/${empleadoId}?confirm=true`, {
+      method: "DELETE",
+      headers: { "X-Empresa-Id": empresaId },
     }),
 
   importarEmpleados: (empresaId: string, file: File, dryRun = true) => {

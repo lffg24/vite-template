@@ -103,7 +103,7 @@ export function SociodemographicChartCard({
   const chartHeight = Math.max(height, Math.min(420, rows.length * 42 + 90));
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-xs">
       <header className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h3 className="truncate text-base font-semibold text-slate-950" title={title}>{title}</h3>
@@ -119,7 +119,7 @@ export function SociodemographicChartCard({
                 type="button"
                 onClick={() => setChartType(value)}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                  active ? "bg-white text-brand-primary shadow-sm" : "text-slate-600 hover:bg-white/70"
+                  active ? "bg-white text-brand-primary shadow-xs" : "text-slate-600 hover:bg-white/70"
                 }`}
                 title={`Ver como ${label.toLowerCase()}`}
               >

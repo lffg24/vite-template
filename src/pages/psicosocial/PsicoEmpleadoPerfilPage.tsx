@@ -26,6 +26,7 @@ import {
   type PsicoEmpleadoPerfil,
 } from "@/features/psicosocial/api/psicoEmpleadoService";
 import { psicoAdminService, type AreaEmpresa, type CargoEmpresa } from "@/features/psicosocial/api/psicoAdminService";
+import AbrilDatePicker from "@/features/psicosocial/components/AbrilDatePicker";
 
 const RISK_CLASS: Record<string, string> = {
   SIN_RIESGO: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -51,7 +52,7 @@ function validEmail(value: string) {
 
 function fmtDate(value?: string | null) {
   if (!value) return "Sin fecha";
-  const d = new Date(value);
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00` : value);
   if (Number.isNaN(d.getTime())) return value;
   return d.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "2-digit" });
 }
@@ -81,7 +82,7 @@ function InfoRow({ label, value }: { label: string; value: unknown }) {
 
 function SectionCard({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-bold text-brand-primary">
           {number}
@@ -95,7 +96,7 @@ function SectionCard({ number, title, children }: { number: number; title: strin
 
 function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplicacionEmpleado; onRegister: () => void; onResults: () => void }) {
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-brand-primary">Aplicación psicosocial</p>
@@ -142,16 +143,16 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
       ) : null}
 
       <div className="mt-5 flex flex-wrap justify-end gap-3">
-        <button type="button" onClick={onResults} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-sm hover:bg-slate-50">
-          <Eye className="h-4 w-4" /> Ver resultados
+        <button type="button" onClick={onResults} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 shadow-xs hover:bg-slate-50">
+          <Eye className="h-4 w-4" aria-hidden="true" /> Ver resultados
         </button>
         <button
           type="button"
           onClick={onRegister}
           disabled={!app.puede_registrar}
-          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-sm hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-black text-primary-foreground shadow-xs hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
         >
-          <ClipboardList className="h-4 w-4" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
+          <ClipboardList className="h-4 w-4" aria-hidden="true" /> {app.puede_registrar ? "Registrar / continuar" : "Ya completada"}
         </button>
       </div>
     </article>
@@ -160,7 +161,7 @@ function ApplicationStatusCard({ app, onRegister, onResults }: { app: PsicoAplic
 
 function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: PsicoAplicacionEmpleado[]; onClose: () => void; onSelect: (app: PsicoAplicacionEmpleado) => void; onResults: (app: PsicoAplicacionEmpleado) => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-xs">
       <div className="max-h-[88vh] w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-100 p-6">
           <div>
@@ -169,14 +170,14 @@ function ApplicationSelectModal({ apps, onClose, onSelect, onResults }: { apps: 
             <p className="mt-1 text-sm text-slate-500">No se permite registrar de nuevo una batería que ya está completa/calculada para este colaborador.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 p-2 hover:bg-slate-50">
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
         <div className="max-h-[64vh] overflow-y-auto p-6">
           {apps.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <ShieldAlert className="mx-auto h-10 w-10 text-slate-400" />
+              <ShieldAlert className="mx-auto h-10 w-10 text-slate-400" aria-hidden="true" />
               <h3 className="mt-3 text-lg font-black text-slate-900">No hay aplicaciones disponibles</h3>
               <p className="mt-1 text-sm text-slate-500">El colaborador no tiene una aplicación pendiente para registrar. Crea/asigna una batería o revisa las aplicaciones ya completadas.</p>
             </div>
@@ -209,6 +210,7 @@ type BaseEmployeeForm = {
   nombres: string;
   apellidos: string;
   cedula: string;
+  fecha_nacimiento: string;
   identificador_externo: string;
   correo: string;
   telefono: string;
@@ -221,6 +223,7 @@ function formFromPerfil(perfil: PsicoEmpleadoPerfil): BaseEmployeeForm {
     nombres: perfil.nombres || "",
     apellidos: perfil.apellidos || "",
     cedula: perfil.cedula || "",
+    fecha_nacimiento: perfil.fecha_nacimiento?.slice(0, 10) || "",
     identificador_externo: perfil.identificador_externo || "",
     correo: perfil.correo || "",
     telefono: perfil.telefono || "",
@@ -236,7 +239,7 @@ function TextInput({ value, onChange, type = "text", inputMode }: { value: strin
       inputMode={inputMode}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
+      className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20"
     />
   );
 }
@@ -322,6 +325,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
           nombres: form.nombres.trim(),
           apellidos: form.apellidos.trim(),
           cedula: form.cedula.trim(),
+          fecha_nacimiento: form.fecha_nacimiento || null,
           identificador_externo: form.identificador_externo.trim() || null,
           email: form.correo.trim().toLowerCase() || null,
           telefono: form.telefono.trim() || null,
@@ -340,7 +344,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/45 backdrop-blur-xs">
       <aside className="h-full w-full max-w-3xl overflow-y-auto bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
@@ -349,7 +353,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
             <p className="mt-1 text-sm text-slate-500">Estos datos aplican a ABRIL360. La ficha sociodemográfica se mantiene por aplicación.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 p-2 hover:bg-slate-50">
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -360,6 +364,16 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
             <BaseField label="Nombres *" error={errors.nombres}><TextInput value={form.nombres} onChange={(value) => update("nombres", value)} /></BaseField>
             <BaseField label="Apellidos *" error={errors.apellidos}><TextInput value={form.apellidos} onChange={(value) => update("apellidos", value)} /></BaseField>
             <BaseField label="Cédula *" error={errors.cedula}><TextInput value={form.cedula} onChange={(value) => update("cedula", value)} inputMode="numeric" /></BaseField>
+            <AbrilDatePicker
+              id="employee-birth-date"
+              label="Fecha de nacimiento"
+              value={form.fecha_nacimiento}
+              min="1900-01-01"
+              max={new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)}
+              error={errors.fecha_nacimiento}
+              describedBy={errors.fecha_nacimiento ? "employee-birth-date-error" : undefined}
+              onChange={(value) => update("fecha_nacimiento", value)}
+            />
             <BaseField label="Identificador externo"><TextInput value={form.identificador_externo} onChange={(value) => update("identificador_externo", value)} /></BaseField>
             <BaseField label="Correo" error={errors.correo}><TextInput type="email" value={form.correo} onChange={(value) => update("correo", value)} /></BaseField>
             <BaseField label="Teléfono" error={errors.telefono}><TextInput value={form.telefono} onChange={(value) => update("telefono", value)} inputMode="numeric" /></BaseField>
@@ -368,7 +382,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.area_id}
                 onChange={(event) => update("area_id", event.target.value)}
                 disabled={loadingCatalogs}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{loadingCatalogs ? "Cargando áreas..." : "Selecciona área"}</option>
                 {areas.map((area) => <option key={area.id} value={area.id}>{area.nombre}</option>)}
@@ -379,7 +393,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
                 value={form.cargo_id}
                 onChange={(event) => update("cargo_id", event.target.value)}
                 disabled={loadingCatalogs || !form.area_id}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-hidden transition focus:border-input-focus focus:ring-4 focus:ring-input-focus/20 disabled:bg-slate-50"
               >
                 <option value="">{form.area_id ? "Selecciona cargo" : "Selecciona primero un área"}</option>
                 {visibleCargos.map((cargo) => <option key={cargo.id} value={cargo.id}>{cargo.nombre}</option>)}
@@ -390,7 +404,7 @@ function EditBaseEmployeeModal({ perfil, onClose, onSaved }: { perfil: PsicoEmpl
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
             <button type="button" onClick={onClose} className="rounded-2xl border border-slate-200 px-5 py-3 font-bold text-slate-700 hover:bg-slate-50">Cancelar</button>
             <button disabled={saving} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover disabled:opacity-60">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
               Guardar cambios
             </button>
           </div>
@@ -447,7 +461,7 @@ export default function PsicoEmpleadoPerfilPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
-        <div className="flex items-center gap-3 text-slate-500"><Loader2 className="h-5 w-5 animate-spin" /> Cargando perfil...</div>
+        <div className="flex items-center gap-3 text-slate-500"><Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> Cargando perfil...</div>
         <div className="h-36 animate-pulse rounded-3xl bg-slate-100" />
         <div className="grid gap-5 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /><div className="h-80 animate-pulse rounded-3xl bg-slate-100" /></div>
       </div>
@@ -459,18 +473,18 @@ export default function PsicoEmpleadoPerfilPage() {
       <main className="mx-auto max-w-[1500px] space-y-5 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50">
-              <ArrowLeft className="h-4 w-4" /> Volver
+            <button type="button" onClick={() => navigate(-1)} className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 shadow-xs hover:bg-slate-50">
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Volver
             </button>
             <h1 className="text-3xl font-black tracking-tight md:text-4xl">Perfil del empleado</h1>
             <p className="mt-1 text-slate-500">Consulta la base transversal del colaborador y sus aplicaciones psicosociales.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
-              <FileText className="h-4 w-4" /> Editar colaborador
+            <button type="button" onClick={() => perfil && setShowEditModal(true)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50">
+              <FileText className="h-4 w-4" aria-hidden="true" /> Editar colaborador
             </button>
             <button type="button" onClick={() => setShowAppModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover">
-              <ClipboardList className="h-4 w-4" /> Registrar respuestas
+              <ClipboardList className="h-4 w-4" aria-hidden="true" /> Registrar respuestas
             </button>
           </div>
         </div>
@@ -478,7 +492,7 @@ export default function PsicoEmpleadoPerfilPage() {
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
         <section className="grid gap-5 lg:grid-cols-[1fr_430px]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
               <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-accent text-3xl font-black text-brand-primary">
                 {(nombre.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("") || "CE").toUpperCase()}
@@ -486,15 +500,15 @@ export default function PsicoEmpleadoPerfilPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="text-2xl font-black text-slate-950">{nombre}</h2>
                 <div className="mt-5 grid gap-4 md:grid-cols-3">
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
-                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
-                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-brand-primary" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><IdCard className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Documento</p><p className="font-bold text-slate-800">{display(perfil?.cedula)}</p></div></div>
+                  <div className="flex items-start gap-3 border-r border-slate-100 pr-4"><BriefcaseBusiness className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Cargo</p><p className="font-bold text-slate-800">{display(perfil?.cargo)}</p></div></div>
+                  <div className="flex items-start gap-3"><Building2 className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><p className="text-xs text-slate-500">Empresa</p><p className="font-bold text-slate-800">{display(perfil?.empresa, "Empresa actual")}</p></div></div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-slate-500">Última batería</p>
@@ -504,7 +518,7 @@ export default function PsicoEmpleadoPerfilPage() {
               <div>
                 <p className="text-sm text-slate-500">Estado de batería</p>
                 <div className={`mt-2 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black ${latestApp?.bateria_completa ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                  <CheckCircle2 className="h-4 w-4" /> {latestApp?.estado_bateria || "Sin dato"}
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> {latestApp?.estado_bateria || "Sin dato"}
                 </div>
               </div>
             </div>
@@ -516,7 +530,7 @@ export default function PsicoEmpleadoPerfilPage() {
           </div>
         </section>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-xs">
           <button type="button" onClick={() => setTab("perfil")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "perfil" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Perfil</button>
           <button type="button" onClick={() => setTab("aplicaciones")} className={`rounded-2xl px-4 py-2 text-sm font-black ${tab === "aplicaciones" ? "bg-primary text-primary-foreground" : "text-slate-600 hover:bg-slate-50"}`}>Aplicaciones y resultados</button>
         </div>
@@ -524,7 +538,7 @@ export default function PsicoEmpleadoPerfilPage() {
         {tab === "perfil" ? (
           <section className="grid gap-5 lg:grid-cols-3">
             <SectionCard number={1} title="Identificación y contacto">
-              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Nombres" value={perfil?.nombres} /><InfoRow label="Apellidos" value={perfil?.apellidos} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Identificador externo" value={perfil?.identificador_externo} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
+              <InfoRow label="Nombre completo" value={nombre} /><InfoRow label="Nombres" value={perfil?.nombres} /><InfoRow label="Apellidos" value={perfil?.apellidos} /><InfoRow label="Número de documento" value={perfil?.cedula} /><InfoRow label="Fecha de nacimiento" value={perfil?.fecha_nacimiento ? fmtDate(perfil.fecha_nacimiento) : null} /><InfoRow label="Identificador externo" value={perfil?.identificador_externo} /><InfoRow label="Correo electrónico" value={perfil?.correo} /><InfoRow label="Teléfono" value={perfil?.telefono} />
             </SectionCard>
             <SectionCard number={2} title="Asignación organizacional">
               <InfoRow label="Empresa" value={perfil?.empresa} /><InfoRow label="Área / departamento" value={perfil?.area} /><InfoRow label="Cargo" value={perfil?.cargo} />
@@ -542,7 +556,7 @@ export default function PsicoEmpleadoPerfilPage() {
         )}
 
         <section className="rounded-3xl border border-accent bg-accent/70 p-5 text-sm text-slate-700">
-          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-brand-primary" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
+          <div className="flex items-start gap-3"><LockKeyhole className="mt-0.5 h-5 w-5 text-brand-primary" aria-hidden="true" /><div><h3 className="font-black text-slate-950">Información confidencial</h3><p className="mt-1">Los datos aquí mostrados son confidenciales. Su uso es exclusivo para evaluación y gestión del riesgo psicosocial.</p></div></div>
         </section>
       </main>
 

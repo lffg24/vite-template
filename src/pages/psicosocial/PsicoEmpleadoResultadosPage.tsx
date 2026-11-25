@@ -209,7 +209,7 @@ function MetricCard({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-          <p className="mt-1 break-words text-2xl font-black text-foreground">{value}</p>
+          <p className="mt-1 wrap-break-word text-2xl font-black text-foreground">{value}</p>
           {helper ? <p className="mt-1 text-xs text-muted-foreground">{helper}</p> : null}
         </div>
       </div>
@@ -417,7 +417,7 @@ function RespuestasTable({ rows }: { rows: RespuestaRow[] }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Buscar pregunta, respuesta o dimensión..."
-          className="rounded-2xl border border-input bg-surface px-4 py-3 text-sm outline-none focus:border-input-focus focus:ring-2 focus:ring-input-focus/20 md:col-span-2"
+          className="rounded-2xl border border-input bg-surface px-4 py-3 text-sm outline-hidden focus:border-input-focus focus:ring-2 focus:ring-input-focus/20 md:col-span-2"
         />
         <select value={instrumento} onChange={(event) => setInstrumento(event.target.value)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
           <option value="TODOS">Todos los instrumentos</option>
@@ -544,18 +544,18 @@ export default function PsicoEmpleadoResultadosPage() {
           <button
             type="button"
             onClick={() => navigate(`/psicosocial/empleados/${empleadoId}`)}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Volver al perfil
           </button>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/respuestas`)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-xs hover:bg-slate-50"
             >
-              <ClipboardList className="h-4 w-4" />
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
               Ver respuestas
             </button>
             <button
@@ -563,7 +563,7 @@ export default function PsicoEmpleadoResultadosPage() {
               onClick={() => navigate(`/psicosocial/empleados/${empleadoId}/aplicaciones/${aplicacionId}/informes`)}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-card hover:bg-primary-hover"
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4" aria-hidden="true" />
               Informes individuales
             </button>
           </div>
@@ -572,7 +572,7 @@ export default function PsicoEmpleadoResultadosPage() {
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
             <div className="flex items-center gap-2 font-bold">
-              <AlertTriangle className="h-5 w-5" />
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
               No fue posible cargar el resultado individual
             </div>
             <p className="mt-1 text-sm">{error}. Si el colaborador no tiene resultados calculados, finaliza y calcula la aplicación antes de consultar esta vista.</p>
@@ -587,12 +587,12 @@ export default function PsicoEmpleadoResultadosPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-black uppercase tracking-wide text-brand-sky">Resultado individual</p>
-                <h1 className="mt-1 break-words text-3xl font-black text-foreground lg:text-4xl">
+                <h1 className="mt-1 wrap-break-word text-3xl font-black text-foreground lg:text-4xl">
                   {data?.empleado?.nombre_completo || `Colaborador ${empleadoId}`}
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-brand-primary" />CC {data?.empleado?.cedula || "Sin dato"}</span>
-                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-brand-primary" />{data?.empleado?.cargo || "Sin cargo"}</span>
+                  <span className="inline-flex items-center gap-2"><UserRound className="h-4 w-4 text-brand-primary" aria-hidden="true" />CC {data?.empleado?.cedula || "Sin dato"}</span>
+                  <span className="inline-flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-brand-primary" aria-hidden="true" />{data?.empleado?.cargo || "Sin cargo"}</span>
                   <span>{data?.empleado?.area || "Sin área"}</span>
                 </div>
               </div>
@@ -617,7 +617,7 @@ export default function PsicoEmpleadoResultadosPage() {
 
         <section className="rounded-3xl border border-accent bg-accent/50 p-5">
           <div className="flex gap-3">
-            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" />
+            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-primary" aria-hidden="true" />
             <div>
               <p className="font-black text-foreground">Lectura normativa</p>
               <p className="mt-1 text-sm leading-6 text-foreground-soft">

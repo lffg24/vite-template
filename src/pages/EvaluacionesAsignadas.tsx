@@ -154,7 +154,7 @@ export default function EvaluacionesAsignadas() {
       {/* Buscador + filtro (placeholder) */}
       <div className="flex gap-2 items-center">
         <div className="relative w-full max-w-xl">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -163,7 +163,7 @@ export default function EvaluacionesAsignadas() {
           />
         </div>
         <Button variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
+          <Filter className="h-4 w-4 mr-2" aria-hidden="true" />
           Filtrar
         </Button>
       </div>

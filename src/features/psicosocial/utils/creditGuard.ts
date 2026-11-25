@@ -1,8 +1,6 @@
 import { AbrilApiError } from "@/features/psicosocial/api/httpClient";
 
 export const CREDIT_PURCHASE_WHATSAPP_URL = "https://wa.me/573002458438";
-export const REL_PRIMARY_COLOR = "#00b89f";
-export const REL_PRIMARY_HOVER_COLOR = "#009b88";
 
 export type CreditGuardInfo = {
   isInsufficient: boolean;

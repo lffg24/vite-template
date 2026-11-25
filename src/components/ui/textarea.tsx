@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { CLASE_CONTROL } from "@/shared/ui/controles"
 
 const Textarea = React.forwardRef<
   HTMLTextAreaElement,
@@ -8,10 +9,10 @@ const Textarea = React.forwardRef<
 >(({ className, ...props }, ref) => {
   return (
     <textarea
-      className={cn(
-        "flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        className
-      )}
+      /* Mismo tratamiento que `Input`, y ahora por construccion y no por
+         copia: los dos piden `CLASE_CONTROL`. Lo unico propio del area de
+         texto es su alto minimo. */
+      className={cn(CLASE_CONTROL, "flex min-h-[80px]", className)}
       ref={ref}
       {...props}
     />

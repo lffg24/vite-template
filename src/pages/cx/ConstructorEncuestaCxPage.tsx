@@ -1,0 +1,152 @@
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { DialogoConfirmacion } from "@/shared/ui/DialogoConfirmacion";
+import { EsqueletoLista, ZonaCargando } from "@/shared/ui/Esqueleto";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, ClipboardList, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Casilla } from "@/shared/ui/Casilla";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { EstadoVacio } from "@/shared/ui/EstadoVacio";
+import { Panel } from "@/shared/ui/Panel";
+import { clonarVersionCx, editarEncuestaCx, obtenerEncuestaCx, publicarEncuestaCx } from "@/services/cxEncuestasService";
+import type { ContactoCx, EncuestaCx, ItemCx, TipoItemCx } from "@/types/cxEncuestas";
+import { listarCatalogoCx } from "@/services/cxPuntosFactoresService";
+import type { FactorCx } from "@/types/cxPuntosFactores";
+import { Desplegable } from "@/shared/ui/Desplegable";
+import { Caja } from "@/shared/ui/Caja";
+
+const inicio: ItemCx = { tipo: "CSAT", enunciado: "¿Qué tan satisfecho estás con la experiencia?", obligatorio: true };
+const nombres: Record<TipoItemCx, string> = { NPS_RELACIONAL: "NPS relacional · 0 a 10", NPS_EXPERIENCIA: "NPS experiencia · 0 a 10", CSAT: "CSAT · 1 a 5", CES: "CES · 1 a 7", FACTOR: "Factor · 1 a 5" };
+
+export default function ConstructorEncuestaCxPage() {
+  const { id } = useParams<{ id: string }>();
+  const [encuesta, setEncuesta] = useState<EncuestaCx | null>(null);
+  const [titulo, setTitulo] = useState("");
+  const [items, setItems] = useState<ItemCx[]>([]);
+  // `null` es encuesta anónima, y es el estado en que nace cualquier encuesta.
+  const [contacto, setContacto] = useState<ContactoCx | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+  const [errorAccion, setErrorAccion] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const [sucio, setSucio] = useState(false);
+  const [confirmar, setConfirmar] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const [factores, setFactores] = useState<FactorCx[]>([]);
+  const [cursorFactores, setCursorFactores] = useState<string | null>(null);
+  const [errorFactores, setErrorFactores] = useState("");
+  const [cargandoFactores, setCargandoFactores] = useState(false);
+
+  const cargarFactores = useCallback(async (cursor?: string | null) => {
+    setCargandoFactores(true); setErrorFactores("");
+    try {
+      const pagina = await listarCatalogoCx<FactorCx>("factores", { activo: true, limite: 50, cursor });
+      setFactores((actuales) => cursor ? [...actuales, ...pagina.items] : pagina.items);
+      setCursorFactores(pagina.siguiente_cursor);
+    } catch (e) { setErrorFactores((e as Error).message); }
+    finally { setCargandoFactores(false); }
+  }, []);
+  useEffect(() => { void cargarFactores(); }, [cargarFactores]);
+
+  const aplicar = useCallback((dato: EncuestaCx) => {
+    setEncuesta(dato); setTitulo(dato.titulo); setItems(dato.borrador);
+    setContacto(dato.contacto); setSucio(false);
+  }, []);
+  useEffect(() => {
+    if (!id) return;
+    let vigente = true;
+    setCargando(true); setError("");
+    obtenerEncuestaCx(id).then((dato) => { if (vigente) aplicar(dato); })
+      .catch((e: Error) => { if (vigente) setError(e.message); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
+  }, [id, revision, aplicar]);
+
+  function actualizar(indice: number, parcial: Partial<ItemCx>) {
+    setItems((actuales) => actuales.map((item, n) => n === indice ? { ...item, ...parcial } : item));
+    setSucio(true); setMensaje("");
+  }
+
+  async function guardar(e: FormEvent) {
+    e.preventDefault();
+    if (!id) return;
+    setErrorAccion(""); setMensaje("");
+    if (!titulo.trim() || items.some((i) => !i.enunciado.trim() || (i.tipo === "FACTOR" && !i.factor_id))) {
+      setErrorAccion("Completa el título, los enunciados y el factor de cada pregunta."); return;
+    }
+    setOcupado(true);
+    try { aplicar(await editarEncuestaCx(id, { titulo: titulo.trim(), items, contacto })); setMensaje("Borrador guardado."); }
+    catch (error) { setErrorAccion((error as Error).message); }
+    finally { setOcupado(false); }
+  }
+
+  async function clonar() {
+    if (!id) return;
+    setOcupado(true); setErrorAccion(""); setMensaje("");
+    try { aplicar(await clonarVersionCx(id)); setMensaje("Borrador creado desde la última versión. Puedes editarlo sin alterar la versión publicada."); }
+    catch (error) { setErrorAccion((error as Error).message); }
+    finally { setOcupado(false); }
+  }
+
+  async function publicar() {
+    if (!id) return;
+    setOcupado(true); setErrorAccion(""); setMensaje("");
+    try { aplicar(await publicarEncuestaCx(id)); setMensaje("Nueva versión publicada. Las versiones anteriores conservan sus preguntas y respuestas."); setConfirmar(false); }
+    catch (error) { setErrorAccion((error as Error).message); setConfirmar(false); }
+    finally { setOcupado(false); }
+  }
+
+  if (cargando)
+    return (
+      <ZonaCargando cargando etiqueta="Cargando constructor" esqueleto={<EsqueletoLista fichas={4} className="p-6" />}>
+        <span />
+      </ZonaCargando>
+    );
+  if (error || !encuesta) return <div role="alert" className="p-6 text-rel-danger">{error || "Encuesta no disponible."}<Button variant="relOutline" className="ml-3" onClick={() => setRevision((n) => n + 1)}>Reintentar</Button></div>;
+
+  const principalValido = items.length > 0 && items[0].tipo !== "FACTOR" && items[0].obligatorio;
+  const publicable = !sucio && principalValido && items.every((i) => i.enunciado.trim() && (i.tipo !== "FACTOR" || i.factor_id)) && !ocupado;
+  const ultima = encuesta.versiones[0];
+
+  return <div className="space-y-5">
+    <Link viewTransition to="/cx/encuestas" className="inline-flex items-center gap-2 text-sm font-medium text-rel-primary underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rel-primary"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a encuestas</Link>
+    <PageHeader antetitulo={`Encuesta · ${encuesta.codigo}`} titulo="Constructor de encuesta" descripcion="Define una medición corta, guarda el borrador y publica una versión verificable." icono={ClipboardList} />
+    {mensaje ? <Caja role="status" como="p" tono="hundida" className="text-rel-dark">{mensaje}</Caja> : null}
+    {errorAccion ? <p role="alert" className="rounded-rel-card border border-rel-danger p-4 text-rel-danger">{errorAccion}</p> : null}
+    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)]">
+      <form onSubmit={guardar} className="min-w-0 space-y-5">
+        <Panel titulo="Borrador editable">
+          <div><Label htmlFor="cx-titulo-editor">Título *</Label><Input id="cx-titulo-editor" value={titulo} maxLength={200} disabled={ocupado} onChange={(e) => { setTitulo(e.target.value); setSucio(true); }} /></div>
+          {items.length === 0 ? <EstadoVacio escena="ninguna" className="mt-5" titulo="El borrador está vacío" descripcion="Empieza por el indicador principal; los factores se añaden después, hasta once." accion={<Button type="button" variant="relOutline" disabled={ocupado} onClick={() => { setItems([inicio]); setSucio(true); }}>Agregar indicador principal</Button>} /> : null}
+          <ol className="mt-5 space-y-4">{items.map((item, indice) => <li key={indice} className="rounded-rel-card border border-rel-border p-4"><div className="mb-3 flex items-center justify-between gap-2"><strong>{indice === 0 ? "Indicador principal" : `Factor ${indice}`}</strong>{indice > 0 ? <Button type="button" variant="relOutline" size="sm" disabled={ocupado} aria-label={`Quitar factor ${indice}`} onClick={() => { setItems((actuales) => actuales.filter((_, n) => n !== indice)); setSucio(true); }}><Trash2 className="h-4 w-4" aria-hidden="true" /></Button> : null}</div><div className="grid gap-3"><div><Label htmlFor={`tipo-${indice}`}>Escala</Label><Desplegable id={`tipo-${indice}`} value={item.tipo} disabled={ocupado || indice > 0} onChange={(e) => actualizar(indice, { tipo: e.target.value as TipoItemCx })}>{indice === 0 ? Object.entries(nombres).filter(([tipo]) => tipo !== "FACTOR").map(([tipo, nombre]) => <option key={tipo} value={tipo}>{nombre}</option>) : <option value="FACTOR">{nombres.FACTOR}</option>}</Desplegable></div>{indice > 0 ? <div><Label htmlFor={`factor-${indice}`}>Factor del catálogo *</Label><Desplegable id={`factor-${indice}`} value={item.factor_id || ""} disabled={ocupado || cargandoFactores} onChange={(e) => actualizar(indice, { factor_id: e.target.value || null })}><option value="">Selecciona un factor</option>{item.factor_id && !factores.some((factor) => factor.id === item.factor_id) ? <option value={item.factor_id}>Factor de una versión anterior</option> : null}{factores.map((factor) => <option key={factor.id} value={factor.id}>{factor.nombre}</option>)}</Desplegable>{errorFactores ? <p role="alert" className="mt-1 text-sm text-rel-danger">{errorFactores}</p> : null}{cursorFactores ? <Button type="button" variant="relGhost" size="sm" disabled={cargandoFactores} onClick={() => void cargarFactores(cursorFactores)}>Cargar más factores</Button> : null}</div> : null}<div><Label htmlFor={`enunciado-${indice}`}>Pregunta *</Label><Input id={`enunciado-${indice}`} value={item.enunciado} maxLength={500} disabled={ocupado} onChange={(e) => actualizar(indice, { enunciado: e.target.value })} /></div><Casilla marcada={item.obligatorio} deshabilitada={ocupado || indice === 0} alCambiar={(obligatorio) => actualizar(indice, { obligatorio })} etiqueta={`Respuesta obligatoria${indice === 0 ? " para el indicador" : ""}`} /></div></li>)}</ol>
+          <div className="mt-5 flex flex-wrap gap-2">{items.length > 0 && items.length < 12 ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={() => { setItems((actuales) => [...actuales, { tipo: "FACTOR", enunciado: "", obligatorio: false }]); setSucio(true); }}><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Agregar factor</Button> : null}</div>
+        </Panel>
+        <Panel titulo="Datos de contacto del encuestado">
+          <p className="text-sm text-rel-muted">Por omisión la encuesta es anónima y no pide ningún dato personal. Activarlo convierte la medición en tratamiento de datos personales (Ley 1581 de 2012).</p>
+          <Casilla className="mt-4" marcada={contacto !== null} deshabilitada={ocupado} alCambiar={(marcada) => { setContacto(marcada ? { pide_telefono: false } : null); setSucio(true); setMensaje(""); }} etiqueta="Pedir datos de contacto al final de la encuesta" descripcion="Nombre y correo serán obligatorios para quien decida dejarlos. Nadie queda obligado a identificarse: sin autorización, la calificación se envía igual y de forma anónima." />
+          {contacto !== null ? <div className="mt-4 border-t border-rel-border pt-4">
+            <Casilla marcada={contacto.pide_telefono} deshabilitada={ocupado} alCambiar={(marcada) => { setContacto({ pide_telefono: marcada }); setSucio(true); setMensaje(""); }} etiqueta="Pedir también el teléfono" descripcion="Opcional para quien responde; es el único campo que puede quedar en blanco." />
+            <Caja como="p" tono="hundida" className="mt-4 text-sm text-rel-dark">Para publicar esta versión hace falta un texto vigente de autorización de tratamiento de datos. Si no existe, la publicación se rechaza.</Caja>
+          </div> : null}
+        </Panel>
+        <Panel><div className="flex flex-col gap-3 sm:flex-row"><Button type="submit" variant="rel" disabled={ocupado || !sucio} className="w-full sm:w-auto">{ocupado ? "Guardando…" : "Guardar borrador"}</Button><Button type="button" variant="relOutline" disabled={!publicable} onClick={() => setConfirmar(true)} className="w-full sm:w-auto">Publicar versión</Button>{items.length === 0 && ultima ? <Button type="button" variant="relOutline" disabled={ocupado} onClick={clonar} className="w-full sm:w-auto">Crear v{ultima.numero + 1} desde la última</Button> : null}</div><p className="mt-3 text-sm text-rel-muted">{sucio ? "Guarda los cambios antes de publicar." : !principalValido ? "Añade un indicador principal obligatorio para publicar." : "La publicación fija las preguntas y su escala. Una edición posterior crea otra versión."}</p></Panel>
+      </form>
+      <div className="min-w-0 space-y-5"><Panel titulo="Vista previa móvil"><div className="mx-auto max-w-sm rounded-rel-card border border-rel-border bg-rel-canvas p-4"><p className="text-xs font-semibold uppercase tracking-wide text-rel-muted">ABRIL360 · Calificación</p><h2 className="mt-2 wrap-break-word font-rel-heading text-xl font-bold">{titulo || "Título de la encuesta"}</h2>{items[0] ? <div className="mt-5"><p className="font-semibold">{items[0].enunciado || "Escribe la pregunta principal"}</p><p className="mt-2 text-sm text-rel-muted">{nombres[items[0].tipo]}</p><div className="mt-3 flex flex-wrap gap-2">{Array.from({ length: items[0].tipo.startsWith("NPS") ? 11 : items[0].tipo === "CES" ? 7 : 5 }, (_, n) => <span key={n} className="grid h-8 w-8 place-items-center rounded-rel-control border border-rel-border bg-rel-surface text-sm">{n + (items[0].tipo.startsWith("NPS") ? 0 : 1)}</span>)}</div></div> : <p className="mt-5 text-sm text-rel-muted">Aquí verás la primera pregunta.</p>}</div><p className="mt-3 text-xs text-rel-muted">La vista previa muestra el borrador local; el enlace público solo presenta versiones publicadas.</p></Panel><Panel titulo="Historial publicado">{encuesta.versiones.length ? <ul className="space-y-3">{encuesta.versiones.map((v) => <li key={v.id} className="flex items-center justify-between gap-2 border-b border-rel-border pb-3"><span>Versión {v.numero}<small className="block text-rel-muted">{v.items.length} preguntas · {nombres[v.items[0].tipo]}</small><small className="block text-rel-muted">{v.contacto ? `Pide contacto${v.contacto.pide_telefono ? " y teléfono" : ""}` : "Anónima"}</small></span><Badge variant="relSuccess">Publicada</Badge></li>)}</ul> : <EstadoVacio escena="ninguna" titulo="Sin versiones publicadas" descripcion="La primera publicación fija las preguntas y su escala; el enlace de campaña solo muestra versiones publicadas." />}</Panel></div>
+    </div>
+    <DialogoConfirmacion
+      abierto={confirmar}
+      alCerrar={() => setConfirmar(false)}
+      tono="atencion"
+      titulo="Publicar versión"
+      descripcion={`Las preguntas, las escalas y la captura de contacto quedarán inmutables. Para cambiarlas después crearás una versión nueva; los QR impresos seguirán ligados al enlace de campaña. ${contacto !== null ? "Esta versión pedirá nombre y correo con autorización expresa de tratamiento de datos." : "Esta versión será anónima: no pedirá ningún dato personal."}`}
+      etiquetaConfirmar="Publicar"
+      etiquetaOcupado="Publicando…"
+      ocupado={ocupado}
+      alConfirmar={() => void publicar()}
+    />
+  </div>;
+}

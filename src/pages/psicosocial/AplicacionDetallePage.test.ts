@@ -2,15 +2,27 @@ import { describe, expect, it } from "vitest";
 import {
   buildApplicationEmployeeSocioDraft,
   buildParticipantsReportUrl,
+  employeeProfilePath,
   hasApplicationEmployeeSocioData,
   participantActionLabel,
   participantInstrumentChips,
   participantStatusLabel,
+  respondioPorEnlaceWeb,
   sortApplicationParticipants,
+  webDirectLatestBirthDate,
 } from "./AplicacionDetallePage";
 import { normalizeSocioOptions } from "@/features/psicosocial/components/sociodemografia/SociodemografiaFields";
 
 describe("application employee sociodemographic draft", () => {
+  it("limita la fecha de acceso web al día exacto en que se cumplen 18 años", () => {
+    expect(webDirectLatestBirthDate(new Date(2026, 10, 22))).toBe("2008-11-22");
+    expect(webDirectLatestBirthDate(new Date(2027, 1, 28))).toBe("2009-02-28");
+  });
+
+  it("construye la ruta de edición del colaborador desde el detalle de aplicación", () => {
+    expect(employeeProfilePath(1716)).toBe("/psicosocial/empleados/1716");
+  });
+
   it("no intenta guardar ficha cuando los campos opcionales estan vacios", () => {
     expect(hasApplicationEmployeeSocioData({ sexo: "", anio_nacimiento: null })).toBe(false);
   });
@@ -121,6 +133,11 @@ describe("application participant status chips", () => {
     expect(participantStatusLabel({ registrado: false, completo: false })).toBe("Por tabular");
     expect(participantStatusLabel({ registrado: true, completo: false })).toBe("En captura");
     expect(participantStatusLabel({ registrado: true, completo: true })).toBe("Completo");
+  });
+
+  it("distingue una respuesta completada por enlace de una mera asignación web", () => {
+    expect(respondioPorEnlaceWeb({ web_direct_assignment: { habilitado: true, respondio_por_enlace: true } })).toBe(true);
+    expect(respondioPorEnlaceWeb({ web_direct_assignment: { habilitado: true, respondio_por_enlace: false } })).toBe(false);
   });
 
   it("ordena por defecto por estado y luego por nombre", () => {

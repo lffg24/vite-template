@@ -180,7 +180,7 @@ function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet", compact 
     yellow: "bg-amber-50 text-amber-700 border-amber-100",
   };
   return (
-    <Card className={cn("h-full overflow-hidden border-slate-200 bg-white/90 shadow-sm", compact ? "min-h-[112px]" : "min-h-[124px]")}> 
+    <Card className={cn("h-full overflow-hidden border-slate-200 bg-white/90 shadow-xs", compact ? "min-h-[112px]" : "min-h-[124px]")}>
       <CardContent className={cn("h-full", compact ? "p-4" : "p-5")}>
         <div className="flex h-full min-w-0 items-start gap-3">
           <div className={cn("shrink-0 rounded-2xl border", compact ? "p-2.5" : "p-3", tones[tone])}>
@@ -190,7 +190,7 @@ function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet", compact 
             <div className="truncate text-xs font-semibold uppercase tracking-wide text-slate-500" title={title}>{title}</div>
             <div
               className={cn(
-                "mt-1 font-bold leading-[1.12] tracking-tight text-slate-950 [overflow-wrap:anywhere]",
+                "mt-1 font-bold leading-[1.12] tracking-tight text-slate-950 wrap-anywhere",
                 compact ? "line-clamp-2 text-[clamp(1.15rem,1.25vw,1.55rem)]" : "line-clamp-2 text-[clamp(1.25rem,1.45vw,1.75rem)]"
               )}
               title={valueTitle ?? (typeof value === "string" ? value : undefined)}
@@ -352,7 +352,7 @@ function InstrumentMiniDistribution({ item }: { item: InstrumentRiskSummary }) {
     return (ao === -1 ? 999 : ao) - (bo === -1 ? 999 : bo);
   });
   return (
-    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="line-clamp-2 text-sm font-bold text-slate-950" title={item.label}>{item.label}</div>
@@ -390,7 +390,7 @@ function InstrumentOverviewSection({ data }: { data: any }) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => <InstrumentMiniDistribution key={String(item.key ?? item.label)} item={item} />)}
       </div>
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-slate-200 shadow-xs">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Vista comparativa por instrumento</CardTitle>
           <CardDescription>Resumen visual de los resultados oficiales por Intralaboral A/B, Extralaboral y Estrés. El total general se presenta por separado para evitar doble lectura.</CardDescription>
@@ -423,7 +423,7 @@ function RankingList({ items }: { items: DimensionPsico[] }) {
             <div className={cn("rounded-full border px-2 py-0.5 text-xs font-semibold", riesgoTone(item.pct_alto_muy_alto))}>{fmtPct(item.pct_alto_muy_alto)}</div>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500" style={{ width: `${Math.max(4, (item.pct_alto_muy_alto / max) * 100)}%` }} />
+            <div className="h-full rounded-full bg-linear-to-r from-amber-400 via-orange-500 to-red-500" style={{ width: `${Math.max(4, (item.pct_alto_muy_alto / max) * 100)}%` }} />
           </div>
           <div className="text-xs text-slate-500">{item.instrument_label} · promedio {fmtNum(item.promedio_transformado)}</div>
         </div>
@@ -437,7 +437,7 @@ function DominioCards({ dominios, onOpen }: { dominios: DominioPsico[]; onOpen?:
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {dominios.slice(0, 8).map((dom) => (
-        <button key={`${dom.evaluacion_id}-${dom.dominio_code}`} type="button" onClick={() => onOpen?.(dom)} className="w-full rounded-2xl border bg-white p-3 text-left shadow-sm transition hover:border-brand-primary/20 hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-input-focus/30">
+        <button key={`${dom.evaluacion_id}-${dom.dominio_code}`} type="button" onClick={() => onOpen?.(dom)} className="w-full rounded-2xl border bg-white p-3 text-left shadow-xs transition hover:border-brand-primary/20 hover:bg-accent/40 focus:outline-hidden focus:ring-2 focus:ring-input-focus/30">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900" title={dom.dominio_label}>{dom.dominio_label}</div>
@@ -501,7 +501,7 @@ function TotalesTable({ items }: { items: TotalPsico[] }) {
 function AreaDetailSection({ areas = [] }: { areas?: AreaDetallePsico[] }) {
   if (!areas.length) {
     return (
-      <Card className="border-slate-200 shadow-sm xl:col-span-3">
+      <Card className="border-slate-200 shadow-xs xl:col-span-3">
         <CardHeader>
           <CardTitle>Detalle por área</CardTitle>
           <CardDescription>Disponible cuando los colaboradores tienen áreas registradas en cargos/áreas.</CardDescription>
@@ -514,7 +514,7 @@ function AreaDetailSection({ areas = [] }: { areas?: AreaDetallePsico[] }) {
   }
 
   return (
-    <Card className="border-slate-200 shadow-sm xl:col-span-3">
+    <Card className="border-slate-200 shadow-xs xl:col-span-3">
       <CardHeader>
         <CardTitle>Detalle analítico por área</CardTitle>
         <CardDescription>
@@ -640,9 +640,9 @@ function NormativeRiskTable({ table, compact = false }: { table: NormativaTable;
             {filas.map((row: NormativaRow, idx: number) => {
               const isTotal = row.tipo === "DOMINIO_TOTAL" || row.tipo === "TOTAL";
               return (
-                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-accent/60 font-semibold")}> 
+                <tr key={String(row.codigo ?? idx)} className={cn("hover:bg-slate-50/70", isTotal && "bg-accent/60 font-semibold")}>
                   <td className="px-4 py-3">
-                    <div className="break-words font-medium text-slate-900">{row.nombre ?? row.codigo ?? "Sin nombre"}</div>
+                    <div className="wrap-break-word font-medium text-slate-900">{row.nombre ?? row.codigo ?? "Sin nombre"}</div>
                     {isTotal && <div className="mt-1 text-[11px] uppercase tracking-wide text-brand-primary">Resultado consolidado</div>}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold">{fmtNum(row.puntaje_transformado)}</td>
@@ -736,7 +736,7 @@ function MultiCheckboxFilter<T extends string>({
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" className="h-10 w-full justify-between rounded-xl bg-white px-3 font-normal text-slate-700" aria-label={ariaLabel}>
           <span className="truncate">{multiSelectLabel(value, options, labels, allLabel)}</span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 rounded-2xl p-2">
@@ -912,7 +912,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
             Limpiar selección
           </Button>
           <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={openBulkModal} disabled={!selectedIds.size || !aplicacionId}>
-            <FileArchive className="mr-2 h-4 w-4" /> Descargar masivamente
+            <FileArchive className="mr-2 h-4 w-4" aria-hidden="true" /> Descargar masivamente
           </Button>
         </div>
       </div>
@@ -957,7 +957,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                     <button
                       type="button"
                       onClick={() => navigate("/psicosocial/empleados/" + it.empleado_id)}
-                      className="group block max-w-[260px] rounded text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
+                      className="group block max-w-[260px] rounded text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-hidden focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
                       title="Abrir perfil del colaborador"
                     >
                       <span className="font-semibold underline decoration-slate-300 underline-offset-4 group-hover:decoration-brand-primary">
@@ -987,7 +987,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
                       onClick={() => navigate(`/psicosocial/empleados/${it.empleado_id}/aplicaciones/${aplicacionId}/informes`)}
                       disabled={!aplicacionId || !reportsForParticipant(it, ALL_INSTRUMENT_FILTERS).length}
                     >
-                      <Eye className="mr-2 h-4 w-4" /> Ver informe
+                      <Eye className="mr-2 h-4 w-4" aria-hidden="true" /> Ver informe
                     </Button>
                   </td>
                 </tr>
@@ -1007,9 +1007,9 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
       <p className="text-xs text-slate-500">El riesgo más alto resume el nivel máximo observado entre Intralaboral, Extralaboral y Estrés.</p>
       <Dialog open={bulkOpen} onOpenChange={(open) => !bulkDownloading && setBulkOpen(open)}>
         <DialogContent className="max-w-4xl rounded-[28px] border-slate-200 p-0 shadow-2xl">
-          <DialogHeader className="border-b bg-gradient-to-r from-accent to-brand-canvas px-6 py-5">
+          <DialogHeader className="border-b bg-linear-to-r from-accent to-brand-canvas px-6 py-5">
             <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-primary p-3 text-primary-foreground shadow-card"><FileArchive className="h-6 w-6" /></div>
+              <div className="rounded-2xl bg-primary p-3 text-primary-foreground shadow-card"><FileArchive className="h-6 w-6" aria-hidden="true" /></div>
               <div>
                 <DialogTitle className="text-2xl font-black tracking-tight text-slate-950">Descarga masiva de informes individuales</DialogTitle>
                 <DialogDescription className="mt-1 text-slate-600">
@@ -1102,7 +1102,7 @@ function ParticipantesTable({ items = [], aplicacionId }: { items?: Participante
           <DialogFooter className="border-t bg-white px-6 py-4">
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => setBulkOpen(false)} disabled={bulkDownloading}>Cancelar</Button>
             <Button type="button" className="rounded-xl bg-primary hover:bg-primary-hover" onClick={downloadBulk} disabled={!bulkCanDownload}>
-              {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              {bulkDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Download className="mr-2 h-4 w-4" aria-hidden="true" />}
               Descargar ZIP
             </Button>
           </DialogFooter>
@@ -1130,17 +1130,17 @@ function DomainDetailPanel({
     .filter((d) => d.evaluacion_id === dominio.evaluacion_id && String(d.dominio_code ?? "") === String(dominio.dominio_code ?? ""))
     .sort((a, b) => Number(b.pct_alto_muy_alto ?? 0) - Number(a.pct_alto_muy_alto ?? 0));
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-rel-modal flex items-center justify-center p-4 sm:p-6">
       <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" onClick={onClose} />
       <section role="dialog" aria-modal="true" className="relative flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
-        <div className="border-b bg-white/95 px-6 py-5 backdrop-blur">
+        <div className="border-b bg-white/95 px-6 py-5 backdrop-blur-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-primary">Detalle estadístico de dominio</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dominio.dominio_label}>{dominio.dominio_label}</h2>
               <p className="mt-1 text-sm text-slate-500">{dominio.instrument_label} · dominio agregado</p>
             </div>
-            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" aria-hidden="true" /></Button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
@@ -1153,7 +1153,7 @@ function DomainDetailPanel({
           <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm leading-relaxed text-sky-900">
             <b>Lectura técnica:</b> este dominio consolida las dimensiones asociadas y debe interpretarse con el puntaje transformado oficial. Las dimensiones con mayor porcentaje Alto/Muy alto orientan la priorización del plan de intervención.
           </div>
-          <Card className="mt-5 border-slate-200 shadow-sm">
+          <Card className="mt-5 border-slate-200 shadow-xs">
             <CardHeader>
               <CardTitle className="text-base">Dimensiones del dominio</CardTitle>
               <CardDescription>Ordenadas por criticidad para análisis y plan de acción.</CardDescription>
@@ -1215,21 +1215,21 @@ function DimensionDetailPanel({
   ] as const;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-rel-modal flex items-center justify-center p-4 sm:p-6">
       <button aria-label="Cerrar detalle" className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]" onClick={onClose} />
       <section
         role="dialog"
         aria-modal="true"
         className="relative flex h-[88vh] w-full max-w-[1440px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-5 backdrop-blur">
+        <div className="sticky top-0 z-10 border-b bg-white/95 px-6 py-5 backdrop-blur-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-primary">Detalle estadístico integrado</div>
               <h2 className="mt-1 line-clamp-2 text-2xl font-bold tracking-tight text-slate-950" title={dim?.dimension_label}>{dim?.dimension_label ?? "Cargando dimensión..."}</h2>
               {dim && <p className="mt-1 text-sm text-slate-500">{dim.dominio_label} · {dim.instrument_labels.join(" + ")}</p>}
             </div>
-            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+            <Button type="button" variant="outline" size="icon" onClick={onClose}><X className="h-4 w-4" aria-hidden="true" /></Button>
           </div>
         </div>
 
@@ -1237,7 +1237,7 @@ function DimensionDetailPanel({
           {loading ? (
             <div className="space-y-3"><Skeleton className="h-24 w-full" /><Skeleton className="h-72 w-full" /></div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{error}</div>
+            <div className="rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" aria-hidden="true" />{error}</div>
           ) : !detail || !dim ? (
             <EmptyState />
           ) : (
@@ -1251,7 +1251,7 @@ function DimensionDetailPanel({
               </div>
 
               <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_1.15fr]">
-                <Card className="border-slate-200 shadow-sm">
+                <Card className="border-slate-200 shadow-xs">
                   <CardHeader>
                     <CardTitle className="text-base">Distribución por nivel de riesgo</CardTitle>
                     <CardDescription>Clasificación normativa de la dimensión según baremos.</CardDescription>
@@ -1282,7 +1282,7 @@ function DimensionDetailPanel({
                 </div>
               </div>
 
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-slate-200 shadow-xs">
                 <CardHeader>
                   <CardTitle className="text-base">Ítems que componen la dimensión</CardTitle>
                   <CardDescription>Conteo textual por pregunta y promedio numérico usado como trazabilidad descriptiva.</CardDescription>
@@ -1291,7 +1291,7 @@ function DimensionDetailPanel({
                   <div className="overflow-hidden rounded-2xl border">
                     <div className="max-h-[520px] overflow-auto">
                       <table className="min-w-[1180px] w-full text-sm">
-                        <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-sm">
+                        <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-xs">
                           <tr>
                             <th className="px-4 py-3">Pregunta</th>
                             <th className="px-4 py-3">Instrumento</th>
@@ -1391,7 +1391,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
 
   const Th = ({ label, sortKey, align = "left" }: { label: string; sortKey: SortKey; align?: "left" | "right" }) => (
     <th className={cn("whitespace-nowrap px-4 py-3", align === "right" && "text-right")}>
-      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "right" && "justify-end")}> 
+      <button type="button" onClick={() => setSortKey(sortKey)} className={cn("inline-flex items-center gap-1 font-semibold hover:text-brand-primary", align === "right" && "justify-end")}>
         {label}
         <span className="text-[10px] text-slate-400">{sort.key === sortKey ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span>
       </button>
@@ -1445,7 +1445,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
       <div className="overflow-hidden rounded-2xl border bg-white">
         <div className="max-h-[720px] overflow-auto">
           <table className="min-w-[1320px] w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-sm">
+            <thead className="sticky top-0 z-10 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 shadow-xs">
               <tr>
                 <Th label="Dominio" sortKey="dominio_label" />
                 <Th label="Dimensión" sortKey="dimension_label" />
@@ -1463,15 +1463,15 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
             <tbody className="divide-y">
               {filtered.map((it) => (
                 <tr key={`${it.evaluacion_id}-${it.dimension_code}`} className="hover:bg-slate-50/70">
-                  <td className="max-w-[260px] px-4 py-3 text-slate-700"><div className="break-words font-semibold leading-snug">{it.dominio_label || "—"}</div></td>
+                  <td className="max-w-[260px] px-4 py-3 text-slate-700"><div className="wrap-break-word font-semibold leading-snug">{it.dominio_label || "—"}</div></td>
                   <td className="max-w-[360px] px-4 py-3 font-medium text-slate-900">
                     <button
                       type="button"
                       onClick={() => onOpenDetail(it)}
-                      className="group block max-w-full text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-none focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
+                      className="group block max-w-full text-left leading-snug text-slate-900 transition hover:text-brand-primary focus:outline-hidden focus:ring-2 focus:ring-input-focus/30 focus:ring-offset-2"
                       title="Abrir detalle estadístico de la dimensión"
                     >
-                      <span className="break-words underline decoration-slate-300 underline-offset-4 group-hover:decoration-brand-primary">
+                      <span className="wrap-break-word underline decoration-slate-300 underline-offset-4 group-hover:decoration-brand-primary">
                         {it.dimension_label}
                       </span>
                       <span className="mt-1 block text-[11px] font-normal text-slate-400 group-hover:text-brand-primary">Ver detalle</span>
@@ -1503,7 +1503,7 @@ function DimensionsTable({ items, onOpenDetail }: { items: DimensionPsico[]; onO
 function SegmentacionChart({ title, items }: { title: string; items?: SegmentacionItem[] }) {
   const data = (items ?? []).slice(0, 8);
   return (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-slate-200 shadow-xs">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>% de scores instrumentales en Alto/Muy alto por grupo.</CardDescription>
@@ -1513,7 +1513,7 @@ function SegmentacionChart({ title, items }: { title: string; items?: Segmentaci
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, left: 80, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" tickFormatter={(v) => `${v}%`} />
+              <XAxis type="number" tickFormatter={(v) => `${Number(v).toFixed(0)}%`} />
               <YAxis type="category" dataKey="nombre" width={130} />
               <Tooltip formatter={(value: any) => [`${Number(value).toFixed(1)}%`, "Scores Alto/Muy alto"]} />
               <Bar dataKey="pct_alto_muy_alto" fill="#7c3aed" radius={[0, 8, 8, 0]} />
@@ -1556,7 +1556,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
   }));
 
   return (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-slate-200 shadow-xs">
       <CardHeader className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <CardTitle className="text-base">{title}</CardTitle>
@@ -1626,7 +1626,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="nombre" interval={0} angle={-25} textAnchor="end" height={70} tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => String(v) + "%"} domain={[0, 100]} />
+              <YAxis tickFormatter={(v) => `${Number(v).toFixed(0)}%`} domain={[0, 100]} />
               <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
               <Bar dataKey="porcentaje" fill="#7c3aed" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -1635,7 +1635,7 @@ function SocioChart({ title, items }: { title: string; items?: SocioDistribucion
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, left: 110, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => String(v) + "%"} />
+              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${Number(v).toFixed(0)}%`} />
               <YAxis type="category" dataKey="nombre" width={160} tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value: any, name: any, props: any) => [Number(value).toFixed(1) + "% (" + String(props?.payload?.cantidad ?? 0) + ")", "Participación"]} />
               <Bar dataKey="porcentaje" fill="#7c3aed" radius={[0, 8, 8, 0]} />
@@ -1778,11 +1778,11 @@ export default function ReportesPsico() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <div className="mx-auto max-w-[1500px] space-y-5 p-4 md:p-6">
-        <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+        <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-xs">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="rounded-2xl bg-accent p-3 text-brand-primary">
-                <LineChart className="h-8 w-8" />
+                <LineChart className="h-8 w-8" aria-hidden="true" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -1815,7 +1815,7 @@ export default function ReportesPsico() {
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={() => aplicacionId && loadDashboard(aplicacionId)} disabled={!aplicacionId || loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCcw className="mr-2 h-4 w-4" aria-hidden="true" />}
                 Actualizar
               </Button>
               <Button
@@ -1823,16 +1823,16 @@ export default function ReportesPsico() {
                 disabled={!aplicacionId}
                 onClick={() => aplicacionId && navigate(`/psicosocial/reportes-oficiales?aplicacionId=${aplicacionId}&tipo=resultados`)}
               >
-                <FileText className="mr-2 h-4 w-4" /> Informe global
+                <FileText className="mr-2 h-4 w-4" aria-hidden="true" /> Informe global
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border bg-white p-1 shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border bg-white p-1 shadow-xs">
           <div className="flex min-w-max gap-1">
             {TABS.map(({ key, label, icon: Icon }) => (
-              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-primary text-primary-foreground shadow-sm" : "text-slate-600 hover:bg-slate-100")}> 
+              <button key={key} onClick={() => setTab(key)} className={cn("flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition", tab === key ? "bg-primary text-primary-foreground shadow-xs" : "text-slate-600 hover:bg-slate-100")}>
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}
@@ -1876,7 +1876,7 @@ export default function ReportesPsico() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-                  <Card className="border-slate-200 shadow-sm xl:col-span-4">
+                  <Card className="border-slate-200 shadow-xs xl:col-span-4">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">Distribución instrumental por nivel</CardTitle>
                       <CardDescription>Lectura analítica de Intralaboral, Extralaboral y Estrés. No duplica el Total General.</CardDescription>
@@ -1884,7 +1884,7 @@ export default function ReportesPsico() {
                     <CardContent><DonutGlobal data={analyticDistribution} /></CardContent>
                   </Card>
 
-                  <Card className="border-slate-200 shadow-sm xl:col-span-4">
+                  <Card className="border-slate-200 shadow-xs xl:col-span-4">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">Top dimensiones críticas</CardTitle>
                       <CardDescription>Ordenadas por % Alto/Muy alto.</CardDescription>
@@ -1892,7 +1892,7 @@ export default function ReportesPsico() {
                     <CardContent><RankingList items={data.ranking_dimensiones} /></CardContent>
                   </Card>
 
-                  <Card className="border-slate-200 shadow-sm xl:col-span-4">
+                  <Card className="border-slate-200 shadow-xs xl:col-span-4">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">Mapa ejecutivo de dominios</CardTitle>
                       <CardDescription>Promedio y exposición por dominio/dimensión agrupada.</CardDescription>
@@ -1903,16 +1903,16 @@ export default function ReportesPsico() {
 
                 <InstrumentOverviewSection data={data as any} />
 
-                <Card className="border-slate-200 shadow-sm">
+                <Card className="border-slate-200 shadow-xs">
                   <CardHeader>
                     <CardTitle className="text-base">Alertas importantes</CardTitle>
                     <CardDescription>Eventos para revisión del psicólogo/SST.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {!data.alertas.length ? (
-                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" />Sin alertas críticas con los datos actuales.</div>
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 className="mb-2 h-5 w-5" aria-hidden="true" />Sin alertas críticas con los datos actuales.</div>
                     ) : data.alertas.map((a, i) => (
-                      <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" />{a.mensaje}</div>
+                      <div key={"alerta-" + String(i)} className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-800"><AlertTriangle className="mb-2 h-5 w-5" aria-hidden="true" />{a.mensaje}</div>
                     ))}
                   </CardContent>
                 </Card>
@@ -1921,7 +1921,7 @@ export default function ReportesPsico() {
 
             {tab === "calidad" && (
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border-slate-200 shadow-sm">
+                <Card className="lg:col-span-2 border-slate-200 shadow-xs">
                   <CardHeader>
                     <CardTitle>Calidad y completitud de batería</CardTitle>
                     <CardDescription>Regla esperada: cada colaborador tiene A o B + Extralaboral + Estrés.</CardDescription>
@@ -1940,7 +1940,7 @@ export default function ReportesPsico() {
                     <TotalesTable items={data.totales} />
                   </CardContent>
                 </Card>
-                <Card className="border-slate-200 shadow-sm">
+                <Card className="border-slate-200 shadow-xs">
                   <CardHeader>
                     <CardTitle>Inconsistencias</CardTitle>
                     <CardDescription>Debe permanecer en cero para reporte oficial.</CardDescription>
@@ -1958,16 +1958,16 @@ export default function ReportesPsico() {
             {tab === "dominios" && (
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-                  <Card className="border-slate-200 shadow-sm">
+                  <Card className="border-slate-200 shadow-xs">
                     <CardHeader><CardTitle>Riesgo por dominios</CardTitle><CardDescription>Priorización ejecutiva por exposición Alto/Muy alto.</CardDescription></CardHeader>
                     <CardContent><DominioCards dominios={data.ranking_dominios} onOpen={openDomainDetail} /></CardContent>
                   </Card>
-                  <Card className="border-slate-200 shadow-sm">
+                  <Card className="border-slate-200 shadow-xs">
                     <CardHeader><CardTitle>Top dimensiones críticas</CardTitle><CardDescription>Priorización para intervención.</CardDescription></CardHeader>
                     <CardContent><RankingList items={data.ranking_dimensiones} /></CardContent>
                   </Card>
                 </div>
-                <Card className="border-slate-200 shadow-sm">
+                <Card className="border-slate-200 shadow-xs">
                   <CardHeader><CardTitle>Tabla detallada de dimensiones</CardTitle><CardDescription>Base analítica para psicólogo evaluador y plan de acción.</CardDescription></CardHeader>
                   <CardContent><DimensionsTable items={data.dimensiones} onOpenDetail={openDimensionDetail} /></CardContent>
                 </Card>
@@ -1985,7 +1985,7 @@ export default function ReportesPsico() {
 
             {tab === "sociodemografico" && (
               <div className="space-y-5">
-                <Card className="border-slate-200 shadow-sm">
+                <Card className="border-slate-200 shadow-xs">
                   <CardHeader>
                     <CardTitle>Perfil sociodemográfico</CardTitle>
                     <CardDescription>Variables de ficha de datos generales disponibles para los participantes de la aplicación.</CardDescription>
@@ -2016,7 +2016,7 @@ export default function ReportesPsico() {
 
 
             {tab === "participantes" && (
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-slate-200 shadow-xs">
                 <CardHeader>
                   <CardTitle>Participantes e informes individuales</CardTitle>
                   <CardDescription>Listado por colaborador con niveles por instrumento y acceso al informe individual.</CardDescription>
