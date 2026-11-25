@@ -12,7 +12,7 @@ const resumen = {
   palancas: [{ id: "factor-1", nombre: "Atención", promotores: { media: 4.4, n: 34 }, detractores: { media: 3.2, n: 20 }, brecha: 1.2 }],
   mensual: [{ mes: "2026-11", indicador: { tipo: "NPS_RELACIONAL", valor: 20.59, n: 68, distribucion: {}, histograma: {} } }],
   desglose: { sede: [], servicio: [], punto: [], campana: [], encuesta: [] },
-  trazas: [], opciones: { encuesta: [], campana: [], sede: [], servicio: [], punto: [] },
+  trazas: [{ campana_id: "campana-1", campana: "Campaña Norte", estado: "ACTIVA", encuesta: "Satisfacción", version: 1, n: 68, contactos: 22, primera_fecha: "2026-09-26T12:00:00Z", ultima_fecha: "2026-11-23T12:00:00Z" }], opciones: { encuesta: [], campana: [], sede: [], servicio: [], punto: [] },
 };
 
 describe("ResultadosCxPage", () => {
