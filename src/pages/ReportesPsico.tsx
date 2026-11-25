@@ -180,7 +180,7 @@ function KpiCard({ title, value, subtitle, icon: Icon, tone = "violet", compact 
     yellow: "bg-amber-50 text-amber-700 border-amber-100",
   };
   return (
-    <Card className={cn("h-full overflow-hidden border-slate-200 bg-white/90 shadow-xs", compact ? "min-h-[112px]" : "min-h-[124px]")}> 
+    <Card className={cn("h-full overflow-hidden border-slate-200 bg-white/90 shadow-xs", compact ? "min-h-[112px]" : "min-h-[124px]")}>
       <CardContent className={cn("h-full", compact ? "p-4" : "p-5")}>
         <div className="flex h-full min-w-0 items-start gap-3">
           <div className={cn("shrink-0 rounded-2xl border", compact ? "p-2.5" : "p-3", tones[tone])}>
