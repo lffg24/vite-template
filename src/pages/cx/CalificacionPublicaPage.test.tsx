@@ -38,9 +38,10 @@ const conContacto: FormularioCalificacion = {
 };
 
 /** Responde las dos preguntas y llega al final del recorrido. */
-function responderTodo() {
+async function responderTodo() {
   fireEvent.click(screen.getByRole("radio", { name: "5 de 5" }));
   fireEvent.click(screen.getByRole("button", { name: /siguiente/i }));
+  await screen.findByRole("radio", { name: "10 de 10" });
   fireEvent.click(screen.getByRole("radio", { name: "10 de 10" }));
 }
 
@@ -59,6 +60,18 @@ beforeEach(() => {
 });
 
 describe("calificación pública", () => {
+  it("avanza suavemente después de seleccionar con puntero y conserva el botón Anterior", async () => {
+    montar();
+    await screen.findByText(/¿Cómo fue la atención/);
+
+    fireEvent.click(screen.getByRole("radio", { name: "4 de 5" }));
+
+    expect(await screen.findByText(/¿Nos recomendarías/, {}, { timeout: 1500 })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /anterior/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /anterior/i }));
+    expect(screen.getByRole("radio", { name: "4 de 5" })).toBeChecked();
+  });
+
   it("exige la pregunta obligatoria y confirma el envío con el mismo QR", async () => {
     montar();
     expect(await screen.findByText(/¿Cómo fue la atención/)).toBeTruthy();
@@ -101,7 +114,7 @@ describe("calificación pública", () => {
   it("no pide ningún dato cuando la versión es anónima", async () => {
     montar();
     await screen.findByText(/¿Cómo fue la atención/);
-    responderTodo();
+    await responderTodo();
     fireEvent.click(screen.getByRole("button", { name: /enviar calificación/i }));
     await screen.findByRole("heading", { name: /gracias por tu calificación/i });
     // Ni paso intermedio ni campo de contacto: el recorrido de siempre.
@@ -115,7 +128,7 @@ describe("calificación pública", () => {
     it("ofrece el contacto al final, con la casilla sin premarcar", async () => {
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
 
       expect(await screen.findByRole("heading", { name: /quieres que te contactemos/i })).toBeTruthy();
@@ -128,7 +141,7 @@ describe("calificación pública", () => {
     it("permite enviar la calificación sin dejar datos", async () => {
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
       await screen.findByRole("heading", { name: /quieres que te contactemos/i });
       fireEvent.click(screen.getByRole("button", { name: /enviar sin dejar mis datos/i }));
@@ -140,7 +153,7 @@ describe("calificación pública", () => {
     it("no envía datos sin la autorización marcada", async () => {
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
       await screen.findByRole("heading", { name: /quieres que te contactemos/i });
       fireEvent.change(screen.getByLabelText(/^nombre/i), { target: { value: "Ana Ríos" } });
@@ -154,7 +167,7 @@ describe("calificación pública", () => {
     it("exige nombre y correo cuando la persona sí autoriza", async () => {
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
       await screen.findByRole("heading", { name: /quieres que te contactemos/i });
       fireEvent.click(screen.getByRole("checkbox"));
@@ -167,7 +180,7 @@ describe("calificación pública", () => {
     it("envía el contacto contra la versión del texto que se presentó", async () => {
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
       await screen.findByRole("heading", { name: /quieres que te contactemos/i });
       fireEvent.change(screen.getByLabelText(/^nombre/i), { target: { value: "  Ana Ríos  " } });
@@ -193,7 +206,7 @@ describe("calificación pública", () => {
       });
       montar();
       await screen.findByText(/¿Cómo fue la atención/);
-      responderTodo();
+      await responderTodo();
       fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
       await screen.findByRole("heading", { name: /quieres que te contactemos/i });
       expect(screen.queryByLabelText(/teléfono/i)).toBeNull();

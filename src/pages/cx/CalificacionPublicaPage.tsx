@@ -51,6 +51,37 @@ export default function CalificacionPublicaPage() {
   const [consiente, setConsiente] = useState(false);
   const [errorContacto, setErrorContacto] = useState("");
   const intento = useRef<{ huella: string; clave: string } | null>(null);
+  const avanceAutomatico = useRef<number | null>(null);
+  const tiempoTransicion = useRef<number | null>(null);
+  const seleccionConFlechas = useRef(false);
+  const tituloPregunta = useRef<HTMLLegendElement>(null);
+  const [transicionPregunta, setTransicionPregunta] = useState(false);
+
+  function cancelarAvanceAutomatico() {
+    if (avanceAutomatico.current !== null) {
+      window.clearTimeout(avanceAutomatico.current);
+      avanceAutomatico.current = null;
+    }
+  }
+
+  function cambiarPregunta(siguiente: number) {
+    cancelarAvanceAutomatico();
+    if (tiempoTransicion.current !== null) window.clearTimeout(tiempoTransicion.current);
+    setTransicionPregunta(true);
+    tiempoTransicion.current = window.setTimeout(() => {
+      setIndice(siguiente);
+      tiempoTransicion.current = window.setTimeout(() => {
+        tiempoTransicion.current = null;
+        setTransicionPregunta(false);
+      }, 30);
+    }, 150);
+  }
+
+  useEffect(() => () => {
+    cancelarAvanceAutomatico();
+    if (tiempoTransicion.current !== null) window.clearTimeout(tiempoTransicion.current);
+  }, []);
+  useEffect(() => { tituloPregunta.current?.focus(); }, [indice]);
 
   const cargar = useCallback(async (signal?: AbortSignal) => {
     setFase("cargando");
@@ -96,7 +127,7 @@ export default function CalificacionPublicaPage() {
     setErrorPregunta(false);
     setErrorEnvio(false);
     if (indice < total - 1) {
-      setIndice(indice + 1);
+      cambiarPregunta(indice + 1);
       return;
     }
 
@@ -106,6 +137,21 @@ export default function CalificacionPublicaPage() {
       return;
     }
     await enviar(null);
+  }
+
+  function seleccionarRespuesta(valor: number) {
+    setRespuestas((actuales) => ({ ...actuales, [pregunta!.id]: valor }));
+    setErrorPregunta(false);
+    setErrorEnvio(false);
+    cancelarAvanceAutomatico();
+
+    // Las flechas forman parte del patrón de teclado de un radio: permiten
+    // explorar la escala antes de confirmar el paso con el botón Siguiente.
+    if (seleccionConFlechas.current || indice >= total - 1) return;
+    avanceAutomatico.current = window.setTimeout(() => {
+      avanceAutomatico.current = null;
+      cambiarPregunta(indice + 1);
+    }, 420);
   }
 
   /** Envía la calificación. `contacto` a `null` es el camino anónimo, y está
@@ -310,7 +356,7 @@ export default function CalificacionPublicaPage() {
           </IllustrationSurface>
         </div>
 
-        <Panel className="p-5 sm:p-8">
+        <Panel className={`p-5 transition-[opacity,transform] duration-rel-panel sm:p-8 ${transicionPregunta ? "translate-x-2 opacity-0" : "translate-x-0 opacity-100"}`}>
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="font-bold text-rel-dark">Pregunta {indice + 1} de {total}</span>
             <span className="text-rel-muted">{Math.round(((indice + 1) / total) * 100)} %</span>
@@ -319,7 +365,7 @@ export default function CalificacionPublicaPage() {
             <div className="h-full rounded-full bg-rel-primary transition-[width] duration-rel-panel" style={{ width: `${((indice + 1) / total) * 100}%` }} />
           </div>
           <fieldset className="mt-8" aria-describedby={`ayuda-${pregunta.id}${errorPregunta ? ` error-${pregunta.id}` : ""}`}>
-            <legend className="font-rel-heading text-xl font-bold leading-snug text-rel-dark sm:text-2xl">
+            <legend ref={tituloPregunta} tabIndex={-1} className="rounded-sm font-rel-heading text-xl font-bold leading-snug text-rel-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-rel-primary sm:text-2xl">
               {pregunta.enunciado}{pregunta.obligatorio && <span className="ml-1 text-rel-danger" aria-label="obligatoria">*</span>}
             </legend>
             <p id={`ayuda-${pregunta.id}`} className="mt-2 text-sm text-rel-muted">Selecciona un número de la escala.</p>
@@ -332,7 +378,11 @@ export default function CalificacionPublicaPage() {
                     name={`pregunta-${pregunta.id}`}
                     value={valor}
                     checked={respuestas[pregunta.id] === valor}
-                    onChange={() => { setRespuestas((actuales) => ({ ...actuales, [pregunta.id]: valor })); setErrorPregunta(false); setErrorEnvio(false); }}
+                    disabled={fase === "enviando" || transicionPregunta}
+                    onKeyDown={(evento) => { seleccionConFlechas.current = evento.key.startsWith("Arrow"); }}
+                    onKeyUp={() => { seleccionConFlechas.current = false; }}
+                    onBlur={() => { seleccionConFlechas.current = false; }}
+                    onChange={() => seleccionarRespuesta(valor)}
                     aria-label={`${valor} de ${valores[valores.length - 1]}`}
                   />
                   <span className="flex min-h-14 items-center justify-center rounded-rel-control border border-rel-border-strong bg-rel-surface text-base font-bold text-rel-dark transition-colors peer-checked:border-rel-primary peer-checked:bg-rel-accent-subtle peer-checked:text-rel-primary peer-focus-visible:outline-solid peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-rel-primary hover:border-rel-primary">
